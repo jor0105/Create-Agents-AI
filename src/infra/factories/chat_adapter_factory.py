@@ -49,9 +49,9 @@ class ChatAdapterFactory:
         provider_lower = provider.lower()
         match provider_lower:
             case "openai":
-                adapter = OpenAIChatAdapter()
+                adapter: ChatRepository = OpenAIChatAdapter()
             case "ollama":
-                adapter = OllamaChatAdapter()
+                adapter: ChatRepository = OllamaChatAdapter()
             case _:
                 raise ValueError(f"Provider inválido: {provider}.")
 

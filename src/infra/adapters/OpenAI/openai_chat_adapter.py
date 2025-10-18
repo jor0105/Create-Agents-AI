@@ -50,10 +50,22 @@ class OpenAIChatAdapter(ChatRepository):
         Returns:
             Resposta da API
         """
-        response_api = self.__client.responses.create(
-            model=model,
-            input=messages,
-        )
+        # Prepara kwargs com configs opcionais
+        api_kwargs = {
+            "model": model,
+            "input": messages,
+        }
+
+        param_mapping = {
+            "temperature": "temperature",
+            "max_tokens": "max_output_tokens",
+            "top_p": "top_p",
+        }
+        for config_key, api_key in param_mapping.items():
+            if config_key in config:
+                api_kwargs[api_key] = config[config_key]
+
+        response_api = self.__client.responses.create(**api_kwargs)
 
         return response_api
 

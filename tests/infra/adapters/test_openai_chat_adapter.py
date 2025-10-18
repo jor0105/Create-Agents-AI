@@ -705,8 +705,8 @@ class TestOpenAIChatAdapter:
             model=IA_OPENAI_TEST_1,
             instructions="Test",
             config=config,
-            user_ask="Test",
             history=[],
+            user_ask="Test",
         )
 
         assert response == "Response"
@@ -925,3 +925,165 @@ class TestOpenAIChatAdapter:
 
         assert len(response) == 10000
         assert response == long_text
+
+    @patch(
+        "src.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
+    )
+    @patch("src.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client")
+    def test_chat_passes_temperature_config(self, mock_get_client, mock_get_api_key):
+        mock_get_api_key.return_value = "test-api-key"
+
+        mock_client = Mock()
+        mock_response = MagicMock()
+        mock_response.output_text = "Response"
+        mock_response.usage.total_tokens = 100
+        mock_response.usage.input_tokens = 50
+        mock_response.usage.output_tokens = 50
+        mock_client.responses.create.return_value = mock_response
+        mock_get_client.return_value = mock_client
+
+        adapter = OpenAIChatAdapter()
+
+        adapter.chat(
+            model=IA_OPENAI_TEST_1,
+            instructions="Test",
+            config={"temperature": 0.7},
+            user_ask="Test",
+            history=[],
+        )
+
+        call_args = mock_client.responses.create.call_args
+        assert "temperature" in call_args.kwargs
+        assert call_args.kwargs["temperature"] == 0.7
+
+    @patch(
+        "src.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
+    )
+    @patch("src.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client")
+    def test_chat_passes_max_tokens_config(self, mock_get_client, mock_get_api_key):
+        mock_get_api_key.return_value = "test-api-key"
+
+        mock_client = Mock()
+        mock_response = MagicMock()
+        mock_response.output_text = "Response"
+        mock_response.usage.total_tokens = 100
+        mock_response.usage.input_tokens = 50
+        mock_response.usage.output_tokens = 50
+        mock_client.responses.create.return_value = mock_response
+        mock_get_client.return_value = mock_client
+
+        adapter = OpenAIChatAdapter()
+
+        adapter.chat(
+            model=IA_OPENAI_TEST_2,
+            instructions="Test",
+            config={"max_tokens": 500},
+            user_ask="Test",
+            history=[],
+        )
+
+        call_args = mock_client.responses.create.call_args
+        assert "max_output_tokens" in call_args.kwargs
+        assert call_args.kwargs["max_output_tokens"] == 500
+
+    @patch(
+        "src.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
+    )
+    @patch("src.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client")
+    def test_chat_passes_top_p_config(self, mock_get_client, mock_get_api_key):
+        mock_get_api_key.return_value = "test-api-key"
+
+        mock_client = Mock()
+        mock_response = MagicMock()
+        mock_response.output_text = "Response"
+        mock_response.usage.total_tokens = 100
+        mock_response.usage.input_tokens = 50
+        mock_response.usage.output_tokens = 50
+        mock_client.responses.create.return_value = mock_response
+        mock_get_client.return_value = mock_client
+
+        adapter = OpenAIChatAdapter()
+
+        adapter.chat(
+            model=IA_OPENAI_TEST_1,
+            instructions="Test",
+            config={"top_p": 0.9},
+            user_ask="Test",
+            history=[],
+        )
+
+        call_args = mock_client.responses.create.call_args
+        assert "top_p" in call_args.kwargs
+        assert call_args.kwargs["top_p"] == 0.9
+
+    @patch(
+        "src.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
+    )
+    @patch("src.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client")
+    def test_chat_passes_all_configs(self, mock_get_client, mock_get_api_key):
+        mock_get_api_key.return_value = "test-api-key"
+
+        mock_client = Mock()
+        mock_response = MagicMock()
+        mock_response.output_text = "Response"
+        mock_response.usage.total_tokens = 100
+        mock_response.usage.input_tokens = 50
+        mock_response.usage.output_tokens = 50
+        mock_client.responses.create.return_value = mock_response
+        mock_get_client.return_value = mock_client
+
+        adapter = OpenAIChatAdapter()
+
+        config = {
+            "temperature": 0.7,
+            "max_tokens": 500,
+            "top_p": 0.9,
+        }
+
+        adapter.chat(
+            model=IA_OPENAI_TEST_2,
+            instructions="Test",
+            config=config,
+            user_ask="Test",
+            history=[],
+        )
+
+        call_args = mock_client.responses.create.call_args
+        assert call_args.kwargs["temperature"] == 0.7
+        assert call_args.kwargs["max_output_tokens"] == 500
+        assert call_args.kwargs["top_p"] == 0.9
+
+    @patch(
+        "src.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
+    )
+    @patch("src.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client")
+    def test_chat_with_empty_config_does_not_pass_extra_params(
+        self, mock_get_client, mock_get_api_key
+    ):
+        mock_get_api_key.return_value = "test-api-key"
+
+        mock_client = Mock()
+        mock_response = MagicMock()
+        mock_response.output_text = "Response"
+        mock_response.usage.total_tokens = 100
+        mock_response.usage.input_tokens = 50
+        mock_response.usage.output_tokens = 50
+        mock_client.responses.create.return_value = mock_response
+        mock_get_client.return_value = mock_client
+
+        adapter = OpenAIChatAdapter()
+
+        adapter.chat(
+            model=IA_OPENAI_TEST_1,
+            instructions="Test",
+            config={},
+            user_ask="Test",
+            history=[],
+        )
+
+        call_args = mock_client.responses.create.call_args
+        assert "temperature" not in call_args.kwargs
+        assert "max_output_tokens" not in call_args.kwargs
+        assert "top_p" not in call_args.kwargs
+        assert "model" in call_args.kwargs
+        assert "input" in call_args.kwargs

@@ -547,3 +547,117 @@ class TestOllamaChatAdapter:
         assert len(metrics) == 1
         assert metrics[0].error_message == "Ollama retornou resposta vazia"
         assert metrics[0].success is False
+
+    @patch("src.infra.adapters.Ollama.ollama_chat_adapter.chat")
+    def test_chat_passes_temperature_config(self, mock_chat):
+        mock_response = MagicMock()
+        mock_response.message.content = "Response"
+        mock_response.get.return_value = None
+        mock_chat.return_value = mock_response
+
+        adapter = OllamaChatAdapter()
+
+        adapter.chat(
+            model=IA_OLLAMA_TEST_1,
+            instructions="Test",
+            config={"temperature": 0.7},
+            history=[],
+            user_ask="Test",
+        )
+
+        call_args = mock_chat.call_args
+        assert call_args.kwargs.get("options") == {"temperature": 0.7}
+
+    @patch("src.infra.adapters.Ollama.ollama_chat_adapter.chat")
+    def test_chat_passes_max_tokens_as_num_predict(self, mock_chat):
+        mock_response = MagicMock()
+        mock_response.message.content = "Response"
+        mock_response.get.return_value = None
+        mock_chat.return_value = mock_response
+
+        adapter = OllamaChatAdapter()
+
+        adapter.chat(
+            model=IA_OLLAMA_TEST_2,
+            instructions="Test",
+            config={"max_tokens": 500},
+            history=[],
+            user_ask="Test",
+        )
+
+        call_args = mock_chat.call_args
+        assert call_args.kwargs.get("options") == {"num_predict": 500}
+
+    @patch("src.infra.adapters.Ollama.ollama_chat_adapter.chat")
+    def test_chat_passes_top_p_config(self, mock_chat):
+        mock_response = MagicMock()
+        mock_response.message.content = "Response"
+        mock_response.get.return_value = None
+        mock_chat.return_value = mock_response
+
+        adapter = OllamaChatAdapter()
+
+        adapter.chat(
+            model=IA_OLLAMA_TEST_2,
+            instructions="Test",
+            config={"top_p": 0.9},
+            history=[],
+            user_ask="Test",
+        )
+
+        call_args = mock_chat.call_args
+        assert call_args.kwargs.get("options") == {"top_p": 0.9}
+
+    @patch("src.infra.adapters.Ollama.ollama_chat_adapter.chat")
+    def test_chat_passes_all_configs(self, mock_chat):
+        mock_response = MagicMock()
+        mock_response.message.content = "Response"
+        mock_response.get.return_value = None
+        mock_chat.return_value = mock_response
+
+        adapter = OllamaChatAdapter()
+
+        config = {
+            "temperature": 0.7,
+            "max_tokens": 500,
+            "top_p": 0.9,
+        }
+
+        adapter.chat(
+            model=IA_OLLAMA_TEST_1,
+            instructions="Test",
+            config=config,
+            history=[],
+            user_ask="Test",
+        )
+
+        call_args = mock_chat.call_args
+        # Todas as configs devem estar em options, com max_tokens convertido
+        expected_options = {
+            "temperature": 0.7,
+            "num_predict": 500,  # max_tokens convertido
+            "top_p": 0.9,
+        }
+        assert call_args.kwargs.get("options") == expected_options
+
+    @patch("src.infra.adapters.Ollama.ollama_chat_adapter.chat")
+    def test_chat_with_empty_config_does_not_pass_options(self, mock_chat):
+        mock_response = MagicMock()
+        mock_response.message.content = "Response"
+        mock_response.get.return_value = None
+        mock_chat.return_value = mock_response
+
+        adapter = OllamaChatAdapter()
+
+        adapter.chat(
+            model=IA_OLLAMA_TEST_2,
+            instructions="Test",
+            config={},
+            history=[],
+            user_ask="Test",
+        )
+
+        call_args = mock_chat.call_args
+        assert call_args.kwargs.get("options") == {}
+        assert "model" in call_args.kwargs
+        assert "messages" in call_args.kwargs

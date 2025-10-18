@@ -99,7 +99,7 @@ class TestHistory:
         messages2 = history.get_messages()
 
         assert messages1 == messages2
-        assert messages1 is not messages2  # Objetos diferentes
+        assert messages1 is not messages2
 
     def test_to_dict_list_empty(self):
         history = History()
@@ -179,7 +179,6 @@ class TestHistory:
     def test_history_trim_keeps_most_recent(self):
         history = History(max_size=10)
 
-        # Adiciona 15 mensagens
         for i in range(15):
             history.add_user_message(f"Message {i}")
 
@@ -239,7 +238,6 @@ class TestHistory:
         assert len(history) == 10
         messages = history.get_messages()
 
-        # Verifica alternância
         for i in range(0, 10, 2):
             assert messages[i].role == MessageRole.USER
             assert messages[i + 1].role == MessageRole.ASSISTANT
@@ -294,7 +292,7 @@ class TestHistoryDequePerformance:
         history.add_user_message("Msg 1")
         history.add_user_message("Msg 2")
         history.add_user_message("Msg 3")
-        history.add_user_message("Msg 4")  # Deve remover "Msg 1"
+        history.add_user_message("Msg 4")
         messages = history.get_messages()
         assert len(messages) == 3
         assert messages[0].content == "Msg 2"
@@ -308,3 +306,245 @@ class TestHistoryDequePerformance:
         messages = history.get_messages()
         assert isinstance(messages, list)
         assert not isinstance(messages, type(history._messages))
+
+
+@pytest.mark.unit
+class TestHistoryConcurrency:
+    """Testes de concorrência para verificar se History é thread-safe."""
+
+    def test_history_concurrent_additions_basic(self):
+        import threading
+
+        history = History(max_size=100)
+        num_threads = 10
+        messages_per_thread = 20
+
+        def add_messages(thread_id):
+            for i in range(messages_per_thread):
+                history.add_user_message(f"Thread {thread_id} - Message {i}")
+
+        threads = [
+            threading.Thread(target=add_messages, args=(i,)) for i in range(num_threads)
+        ]
+
+        for thread in threads:
+            thread.start()
+        for thread in threads:
+            thread.join()
+
+        assert len(history) == 100
+
+        messages = history.get_messages()
+        for msg in messages:
+            assert msg.role == MessageRole.USER
+            assert "Thread" in msg.content
+
+    def test_history_concurrent_additions_respects_max_size(self):
+        import threading
+
+        max_size = 50
+        history = History(max_size=max_size)
+        num_threads = 5
+        messages_per_thread = 30
+
+        def add_messages(thread_id):
+            for i in range(messages_per_thread):
+                history.add_user_message(f"T{thread_id}-M{i}")
+
+        threads = [
+            threading.Thread(target=add_messages, args=(i,)) for i in range(num_threads)
+        ]
+
+        for thread in threads:
+            thread.start()
+        for thread in threads:
+            thread.join()
+
+        assert len(history) == max_size
+
+    def test_history_concurrent_reads_and_writes(self):
+        import threading
+        import time
+
+        history = History(max_size=100)
+        num_writers = 5
+        num_readers = 5
+        messages_per_writer = 20
+        reads_per_reader = 30
+        read_results = []
+        read_lock = threading.Lock()
+
+        def writer(thread_id):
+            for i in range(messages_per_writer):
+                history.add_user_message(f"Writer {thread_id} - Msg {i}")
+                time.sleep(0.001)
+
+        def reader(thread_id):
+            for i in range(reads_per_reader):
+                messages = history.get_messages()
+                with read_lock:
+                    read_results.append(len(messages))
+                time.sleep(0.001)
+
+        writer_threads = [
+            threading.Thread(target=writer, args=(i,)) for i in range(num_writers)
+        ]
+        reader_threads = [
+            threading.Thread(target=reader, args=(i,)) for i in range(num_readers)
+        ]
+
+        all_threads = writer_threads + reader_threads
+        for thread in all_threads:
+            thread.start()
+        for thread in all_threads:
+            thread.join()
+
+        assert len(read_results) == num_readers * reads_per_reader
+        for result in read_results:
+            assert 0 <= result <= 100
+        assert len(history) <= 100
+
+    def test_history_concurrent_clear_and_add(self):
+        import threading
+        import time
+
+        history = History(max_size=50)
+        num_adders = 3
+        num_clearers = 2
+        operations_per_thread = 20
+
+        def adder(thread_id):
+            for i in range(operations_per_thread):
+                history.add_user_message(f"Adder {thread_id} - {i}")
+                time.sleep(0.001)
+
+        def clearer(thread_id):
+            for i in range(operations_per_thread):
+                history.clear()
+                time.sleep(0.002)
+
+        adder_threads = [
+            threading.Thread(target=adder, args=(i,)) for i in range(num_adders)
+        ]
+        clearer_threads = [
+            threading.Thread(target=clearer, args=(i,)) for i in range(num_clearers)
+        ]
+
+        all_threads = adder_threads + clearer_threads
+        for thread in all_threads:
+            thread.start()
+        for thread in all_threads:
+            thread.join()
+
+        assert len(history) <= 50
+        messages = history.get_messages()
+        assert isinstance(messages, list)
+
+    def test_history_concurrent_different_message_types(self):
+        import threading
+
+        history = History(max_size=90)
+        messages_per_thread = 30
+
+        def add_user_messages():
+            for i in range(messages_per_thread):
+                history.add_user_message(f"User {i}")
+
+        def add_assistant_messages():
+            for i in range(messages_per_thread):
+                history.add_assistant_message(f"Assistant {i}")
+
+        def add_system_messages():
+            for i in range(messages_per_thread):
+                history.add_system_message(f"System {i}")
+
+        threads = [
+            threading.Thread(target=add_user_messages),
+            threading.Thread(target=add_assistant_messages),
+            threading.Thread(target=add_system_messages),
+        ]
+
+        for thread in threads:
+            thread.start()
+        for thread in threads:
+            thread.join()
+
+        assert len(history) == 90
+
+        messages = history.get_messages()
+        roles = {msg.role for msg in messages}
+        assert len(roles) >= 1
+        assert all(
+            role in [MessageRole.USER, MessageRole.ASSISTANT, MessageRole.SYSTEM]
+            for role in roles
+        )
+
+    def test_history_concurrent_to_dict_list(self):
+        import threading
+
+        history = History(max_size=100)
+        dict_results = []
+        dict_lock = threading.Lock()
+
+        def add_and_convert(thread_id):
+            for i in range(10):
+                history.add_user_message(f"Thread {thread_id} - {i}")
+                dict_list = history.to_dict_list()
+                with dict_lock:
+                    dict_results.append(len(dict_list))
+
+        threads = [
+            threading.Thread(target=add_and_convert, args=(i,)) for i in range(5)
+        ]
+
+        for thread in threads:
+            thread.start()
+        for thread in threads:
+            thread.join()
+
+        assert len(dict_results) == 50
+        for result in dict_results:
+            assert 0 <= result <= 100
+
+    def test_history_concurrent_stress_test(self):
+        """Teste de estresse com múltiplas threads e operações."""
+        import threading
+
+        history = History(max_size=200)
+        num_threads = 20
+        operations_per_thread = 50
+        errors = []
+
+        def stress_operations(thread_id):
+            try:
+                for i in range(operations_per_thread):
+                    if i % 4 == 0:
+                        history.add_user_message(f"T{thread_id}-{i}")
+                    elif i % 4 == 1:
+                        history.add_assistant_message(f"T{thread_id}-{i}")
+                    elif i % 4 == 2:
+                        _ = history.get_messages()
+                    else:
+                        _ = history.to_dict_list()
+            except Exception as e:
+                errors.append(str(e))
+
+        threads = [
+            threading.Thread(target=stress_operations, args=(i,))
+            for i in range(num_threads)
+        ]
+
+        for thread in threads:
+            thread.start()
+        for thread in threads:
+            thread.join()
+
+        assert len(errors) == 0, f"Erros encontrados: {errors}"
+        assert len(history) <= 200
+
+        messages = history.get_messages()
+        assert len(messages) == len(history)
+        for msg in messages:
+            assert isinstance(msg, Message)
+            assert msg.content is not None
+            assert len(msg.content) > 0

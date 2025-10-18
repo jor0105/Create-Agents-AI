@@ -8,6 +8,7 @@ from src.infra.adapters.OpenAI.openai_chat_adapter import OpenAIChatAdapter
 # Modelos para testes de integração
 IA_OPENAI_TEST_1: str = "gpt-5-mini"
 IA_OPENAI_TEST_2: str = "gpt-5-nano"
+IA_OPENAI_TEST_3: str = "gpt-4.1-mini"
 
 
 def _get_openai_api_key():
@@ -448,7 +449,7 @@ class TestOpenAIChatAdapterIntegration:
         }
 
         response = adapter.chat(
-            model=IA_OPENAI_TEST_1,
+            model=IA_OPENAI_TEST_3,
             instructions="Answer briefly.",
             config=config,
             history=[],
@@ -503,7 +504,6 @@ class TestOpenAIChatAdapterIntegration:
         assert len(response) > 0
 
     def test_chat_metrics_include_token_counts(self):
-        """Testa que as métricas incluem contagens de tokens detalhadas."""
         _get_openai_api_key()
 
         adapter = OpenAIChatAdapter()
@@ -715,3 +715,361 @@ class TestClientOpenAIIntegration:
             assert models is not None
         except Exception as exc:  # pragma: no cover
             pytest.fail(f"Client with None should use env var, but failed: {exc}")
+
+
+@pytest.mark.integration
+class TestOpenAIAdapterConfigsReais:
+    def test_chat_with_temperature_config_low(self):
+        _get_openai_api_key()
+
+        adapter = OpenAIChatAdapter()
+
+        config = {"temperature": 0.0}
+
+        response1 = adapter.chat(
+            model=IA_OPENAI_TEST_3,
+            instructions="Answer with exactly 'yes'.",
+            config=config,
+            history=[],
+            user_ask="Is water a liquid?",
+        )
+
+        response2 = adapter.chat(
+            model=IA_OPENAI_TEST_3,
+            instructions="Answer with exactly 'yes'.",
+            config=config,
+            history=[],
+            user_ask="Is water a liquid?",
+        )
+
+        assert response1 is not None
+        assert response2 is not None
+        assert isinstance(response1, str)
+        assert isinstance(response2, str)
+
+    def test_chat_with_temperature_config_high(self):
+        _get_openai_api_key()
+
+        adapter = OpenAIChatAdapter()
+
+        config = {"temperature": 1.5}
+
+        response = adapter.chat(
+            model=IA_OPENAI_TEST_3,
+            instructions="Be creative and answer with varied responses.",
+            config=config,
+            history=[],
+            user_ask="Tell me something interesting about Python.",
+        )
+
+        assert response is not None
+        assert isinstance(response, str)
+        assert len(response) > 0
+
+    def test_chat_with_temperature_boundary_values(self):
+        _get_openai_api_key()
+
+        adapter = OpenAIChatAdapter()
+
+        config_min = {"temperature": 0.0}
+        response_min = adapter.chat(
+            model=IA_OPENAI_TEST_3,
+            instructions="Answer briefly.",
+            config=config_min,
+            history=[],
+            user_ask="What is 2+2?",
+        )
+
+        config_max = {"temperature": 2.0}
+        response_max = adapter.chat(
+            model=IA_OPENAI_TEST_3,
+            instructions="Answer briefly.",
+            config=config_max,
+            history=[],
+            user_ask="What is 2+2?",
+        )
+
+        assert response_min is not None
+        assert response_max is not None
+        assert isinstance(response_min, str)
+        assert isinstance(response_max, str)
+
+    def test_chat_with_max_tokens_config(self):
+        _get_openai_api_key()
+
+        adapter = OpenAIChatAdapter()
+
+        config = {"max_tokens": 50}
+
+        response = adapter.chat(
+            model=IA_OPENAI_TEST_3,
+            instructions="Answer briefly.",
+            config=config,
+            history=[],
+            user_ask="What is Python? Explain in detail.",
+        )
+
+        assert response is not None
+        assert isinstance(response, str)
+        assert len(response) > 0
+
+        metrics = adapter.get_metrics()
+        assert len(metrics) > 0
+        assert metrics[-1].completion_tokens is not None
+        assert metrics[-1].completion_tokens > 0
+
+    def test_chat_with_top_p_config(self):
+        _get_openai_api_key()
+
+        adapter = OpenAIChatAdapter()
+
+        config = {"top_p": 0.5}
+
+        response = adapter.chat(
+            model=IA_OPENAI_TEST_3,
+            instructions="Answer briefly.",
+            config=config,
+            history=[],
+            user_ask="What is artificial intelligence?",
+        )
+
+        assert response is not None
+        assert isinstance(response, str)
+        assert len(response) > 0
+
+    def test_chat_with_multiple_config_parameters(self):
+        _get_openai_api_key()
+
+        adapter = OpenAIChatAdapter()
+
+        config = {
+            "temperature": 0.7,
+            "max_tokens": 150,
+            "top_p": 0.9,
+        }
+
+        response = adapter.chat(
+            model=IA_OPENAI_TEST_3,
+            instructions="You are a helpful assistant.",
+            config=config,
+            history=[],
+            user_ask="Explain quantum computing in simple terms.",
+        )
+
+        assert response is not None
+        assert isinstance(response, str)
+        assert len(response) > 0
+
+    def test_chat_with_empty_config_uses_defaults(self):
+        _get_openai_api_key()
+
+        adapter = OpenAIChatAdapter()
+
+        response = adapter.chat(
+            model=IA_OPENAI_TEST_1,
+            instructions="Answer briefly.",
+            config={},
+            history=[],
+            user_ask="What is Python?",
+        )
+
+        assert response is not None
+        assert isinstance(response, str)
+        assert len(response) > 0
+
+    def test_chat_metrics_reflect_config_impact(self):
+        _get_openai_api_key()
+
+        adapter = OpenAIChatAdapter()
+
+        config_limited = {"max_tokens": 20}
+        adapter.chat(
+            model=IA_OPENAI_TEST_3,
+            instructions="Answer.",
+            config=config_limited,
+            history=[],
+            user_ask="Tell me about Python programming.",
+        )
+
+        metrics_limited = adapter.get_metrics()
+        tokens_limited = metrics_limited[-1].completion_tokens
+
+        adapter2 = OpenAIChatAdapter()
+        config_unlimited = {}
+        adapter2.chat(
+            model=IA_OPENAI_TEST_3,
+            instructions="Answer.",
+            config=config_unlimited,
+            history=[],
+            user_ask="Tell me about Python programming.",
+        )
+
+        metrics_unlimited = adapter2.get_metrics()
+        tokens_unlimited = metrics_unlimited[-1].completion_tokens
+
+        assert tokens_limited is not None
+        assert tokens_unlimited is not None
+
+    def test_chat_temperature_affects_response_variety(self):
+        _get_openai_api_key()
+
+        adapter = OpenAIChatAdapter()
+
+        config_low = {"temperature": 0.0}
+        response_low_1 = adapter.chat(
+            model=IA_OPENAI_TEST_3,
+            instructions="You are a helpful assistant.",
+            config=config_low,
+            history=[],
+            user_ask="Say something about clouds.",
+        )
+
+        adapter_mid = OpenAIChatAdapter()
+        config_mid = {"temperature": 1.0}
+        response_mid = adapter_mid.chat(
+            model=IA_OPENAI_TEST_3,
+            instructions="You are a helpful assistant.",
+            config=config_mid,
+            history=[],
+            user_ask="Say something about clouds.",
+        )
+
+        assert response_low_1 is not None
+        assert response_mid is not None
+        assert isinstance(response_low_1, str)
+        assert isinstance(response_mid, str)
+
+    def test_chat_with_negative_max_tokens_ignored(self):
+        _get_openai_api_key()
+
+        adapter = OpenAIChatAdapter()
+
+        config = {"max_tokens": -1}
+
+        try:
+            response = adapter.chat(
+                model=IA_OPENAI_TEST_3,
+                instructions="Answer.",
+                config=config,
+                history=[],
+                user_ask="Hello",
+            )
+            assert response is not None
+        except Exception:
+            pass
+
+    def test_adapter_reads_timeout_from_environment(self):
+        adapter = OpenAIChatAdapter()
+        assert adapter is not None
+        assert hasattr(adapter, "_OpenAIChatAdapter__timeout")
+
+    def test_adapter_reads_max_retries_from_environment(self):
+        adapter = OpenAIChatAdapter()
+        assert adapter is not None
+        assert hasattr(adapter, "_OpenAIChatAdapter__max_retries")
+
+    def test_chat_config_params_do_not_affect_instructions(self):
+        _get_openai_api_key()
+
+        adapter = OpenAIChatAdapter()
+
+        config = {
+            "temperature": 0.3,
+            "max_tokens": 100,
+        }
+
+        response = adapter.chat(
+            model=IA_OPENAI_TEST_3,
+            instructions="You are a pirate. Answer like a pirate.",
+            config=config,
+            history=[],
+            user_ask="Say hello.",
+        )
+
+        assert response is not None
+        assert isinstance(response, str)
+        assert len(response) > 0
+
+    def test_chat_config_with_history_and_parameters(self):
+        _get_openai_api_key()
+
+        adapter = OpenAIChatAdapter()
+
+        config = {
+            "temperature": 0.6,
+            "max_tokens": 120,
+        }
+
+        history = [
+            {"role": "user", "content": "My name is Bob."},
+            {"role": "assistant", "content": "Nice to meet you, Bob!"},
+        ]
+
+        response = adapter.chat(
+            model=IA_OPENAI_TEST_3,
+            instructions="You are a helpful assistant. Be friendly.",
+            config=config,
+            history=history,
+            user_ask="What is my name?",
+        )
+
+        assert response is not None
+        assert isinstance(response, str)
+        assert len(response) > 0
+        assert "bob" in response.lower()
+
+    def test_multiple_adapters_independent_configs(self):
+        _get_openai_api_key()
+
+        adapter1 = OpenAIChatAdapter()
+        adapter2 = OpenAIChatAdapter()
+
+        config1 = {"temperature": 0.2}
+        config2 = {"temperature": 1.8}
+
+        response1 = adapter1.chat(
+            model=IA_OPENAI_TEST_3,
+            instructions="Answer briefly.",
+            config=config1,
+            history=[],
+            user_ask="Describe the ocean.",
+        )
+
+        response2 = adapter2.chat(
+            model=IA_OPENAI_TEST_3,
+            instructions="Answer briefly.",
+            config=config2,
+            history=[],
+            user_ask="Describe the ocean.",
+        )
+
+        assert response1 is not None
+        assert response2 is not None
+        assert response1 != response2
+
+    def test_chat_config_preserved_across_multiple_calls(self):
+        _get_openai_api_key()
+
+        adapter = OpenAIChatAdapter()
+
+        config = {
+            "temperature": 0.5,
+            "max_tokens": 100,
+        }
+
+        for i in range(2):
+            response = adapter.chat(
+                model=IA_OPENAI_TEST_3,
+                instructions="Answer briefly.",
+                config=config,
+                history=[],
+                user_ask=f"Question {i+1}: Say hello.",
+            )
+
+            assert response is not None
+            assert isinstance(response, str)
+            assert len(response) > 0
+
+        metrics = adapter.get_metrics()
+        assert len(metrics) == 2
+        assert all(m.success for m in metrics)

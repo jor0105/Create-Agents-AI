@@ -46,10 +46,13 @@ class OllamaChatAdapter(ChatRepository):
         Returns:
             Resposta da API
         """
+        if "max_tokens" in config:
+            config["num_predict"] = config.pop("max_tokens")
 
         response_api: ChatResponse = chat(
             model=model,
             messages=messages,
+            options=config,
         )
 
         return response_api
