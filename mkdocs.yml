@@ -1,18 +1,67 @@
-# Informações do Projeto
-site_name: "AI Agent Creator"
-site_author: "Jordan"
-site_description: "Sistema modular para criação de agentes de IA seguindo Clean Architecture e SOLID"
+---
+# Project Information
+site_name: AI Agent Creator
+site_author: Jordan Estralioto
+site_description: >-
+  Enterprise-grade modular system for creating AI agents following
+  Clean Architecture and SOLID principles
+site_url: https://jor0105.github.io/AI_Agent/
 
-# Repositório
-repo_name: "jor0105/AI_Agent"
-repo_url: "https://github.com/jor0105/AI_Agent"
+# Repository
+repo_name: jor0105/AI_Agent
+repo_url: https://github.com/jor0105/AI_Agent
+edit_uri: edit/develop/docs/
 
-# Navegação
+# Copyright
+copyright: Copyright &copy; 2025 Jordan Estralioto
+
+# Configuration
+theme:
+  name: readthedocs
+  highlightjs: true
+  hljs_languages:
+    - python
+    - bash
+    - yaml
+    - json
+  sticky_navigation: true
+  navigation_depth: 4
+  collapse_navigation: false
+  prev_next_buttons_location: both
+  titles_only: false
+  locale: pt_BR
+
+extra_css:
+  - https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap
+
+# Extensions
+markdown_extensions:
+  - admonition
+  - footnotes
+  - meta
+  - toc:
+      permalink: true
+      permalink_title: Link para esta seção
+      toc_depth: 3
+  - tables
+  - def_list
+  - attr_list
+  - abbr
+  - smarty
+  - codehilite:
+      guess_lang: false
+      linenums: true
+      use_pygments: true
+  - sane_lists
+  - fenced_code
+  - nl2br
+
+# Navigation
 nav:
-  - "Início": "index.md"
-  - "Guia":
-      - "Instalação": "guia/instalacao.md"
-      - "Uso Básico": "guia/uso-basico.md"
-      - "Exemplos": "guia/exemplos.md"
-  - "Arquitetura": "arquitetura.md"
-  - "API": "api.md"
+  - Início: index.md
+  - Guia de Uso:
+      - Instalação: guia/instalacao.md
+      - Uso Básico: guia/uso-basico.md
+      - Exemplos: guia/exemplos.md
+  - Arquitetura: arquitetura.md
+  - Referência da API: api.md
