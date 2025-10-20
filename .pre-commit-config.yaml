@@ -20,7 +20,6 @@ repos:
     hooks:
       - id: black
         args: [--line-length=88]
-        language_version: python3.14
 
   # Linting e formatação: Ruff
   - repo: https://github.com/astral-sh/ruff-pre-commit
