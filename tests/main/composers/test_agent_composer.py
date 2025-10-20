@@ -1,3 +1,5 @@
+from unittest.mock import MagicMock, patch
+
 import pytest
 
 from src.application.use_cases.chat_with_agent import ChatWithAgentUseCase
@@ -99,11 +101,17 @@ class TestAgentComposer:
         assert agent.instructions is None
 
     def test_create_chat_use_case_returns_use_case(self):
-        use_case = AgentComposer.create_chat_use_case(
-            provider="openai", model="gpt-5-nano"
-        )
+        with patch.dict("os.environ", {"OPENAI_API_KEY": "test-key"}), patch(
+            "src.infra.adapters.OpenAI.client_openai.ClientOpenAI.get_client"
+        ) as mock_get_client:
+            mock_client = MagicMock()
+            mock_get_client.return_value = mock_client
 
-        assert isinstance(use_case, ChatWithAgentUseCase)
+            use_case = AgentComposer.create_chat_use_case(
+                provider="openai", model="gpt-5-nano"
+            )
+
+            assert isinstance(use_case, ChatWithAgentUseCase)
 
     def test_create_chat_use_case_with_ollama_provider(self):
         use_case = AgentComposer.create_chat_use_case(
@@ -113,11 +121,17 @@ class TestAgentComposer:
         assert isinstance(use_case, ChatWithAgentUseCase)
 
     def test_create_chat_use_case_injects_correct_adapter(self):
-        use_case = AgentComposer.create_chat_use_case(
-            provider="openai", model="gpt-5-nano"
-        )
+        with patch.dict("os.environ", {"OPENAI_API_KEY": "test-key"}), patch(
+            "src.infra.adapters.OpenAI.client_openai.ClientOpenAI.get_client"
+        ) as mock_get_client:
+            mock_client = MagicMock()
+            mock_get_client.return_value = mock_client
 
-        assert hasattr(use_case, "_ChatWithAgentUseCase__chat_repository")
+            use_case = AgentComposer.create_chat_use_case(
+                provider="openai", model="gpt-5-nano"
+            )
+
+            assert hasattr(use_case, "_ChatWithAgentUseCase__chat_repository")
 
     def test_create_get_config_use_case_returns_use_case(self):
         use_case = AgentComposer.create_get_config_use_case()
@@ -144,14 +158,20 @@ class TestAgentComposer:
         assert agent1.name != agent2.name
 
     def test_create_multiple_chat_use_cases_are_independent(self):
-        use_case1 = AgentComposer.create_chat_use_case(
-            provider="openai", model="gpt-5-nano"
-        )
-        use_case2 = AgentComposer.create_chat_use_case(
-            provider="openai", model="gpt-5-nano"
-        )
+        with patch.dict("os.environ", {"OPENAI_API_KEY": "test-key"}), patch(
+            "src.infra.adapters.OpenAI.client_openai.ClientOpenAI.get_client"
+        ) as mock_get_client:
+            mock_client = MagicMock()
+            mock_get_client.return_value = mock_client
 
-        assert use_case1 is not use_case2
+            use_case1 = AgentComposer.create_chat_use_case(
+                provider="openai", model="gpt-5-nano"
+            )
+            use_case2 = AgentComposer.create_chat_use_case(
+                provider="openai", model="gpt-5-nano"
+            )
+
+            assert use_case1 is not use_case2
 
     def test_create_agent_wraps_exceptions_in_invalid_config(self):
         with pytest.raises(InvalidAgentConfigException):
@@ -327,11 +347,17 @@ class TestAgentComposer:
             AgentComposer.create_chat_use_case(provider="", model="some-model")
 
     def test_create_chat_use_case_openai_injects_correct_adapter_type(self):
-        use_case = AgentComposer.create_chat_use_case(
-            provider="openai", model="gpt-5-nano"
-        )
+        with patch.dict("os.environ", {"OPENAI_API_KEY": "test-key"}), patch(
+            "src.infra.adapters.OpenAI.client_openai.ClientOpenAI.get_client"
+        ) as mock_get_client:
+            mock_client = MagicMock()
+            mock_get_client.return_value = mock_client
 
-        assert use_case._ChatWithAgentUseCase__chat_repository is not None
+            use_case = AgentComposer.create_chat_use_case(
+                provider="openai", model="gpt-5-nano"
+            )
+
+            assert use_case._ChatWithAgentUseCase__chat_repository is not None
 
     def test_create_chat_use_case_ollama_injects_correct_adapter_type(self):
         use_case = AgentComposer.create_chat_use_case(
