@@ -1,0 +1,379 @@
+/* ============================================================================
+   ROOT & GLOBAL SETTINGS
+   ============================================================================ */
+
+:root {
+  font-size: 16px;
+
+  /* Spacing variables */
+  --spacing-xs: 0.5rem;
+  --spacing-sm: 0.75rem;
+  --spacing-base: 1rem;
+  --spacing-lg: 1.25rem;
+  --spacing-xl: 1.5rem;
+}
+
+body {
+  font-size: 100%;
+  line-height: 1.65;
+  letter-spacing: 0.2px;
+}
+
+/* ============================================================================
+   TYPOGRAPHY: Headings & Text Scaling
+   ============================================================================ */
+
+/* Use clamp() for fluid typography that scales with viewport */
+.md-typeset h1 {
+  font-size: clamp(1.75rem, 5vw, 2.5rem);
+  line-height: 1.3;
+  margin: 1.5rem 0 1rem 0;
+}
+
+.md-typeset h2 {
+  font-size: clamp(1.5rem, 4vw, 2rem);
+  line-height: 1.35;
+  margin: 1.5rem 0 0.875rem 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  padding-bottom: 0.5rem;
+}
+
+.md-typeset h3 {
+  font-size: clamp(1.25rem, 3.5vw, 1.65rem);
+  line-height: 1.4;
+  margin: 1.25rem 0 0.75rem 0;
+}
+
+.md-typeset h4 {
+  font-size: clamp(1.1rem, 2.5vw, 1.35rem);
+  margin: 1rem 0 0.625rem 0;
+}
+
+.md-typeset h5,
+.md-typeset h6 {
+  font-size: 1rem;
+  margin: 0.75rem 0 0.5rem 0;
+}
+
+/* Paragraphs & body text */
+.md-typeset p {
+  font-size: 1rem;
+  line-height: 1.7;
+  margin: 0 0 1rem 0;
+}
+
+.md-typeset li {
+  font-size: 1rem;
+  line-height: 1.7;
+  margin-bottom: 0.5rem;
+}
+
+/* Code inline */
+.md-typeset code {
+  font-size: 0.9rem;
+  padding: 0.2rem 0.4rem;
+  border-radius: 3px;
+}
+
+/* Code blocks */
+.md-typeset pre {
+  font-size: clamp(0.8rem, 1.5vw, 0.95rem);
+  line-height: 1.55;
+  padding: var(--spacing-base);
+  margin: var(--spacing-lg) 0;
+  border-radius: 4px;
+  overflow-x: auto;
+}
+
+/* Lists with better spacing */
+.md-typeset ol,
+.md-typeset ul {
+  margin: 1rem 0;
+  padding-left: 2rem;
+}
+
+.md-typeset ol li,
+.md-typeset ul li {
+  margin-bottom: 0.5rem;
+}
+
+/* ============================================================================
+   CONTENT AREA: Improved Padding & Readability
+   ============================================================================ */
+
+.md-content {
+  padding: var(--spacing-xl) 5%;
+  line-height: 1.7;
+}
+
+.md-content__inner {
+  max-width: 100%;
+}
+
+/* Better table styling */
+.md-typeset table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0;
+  font-size: 0.95rem;
+}
+
+.md-typeset table th,
+.md-typeset table td {
+  padding: 0.75rem;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  text-align: left;
+}
+
+.md-typeset table th {
+  background-color: rgba(0, 0, 0, 0.03);
+  font-weight: 600;
+}
+
+/* ============================================================================
+   MEDIA: Images & Embedded Content
+   ============================================================================ */
+
+.md-typeset img,
+.md-typeset video,
+.md-typeset iframe {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: var(--spacing-lg) auto;
+  border-radius: 4px;
+}
+
+/* ============================================================================
+   NAVIGATION: Menu Refinements (Non-intrusive)
+   ============================================================================ */
+
+.md-nav {
+  font-size: clamp(0.85rem, 2vw, 0.95rem);
+}
+
+.md-nav__link,
+.md-nav__title {
+  padding: 0.5rem 1rem;
+  margin: 0.15rem 0;
+  border-radius: 3px;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.md-nav__link:hover {
+  background-color: rgba(63, 81, 181, 0.08);
+  color: var(--md-color-primary);
+}
+
+.md-nav__link--active {
+  color: var(--md-color-primary);
+  font-weight: 500;
+}
+
+/* Sidebar text sizing */
+.md-sidebar__inner {
+  padding: var(--spacing-sm) 0;
+}
+
+/* ============================================================================
+   RESPONSIVE BREAKPOINTS: Tablet & Mobile Refinements
+   ============================================================================ */
+
+/* Tablets (768px to 1023px) */
+@media (min-width: 768px) and (max-width: 1023px) {
+  :root {
+    font-size: 15px;
+  }
+
+  .md-content {
+    padding: var(--spacing-lg) 4%;
+  }
+
+  .md-typeset h1 {
+    font-size: clamp(1.6rem, 4.5vw, 2.2rem);
+  }
+  .md-typeset h2 {
+    font-size: clamp(1.35rem, 3.5vw, 1.75rem);
+  }
+  .md-typeset h3 {
+    font-size: clamp(1.1rem, 3vw, 1.5rem);
+  }
+
+  .md-nav {
+    font-size: 0.9rem;
+  }
+}
+
+/* Phones (480px to 767px) */
+@media (max-width: 767px) {
+  :root {
+    font-size: 15px;
+  }
+
+  .md-content {
+    padding: var(--spacing-lg) 5%;
+  }
+
+  .md-typeset h1 {
+    font-size: 1.5rem;
+    margin: 1.25rem 0 0.875rem 0;
+  }
+  .md-typeset h2 {
+    font-size: 1.3rem;
+    margin: 1.15rem 0 0.75rem 0;
+  }
+  .md-typeset h3 {
+    font-size: 1.1rem;
+    margin: 1rem 0 0.65rem 0;
+  }
+  .md-typeset h4 {
+    font-size: 1rem;
+    margin: 0.85rem 0 0.55rem 0;
+  }
+
+  .md-typeset p {
+    font-size: 0.95rem;
+  }
+  .md-typeset li {
+    font-size: 0.95rem;
+  }
+  .md-typeset code {
+    font-size: 0.85rem;
+  }
+  .md-typeset pre {
+    font-size: 0.8rem;
+    padding: var(--spacing-sm);
+  }
+
+  .md-nav {
+    font-size: 0.9rem;
+  }
+
+  /* Touch-friendly link sizes */
+  .md-nav__link,
+  .md-nav__title {
+    padding: 0.55rem 0.8rem;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+  }
+
+  /* Sidebar adjustment for mobile */
+  .md-sidebar--secondary {
+    display: none;
+  }
+}
+
+/* Small Phones (< 480px) */
+@media (max-width: 479px) {
+  :root {
+    font-size: 14px;
+  }
+
+  .md-content {
+    padding: 1rem 4%;
+  }
+
+  .md-typeset h1 {
+    font-size: 1.35rem;
+    margin: 1rem 0 0.75rem 0;
+  }
+  .md-typeset h2 {
+    font-size: 1.1rem;
+    margin: 0.95rem 0 0.65rem 0;
+  }
+  .md-typeset h3 {
+    font-size: 0.95rem;
+    margin: 0.85rem 0 0.55rem 0;
+  }
+  .md-typeset h4 {
+    font-size: 0.9rem;
+  }
+
+  .md-typeset p {
+    font-size: 0.9rem;
+    line-height: 1.6;
+  }
+  .md-typeset li {
+    font-size: 0.9rem;
+  }
+  .md-typeset code {
+    font-size: 0.8rem;
+  }
+  .md-typeset pre {
+    font-size: 0.75rem;
+    padding: 0.5rem;
+  }
+
+  .md-nav {
+    font-size: 0.85rem;
+  }
+
+  .md-nav__link,
+  .md-nav__title {
+    padding: 0.5rem 0.7rem;
+    min-height: 42px;
+  }
+
+  .md-typeset table {
+    font-size: 0.85rem;
+  }
+  .md-typeset table th,
+  .md-typeset table td {
+    padding: 0.5rem;
+  }
+}
+
+/* ============================================================================
+   ACCESSIBILITY & UX ENHANCEMENTS
+   ============================================================================ */
+
+/* Better focus indicators */
+.md-nav__link:focus,
+.md-typeset a:focus {
+  outline: 2px solid var(--md-color-primary);
+  outline-offset: 1px;
+}
+
+/* Admonition improvements */
+.md-typeset .admonition,
+.md-typeset .note,
+.md-typeset details {
+  margin: 1rem 0;
+  padding: var(--spacing-base);
+  border-radius: 3px;
+}
+
+/* Blockquote improvements */
+.md-typeset blockquote {
+  padding: 0 1rem;
+  border-left: 3px solid var(--md-color-primary);
+  color: rgba(0, 0, 0, 0.7);
+  font-style: italic;
+  margin: 1rem 0;
+}
+
+/* Respect motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Print styles */
+@media print {
+  .md-header,
+  .md-navigation,
+  .md-sidebar,
+  .md-footer {
+    display: none !important;
+  }
+
+  .md-content {
+    padding: 0;
+    margin: 0;
+    max-width: 100%;
+  }
+}

@@ -16,23 +16,32 @@ copyright: Copyright &copy; 2025 Jordan Estralioto
 
 # Configuration
 theme:
-  name: readthedocs
-  language: pt-br
-  highlightjs: true
-  hljs_languages:
-    - python
-    - bash
-    - yaml
-    - json
-  sticky_navigation: true
+  name: material
+  language: pt
+  palette:
+    - scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/weather-night
+        name: Mudar para tema escuro
+    - scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/weather-sunny
+        name: Mudar para tema claro
+  font:
+    text: Roboto
+    code: Roboto Mono
+  features:
+    - navigation.instant
+    - toc.integrate
   navigation_depth: 4
-  collapse_navigation: false
-  prev_next_buttons_location: both
-  titles_only: false
-  locale: pt_BR
 
 extra_css:
   - https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap
+  - assets/stylesheets/custom.css
 
 # Extensions
 markdown_extensions:
