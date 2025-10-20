@@ -279,13 +279,31 @@ class MeuAdapter(ChatRepository):
 
 ## 🧪 Para Desenvolvedores: CI/CD & Workflows
 
-Este projeto tem automação profissional:
+Este projeto tem automação profissional com GitHub Actions:
 
-- **Quality Checks**: Lint, type checking, testes (roda em PRs e pushes)
-- **Documentation**: Build de docs com MkDocs (manual, sem auto-deploy)
-- **Pre-commit**: Hooks automáticos em cada commit (Black, Ruff, isort, mypy, pydocstyle, yamllint)
+- **Quality Checks (CI)**: Lint, formatação, type checking, security, testes com cobertura mínima de 70%
+  - Executa em: Push/PR para `develop` ou `main`
+  - Matrix: Python 3.12, 3.13, 3.14
 
-Para contribuir, veja: [`WORKFLOW-SETUP.md`](./WORKFLOW-SETUP.md)
+- **Documentation Build**: Build e validação da documentação com MkDocs
+  - Executa: Manualmente via workflow_dispatch
+
+- **Pre-commit Hooks**: 15+ verificadores automáticos antes de cada commit
+  - Black, Ruff, isort, mypy, pydocstyle, yamllint e mais
+
+**📖 Documentação Completa:** [`docs/ci-cd.md`](./docs/ci-cd.md)
+
+**Quick start para contribuir:**
+```bash
+# Instalar pre-commit hooks
+poetry run pre-commit install
+
+# Executar todos os checks localmente
+poetry run pre-commit run --all-files
+
+# Executar testes com cobertura
+poetry run pytest --cov=src --cov-fail-under=70
+```
 
 ## 📄 Licença
 

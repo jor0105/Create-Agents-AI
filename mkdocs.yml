@@ -66,3 +66,4 @@ nav:
       - Exemplos: guia/exemplos.md
   - Arquitetura: arquitetura.md
   - Referência da API: api.md
+  - CI/CD & Workflows: ci-cd.md
