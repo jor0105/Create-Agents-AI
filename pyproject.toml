@@ -1,20 +1,27 @@
-[project]
+[tool.poetry]
 name = "ai-agent"
 version = "0.1.0"
-description = ""
-authors = [
-    {name = "Jordan Estralioto",email = "estraliotojordan@gmail.com"}
-]
+description = "Enterprise-grade modular system for creating AI agents"
+authors = ["Jordan Estralioto <estraliotojordan@gmail.com>"]
 readme = "README.md"
-requires-python = ">=3.14"
-dependencies = [
-    "openai (>=2.2.0,<3.0.0)",
-    "python-dotenv (>=1.1.1,<2.0.0)",
-    "ollama (>=0.6.0,<0.7.0)",
-]
-
-[tool.poetry]
 packages = [{include = "src"}]
+
+[tool.poetry.dependencies]
+python = "^3.12"
+openai = "^2.2.0"
+python-dotenv = "^1.1.1"
+ollama = "^0.6.0"
+
+[tool.poetry.group.dev.dependencies]
+pre-commit = "^4.3.0"
+pytest = "^8.4.2"
+pytest-cov = "^5.0.0"
+mypy = "^1.11.0"
+bandit = "^1.7.9"
+pydocstyle = "^6.3.0"
+detect-secrets = "^1.4.0"
+mkdocs = "^1.6.1"
+mkdocs-material = "^9.6.22"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
@@ -25,21 +32,8 @@ convention = "google"
 match = "(?!test_).*\\.py"
 
 [tool.mypy]
-python_version = "3.14"
+python_version = "3.12"
 warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = false
 ignore_missing_imports = true
-
-[dependency-groups]
-dev = [
-    "pre-commit (>=4.3.0,<5.0.0)",
-    "pytest (>=8.4.2,<9.0.0)",
-    "pytest-cov (>=5.0.0,<6.0.0)",
-    "mypy (>=1.11.0,<2.0.0)",
-    "bandit (>=1.7.9,<2.0.0)",
-    "pydocstyle (>=6.3.0,<7.0.0)",
-    "detect-secrets (>=1.4.0,<2.0.0)",
-    "mkdocs (>=1.6.1,<2.0.0)",
-    "mkdocs-material (>=9.6.22,<10.0.0)"
-]

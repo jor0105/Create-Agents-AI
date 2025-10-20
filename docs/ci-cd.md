@@ -9,6 +9,7 @@ Este documento descreve os workflows automatizados do projeto e como utilizá-lo
 **Arquivo:** `.github/workflows/ci.yml`
 
 **Quando executa:**
+
 - Push para branches `develop` ou `main`
 - Pull requests para `develop` ou `main`
 - Manualmente via workflow_dispatch
@@ -16,28 +17,34 @@ Este documento descreve os workflows automatizados do projeto e como utilizá-lo
 **O que faz:**
 
 #### 🔍 Lint & Format
+
 - **Black**: Formatação automática de código (88 caracteres por linha)
 - **Ruff**: Linting rápido e moderno
 - **isort**: Organização de imports
 - **Pre-commit**: Executa todos os hooks configurados
 
 #### 🔐 Type Checking & Security
+
 - **mypy**: Verificação de tipos estáticos
 - **bandit**: Análise de segurança do código
 
 #### 🧪 Tests & Coverage
+
 - Testes unitários (exclui testes de integração e lentos)
 - Cobertura de código mínima: **70%**
 - Gera relatório XML de cobertura
 - Upload para Codecov (opcional)
 
 #### 🐍 Matrix de Python
+
 Testa em múltiplas versões:
+
 - Python 3.12
 - Python 3.13
 - Python 3.14
 
 **Exemplo de uso:**
+
 ```bash
 # Executar localmente os mesmos checks do CI
 poetry run pre-commit run --all-files
@@ -53,21 +60,25 @@ poetry run pytest -m "not integration and not slow" --cov=src --cov-fail-under=7
 **Arquivo:** `.github/workflows/docs.yml`
 
 **Quando executa:**
+
 - Manualmente via workflow_dispatch (aba Actions no GitHub)
 
 **O que faz:**
+
 - Instala dependências com Poetry
 - Build da documentação com MkDocs
 - Valida links e estrutura
 - Upload do site gerado como artifact
 
 **Acesso ao artifact:**
+
 1. Vá para a aba **Actions** no GitHub
 2. Clique no workflow "Documentation Build"
 3. Baixe o artifact `documentation-site`
 4. Descompacte e abra `index.html`
 
 **Build local:**
+
 ```bash
 # Servir docs localmente
 poetry run mkdocs serve
@@ -89,6 +100,7 @@ poetry run mkdocs build
 ### Executar Manualmente
 
 #### Documentation Build:
+
 1. Vá para **Actions** → **Documentation Build**
 2. Clique em "Run workflow"
 3. Selecione a branch
@@ -124,20 +136,20 @@ git commit --no-verify
 
 ### Estrutura dos Hooks
 
-| Hook | Descrição | Ferramenta |
-|------|-----------|-----------|
+| Hook                | Descrição                         | Ferramenta |
+| ------------------- | --------------------------------- | ---------- |
 | trailing-whitespace | Remove espaços em branco no final | pre-commit |
-| end-of-files | Garante EOF no final dos arquivos | pre-commit |
-| check-yaml | Valida sintaxe YAML | pre-commit |
-| check-json | Valida sintaxe JSON | pre-commit |
-| check-toml | Valida sintaxe TOML | pre-commit |
-| black | Formatação de código | Black |
-| ruff | Linting moderno | Ruff |
-| ruff-format | Formatação com Ruff | Ruff |
-| isort | Organização de imports | isort |
-| mypy | Type checking | mypy |
-| pydocstyle | Validação de docstrings | pydocstyle |
-| yamllint | Linting de YAML | yamllint |
+| end-of-files        | Garante EOF no final dos arquivos | pre-commit |
+| check-yaml          | Valida sintaxe YAML               | pre-commit |
+| check-json          | Valida sintaxe JSON               | pre-commit |
+| check-toml          | Valida sintaxe TOML               | pre-commit |
+| black               | Formatação de código              | Black      |
+| ruff                | Linting moderno                   | Ruff       |
+| ruff-format         | Formatação com Ruff               | Ruff       |
+| isort               | Organização de imports            | isort      |
+| mypy                | Type checking                     | mypy       |
+| pydocstyle          | Validação de docstrings           | pydocstyle |
+| yamllint            | Linting de YAML                   | yamllint   |
 
 ---
 
@@ -150,6 +162,7 @@ git commit --no-verify
 **Mínimo exigido:** 70%
 
 **Como verificar:**
+
 ```bash
 # Executar testes com cobertura
 poetry run pytest --cov=src --cov-report=term-missing
@@ -160,6 +173,7 @@ poetry run pytest --cov=src --cov-report=html
 ```
 
 **Exemplo de saída:**
+
 ```
 Name                                    Stmts   Miss  Cover   Missing
 ---------------------------------------------------------------------
@@ -184,6 +198,7 @@ TOTAL                                     892    125    86%
 ### CI falhou - O que fazer?
 
 #### 1. Pre-commit falhou
+
 ```bash
 # Executar localmente
 poetry run pre-commit run --all-files
@@ -194,6 +209,7 @@ poetry run isort src tests
 ```
 
 #### 2. Testes falham
+
 ```bash
 # Executar localmente com verbose
 poetry run pytest -v
@@ -203,6 +219,7 @@ poetry run pytest tests/path/to/test.py::TestClass::test_method
 ```
 
 #### 3. Type checking (mypy) falhou
+
 ```bash
 # Executar localmente
 poetry run mypy src --ignore-missing-imports --pretty
@@ -213,6 +230,7 @@ def func(x: int) -> str:
 ```
 
 #### 4. Cobertura < 70%
+
 ```bash
 # Ver quais linhas não estão cobertas
 poetry run pytest --cov=src --cov-report=term-missing
@@ -221,6 +239,7 @@ poetry run pytest --cov=src --cov-report=term-missing
 ```
 
 #### 5. Security check (bandit) falhou
+
 ```bash
 # Executar localmente
 poetry run bandit -r src -ll -q
@@ -236,14 +255,17 @@ poetry run bandit -r src -ll
 Os workflows usam cache para acelerar builds:
 
 **O que é cacheado:**
+
 - Ambiente virtual Python (`.venv`)
 - Dependências do Poetry
 
 **Como limpar cache no GitHub:**
+
 1. Vá para **Settings** → **Actions** → **Caches**
 2. Delete caches antigos
 
 **Key do cache:**
+
 ```
 venv-{OS}-{Python-Version}-{poetry.lock-hash}
 ```
@@ -256,14 +278,15 @@ venv-{OS}-{Python-Version}-{poetry.lock-hash}
 
 Configure em **Settings** → **Secrets and variables** → **Actions**:
 
-| Secret | Descrição | Obrigatório |
-|--------|-----------|-------------|
-| `OPENAI_API_KEY` | Chave da OpenAI | Não (para testes) |
-| `CODECOV_TOKEN` | Token do Codecov | Não (público) |
+| Secret           | Descrição        | Obrigatório       |
+| ---------------- | ---------------- | ----------------- |
+| `OPENAI_API_KEY` | Chave da OpenAI  | Não (para testes) |
+| `CODECOV_TOKEN`  | Token do Codecov | Não (público)     |
 
 ### Permissões dos Workflows
 
 Ambos workflows têm apenas permissão de **leitura**:
+
 ```yaml
 permissions:
   contents: read
@@ -299,6 +322,7 @@ poetry run mypy src --ignore-missing-imports
 ### Commits
 
 Use **Conventional Commits**:
+
 - `feat:` Nova funcionalidade
 - `fix:` Correção de bug
 - `docs:` Mudança apenas na documentação
@@ -308,6 +332,7 @@ Use **Conventional Commits**:
 - `chore:` Manutenção geral
 
 **Exemplos:**
+
 ```bash
 git commit -m "feat: add support for Claude AI provider"
 git commit -m "fix: handle None response from Ollama API"

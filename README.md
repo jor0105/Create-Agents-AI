@@ -282,10 +282,12 @@ class MeuAdapter(ChatRepository):
 Este projeto tem automação profissional com GitHub Actions:
 
 - **Quality Checks (CI)**: Lint, formatação, type checking, security, testes com cobertura mínima de 70%
+
   - Executa em: Push/PR para `develop` ou `main`
   - Matrix: Python 3.12, 3.13, 3.14
 
 - **Documentation Build**: Build e validação da documentação com MkDocs
+
   - Executa: Manualmente via workflow_dispatch
 
 - **Pre-commit Hooks**: 15+ verificadores automáticos antes de cada commit
@@ -294,6 +296,7 @@ Este projeto tem automação profissional com GitHub Actions:
 **📖 Documentação Completa:** [`docs/ci-cd.md`](./docs/ci-cd.md)
 
 **Quick start para contribuir:**
+
 ```bash
 # Instalar pre-commit hooks
 poetry run pre-commit install

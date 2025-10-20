@@ -6,7 +6,6 @@ site_description: >-
   Enterprise-grade modular system for creating AI agents following
   Clean Architecture and SOLID principles
 site_url: https://jor0105.github.io/AI_Agent/
-
 # Repository
 repo_name: Jordan/AI_Agent
 repo_url: https://github.com/jor0105/AI_Agent
