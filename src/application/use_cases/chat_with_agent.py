@@ -104,5 +104,7 @@ class ChatWithAgentUseCase:
                               lista vazia caso contrário.
         """
         if hasattr(self.__chat_repository, "get_metrics"):
-            return self.__chat_repository.get_metrics()
+            metrics = self.__chat_repository.get_metrics()
+            if isinstance(metrics, list):
+                return metrics
         return []

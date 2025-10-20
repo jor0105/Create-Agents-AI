@@ -47,13 +47,13 @@ class ChatAdapterFactory:
 
         # Cria novo adapter baseado no provider
         provider_lower = provider.lower()
-        match provider_lower:
-            case "openai":
-                adapter: ChatRepository = OpenAIChatAdapter()
-            case "ollama":
-                adapter: ChatRepository = OllamaChatAdapter()
-            case _:
-                raise ValueError(f"Provider inválido: {provider}.")
+        adapter: ChatRepository
+        if provider_lower == "openai":
+            adapter = OpenAIChatAdapter()
+        elif provider_lower == "ollama":
+            adapter = OllamaChatAdapter()
+        else:
+            raise ValueError(f"Provider inválido: {provider}.")
 
         # Armazena no cache
         cls.__cache[cache_key] = adapter

@@ -114,8 +114,7 @@ class OllamaChatAdapter(ChatRepository):
 
             response_api = self.__call_ollama_api(model, messages, config)
 
-            content = response_api.message.content
-
+            content: str = response_api.message.content
             if not content:
                 self.__logger.warning("Ollama retornou resposta vazia")
                 raise ChatException("Ollama retornou uma resposta vazia")

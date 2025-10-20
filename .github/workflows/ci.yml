@@ -1,0 +1,79 @@
+---
+name: Quality Checks
+
+on:
+  pull_request:
+    branches: [develop, main]
+  push:
+    branches: [develop, main]
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+concurrency:
+  group: quality-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: Lint, format, tests (Python ${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.12", "3.13", "3.14"]
+    env:
+      POETRY_VIRTUALENVS_IN_PROJECT: true
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: poetry
+
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          version: 1.8.3
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+
+      - name: Install dependencies
+        run: poetry install --no-interaction --no-ansi --with dev
+
+      - name: Run pre-commit (lint & format)
+        run: poetry run pre-commit run --all-files --show-diff-on-failure
+
+      - name: Type check with mypy
+        run: poetry run mypy src --ignore-missing-imports --pretty
+
+      - name: Security check with bandit
+        run: poetry run bandit -r src -ll -q
+
+      - name: Run tests (unit only) with coverage
+        env:
+          PYTHONPATH: .
+        run: |
+          poetry run pytest -m "not integration and not slow" \
+                 --cov=src --cov-report=xml --cov-report=term-missing \
+                 --cov-fail-under=70
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          files: ./coverage.xml
+          flags: unittests
+          name: Python ${{ matrix.python-version }}
+          fail_ci_if_error: false
+          verbose: false
+
+      - name: Upload coverage report (artifact)
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report-py${{ matrix.python-version }}
+          path: coverage.xml
+          if-no-files-found: ignore

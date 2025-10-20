@@ -1,125 +1,319 @@
-# AI Agent Creator
+# 🤖 AI Agent Creator
 
-Sistema modular para criação de agentes de IA com suporte a múltiplos provedores (OpenAI, Ollama).
+Um sistema modular e profissional para criar agentes de IA com suporte a múltiplos provedores (OpenAI, Ollama).
 
-## 🏗️ Arquitetura
+## ⚡ Quick Start
 
-Este projeto segue os princípios de **Clean Architecture**, **SOLID** e **Clean Code**.
+### Instalação
 
-### Estrutura de Camadas
+```bash
+# Clone o repositório
+git clone https://github.com/jor0105/AI_Agent.git
+cd AI_Agent
 
-```
-src/
-├── domain/              # Camada de Domínio (Regras de Negócio)
-│   ├── entities/        # Entidades do domínio
-│   └── exceptions/      # Exceções de negócio
-│
-├── application/         # Camada de Aplicação (Casos de Uso)
-│   ├── use_cases/       # Use Cases
-│   ├── dtos/            # Data Transfer Objects
-│   └── interfaces/      # Contratos/Abstrações
-│
-├── infra/               # Camada de Infraestrutura (Detalhes Técnicos)
-│   ├── adapters/        # Implementações de adapters externos
-│   ├── config/          # Configurações
-│   └── factories/       # Factories para criação de objetos
-│
-├── main/                # Camada de Composição
-│   └── composers/       # Composers para Dependency Injection
-│
-└── presentation/        # Camada de Apresentação (Interface)
-    └── agent_controller.py
+# Instale as dependências com Poetry
+poetry install
+
+# Configure suas credenciais
+cp .env.example .env
+# Edite .env e adicione sua chave OpenAI
 ```
 
-## 🚀 Uso
-
-### Exemplo básico
+### Uso básico em 3 linhas
 
 ```python
 from src.presentation import AIAgent
 
+agent = AIAgent(model="gpt-4", name="Meu Assistente", instructions="Você é um assistente útil")
+
+response = agent.chat("Olá! Como você está?")
+
+print(response)
+```
+
+## 🎯 Funcionalidades
+
+### ✅ Suporte a múltiplos provedores
+
+- **OpenAI**: Todos os modelos de Chat
+- **Ollama**: Modelos locais que você instalou
+
+### ✅ Interface intuitiva
+
+```python
 # Criar agente
 agent = AIAgent(
+    provider="openai",      # ou "ollama"
     model="gpt-4",
-    name="Assistente",
-    instructions="Você é um assistente útil"
+    name="Assistente Smart",
+    instructions="Você é um especialista em Python"
 )
 
 # Conversar
-response = agent.chat("Olá, como você está?")
-print(response)
+response = agent.chat("Qual é a diferença entre lista e tupla?")
 
-# Ver configurações
-config = agent.get_configs()
-print(config)
+# Obter histórico
+configs = agent.get_configs()
+
+# Limpar histórico
+agent.clear_history()
 ```
 
-### Usando Ollama
+### ✅ Gerenciamento de histórico
 
 ```python
+# Histórico automático (últimas 10 mensagens por padrão)
+agent.chat("Primeira mensagem")
+agent.chat("Segunda mensagem")
+
+# Personalizar tamanho do histórico
+agent = AIAgent(..., history_max_size=20)
+
+# Limpar quando necessário
+agent.clear_history()
+```
+
+### ✅ Configuração customizada
+
+```python
+config = {
+    "temperature": 0.7,     # Criatividade (0-1)
+    "max_tokens": 1000,     # Limite de resposta
+}
+
 agent = AIAgent(
-    model="llama2",
-    name="Assistente Local",
-    instructions="Você é um assistente útil",
-    local_ai="ollama"
+    model="gpt-4",
+    config=config,
+    name="Assistente",
+    instructions="Seja conciso"
 )
 ```
 
-## 📦 Componentes Principais
+### ✅ Métricas e performance
 
-### Domain Layer
+```python
+# Ver métricas de chamadas
+metrics = agent.get_metrics()
 
-- **Agent**: Entidade que representa um agente de IA
-- **Exceptions**: Exceções customizadas do domínio
+# Exportar como JSON
+json_data = agent.export_metrics_json()
 
-### Application Layer
+# Exportar formato Prometheus
+prom_data = agent.export_metrics_prometheus()
 
-- **CreateAgentUseCase**: Criação de agentes
-- **ChatWithAgentUseCase**: Comunicação com agentes
-- **GetAgentConfigUseCase**: Obtenção de configurações
-- **DTOs**: Objetos de transferência de dados
+# Salvar em arquivo
+agent.export_metrics_json("metrics.json")
+agent.export_metrics_prometheus("metrics.prom")
+```
 
-### Infrastructure Layer
+## 📋 Exemplos de Uso
 
-- **OpenAIChatAdapter**: Implementação para OpenAI
-- **OllamaChatAdapter**: Implementação para Ollama
-- **ChatAdapterFactory**: Factory para criar adapters
-- **EnvironmentConfig**: Gerenciamento de variáveis de ambiente
+### Exemplo 1: Assistente de Programação
 
-### Main Layer
+```python
+from src.presentation import AIAgent
 
-- **AgentComposer**: Orquestra criação e injeção de dependências
+assistant = AIAgent(
+    provider="openai",
+    model="gpt-4",
+    name="Code Assistant",
+    instructions="Você é um especialista em programação Python. Sempre forneça exemplos de código.",
+    config={"temperature": 0.3}  # Menos criatividade para código
+)
 
-### Presentation Layer
+# Conversar
+response = assistant.chat("Como ordenar uma lista de dicionários por chave?")
+print(response)
 
-- **AIAgentController**: Interface principal para usuários
+# Ver histórico
+config = assistant.get_configs()
+print(f"Histórico: {len(config['history'])} mensagens")
 
-## 🔒 Exceções
+# Limpar e começar novo diálogo
+assistant.clear_history()
+```
 
-- `AgentException`: Base para exceções de agente
-- `InvalidAgentConfigException`: Configuração inválida
-- `InvalidModelException`: Modelo não suportado
-- `ChatException`: Erro na comunicação
-- `AdapterNotFoundException`: Adapter não encontrado
+### Exemplo 2: Agente Local com Ollama
 
-## 📋 Variáveis de Ambiente
+```python
+# Certifique-se que Ollama está rodando
+# ollama serve
+
+agent = AIAgent(
+    provider="ollama",
+    model="llama2",
+    name="Local Assistant"
+)
+
+# Usar localmente (sem custos de API)
+response = agent.chat("Resuma Clean Architecture em 3 pontos")
+print(response)
+```
+
+### Exemplo 3: Múltiplos Agentes
+
+```python
+# Um para análise
+analyzer = AIAgent(
+    model="gpt-4",
+    instructions="Você analisa código e fornece feedback crítico",
+    config={"temperature": 0.5}
+)
+
+# Outro para documentação
+documentor = AIAgent(
+    model="gpt-4",
+    instructions="Você escreve documentação clara e profissional",
+    config={"temperature": 0.3}
+)
+
+# Usar ambos
+code = "def sum(a,b): return a+b"
+feedback = analyzer.chat(f"Revise este código:\n{code}")
+docs = documentor.chat(f"Documente este código:\n{code}")
+
+print("Feedback:", feedback)
+print("Documentação:", docs)
+```
+
+## 🔧 Configuração
+
+### Variáveis de Ambiente
 
 Crie um arquivo `.env`:
 
+```bash
+# OpenAI
+OPENAI_API_KEY=sk-xxx...
+
+# Ollama (opcional)
+OLLAMA_API_URL=http://localhost:11434
 ```
-OPENAI_API_KEY=sua_chave_aqui
+
+### Modelos disponíveis
+
+**OpenAI:**
+
+- `gpt-4` (mais poderoso)
+- `gpt-4-turbo` (mais rápido)
+- `gpt-4o` (visão incluída)
+- `gpt-3.5-turbo` (mais econômico)
+
+**Ollama (local):**
+
+- `llama2`
+- `mistral`
+- `neural-chat`
+- `starling-lm`
+- E muitos mais...
+
+## 📊 API Referência
+
+### AIAgent
+
+```python
+AIAgent(
+    provider: str,              # "openai" ou "ollama"
+    model: str,                 # Nome do modelo
+    name: str = None,           # Nome do agente (opcional)
+    instructions: str = None,   # Instruções do sistema (opcional)
+    config: dict = None,        # Configuração do modelo
+    history_max_size: int = 10  # Tamanho máximo do histórico
+)
+```
+
+#### Métodos
+
+| Método                                 | Retorno | Descrição                          |
+| -------------------------------------- | ------- | ---------------------------------- |
+| `chat(message)`                        | `str`   | Enviar mensagem e receber resposta |
+| `get_configs()`                        | `dict`  | Obter configurações e histórico    |
+| `clear_history()`                      | `None`  | Limpar histórico de mensagens      |
+| `get_metrics()`                        | `list`  | Obter métricas de performance      |
+| `export_metrics_json(path=None)`       | `str`   | Exportar métricas em JSON          |
+| `export_metrics_prometheus(path=None)` | `str`   | Exportar métricas em Prometheus    |
+
+## 🚀 Performance
+
+### Tempos de resposta
+
+- OpenAI: 1-5 segundos (depende da rede)
+- Ollama: 2-30 segundos (depende do modelo e hardware)
+
+### Limite de tokens
+
+- GPT-4: até 8.000 tokens por mensagem
+- GPT-3.5: até 4.000 tokens por mensagem
+- Modelos locais: variam por modelo
+
+## 📚 Arquitetura (Para Desenvolvedores)
+
+Este projeto segue **Clean Architecture** e **SOLID Principles**:
+
+```
+src/
+├── domain/           # Regras de negócio (independente de tecnologia)
+├── application/      # Casos de uso (lógica da aplicação)
+├── infra/           # Detalhes técnicos (APIs, adapters)
+├── main/            # Composição e injeção de dependências
+└── presentation/    # Interface pública (AIAgent)
 ```
 
 ## 🤝 Contribuindo
 
-Ao adicionar novos adapters:
+Quer adicionar um novo provedor de IA?
 
-1. Implemente a interface `ChatRepository`
-2. Adicione ao `MODELS_AI` em `ChatAdapterFactory`
-3. Crie testes unitários
+1. **Crie um novo adapter** em `src/infra/adapters/NomeProvedor/`
+2. **Implemente** a interface `ChatRepository`
+3. **Registre** em `ChatAdapterFactory`
+4. **Adicione testes** em `tests/infra/adapters/`
+
+Exemplo:
+
+```python
+class MeuAdapter(ChatRepository):
+    async def chat(self, message: str) -> str:
+        # Sua implementação
+        pass
+```
+
+## 🧪 Para Desenvolvedores: CI/CD & Workflows
+
+Este projeto tem automação profissional:
+
+- **Quality Checks**: Lint, type checking, testes (roda em PRs e pushes)
+- **Documentation**: Build de docs com MkDocs (manual, sem auto-deploy)
+- **Pre-commit**: Hooks automáticos em cada commit (Black, Ruff, isort, mypy, pydocstyle, yamllint)
+
+Para contribuir, veja: [`WORKFLOW-SETUP.md`](./WORKFLOW-SETUP.md)
+
+## 📄 Licença
+
+MIT - Use livremente em seus projetos!
+
+## 📞 Suporte
+
+- 📖 [Documentação Completa](./docs/)
+- 🐛 [Reportar Bugs](https://github.com/jor0105/AI_Agent/issues)
+- 💬 [Discussões](https://github.com/jor0105/AI_Agent/discussions)
+
+## 👨‍💻 Autor
+
+**Jordan Estralioto**
+
+- Email: estraliotojordan@gmail.com
+- GitHub: [@jor0105](https://github.com/jor0105)
+
+---
 
 ## 📚 Referências
 
 - [Clean Architecture - Robert C. Martin](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html)
+- [OpenAI API Documentation](https://platform.openai.com/docs)
+- [Ollama Documentation](https://github.com/ollama/ollama)
 - [SOLID Principles](https://en.wikipedia.org/wiki/SOLID)
-- [Clean Code - Robert C. Martin](https://www.amazon.com/Clean-Code-Handbook-Software-Craftsmanship/dp/0132350882)
+
+---
+
+**Versão:** 0.1.0
+**Última atualização:** Outubro 2025

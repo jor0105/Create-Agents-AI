@@ -107,8 +107,7 @@ class OpenAIChatAdapter(ChatRepository):
             # Chama a API da OpenAI com retry automático
             response_api = self.__call_openai_api(model, messages, config)
 
-            content = response_api.output_text
-
+            content: str = response_api.output_text
             if not content:
                 self.__logger.warning("OpenAI retornou resposta vazia")
                 raise ChatException("OpenAI retornou uma resposta vazia")

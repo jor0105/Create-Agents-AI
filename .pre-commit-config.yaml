@@ -1,22 +1,28 @@
+---
 repos:
+  # Básico: Whitespace, EOF, YAML, AST, merge conflicts
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.6.0
     hooks:
       - id: trailing-whitespace
       - id: end-of-file-fixer
       - id: check-yaml
+      - id: check-json
+      - id: check-toml
       - id: check-merge-conflict
-      - id: detect-private-key
       - id: check-added-large-files
       - id: debug-statements
       - id: check-ast
 
+  # Formatação: Black
   - repo: https://github.com/psf/black
     rev: 24.4.2
     hooks:
       - id: black
         args: [--line-length=88]
+        language_version: python3.14
 
+  # Linting e formatação: Ruff
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.4.4
     hooks:
@@ -24,21 +30,35 @@ repos:
         args: [--fix]
       - id: ruff-format
 
+  # Organização de imports
   - repo: https://github.com/PyCQA/isort
     rev: 5.12.0
     hooks:
       - id: isort
         args: ["--profile", "black", "--line-length=88"]
 
+  # Type checking
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.11.1
+    hooks:
+      - id: mypy
+        args: [--ignore-missing-imports, --pretty]
+        exclude: ^(tests/|docs/)
+
+  # Docstring validation (only critical errors)
+  - repo: https://github.com/PyCQA/pydocstyle
+    rev: 6.3.0
+    hooks:
+      - id: pydocstyle
+        args:
+          - --convention=google
+          - --match-dir=^src
+          - --add-ignore=D104,D100,D101,D102,D103,D105,D107,D205,D212,D417,D415
+        exclude: ^(tests/|__pycache__|\.venv)
+
+  # YAML linting
   - repo: https://github.com/adrienverge/yamllint
     rev: v1.27.1
     hooks:
       - id: yamllint
-
-  - repo: local
-    hooks:
-      - id: pytest
-        name: pytest
-        entry: pytest -q
-        language: system
-        stages: [push]
+        args: [--strict]

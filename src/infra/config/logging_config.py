@@ -1,5 +1,4 @@
-"""
-Configuração centralizada de logging para a aplicação.
+"""Configuração centralizada de logging para a aplicação.
 
 Este módulo fornece um logger configurável que pode ser usado
 em toda a aplicação para rastreamento e debugging.
@@ -24,23 +23,25 @@ from src.infra.config.sensitive_data_filter import SensitiveDataFilter
 
 
 class SensitiveDataFormatter(logging.Formatter):
-    """
-    Formatter que aplica filtro de dados sensíveis.
+    """Formatter que aplica filtro de dados sensíveis.
+
     Garante que nenhum dado sensível seja logado.
     """
 
     def format(self, record: logging.LogRecord) -> str:
+        """Formata o registro de log com filtro de dados sensíveis."""
         original = super().format(record)
         return SensitiveDataFilter.filter(original)
 
 
 class JSONFormatter(logging.Formatter):
-    """
-    Formatter para logs estruturados em JSON.
+    """Formatter para logs estruturados em JSON.
+
     Útil para integração com ferramentas de análise de logs.
     """
 
     def format(self, record: logging.LogRecord) -> str:
+        """Formata o registro de log como JSON estruturado."""
         log_data = {
             "timestamp": self.formatTime(record, self.datefmt),
             "level": record.levelname,
@@ -60,8 +61,8 @@ class JSONFormatter(logging.Formatter):
 
 
 class LoggingConfig:
-    """
-    Configuração centralizada de logging.
+    """Configuração centralizada de logging.
+
     Fornece loggers configurados para diferentes módulos com:
     - Filtragem de dados sensíveis
     - Rotação de arquivos
@@ -91,8 +92,7 @@ class LoggingConfig:
         backup_count: int = DEFAULT_BACKUP_COUNT,
         json_format: bool = False,
     ) -> None:
-        """
-        Configura o logging da aplicação.
+        """Configura o logging da aplicação.
 
         Args:
             level: Nível de logging (DEBUG, INFO, WARNING, ERROR, CRITICAL).
@@ -173,8 +173,8 @@ class LoggingConfig:
 
     @classmethod
     def _resolve_log_file_path(cls, log_file_path: Optional[str]) -> str:
-        """
-        Resolve e valida o caminho do arquivo de log.
+        """Resolve e valida o caminho do arquivo de log.
+
         Extrai a lógica complexa de validação para melhor legibilidade.
 
         Args:
@@ -197,8 +197,7 @@ class LoggingConfig:
 
     @classmethod
     def _get_log_level_from_env(cls) -> int:
-        """
-        Obtém o nível de log da variável de ambiente LOG_LEVEL.
+        """Obtém o nível de log da variável de ambiente LOG_LEVEL.
 
         Returns:
             Nível de logging (default: INFO)
@@ -215,8 +214,7 @@ class LoggingConfig:
 
     @classmethod
     def get_logger(cls, name: str) -> logging.Logger:
-        """
-        Obtém um logger configurado para o módulo especificado.
+        """Obtém um logger configurado para o módulo especificado.
 
         Args:
             name: Nome do módulo (geralmente __name__)
@@ -233,8 +231,7 @@ class LoggingConfig:
 
     @classmethod
     def set_level(cls, level: int) -> None:
-        """
-        Ajusta o nível de logging em runtime.
+        """Ajusta o nível de logging em runtime.
 
         Args:
             level: Novo nível de logging
@@ -244,8 +241,8 @@ class LoggingConfig:
 
     @classmethod
     def reset(cls) -> None:
-        """
-        Reseta a configuração de logging (útil para testes).
+        """Reseta a configuração de logging (útil para testes).
+
         Remove todos os handlers e marca como não configurado.
         """
         cls._configured = False
@@ -260,8 +257,7 @@ class LoggingConfig:
 
     @classmethod
     def get_handlers(cls) -> list:
-        """
-        Retorna a lista de handlers configurados.
+        """Retorna a lista de handlers configurados.
 
         Returns:
             Lista de handlers ativos

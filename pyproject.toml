@@ -14,17 +14,32 @@ dependencies = [
 ]
 
 [tool.poetry]
-packages = [{include = "ai_agent", from = "src"}]
+packages = [{include = "src"}]
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
 
+[tool.pydocstyle]
+convention = "google"
+match = "(?!test_).*\\.py"
+
+[tool.mypy]
+python_version = "3.14"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = false
+ignore_missing_imports = true
+
 [dependency-groups]
 dev = [
-    "isort (>=6.1.0,<7.0.0)",
     "pre-commit (>=4.3.0,<5.0.0)",
-    "mkdocs (>=1.6.1,<2.0.0)",
     "pytest (>=8.4.2,<9.0.0)",
+    "pytest-cov (>=5.0.0,<6.0.0)",
+    "mypy (>=1.11.0,<2.0.0)",
+    "bandit (>=1.7.9,<2.0.0)",
+    "pydocstyle (>=6.3.0,<7.0.0)",
+    "detect-secrets (>=1.4.0,<2.0.0)",
+    "mkdocs (>=1.6.1,<2.0.0)",
     "mkdocs-material (>=9.6.22,<10.0.0)"
 ]

@@ -11,8 +11,7 @@ from src.domain.value_objects import History, SupportedConfigs, SupportedProvide
 
 @dataclass
 class Agent:
-    """
-    Entidade de domínio que representa um agente de IA.
+    """Entidade de domínio que representa um agente de IA.
 
     Responsabilidades:
     - Manter a identidade e configuração do agente
@@ -31,8 +30,7 @@ class Agent:
     history: History = field(default_factory=History)
 
     def __post_init__(self):
-        """
-        Inicializa o histórico se necessário e valida as configurações do agente.
+        """Inicializa o histórico se necessário e valida as configurações do agente.
 
         Raises:
             InvalidProviderException: Se o provider não for suportado
@@ -66,8 +64,7 @@ class Agent:
             SupportedConfigs.validate_config(key, value)
 
     def add_user_message(self, content: str) -> None:
-        """
-        Adiciona uma mensagem do usuário ao histórico.
+        """Adiciona uma mensagem do usuário ao histórico.
 
         Args:
             content: Conteúdo da mensagem
@@ -75,8 +72,7 @@ class Agent:
         self.history.add_user_message(content)
 
     def add_assistant_message(self, content: str) -> None:
-        """
-        Adiciona uma mensagem do assistente ao histórico.
+        """Adiciona uma mensagem do assistente ao histórico.
 
         Args:
             content: Conteúdo da mensagem
@@ -84,4 +80,5 @@ class Agent:
         self.history.add_assistant_message(content)
 
     def clear_history(self) -> None:
+        """Limpa o histórico de mensagens."""
         self.history.clear()
