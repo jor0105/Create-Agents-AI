@@ -27,6 +27,7 @@ files = [
 [package.dependencies]
 idna = ">=2.8"
 sniffio = ">=1.1"
+typing_extensions = {version = ">=4.5", markers = "python_version < \"3.13\""}
 
 [package.extras]
 trio = ["trio (>=0.31.0)"]
@@ -1744,5 +1745,5 @@ watchmedo = ["PyYAML (>=3.10)"]
 
 [metadata]
 lock-version = "2.1"
-python-versions = ">=3.14"
-content-hash = "439051dedf6bf30a52916e9c33d0f48a742e0c82d80ab82f30cdd8db83f778b1"
+python-versions = "^3.12"
+content-hash = "a4bebd568f5719e5fe00a08e92ceb5d95fc765a66eec1d3ed1d223bef91b7db3"
