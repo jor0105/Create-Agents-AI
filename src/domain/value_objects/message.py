@@ -4,7 +4,7 @@ from typing import Dict
 
 
 class MessageRole(str, Enum):
-    """Enum para definir os papéis possíveis em uma mensagem."""
+    """Enum to define possible roles in a message."""
 
     SYSTEM = "system"
     USER = "user"
@@ -17,52 +17,52 @@ class MessageRole(str, Enum):
 @dataclass(frozen=True)
 class Message:
     """
-    Value Object que representa uma mensagem no chat.
-    Imutável para garantir integridade dos dados.
+    Represents a message in the chat as a Value Object.
+    It is immutable to ensure data integrity.
     """
 
     role: MessageRole
     content: str
 
     def __post_init__(self) -> None:
-        """Valida os dados da mensagem."""
+        """Validates the message data."""
         if not isinstance(self.role, MessageRole):
-            raise ValueError("Role deve ser uma instância de MessageRole")
+            raise ValueError("The 'role' must be an instance of MessageRole.")
 
         if not self.content or not self.content.strip():
-            raise ValueError("O conteúdo da mensagem não pode estar vazio")
+            raise ValueError("The message content cannot be empty.")
 
     def to_dict(self) -> Dict[str, str]:
         """
-        Converte a mensagem para um dicionário.
+        Converts the message to a dictionary.
 
         Returns:
-            Dict com role e content
+            A dictionary with the role and content.
         """
         return {"role": self.role.value, "content": self.content}
 
     @classmethod
     def from_dict(cls, data: Dict[str, str]) -> "Message":
         """
-        Cria uma instância de Message a partir de um dicionário.
+        Creates a Message instance from a dictionary.
 
         Args:
-            data: Dicionário com 'role' e 'content'
+            data: A dictionary containing 'role' and 'content'.
 
         Returns:
-            Nova instância de Message
+            A new Message instance.
 
         Raises:
-            ValueError: Se o dicionário não contiver os campos necessários
+            ValueError: If the dictionary does not contain the required fields.
         """
         if "role" not in data or "content" not in data:
-            raise ValueError("Dicionário deve conter 'role' e 'content'")
+            raise ValueError("The dictionary must contain 'role' and 'content'.")
 
         try:
             role = MessageRole(data["role"])
         except ValueError:
             raise ValueError(
-                f"Role inválido: '{data['role']}'. Valores válidos: {[r.value for r in MessageRole]}"
+                f"Invalid role: '{data['role']}'. Valid values are: {[r.value for r in MessageRole]}"
             )
 
         return cls(role=role, content=data["content"])

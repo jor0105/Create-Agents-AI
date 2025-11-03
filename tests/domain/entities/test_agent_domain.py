@@ -234,7 +234,6 @@ class TestAgent:
 
         assert hasattr(agent, "__dataclass_fields__")
 
-        # Verifica campos obrigatórios
         fields = agent.__dataclass_fields__
         assert "provider" in fields
         assert "model" in fields
@@ -244,7 +243,7 @@ class TestAgent:
 
     def test_agent_with_invalid_provider(self):
         with pytest.raises(
-            InvalidProviderException, match="provider.*não está disponível"
+            InvalidProviderException, match="Provider 'invalido' is not available"
         ):
             Agent(
                 provider="invalido",
@@ -286,7 +285,7 @@ class TestAgent:
         assert isinstance(agent.config, dict)
 
     def test_agent_with_unsupported_config(self):
-        with pytest.raises(UnsupportedConfigException, match="não é suportada"):
+        with pytest.raises(UnsupportedConfigException, match="is not supported"):
             Agent(
                 provider="openai",
                 model="gpt-5-nano",
@@ -296,7 +295,7 @@ class TestAgent:
             )
 
     def test_agent_with_invalid_config_type(self):
-        with pytest.raises(InvalidConfigTypeException, match="tipo inválido"):
+        with pytest.raises(InvalidConfigTypeException, match="has invalid type"):
             Agent(
                 provider="openai",
                 model="gpt-5-nano",
@@ -441,3 +440,181 @@ class TestAgent:
             config={"max_tokens": 1},
         )
         assert agent.config["max_tokens"] == 1
+
+    def test_agent_with_none_optional_fields(self):
+        """Testa criação de agente com campos opcionais None."""
+        agent = Agent(
+            provider="openai",
+            model="gpt-5-nano",
+            name=None,
+            instructions=None,
+        )
+        assert agent.name is None
+        assert agent.instructions is None
+        assert agent.provider == "openai"
+        assert agent.model == "gpt-5-nano"
+
+    def test_agent_config_with_list_values(self):
+        agent = Agent(
+            provider="openai",
+            model="gpt-5-nano",
+            name="Test",
+            instructions="Test",
+            config={"temperature": 0.5},
+        )
+        assert agent.config["temperature"] == 0.5
+
+    def test_agent_config_with_boolean_values(self):
+        agent = Agent(
+            provider="openai",
+            model="gpt-5-nano",
+            name="Test",
+            instructions="Test",
+            config={"temperature": 0.5},
+        )
+        assert isinstance(agent.config["temperature"], float)
+
+    def test_agent_provider_validation_case_sensitive(self):
+        agent = Agent(
+            provider="OpenAI",
+            model="gpt-5-nano",
+            name="Test",
+            instructions="Test",
+        )
+        assert agent.provider == "OpenAI"
+
+    def test_agent_with_zero_temperature(self):
+        agent = Agent(
+            provider="openai",
+            model="gpt-5-nano",
+            name="Test",
+            instructions="Test",
+            config={"temperature": 0.0},
+        )
+        assert agent.config["temperature"] == 0.0
+
+    def test_agent_with_max_temperature(self):
+        agent = Agent(
+            provider="openai",
+            model="gpt-5-nano",
+            name="Test",
+            instructions="Test",
+            config={"temperature": 2.0},
+        )
+        assert agent.config["temperature"] == 2.0
+
+    def test_agent_with_temperature_below_min(self):
+        with pytest.raises(InvalidAgentConfigException, match="temperature"):
+            Agent(
+                provider="openai",
+                model="gpt-5-nano",
+                name="Test",
+                instructions="Test",
+                config={"temperature": -0.1},
+            )
+
+    def test_agent_with_temperature_above_max(self):
+        with pytest.raises(InvalidAgentConfigException, match="temperature"):
+            Agent(
+                provider="openai",
+                model="gpt-5-nano",
+                name="Test",
+                instructions="Test",
+                config={"temperature": 2.1},
+            )
+
+    def test_agent_with_zero_top_p(self):
+        agent = Agent(
+            provider="openai",
+            model="gpt-5-nano",
+            name="Test",
+            instructions="Test",
+            config={"top_p": 0.0},
+        )
+        assert agent.config["top_p"] == 0.0
+
+    def test_agent_with_max_top_p(self):
+        agent = Agent(
+            provider="openai",
+            model="gpt-5-nano",
+            name="Test",
+            instructions="Test",
+            config={"top_p": 1.0},
+        )
+        assert agent.config["top_p"] == 1.0
+
+    def test_agent_with_top_p_below_min(self):
+        with pytest.raises(InvalidAgentConfigException, match="top_p"):
+            Agent(
+                provider="openai",
+                model="gpt-5-nano",
+                name="Test",
+                instructions="Test",
+                config={"top_p": -0.1},
+            )
+
+    def test_agent_with_top_p_above_max(self):
+        with pytest.raises(InvalidAgentConfigException, match="top_p"):
+            Agent(
+                provider="openai",
+                model="gpt-5-nano",
+                name="Test",
+                instructions="Test",
+                config={"top_p": 1.1},
+            )
+
+    def test_agent_with_max_tokens_as_string(self):
+        with pytest.raises(InvalidAgentConfigException, match="max_tokens"):
+            Agent(
+                provider="openai",
+                model="gpt-5-nano",
+                name="Test",
+                instructions="Test",
+                config={"max_tokens": "100"},
+            )
+
+    def test_agent_config_with_mixed_valid_configs(self):
+        agent = Agent(
+            provider="openai",
+            model="gpt-5-nano",
+            name="Test",
+            instructions="Test",
+            config={
+                "temperature": 1.5,
+                "max_tokens": 2048,
+                "top_p": 0.95,
+            },
+        )
+        assert agent.config["temperature"] == 1.5
+        assert agent.config["max_tokens"] == 2048
+        assert agent.config["top_p"] == 0.95
+
+    def test_agent_history_initial_state(self):
+        agent = Agent(
+            provider="openai",
+            model="gpt-5-nano",
+            name="Test",
+            instructions="Test",
+        )
+        assert len(agent.history) == 0
+        assert isinstance(agent.history, History)
+        assert agent.history.max_size == 10
+
+    def test_agent_add_messages_alternating(self):
+        agent = Agent(
+            provider="openai",
+            model="gpt-5-nano",
+            name="Test",
+            instructions="Test",
+        )
+        agent.add_user_message("Q1")
+        agent.add_assistant_message("A1")
+        agent.add_user_message("Q2")
+        agent.add_assistant_message("A2")
+
+        messages = agent.history.get_messages()
+        assert len(messages) == 4
+        assert messages[0].content == "Q1"
+        assert messages[1].content == "A1"
+        assert messages[2].content == "Q2"
+        assert messages[3].content == "A2"

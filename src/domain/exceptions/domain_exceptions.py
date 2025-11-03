@@ -2,7 +2,7 @@ from typing import Optional, Set
 
 
 class AgentException(Exception):
-    """Exceção base para erros relacionados a agentes."""
+    """Base exception for agent-related errors."""
 
     def __init__(self, message: str):
         self.message = message
@@ -10,23 +10,23 @@ class AgentException(Exception):
 
 
 class InvalidAgentConfigException(AgentException):
-    """Exceção lançada quando a configuração do agente é inválida."""
+    """Exception raised when the agent configuration is invalid."""
 
     def __init__(self, field: str, reason: str):
-        message = f"Configuração inválida no campo '{field}': {reason}"
+        message = f"Invalid configuration in field '{field}': {reason}"
         super().__init__(message)
 
 
 class InvalidModelException(AgentException):
-    """Exceção lançada quando o modelo de IA especificado não é suportado."""
+    """Exception raised when the specified AI model is not supported."""
 
     def __init__(self, model: str):
-        message = f"Modelo de IA não suportado: '{model}'"
+        message = f"Unsupported AI model: '{model}'"
         super().__init__(message)
 
 
 class ChatException(Exception):
-    """Exceção base para erros durante a comunicação com IA."""
+    """Base exception for errors during communication with AI."""
 
     def __init__(self, message: str, original_error: Optional[Exception] = None):
         self.message = message
@@ -35,38 +35,40 @@ class ChatException(Exception):
 
 
 class AdapterNotFoundException(ChatException):
-    """Exceção lançada quando o adapter de chat não é encontrado."""
+    """Exception raised when the chat adapter is not found."""
 
     def __init__(self, adapter_name: str):
-        message = f"Adapter não encontrado: '{adapter_name}'"
+        message = f"Adapter not found: '{adapter_name}'"
         super().__init__(message)
 
 
 class InvalidProviderException(AgentException):
-    """Exceção lançada quando o provider não é suportado."""
+    """Exception raised when the provider is not supported."""
 
     def __init__(self, provider: str, available_providers: Set[str]):
         providers = ", ".join(sorted(available_providers))
-        message = f"O provider '{provider}' não está disponível. Providers disponíveis: {providers}"
+        message = (
+            f"Provider '{provider}' is not available. Available providers: {providers}"
+        )
         super().__init__(message)
 
 
 class UnsupportedConfigException(AgentException):
-    """Exceção lançada quando uma configuração não é suportada."""
+    """Exception raised when a configuration is not supported."""
 
     def __init__(self, config_key: str, available_configs: Set[str]):
         configs = ", ".join(sorted(available_configs))
         message = (
-            f"Configuração '{config_key}' não é suportada. Opções válidas: {configs}"
+            f"Configuration '{config_key}' is not supported. Valid options: {configs}"
         )
         super().__init__(message)
 
 
 class InvalidConfigTypeException(AgentException):
-    """Exceção lançada quando o tipo da configuração é inválido."""
+    """Exception raised when the configuration type is invalid."""
 
     def __init__(self, config_key: str, value_type: type):
         message = (
-            f"Configuração '{config_key}' possui tipo inválido: {value_type.__name__}"
+            f"Configuration '{config_key}' has invalid type: {value_type.__name__}"
         )
         super().__init__(message)

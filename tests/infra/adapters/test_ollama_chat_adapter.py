@@ -1,4 +1,4 @@
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, Mock, patch
 
 import pytest
 
@@ -11,8 +11,6 @@ IA_OLLAMA_TEST_2: str = "gemma3:4b"
 
 @pytest.mark.unit
 class TestOllamaChatAdapter:
-    """Testes para OllamaChatAdapter."""
-
     def test_initialization(self):
         adapter = OllamaChatAdapter()
 
@@ -24,7 +22,6 @@ class TestOllamaChatAdapter:
 
     @patch("src.infra.adapters.Ollama.ollama_chat_adapter.chat")
     def test_chat_with_valid_input(self, mock_chat):
-        # Mock correto: response_api é um objeto com atributo message
         mock_response = MagicMock()
         mock_response.message.content = "Ollama response"
         mock_response.get.return_value = None
@@ -88,7 +85,7 @@ class TestOllamaChatAdapter:
         call_args = mock_chat.call_args
         messages = call_args.kwargs["messages"]
 
-        assert len(messages) == 2  # system + user
+        assert len(messages) == 2
 
     @patch("src.infra.adapters.Ollama.ollama_chat_adapter.chat")
     def test_chat_with_multiple_history_items(self, mock_chat):
@@ -117,7 +114,7 @@ class TestOllamaChatAdapter:
         call_args = mock_chat.call_args
         messages = call_args.kwargs["messages"]
 
-        assert len(messages) == 6  # system + 4 history + user
+        assert len(messages) == 6
 
     @patch("src.infra.adapters.Ollama.ollama_chat_adapter.chat")
     def test_chat_passes_correct_model(self, mock_chat):
@@ -148,7 +145,7 @@ class TestOllamaChatAdapter:
 
         adapter = OllamaChatAdapter()
 
-        with pytest.raises(ChatException, match="Ollama retornou uma resposta vazia"):
+        with pytest.raises(ChatException, match="Ollama returned an empty response"):
             adapter.chat(
                 model=IA_OLLAMA_TEST_2,
                 instructions="Test",
@@ -166,7 +163,7 @@ class TestOllamaChatAdapter:
 
         adapter = OllamaChatAdapter()
 
-        with pytest.raises(ChatException, match="Ollama retornou uma resposta vazia"):
+        with pytest.raises(ChatException, match="Ollama returned an empty response"):
             adapter.chat(
                 model=IA_OLLAMA_TEST_1,
                 instructions="Test",
@@ -177,7 +174,6 @@ class TestOllamaChatAdapter:
 
     @patch("src.infra.adapters.Ollama.ollama_chat_adapter.chat")
     def test_chat_with_missing_message_key_raises_error(self, mock_chat):
-        # Cria um objeto customizado que lança AttributeError ao acessar content
         class BadMessage:
             @property
             def content(self):
@@ -189,7 +185,9 @@ class TestOllamaChatAdapter:
 
         adapter = OllamaChatAdapter()
 
-        with pytest.raises(ChatException, match="Erro ao comunicar com Ollama"):
+        with pytest.raises(
+            ChatException, match="An error occurred while communicating with Ollama"
+        ):
             adapter.chat(
                 model=IA_OLLAMA_TEST_2,
                 instructions="Test",
@@ -200,7 +198,6 @@ class TestOllamaChatAdapter:
 
     @patch("src.infra.adapters.Ollama.ollama_chat_adapter.chat")
     def test_chat_with_attribute_error_raises_chat_exception(self, mock_chat):
-        # Cria um objeto customizado que lança AttributeError ao acessar message
         class BadResponse:
             @property
             def message(self):
@@ -210,7 +207,9 @@ class TestOllamaChatAdapter:
 
         adapter = OllamaChatAdapter()
 
-        with pytest.raises(ChatException, match="Erro ao comunicar com Ollama"):
+        with pytest.raises(
+            ChatException, match="An error occurred while communicating with Ollama"
+        ):
             adapter.chat(
                 model=IA_OLLAMA_TEST_1,
                 instructions="Test",
@@ -225,7 +224,7 @@ class TestOllamaChatAdapter:
 
         adapter = OllamaChatAdapter()
 
-        with pytest.raises(ChatException, match="Erro de tipo"):
+        with pytest.raises(ChatException, match="A type error occurred"):
             adapter.chat(
                 model=IA_OLLAMA_TEST_2,
                 instructions="Test",
@@ -240,7 +239,9 @@ class TestOllamaChatAdapter:
 
         adapter = OllamaChatAdapter()
 
-        with pytest.raises(ChatException, match="Erro ao comunicar com Ollama"):
+        with pytest.raises(
+            ChatException, match="An error occurred while communicating with Ollama"
+        ):
             adapter.chat(
                 model=IA_OLLAMA_TEST_1,
                 instructions="Test",
@@ -338,7 +339,7 @@ class TestOllamaChatAdapter:
     def test_chat_collects_metrics_on_success(self, mock_chat):
         mock_response = MagicMock()
         mock_response.message.content = "Success response"
-        mock_response.get.return_value = 100  # eval_count
+        mock_response.get.return_value = 100
         mock_chat.return_value = mock_response
 
         adapter = OllamaChatAdapter()
@@ -391,7 +392,6 @@ class TestOllamaChatAdapter:
 
         adapter = OllamaChatAdapter()
 
-        # Primeira chamada
         adapter.chat(
             model=IA_OLLAMA_TEST_1,
             instructions="Test",
@@ -400,7 +400,6 @@ class TestOllamaChatAdapter:
             user_ask="Test 1",
         )
 
-        # Segunda chamada
         adapter.chat(
             model=IA_OLLAMA_TEST_2,
             instructions="Test",
@@ -415,13 +414,11 @@ class TestOllamaChatAdapter:
         assert metrics[1].model == IA_OLLAMA_TEST_2
 
     def test_get_metrics_returns_copy(self):
-        """Testa se get_metrics retorna uma cópia e não a lista original."""
         adapter = OllamaChatAdapter()
 
         metrics1 = adapter.get_metrics()
         metrics2 = adapter.get_metrics()
 
-        # Verifica que são listas diferentes
         assert metrics1 is not metrics2
 
     @patch("src.infra.adapters.Ollama.ollama_chat_adapter.chat")
@@ -449,7 +446,7 @@ class TestOllamaChatAdapter:
         assert response == "Response"
         call_args = mock_chat.call_args
         messages = call_args.kwargs["messages"]
-        assert len(messages) == 4  # system + 2 history + user
+        assert len(messages) == 4
 
     @patch("src.infra.adapters.Ollama.ollama_chat_adapter.chat")
     def test_chat_with_long_history(self, mock_chat):
@@ -460,7 +457,6 @@ class TestOllamaChatAdapter:
 
         adapter = OllamaChatAdapter()
 
-        # Cria histórico com 50 mensagens
         history = []
         for i in range(25):
             history.append({"role": "user", "content": f"Message {i}"})
@@ -477,11 +473,10 @@ class TestOllamaChatAdapter:
         assert response == "Response"
         call_args = mock_chat.call_args
         messages = call_args.kwargs["messages"]
-        assert len(messages) == 52  # system + 50 history + user
+        assert len(messages) == 52
 
     @patch("src.infra.adapters.Ollama.ollama_chat_adapter.chat")
     def test_chat_with_config_parameter(self, mock_chat):
-        """Testa se o parâmetro config é aceito corretamente."""
         mock_response = MagicMock()
         mock_response.message.content = "Response"
         mock_response.get.return_value = None
@@ -503,9 +498,7 @@ class TestOllamaChatAdapter:
 
     @patch("src.infra.adapters.Ollama.ollama_chat_adapter.chat")
     def test_chat_with_key_error_raises_chat_exception(self, mock_chat):
-        """Testa se KeyError é tratado corretamente."""
         mock_response = MagicMock()
-        # Faz com que acessar .message.content lance KeyError
         type(mock_response.message).content = property(
             lambda self: (_ for _ in ()).throw(KeyError("test_key"))
         )
@@ -513,7 +506,7 @@ class TestOllamaChatAdapter:
 
         adapter = OllamaChatAdapter()
 
-        with pytest.raises(ChatException, match="formato inválido.*Chave ausente"):
+        with pytest.raises(ChatException, match="invalid format.*Missing key"):
             adapter.chat(
                 model=IA_OLLAMA_TEST_2,
                 instructions="Test",
@@ -524,7 +517,6 @@ class TestOllamaChatAdapter:
 
     @patch("src.infra.adapters.Ollama.ollama_chat_adapter.chat")
     def test_chat_metrics_contain_error_message_on_empty_response(self, mock_chat):
-        """Testa se a mensagem de erro é registrada nas métricas."""
         mock_response = MagicMock()
         mock_response.message.content = ""
         mock_response.get.return_value = None
@@ -545,7 +537,7 @@ class TestOllamaChatAdapter:
 
         metrics = adapter.get_metrics()
         assert len(metrics) == 1
-        assert metrics[0].error_message == "Ollama retornou resposta vazia"
+        assert metrics[0].error_message == "Ollama returned an empty response."
         assert metrics[0].success is False
 
     @patch("src.infra.adapters.Ollama.ollama_chat_adapter.chat")
@@ -632,10 +624,9 @@ class TestOllamaChatAdapter:
         )
 
         call_args = mock_chat.call_args
-        # Todas as configs devem estar em options, com max_tokens convertido
         expected_options = {
             "temperature": 0.7,
-            "num_predict": 500,  # max_tokens convertido
+            "num_predict": 500,
             "top_p": 0.9,
         }
         assert call_args.kwargs.get("options") == expected_options
@@ -661,3 +652,171 @@ class TestOllamaChatAdapter:
         assert call_args.kwargs.get("options") == {}
         assert "model" in call_args.kwargs
         assert "messages" in call_args.kwargs
+
+    @patch("src.infra.adapters.Ollama.ollama_chat_adapter.subprocess.run")
+    @patch("src.infra.adapters.Ollama.ollama_chat_adapter.chat")
+    def test_stop_model_is_called_after_chat(self, mock_chat, mock_subprocess):
+        mock_response = MagicMock()
+        mock_response.message.content = "Response"
+        mock_response.get.return_value = None
+        mock_chat.return_value = mock_response
+        mock_subprocess.return_value = Mock()
+
+        adapter = OllamaChatAdapter()
+
+        adapter.chat(
+            model=IA_OLLAMA_TEST_1,
+            instructions="Test",
+            config={},
+            history=[],
+            user_ask="Test",
+        )
+
+        mock_subprocess.assert_called_once()
+        call_args = mock_subprocess.call_args
+        assert call_args[0][0] == ["ollama", "stop", IA_OLLAMA_TEST_1]
+
+    @patch("src.infra.adapters.Ollama.ollama_chat_adapter.subprocess.run")
+    @patch("src.infra.adapters.Ollama.ollama_chat_adapter.chat")
+    def test_stop_model_called_even_on_error(self, mock_chat, mock_subprocess):
+        mock_chat.side_effect = Exception("Chat error")
+        mock_subprocess.return_value = Mock()
+
+        adapter = OllamaChatAdapter()
+
+        try:
+            adapter.chat(
+                model=IA_OLLAMA_TEST_2,
+                instructions="Test",
+                config={},
+                history=[],
+                user_ask="Test",
+            )
+        except Exception:
+            pass
+
+        mock_subprocess.assert_called_once()
+
+    @patch("src.infra.adapters.Ollama.ollama_chat_adapter.subprocess.run")
+    @patch("src.infra.adapters.Ollama.ollama_chat_adapter.chat")
+    def test_stop_model_handles_file_not_found(self, mock_chat, mock_subprocess):
+        mock_response = MagicMock()
+        mock_response.message.content = "Response"
+        mock_response.get.return_value = None
+        mock_chat.return_value = mock_response
+        mock_subprocess.side_effect = FileNotFoundError("ollama not found")
+
+        adapter = OllamaChatAdapter()
+
+        response = adapter.chat(
+            model=IA_OLLAMA_TEST_1,
+            instructions="Test",
+            config={},
+            history=[],
+            user_ask="Test",
+        )
+
+        assert response == "Response"
+
+    @patch("src.infra.adapters.Ollama.ollama_chat_adapter.subprocess.run")
+    @patch("src.infra.adapters.Ollama.ollama_chat_adapter.chat")
+    def test_stop_model_handles_timeout(self, mock_chat, mock_subprocess):
+        import subprocess
+
+        mock_response = MagicMock()
+        mock_response.message.content = "Response"
+        mock_response.get.return_value = None
+        mock_chat.return_value = mock_response
+        mock_subprocess.side_effect = subprocess.TimeoutExpired("ollama", 10)
+
+        adapter = OllamaChatAdapter()
+
+        response = adapter.chat(
+            model=IA_OLLAMA_TEST_2,
+            instructions="Test",
+            config={},
+            history=[],
+            user_ask="Test",
+        )
+
+        assert response == "Response"
+
+    @patch("src.infra.adapters.Ollama.ollama_chat_adapter.subprocess.run")
+    @patch("src.infra.adapters.Ollama.ollama_chat_adapter.chat")
+    def test_stop_model_handles_generic_exception(self, mock_chat, mock_subprocess):
+        mock_response = MagicMock()
+        mock_response.message.content = "Response"
+        mock_response.get.return_value = None
+        mock_chat.return_value = mock_response
+        mock_subprocess.side_effect = RuntimeError("Unknown error")
+
+        adapter = OllamaChatAdapter()
+
+        response = adapter.chat(
+            model=IA_OLLAMA_TEST_1,
+            instructions="Test",
+            config={},
+            history=[],
+            user_ask="Test",
+        )
+
+        assert response == "Response"
+
+    @patch("src.infra.adapters.Ollama.ollama_chat_adapter.chat")
+    def test_chat_with_none_instructions_omits_system_message(self, mock_chat):
+        mock_response = MagicMock()
+        mock_response.message.content = "Response"
+        mock_response.get.return_value = None
+        mock_chat.return_value = mock_response
+
+        adapter = OllamaChatAdapter()
+
+        adapter.chat(
+            model=IA_OLLAMA_TEST_2,
+            instructions=None,
+            config={},
+            history=[],
+            user_ask="Test",
+        )
+
+        call_args = mock_chat.call_args
+        messages = call_args.kwargs["messages"]
+
+        assert len(messages) == 1
+        assert messages[0] == {"role": "user", "content": "Test"}
+
+    @patch("src.infra.adapters.Ollama.ollama_chat_adapter.chat")
+    def test_chat_with_whitespace_only_instructions(self, mock_chat):
+        mock_response = MagicMock()
+        mock_response.message.content = "Response"
+        mock_response.get.return_value = None
+        mock_chat.return_value = mock_response
+
+        adapter = OllamaChatAdapter()
+
+        adapter.chat(
+            model=IA_OLLAMA_TEST_1,
+            instructions="   \n\t  ",
+            config={},
+            history=[],
+            user_ask="Test",
+        )
+
+        call_args = mock_chat.call_args
+        messages = call_args.kwargs["messages"]
+
+        assert len(messages) == 1
+        assert messages[0]["role"] == "user"
+
+    def test_initialization_reads_environment_variables(self):
+        with patch(
+            "src.infra.adapters.Ollama.ollama_chat_adapter.EnvironmentConfig.get_env"
+        ) as mock_get_env:
+            mock_get_env.side_effect = lambda key, default: {
+                "OLLAMA_HOST": "http://custom-host:11434",
+                "OLLAMA_MAX_RETRIES": "5",
+            }.get(key, default)
+
+            OllamaChatAdapter()
+
+            assert mock_get_env.call_count >= 2

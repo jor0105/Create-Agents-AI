@@ -5,23 +5,19 @@ import pytest
 from src.domain.exceptions import ChatException
 from src.infra.adapters.OpenAI.openai_chat_adapter import OpenAIChatAdapter
 
-# Modelos para testes de integração
 IA_OPENAI_TEST_1: str = "gpt-5-mini"
 IA_OPENAI_TEST_2: str = "gpt-5-nano"
 IA_OPENAI_TEST_3: str = "gpt-4.1-mini"
 
 
 def _get_openai_api_key():
-    """Helper para obter a chave da API do OpenAI do ambiente (.env) ou pular o teste."""
     from src.infra.adapters.OpenAI.client_openai import ClientOpenAI
     from src.infra.config.environment import EnvironmentConfig
 
-    # Evitar executar chamadas reais em ambientes de CI por padrão
     if os.getenv("CI"):
         pytest.skip("Skipping real API integration test on CI (set CI=0 to run)")
 
     try:
-        # Usa EnvironmentConfig que carrega do .env automaticamente
         api_key = EnvironmentConfig.get_api_key(ClientOpenAI.API_OPENAI_NAME)
         return api_key
     except EnvironmentError:
@@ -32,10 +28,7 @@ def _get_openai_api_key():
 
 @pytest.mark.integration
 class TestOpenAIChatAdapterIntegration:
-    """Testes de integração para o OpenAIChatAdapter com a API real do OpenAI."""
-
     def test_adapter_initialization(self):
-        """Testa inicialização do adapter com API key real."""
         _get_openai_api_key()
 
         adapter = OpenAIChatAdapter()
@@ -379,7 +372,6 @@ class TestOpenAIChatAdapterIntegration:
 
         adapter = OpenAIChatAdapter()
 
-        # Cria um histórico com várias mensagens
         history = []
         for i in range(5):
             history.append({"role": "user", "content": f"Message number {i+1}"})
@@ -433,9 +425,7 @@ class TestOpenAIChatAdapterIntegration:
         metrics1 = adapter.get_metrics()
         metrics2 = adapter.get_metrics()
 
-        # As listas devem ser diferentes objetos
         assert metrics1 is not metrics2
-        # Mas com o mesmo conteúdo
         assert len(metrics1) == len(metrics2)
 
     def test_chat_with_config_parameter(self):
@@ -465,7 +455,6 @@ class TestOpenAIChatAdapterIntegration:
 
         adapter = OpenAIChatAdapter()
 
-        # Cria uma pergunta longa
         long_question = "Tell me about Python. " * 50
 
         response = adapter.chat(
@@ -480,7 +469,6 @@ class TestOpenAIChatAdapterIntegration:
         assert isinstance(response, str)
         assert len(response) > 0
 
-        # Verificar métricas de tokens
         metrics = adapter.get_metrics()
         assert len(metrics) == 1
         assert metrics[0].tokens_used > 0
@@ -526,7 +514,6 @@ class TestOpenAIChatAdapterIntegration:
         assert metric.prompt_tokens > 0
         assert metric.completion_tokens is not None
         assert metric.completion_tokens > 0
-        # Total deve ser a soma de prompt + completion
         assert metric.tokens_used == metric.prompt_tokens + metric.completion_tokens
 
     def test_chat_with_system_message_variations(self):
@@ -534,7 +521,6 @@ class TestOpenAIChatAdapterIntegration:
 
         adapter = OpenAIChatAdapter()
 
-        # Teste com instrução formal
         response1 = adapter.chat(
             model=IA_OPENAI_TEST_1,
             instructions="You are a professional assistant. Be formal.",
@@ -543,7 +529,6 @@ class TestOpenAIChatAdapterIntegration:
             user_ask="Hello",
         )
 
-        # Teste com instrução casual
         response2 = adapter.chat(
             model=IA_OPENAI_TEST_1,
             instructions="You are a friendly buddy. Be casual.",
@@ -574,7 +559,6 @@ class TestOpenAIChatAdapterIntegration:
         assert len(response) > 0
 
     def test_chat_error_preserves_original_exception(self):
-        """Testa que erros preservam a exceção original."""
         _get_openai_api_key()
 
         adapter = OpenAIChatAdapter()
@@ -590,14 +574,12 @@ class TestOpenAIChatAdapterIntegration:
             assert False, "Deveria ter lançado ChatException"
         except ChatException as e:
             assert e.original_error is not None
-            # Verificar que a mensagem contém informação útil
             assert "OpenAI" in str(e) or "modelo" in str(e).lower()
 
 
 @pytest.mark.integration
 class TestClientOpenAIIntegration:
     def test_get_client_with_real_openai_api(self):
-        """Integration test: cria o client real do OpenAI se a chave estiver disponível."""
         from src.infra.adapters.OpenAI.client_openai import ClientOpenAI
 
         api_key = _get_openai_api_key()
@@ -608,15 +590,13 @@ class TestClientOpenAIIntegration:
         assert hasattr(client, "models")
 
     def test_client_has_required_attributes(self):
-        """Valida que o cliente OpenAI possui os atributos necessários para chat."""
         from src.infra.adapters.OpenAI.client_openai import ClientOpenAI
 
         api_key = _get_openai_api_key()
         client = ClientOpenAI.get_client(api_key)
 
-        # Verificar que os atributos principais existem
-        assert hasattr(client, "chat"), "Client deve ter atributo 'chat'"
-        assert hasattr(client, "models"), "Client deve ter atributo 'models'"
+        assert hasattr(client, "chat")
+        assert hasattr(client, "models")
 
     def test_list_models_with_real_api(self):
         from src.infra.adapters.OpenAI.client_openai import ClientOpenAI
@@ -627,25 +607,22 @@ class TestClientOpenAIIntegration:
         try:
             models = client.models.list()
             assert models is not None
-            # A resposta deve ser iterável
             model_list = list(models)
-            assert len(model_list) > 0, "Deve haver pelo menos um modelo disponível"
-        except Exception as exc:  # pragma: no cover - só executado em integração real
+            assert len(model_list) > 0
+        except Exception as exc:
             pytest.fail(f"Real OpenAI API call to list models failed: {exc}")
 
     def test_invalid_api_key_raises_error(self):
         from src.infra.adapters.OpenAI.client_openai import ClientOpenAI
 
-        # Se a chave real não está disponível, pula este teste
         _get_openai_api_key()
 
         invalid_key = "sk-invalid-test-key-12345"
         client = ClientOpenAI.get_client(invalid_key)
 
-        # O client é criado, mas a chamada deve falhar
         assert client is not None
 
-        with pytest.raises(Exception):  # OpenAI lança AuthenticationError
+        with pytest.raises(Exception):
             client.models.list()
 
     def test_get_client_multiple_times_with_same_key(self):
@@ -658,17 +635,15 @@ class TestClientOpenAIIntegration:
 
         assert client1 is not None
         assert client2 is not None
-        # Verificar que ambos conseguem chamar a API
         try:
             models1 = client1.models.list()
             models2 = client2.models.list()
             assert models1 is not None
             assert models2 is not None
-        except Exception as exc:  # pragma: no cover
+        except Exception as exc:
             pytest.fail(f"Multiple client calls failed: {exc}")
 
     def test_client_api_key_constant(self):
-        """Valida que a constante API_OPENAI_NAME está definida corretamente."""
         from src.infra.adapters.OpenAI.client_openai import ClientOpenAI
 
         assert hasattr(ClientOpenAI, "API_OPENAI_NAME")
@@ -684,36 +659,28 @@ class TestClientOpenAIIntegration:
         ],
     )
     def test_get_client_with_invalid_key_formats(self, invalid_key):
-        """Testa comportamento com chaves em formato inválido."""
         from src.infra.adapters.OpenAI.client_openai import ClientOpenAI
 
-        # _get_openai_api_key() já faz skip se não houver chave real
         _get_openai_api_key()
 
-        # Criar client com chave inválida (não deve lançar erro imediato)
         client = ClientOpenAI.get_client(invalid_key)
         assert client is not None
 
-        # Mas chamadas devem falhar
-        with pytest.raises(Exception):  # pragma: no cover
+        with pytest.raises(Exception):
             client.models.list()
 
     def test_get_client_with_none_uses_env_variable(self):
-        """Testa que passar None permite que o cliente use a variável de ambiente."""
         from src.infra.adapters.OpenAI.client_openai import ClientOpenAI
 
-        # Garantir que a chave real está disponível
         _get_openai_api_key()
 
-        # Quando passamos None, o OpenAI client usa OPENAI_API_KEY do ambiente
         client = ClientOpenAI.get_client(None)
         assert client is not None
 
-        # Deve funcionar corretamente
         try:
             models = client.models.list()
             assert models is not None
-        except Exception as exc:  # pragma: no cover
+        except Exception as exc:
             pytest.fail(f"Client with None should use env var, but failed: {exc}")
 
 
@@ -746,6 +713,7 @@ class TestOpenAIAdapterConfigsReais:
         assert response2 is not None
         assert isinstance(response1, str)
         assert isinstance(response2, str)
+        assert response1 == response2
 
     def test_chat_with_temperature_config_high(self):
         _get_openai_api_key()

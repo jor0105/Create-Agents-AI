@@ -49,20 +49,16 @@ class TestMessage:
             message.content = "New content"
 
     def test_message_validation_empty_content(self):
-        with pytest.raises(
-            ValueError, match="O conteúdo da mensagem não pode estar vazio"
-        ):
+        with pytest.raises(ValueError, match="The message content cannot be empty"):
             Message(role=MessageRole.USER, content="")
 
     def test_message_validation_whitespace_content(self):
-        with pytest.raises(
-            ValueError, match="O conteúdo da mensagem não pode estar vazio"
-        ):
+        with pytest.raises(ValueError, match="The message content cannot be empty"):
             Message(role=MessageRole.USER, content="   ")
 
     def test_message_validation_invalid_role_type(self):
         with pytest.raises(
-            ValueError, match="Role deve ser uma instância de MessageRole"
+            ValueError, match="The 'role' must be an instance of MessageRole"
         ):
             Message(role="user", content="Hello")
 
@@ -92,7 +88,7 @@ class TestMessage:
         data = {"content": "Hello"}
 
         with pytest.raises(
-            ValueError, match="Dicionário deve conter 'role' e 'content'"
+            ValueError, match="The dictionary must contain 'role' and 'content'"
         ):
             Message.from_dict(data)
 
@@ -100,14 +96,14 @@ class TestMessage:
         data = {"role": "user"}
 
         with pytest.raises(
-            ValueError, match="Dicionário deve conter 'role' e 'content'"
+            ValueError, match="The dictionary must contain 'role' and 'content'"
         ):
             Message.from_dict(data)
 
     def test_from_dict_invalid_role(self):
         data = {"role": "invalid_role", "content": "Hello"}
 
-        with pytest.raises(ValueError, match="Role inválido"):
+        with pytest.raises(ValueError, match="Invalid role"):
             Message.from_dict(data)
 
     def test_message_equality(self):
@@ -144,3 +140,60 @@ class TestMessage:
 
         assert message.content == multiline_content
         assert "\n" in message.content
+
+    def test_message_role_enum_values(self):
+        assert MessageRole.USER == MessageRole.USER
+        assert MessageRole.ASSISTANT == MessageRole.ASSISTANT
+        assert MessageRole.SYSTEM == MessageRole.SYSTEM
+
+    def test_message_from_dict_with_empty_content(self):
+        data = {"role": "user", "content": ""}
+
+        with pytest.raises(ValueError, match="cannot be empty"):
+            Message.from_dict(data)
+
+    def test_message_from_dict_with_whitespace_content(self):
+        data = {"role": "user", "content": "   "}
+
+        with pytest.raises(ValueError, match="cannot be empty"):
+            Message.from_dict(data)
+
+    def test_message_immutability_all_fields(self):
+        message = Message(role=MessageRole.USER, content="Test")
+
+        with pytest.raises(AttributeError):
+            message.content = "New"
+
+        with pytest.raises(AttributeError):
+            message.role = MessageRole.ASSISTANT
+
+    def test_message_to_dict_consistency(self):
+        message = Message(role=MessageRole.USER, content="Test")
+
+        dict1 = message.to_dict()
+        dict2 = message.to_dict()
+
+        assert dict1 == dict2
+        assert dict1 is not dict2
+
+    def test_message_with_tab_characters(self):
+        content_with_tabs = "Column1\tColumn2\tColumn3"
+        message = Message(role=MessageRole.USER, content=content_with_tabs)
+
+        assert "\t" in message.content
+        assert message.content == content_with_tabs
+
+    def test_message_equality_different_roles(self):
+        msg1 = Message(role=MessageRole.USER, content="Same content")
+        msg2 = Message(role=MessageRole.ASSISTANT, content="Same content")
+
+        assert msg1 != msg2
+
+    def test_message_from_dict_all_valid_roles(self):
+        roles = ["user", "assistant", "system"]
+
+        for role_str in roles:
+            data = {"role": role_str, "content": "Test content"}
+            message = Message.from_dict(data)
+            assert message.role.value == role_str
+            assert message.content == "Test content"

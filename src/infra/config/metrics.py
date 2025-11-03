@@ -1,8 +1,8 @@
 """
-Sistema de métricas para monitoramento de uso de chat.
+Metrics system for monitoring chat usage.
 
-Este módulo fornece estruturas para capturar e armazenar
-métricas de performance e uso dos adapters de chat.
+This module provides structures to capture and store
+performance and usage metrics for chat adapters.
 """
 
 import json
@@ -15,17 +15,17 @@ from typing import Optional
 @dataclass
 class ChatMetrics:
     """
-    Métricas de uma interação de chat.
+    Represents the metrics for a single chat interaction.
 
     Attributes:
-        model: Nome do modelo utilizado
-        latency_ms: Latência da requisição em milissegundos
-        tokens_used: Total de tokens utilizados (se disponível)
-        prompt_tokens: Tokens do prompt (se disponível)
-        completion_tokens: Tokens da resposta (se disponível)
-        timestamp: Timestamp da requisição
-        success: Se a requisição foi bem-sucedida
-        error_message: Mensagem de erro (se houver)
+        model: The name of the model used.
+        latency_ms: The request latency in milliseconds.
+        tokens_used: The total number of tokens used, if available.
+        prompt_tokens: The number of prompt tokens, if available.
+        completion_tokens: The number of response tokens, if available.
+        timestamp: The timestamp of the request.
+        success: A boolean indicating whether the request was successful.
+        error_message: An error message, if any.
     """
 
     model: str
@@ -38,7 +38,7 @@ class ChatMetrics:
     error_message: Optional[str] = None
 
     def to_dict(self) -> dict:
-        """Converte métricas para dicionário."""
+        """Converts the metrics to a dictionary."""
         return {
             "model": self.model,
             "latency_ms": self.latency_ms,
@@ -51,7 +51,7 @@ class ChatMetrics:
         }
 
     def __str__(self) -> str:
-        """String representation das métricas."""
+        """Returns a string representation of the metrics."""
         tokens_info = f", tokens={self.tokens_used}" if self.tokens_used else ""
         status = "✓" if self.success else "✗"
         return f"[{status}] {self.model}: {self.latency_ms:.2f}ms{tokens_info}"
@@ -59,19 +59,18 @@ class ChatMetrics:
 
 class MetricsCollector:
     """
-    Coletor de métricas para análise agregada.
-    Thread-safe e com limite de armazenamento para prevenir memory leak.
+    A thread-safe collector for aggregated metrics analysis.
+    It has a storage limit to prevent memory leaks.
     """
 
-    # Constante para limite máximo de métricas
     MAX_METRICS = 10000
 
     def __init__(self, max_metrics: int = MAX_METRICS):
         """
-        Inicializa o coletor de métricas.
+        Initializes the metrics collector.
 
         Args:
-            max_metrics: Número máximo de métricas a armazenar (default: 10000)
+            max_metrics: The maximum number of metrics to store (default: 10,000).
         """
         self._metrics: list[ChatMetrics] = []
         self._lock = threading.Lock()
@@ -79,26 +78,25 @@ class MetricsCollector:
 
     def add(self, metrics: ChatMetrics) -> None:
         """
-        Adiciona métricas à coleção de forma thread-safe.
-        Remove as mais antigas se exceder o limite máximo.
+        Adds metrics to the collection in a thread-safe manner.
+        If the collection exceeds the maximum size, the oldest metrics are removed.
         """
         with self._lock:
             self._metrics.append(metrics)
-            # Remove as mais antigas se exceder o limite
             if len(self._metrics) > self._max_metrics:
                 self._metrics = self._metrics[-self._max_metrics :]
 
     def get_all(self) -> list[ChatMetrics]:
-        """Retorna cópia de todas as métricas coletadas (thread-safe)."""
+        """Returns a thread-safe copy of all collected metrics."""
         with self._lock:
             return self._metrics.copy()
 
     def get_summary(self) -> dict:
         """
-        Retorna resumo estatístico das métricas (thread-safe).
+        Returns a statistical summary of the metrics in a thread-safe manner.
 
         Returns:
-            Dicionário com estatísticas agregadas
+            A dictionary containing aggregated statistics.
         """
         with self._lock:
             if not self._metrics:
@@ -129,20 +127,20 @@ class MetricsCollector:
             }
 
     def clear(self) -> None:
-        """Limpa todas as métricas de forma thread-safe."""
+        """Clears all metrics in a thread-safe manner."""
         with self._lock:
             self._metrics.clear()
 
     def export_json(self, filepath: Optional[str] = None) -> str:
         """
-        Exporta métricas em formato JSON.
+        Exports the metrics in JSON format.
 
         Args:
-            filepath: Caminho do arquivo para salvar (opcional).
-                     Se não fornecido, retorna apenas a string JSON.
+            filepath: An optional file path to save the JSON data.
+                      If not provided, the method returns the JSON string.
 
         Returns:
-            str: String JSON com todas as métricas
+            A JSON string containing all metrics.
         """
         data = {
             "summary": self.get_summary(),
@@ -159,17 +157,17 @@ class MetricsCollector:
 
     def export_prometheus(self) -> str:
         """
-        Exporta métricas em formato compatível com Prometheus.
+        Exports metrics in a Prometheus-compatible format.
 
-        Gera métricas no formato de texto do Prometheus:
-        - chat_requests_total: Total de requisições
-        - chat_requests_success_total: Total de requisições bem-sucedidas
-        - chat_requests_failed_total: Total de requisições falhadas
-        - chat_latency_ms: Histograma de latência
-        - chat_tokens_total: Total de tokens utilizados
+        This method generates metrics in the Prometheus text format, including:
+        - `chat_requests_total`: Total number of requests.
+        - `chat_requests_success_total`: Total number of successful requests.
+        - `chat_requests_failed_total`: Total number of failed requests.
+        - `chat_latency_ms`: A histogram of latencies.
+        - `chat_tokens_total`: The total number of tokens used.
 
         Returns:
-            str: Métricas no formato Prometheus
+            A string with the metrics in Prometheus format.
         """
         if not self._metrics:
             return "# No metrics available\n"
@@ -178,13 +176,11 @@ class MetricsCollector:
 
         lines = []
 
-        # Total de requisições
         lines.append("# HELP chat_requests_total Total number of chat requests")
         lines.append("# TYPE chat_requests_total counter")
         lines.append(f"chat_requests_total {summary['total_requests']}")
         lines.append("")
 
-        # Requisições bem-sucedidas
         lines.append(
             "# HELP chat_requests_success_total Total number of successful chat requests"
         )
@@ -192,7 +188,6 @@ class MetricsCollector:
         lines.append(f"chat_requests_success_total {summary['successful']}")
         lines.append("")
 
-        # Requisições falhadas
         lines.append(
             "# HELP chat_requests_failed_total Total number of failed chat requests"
         )
@@ -200,7 +195,6 @@ class MetricsCollector:
         lines.append(f"chat_requests_failed_total {summary['failed']}")
         lines.append("")
 
-        # Latência (resumo)
         lines.append("# HELP chat_latency_ms_avg Average latency in milliseconds")
         lines.append("# TYPE chat_latency_ms_avg gauge")
         lines.append(f"chat_latency_ms_avg {summary['avg_latency_ms']:.2f}")
@@ -216,13 +210,11 @@ class MetricsCollector:
         lines.append(f"chat_latency_ms_max {summary['max_latency_ms']:.2f}")
         lines.append("")
 
-        # Total de tokens
         lines.append("# HELP chat_tokens_total Total number of tokens used")
         lines.append("# TYPE chat_tokens_total counter")
         lines.append(f"chat_tokens_total {summary['total_tokens']}")
         lines.append("")
 
-        # Métricas por modelo
         lines.append("# HELP chat_requests_by_model Total requests by model")
         lines.append("# TYPE chat_requests_by_model counter")
 
@@ -237,10 +229,10 @@ class MetricsCollector:
 
     def export_prometheus_to_file(self, filepath: str) -> None:
         """
-        Exporta métricas para arquivo no formato Prometheus.
+        Exports metrics to a file in Prometheus format.
 
         Args:
-            filepath: Caminho do arquivo para salvar
+            filepath: The file path to save the metrics.
         """
         content = self.export_prometheus()
         with open(filepath, "w", encoding="utf-8") as f:

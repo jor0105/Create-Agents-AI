@@ -2,8 +2,6 @@ Testar sistema de rag e embedding no notebook;
 Modularizar sistema de rag de acordo com a arquitetura;
 Criar o sistema de rag que se interliga com embedding da open ai e demais;
 Testar emdeddings gerais;
-Deixar exceptions em ingles;
-Arrumar caminhos para a biblioteca funcionar;
 Publicar no pipy;
 Adicionar cd para pipy;
 Conectar outras configs;

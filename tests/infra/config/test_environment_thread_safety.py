@@ -121,7 +121,7 @@ class TestEnvironmentConfigNewFeatures:
         os.environ["CACHE_TEST"] = "value2"
 
         value2 = EnvironmentConfig.get_env("CACHE_TEST")
-        assert value2 == "value1"  # Cache retorna valor antigo
+        assert value2 == "value1"
 
         del os.environ["CACHE_TEST"]
 
@@ -140,7 +140,6 @@ class TestEnvironmentConfigNewFeatures:
         del os.environ["CLEAR_TEST"]
 
     def test_reload_thread_safety(self):
-        """Testa que reload() é thread-safe."""
         os.environ["RELOAD_VAR"] = "initial"
         EnvironmentConfig.get_env("RELOAD_VAR")
 
@@ -166,7 +165,6 @@ class TestEnvironmentConfigNewFeatures:
         del os.environ["RELOAD_VAR"]
 
     def test_concurrent_reload_and_get(self):
-        """Testa reload e get concorrentes."""
         os.environ["CONCURRENT_VAR"] = "value"
 
         results = []
@@ -201,7 +199,6 @@ class TestEnvironmentConfigNewFeatures:
         del os.environ["CONCURRENT_VAR"]
 
     def test_get_api_key_with_empty_value_thread_safe(self):
-        """Testa que validação de vazio é thread-safe."""
         os.environ["EMPTY_API_KEY"] = ""
 
         results = []
@@ -224,14 +221,12 @@ class TestEnvironmentConfigNewFeatures:
             futures = [executor.submit(get_empty_key) for _ in range(20)]
             concurrent.futures.wait(futures)
 
-        # Todos devem ter lançado EnvironmentError
         assert len(results) == 0
         assert len(errors) == 20
         assert all(e == "expected_error" for e in errors)
         del os.environ["EMPTY_API_KEY"]
 
     def test_get_api_key_strips_whitespace_thread_safe(self):
-        """Testa que strip é thread-safe."""
         os.environ["WHITESPACE_API"] = "  spaced_value  "
 
         results = []
@@ -246,13 +241,11 @@ class TestEnvironmentConfigNewFeatures:
             futures = [executor.submit(get_stripped) for _ in range(30)]
             concurrent.futures.wait(futures)
 
-        # Todos devem ter o valor sem espaços
         assert all(r == "spaced_value" for r in results)
         assert len(results) == 30
         del os.environ["WHITESPACE_API"]
 
     def test_get_env_does_not_cache_empty_thread_safe(self):
-        """Testa que valores vazios não são cacheados em ambiente concorrente."""
         os.environ["EMPTY_ENV_VAR"] = ""
 
         results = []
@@ -267,14 +260,11 @@ class TestEnvironmentConfigNewFeatures:
             futures = [executor.submit(get_empty_env) for _ in range(20)]
             concurrent.futures.wait(futures)
 
-        # Todos devem retornar default
         assert all(r == "default" for r in results)
-        # Cache não deve conter a chave vazia
         assert "EMPTY_ENV_VAR" not in EnvironmentConfig._cache
         del os.environ["EMPTY_ENV_VAR"]
 
     def test_concurrent_cache_operations(self):
-        """Testa operações concorrentes de cache."""
         os.environ["CACHE_OP_VAR"] = "test"
 
         operations = []
@@ -303,12 +293,10 @@ class TestEnvironmentConfigNewFeatures:
             all_futures = read_futures + clear_futures + reload_futures
             concurrent.futures.wait(all_futures)
 
-        # Deve ter executado todas as operações sem erro
         assert len(operations) == 40
         del os.environ["CACHE_OP_VAR"]
 
     def test_massive_concurrent_access(self):
-        """Teste de stress com muitas threads."""
         os.environ["STRESS_VAR"] = "stress_value"
 
         results = []
@@ -324,7 +312,6 @@ class TestEnvironmentConfigNewFeatures:
                 with lock:
                     errors.append(str(e))
 
-        # 100 threads fazendo 1000 acessos
         with concurrent.futures.ThreadPoolExecutor(max_workers=100) as executor:
             futures = [executor.submit(access_env) for _ in range(1000)]
             concurrent.futures.wait(futures)

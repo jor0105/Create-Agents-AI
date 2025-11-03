@@ -32,7 +32,7 @@ class TestOpenAIChatAdapter:
     def test_initialization_with_missing_api_key_raises_error(self, mock_get_api_key):
         mock_get_api_key.side_effect = EnvironmentError("API key not found")
 
-        with pytest.raises(ChatException, match="Erro ao configurar OpenAI"):
+        with pytest.raises(ChatException, match="Error configuring OpenAI"):
             OpenAIChatAdapter()
 
     @patch(
@@ -129,7 +129,7 @@ class TestOpenAIChatAdapter:
         call_args = mock_client.responses.create.call_args
         messages = call_args.kwargs["input"]
 
-        assert len(messages) == 2  # system + user
+        assert len(messages) == 2
 
     @patch(
         "src.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
@@ -167,7 +167,7 @@ class TestOpenAIChatAdapter:
         call_args = mock_client.responses.create.call_args
         messages = call_args.kwargs["input"]
 
-        assert len(messages) == 6  # system + 4 history + user
+        assert len(messages) == 6
 
     @patch(
         "src.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
@@ -215,7 +215,7 @@ class TestOpenAIChatAdapter:
 
         adapter = OpenAIChatAdapter()
 
-        with pytest.raises(ChatException, match="OpenAI retornou uma resposta vazia"):
+        with pytest.raises(ChatException, match="OpenAI returned an empty response"):
             adapter.chat(
                 model=IA_OPENAI_TEST_2,
                 instructions="Test",
@@ -241,7 +241,7 @@ class TestOpenAIChatAdapter:
 
         adapter = OpenAIChatAdapter()
 
-        with pytest.raises(ChatException, match="OpenAI retornou uma resposta vazia"):
+        with pytest.raises(ChatException, match="OpenAI returned an empty response"):
             adapter.chat(
                 model=IA_OPENAI_TEST_1,
                 instructions="Test",
@@ -261,7 +261,6 @@ class TestOpenAIChatAdapter:
 
         mock_client = Mock()
 
-        # Cria um objeto que não tem o atributo output_text
         class BadResponse:
             @property
             def output_text(self):
@@ -269,7 +268,6 @@ class TestOpenAIChatAdapter:
 
             @property
             def usage(self):
-                # Retorna um mock para não dar erro ao tentar acessar usage
                 return Mock()
 
         mock_client.responses.create.return_value = BadResponse()
@@ -277,7 +275,7 @@ class TestOpenAIChatAdapter:
 
         adapter = OpenAIChatAdapter()
 
-        with pytest.raises(ChatException, match="Erro ao acessar resposta da OpenAI"):
+        with pytest.raises(ChatException, match="Error accessing OpenAI response"):
             adapter.chat(
                 model=IA_OPENAI_TEST_2,
                 instructions="Test",
@@ -301,7 +299,7 @@ class TestOpenAIChatAdapter:
 
         adapter = OpenAIChatAdapter()
 
-        with pytest.raises(ChatException, match="Erro ao acessar resposta da OpenAI"):
+        with pytest.raises(ChatException, match="Error accessing OpenAI response"):
             adapter.chat(
                 model=IA_OPENAI_TEST_1,
                 instructions="Test",
@@ -325,7 +323,7 @@ class TestOpenAIChatAdapter:
 
         adapter = OpenAIChatAdapter()
 
-        with pytest.raises(ChatException, match="formato inesperado"):
+        with pytest.raises(ChatException, match="unexpected format"):
             adapter.chat(
                 model=IA_OPENAI_TEST_2,
                 instructions="Test",
@@ -349,7 +347,7 @@ class TestOpenAIChatAdapter:
 
         adapter = OpenAIChatAdapter()
 
-        with pytest.raises(ChatException, match="Erro ao comunicar com OpenAI"):
+        with pytest.raises(ChatException, match="Error communicating with OpenAI"):
             adapter.chat(
                 model=IA_OPENAI_TEST_1,
                 instructions="Test",
@@ -569,7 +567,6 @@ class TestOpenAIChatAdapter:
 
         adapter = OpenAIChatAdapter()
 
-        # Primeira chamada
         adapter.chat(
             model=IA_OPENAI_TEST_1,
             instructions="Test",
@@ -578,7 +575,6 @@ class TestOpenAIChatAdapter:
             history=[],
         )
 
-        # Segunda chamada
         adapter.chat(
             model=IA_OPENAI_TEST_2,
             instructions="Test",
@@ -642,7 +638,7 @@ class TestOpenAIChatAdapter:
         assert response == "Response"
         call_args = mock_client.responses.create.call_args
         messages = call_args.kwargs["input"]
-        assert len(messages) == 4  # system + 2 history + user
+        assert len(messages) == 4
 
     @patch(
         "src.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
@@ -662,7 +658,6 @@ class TestOpenAIChatAdapter:
 
         adapter = OpenAIChatAdapter()
 
-        # Cria histórico com 50 mensagens
         history = []
         for i in range(25):
             history.append({"role": "user", "content": f"Message {i}"})
@@ -679,7 +674,7 @@ class TestOpenAIChatAdapter:
         assert response == "Response"
         call_args = mock_client.responses.create.call_args
         messages = call_args.kwargs["input"]
-        assert len(messages) == 52  # system + 50 history + user
+        assert len(messages) == 52
 
     @patch(
         "src.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
@@ -741,7 +736,7 @@ class TestOpenAIChatAdapter:
 
         metrics = adapter.get_metrics()
         assert len(metrics) == 1
-        assert metrics[0].error_message == "OpenAI retornou resposta vazia"
+        assert metrics[0].error_message == "OpenAI returned an empty response."
         assert metrics[0].success is False
 
     @patch(
@@ -749,13 +744,11 @@ class TestOpenAIChatAdapter:
     )
     @patch("src.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client")
     def test_chat_with_missing_usage_info(self, mock_get_client, mock_get_api_key):
-        """Testa se o adapter lida corretamente quando usage info está ausente."""
         mock_get_api_key.return_value = "test-api-key"
 
         mock_client = Mock()
         mock_response = MagicMock()
         mock_response.output_text = "Response"
-        # Simula ausência de usage - getattr retornará None
         mock_response.usage = MagicMock()
         del mock_response.usage.total_tokens
         del mock_response.usage.input_tokens
@@ -765,7 +758,6 @@ class TestOpenAIChatAdapter:
 
         adapter = OpenAIChatAdapter()
 
-        # Deve funcionar mesmo sem usage info
         response = adapter.chat(
             model=IA_OPENAI_TEST_2,
             instructions="Test",
@@ -777,7 +769,6 @@ class TestOpenAIChatAdapter:
         assert response == "Response"
         metrics = adapter.get_metrics()
         assert len(metrics) == 1
-        # Tokens devem ser None quando não disponíveis
         assert metrics[0].tokens_used is None
         assert metrics[0].prompt_tokens is None
         assert metrics[0].completion_tokens is None
@@ -790,7 +781,6 @@ class TestOpenAIChatAdapter:
     def test_initialization_loads_environment_configs(
         self, mock_get_client, mock_get_env, mock_get_api_key
     ):
-        """Testa se as configurações de ambiente são carregadas na inicialização."""
         mock_get_api_key.return_value = "test-api-key"
         mock_get_env.side_effect = lambda key, default: {
             "OPENAI_TIMEOUT": "60",
@@ -802,7 +792,6 @@ class TestOpenAIChatAdapter:
         adapter = OpenAIChatAdapter()
 
         assert adapter is not None
-        # Verifica que get_env foi chamado para buscar configurações
         assert mock_get_env.call_count >= 2
 
     @patch(
@@ -812,7 +801,6 @@ class TestOpenAIChatAdapter:
     def test_chat_with_whitespace_only_response_raises_error(
         self, mock_get_client, mock_get_api_key
     ):
-        """Testa se resposta com apenas espaços em branco é tratada como vazia."""
         mock_get_api_key.return_value = "test-api-key"
 
         mock_client = Mock()
@@ -823,8 +811,6 @@ class TestOpenAIChatAdapter:
 
         adapter = OpenAIChatAdapter()
 
-        # Nota: O código atual não faz strip(), então isso passaria
-        # Se quiser que falhe, o código precisa fazer strip() antes de checar
         response = adapter.chat(
             model=IA_OPENAI_TEST_1,
             instructions="Test",
@@ -833,7 +819,6 @@ class TestOpenAIChatAdapter:
             history=[],
         )
 
-        # Como o código atual não faz strip, whitespace é válido
         assert response == "   \n\t  "
 
     @patch(
@@ -843,7 +828,6 @@ class TestOpenAIChatAdapter:
     def test_chat_updates_metrics_list_correctly(
         self, mock_get_client, mock_get_api_key
     ):
-        """Testa se a lista de métricas é atualizada corretamente após várias operações."""
         mock_get_api_key.return_value = "test-api-key"
 
         mock_client = Mock()
@@ -857,7 +841,6 @@ class TestOpenAIChatAdapter:
 
         adapter = OpenAIChatAdapter()
 
-        # Primeira chamada com sucesso
         adapter.chat(
             model=IA_OPENAI_TEST_1,
             instructions="Test",
@@ -866,7 +849,6 @@ class TestOpenAIChatAdapter:
             history=[],
         )
 
-        # Segunda chamada com erro
         mock_client.responses.create.side_effect = RuntimeError("Error")
         try:
             adapter.chat(
@@ -879,7 +861,6 @@ class TestOpenAIChatAdapter:
         except ChatException:
             pass
 
-        # Terceira chamada com sucesso novamente
         mock_client.responses.create.side_effect = None
         mock_client.responses.create.return_value = mock_response
         adapter.chat(
@@ -1087,3 +1068,225 @@ class TestOpenAIChatAdapter:
         assert "top_p" not in call_args.kwargs
         assert "model" in call_args.kwargs
         assert "input" in call_args.kwargs
+
+    @patch(
+        "src.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
+    )
+    @patch("src.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client")
+    def test_chat_logs_debug_messages(self, mock_get_client, mock_get_api_key):
+        mock_get_api_key.return_value = "test-api-key"
+
+        mock_client = Mock()
+        mock_response = MagicMock()
+        mock_response.output_text = "A" * 200
+        mock_response.usage.total_tokens = 100
+        mock_response.usage.input_tokens = 50
+        mock_response.usage.output_tokens = 50
+        mock_client.responses.create.return_value = mock_response
+        mock_get_client.return_value = mock_client
+
+        with patch(
+            "src.infra.adapters.OpenAI.openai_chat_adapter.LoggingConfig.get_logger"
+        ) as mock_logger:
+            mock_log = Mock()
+            mock_logger.return_value = mock_log
+
+            adapter = OpenAIChatAdapter()
+
+            adapter.chat(
+                model=IA_OPENAI_TEST_1,
+                instructions="Test",
+                config={},
+                user_ask="Test",
+                history=[],
+            )
+
+            assert mock_log.debug.call_count >= 2
+
+    @patch(
+        "src.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
+    )
+    @patch("src.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client")
+    def test_chat_logs_info_on_success(self, mock_get_client, mock_get_api_key):
+        mock_get_api_key.return_value = "test-api-key"
+
+        mock_client = Mock()
+        mock_response = MagicMock()
+        mock_response.output_text = "Response"
+        mock_response.usage.total_tokens = 100
+        mock_response.usage.input_tokens = 50
+        mock_response.usage.output_tokens = 50
+        mock_client.responses.create.return_value = mock_response
+        mock_get_client.return_value = mock_client
+
+        with patch(
+            "src.infra.adapters.OpenAI.openai_chat_adapter.LoggingConfig.get_logger"
+        ) as mock_logger:
+            mock_log = Mock()
+            mock_logger.return_value = mock_log
+
+            adapter = OpenAIChatAdapter()
+
+            adapter.chat(
+                model=IA_OPENAI_TEST_1,
+                instructions="Test",
+                config={},
+                user_ask="Test",
+                history=[],
+            )
+
+            assert mock_log.info.call_count >= 2
+
+    @patch(
+        "src.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
+    )
+    @patch("src.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client")
+    def test_chat_logs_error_on_failure(self, mock_get_client, mock_get_api_key):
+        mock_get_api_key.return_value = "test-api-key"
+
+        mock_client = Mock()
+        mock_client.responses.create.side_effect = RuntimeError("API Error")
+        mock_get_client.return_value = mock_client
+
+        with patch(
+            "src.infra.adapters.OpenAI.openai_chat_adapter.LoggingConfig.get_logger"
+        ) as mock_logger:
+            mock_log = Mock()
+            mock_logger.return_value = mock_log
+
+            adapter = OpenAIChatAdapter()
+
+            try:
+                adapter.chat(
+                    model=IA_OPENAI_TEST_1,
+                    instructions="Test",
+                    config={},
+                    user_ask="Test",
+                    history=[],
+                )
+            except ChatException:
+                pass
+
+            assert mock_log.error.call_count >= 1
+
+    @patch(
+        "src.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
+    )
+    @patch("src.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client")
+    def test_chat_with_none_instructions_omits_system_message(
+        self, mock_get_client, mock_get_api_key
+    ):
+        mock_get_api_key.return_value = "test-api-key"
+
+        mock_client = Mock()
+        mock_response = MagicMock()
+        mock_response.output_text = "Response"
+        mock_response.usage.total_tokens = 100
+        mock_response.usage.input_tokens = 50
+        mock_response.usage.output_tokens = 50
+        mock_client.responses.create.return_value = mock_response
+        mock_get_client.return_value = mock_client
+
+        adapter = OpenAIChatAdapter()
+
+        adapter.chat(
+            model=IA_OPENAI_TEST_1,
+            instructions=None,
+            config={},
+            user_ask="Test",
+            history=[],
+        )
+
+        call_args = mock_client.responses.create.call_args
+        messages = call_args.kwargs["input"]
+
+        assert len(messages) == 1
+        assert messages[0] == {"role": "user", "content": "Test"}
+
+    @patch(
+        "src.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
+    )
+    @patch("src.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client")
+    def test_chat_with_whitespace_only_instructions(
+        self, mock_get_client, mock_get_api_key
+    ):
+        mock_get_api_key.return_value = "test-api-key"
+
+        mock_client = Mock()
+        mock_response = MagicMock()
+        mock_response.output_text = "Response"
+        mock_response.usage.total_tokens = 100
+        mock_response.usage.input_tokens = 50
+        mock_response.usage.output_tokens = 50
+        mock_client.responses.create.return_value = mock_response
+        mock_get_client.return_value = mock_client
+
+        adapter = OpenAIChatAdapter()
+
+        adapter.chat(
+            model=IA_OPENAI_TEST_1,
+            instructions="   \n\t  ",
+            config={},
+            user_ask="Test",
+            history=[],
+        )
+
+        call_args = mock_client.responses.create.call_args
+        messages = call_args.kwargs["input"]
+
+        assert len(messages) == 1
+        assert messages[0]["role"] == "user"
+
+    @patch(
+        "src.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
+    )
+    @patch("src.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_env")
+    @patch("src.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client")
+    def test_initialization_uses_custom_timeout(
+        self, mock_get_client, mock_get_env, mock_get_api_key
+    ):
+        mock_get_api_key.return_value = "test-api-key"
+        mock_get_env.side_effect = lambda key, default: {
+            "OPENAI_TIMEOUT": "60",
+            "OPENAI_MAX_RETRIES": "3",
+        }.get(key, default)
+        mock_client = Mock()
+        mock_get_client.return_value = mock_client
+
+        OpenAIChatAdapter()
+
+        assert mock_get_env.call_count >= 2
+
+    @patch(
+        "src.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
+    )
+    @patch("src.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client")
+    def test_retry_decorator_is_applied(self, mock_get_client, mock_get_api_key):
+        mock_get_api_key.return_value = "test-api-key"
+
+        mock_client = Mock()
+        mock_response = MagicMock()
+        mock_response.output_text = "Response"
+        mock_response.usage.total_tokens = 100
+        mock_response.usage.input_tokens = 50
+        mock_response.usage.output_tokens = 50
+
+        mock_client.responses.create.side_effect = [
+            Exception("Error 1"),
+            Exception("Error 2"),
+            mock_response,
+        ]
+        mock_get_client.return_value = mock_client
+
+        adapter = OpenAIChatAdapter()
+
+        response = adapter.chat(
+            model=IA_OPENAI_TEST_1,
+            instructions="Test",
+            config={},
+            user_ask="Test",
+            history=[],
+        )
+
+        assert response == "Response"
+        assert mock_client.responses.create.call_count == 3

@@ -1,11 +1,3 @@
-"""
-Filtro de dados sensíveis para logs.
-
-Este módulo fornece funcionalidades para remover ou mascarar
-dados sensíveis dos logs, garantindo conformidade com LGPD/GDPR
-e segurança de credenciais.
-"""
-
 import re
 from functools import lru_cache
 from typing import Dict, Pattern
@@ -13,38 +5,35 @@ from typing import Dict, Pattern
 
 class SensitiveDataFilter:
     """
-    Filtro para remover dados sensíveis de logs.
+    A filter to remove sensitive data from logs.
 
-    Protege contra vazamento de:
-    - Credenciais (API keys, tokens, passwords)
-    - Dados pessoais (emails, CPF, telefones)
-    - Dados financeiros (cartões de crédito)
-    - Secrets e chaves
+    This filter protects against the leakage of:
+    - Credentials (API keys, tokens, passwords)
+    - Personal data (emails, CPF, phone numbers)
+    - Financial data (credit cards)
+    - Secrets and keys
 
-    IMPORTANTE: A ordem dos padrões é significativa!
-    Padrões mais específicos devem vir primeiro para evitar
-    que padrões genéricos capturem incorretamente.
+    IMPORTANT: The order of the patterns is significant.
+    More specific patterns should be placed first to prevent
+    generic patterns from capturing data incorrectly.
 
-    Ordem atual:
-    1. JWT tokens (mais específico)
+    Current order:
+    1. JWT tokens (most specific)
     2. API keys
     3. Bearer tokens
     4. Secrets
     5. Auth headers
-    6. URLs com senhas (antes de password genérico)
-    7. Passwords (mais genérico)
-    8. Dados pessoais (LGPD/GDPR)
-    9. Dados financeiros
-    10. IPs privados
+    6. URLs with passwords (before the generic password pattern)
+    7. Passwords (most generic)
+    8. Personal data (LGPD/GDPR)
+    9. Financial data
+    10. Private IPs
     """
 
-    # Constantes de configuração
     DEFAULT_CACHE_SIZE = 1000
     DEFAULT_VISIBLE_CHARS = 4
 
-    # Padrões compilados para melhor performance (ORDEM IMPORTA!)
     _PATTERNS: Dict[str, Pattern] = {
-        # Credenciais e Secrets (ordem importa - mais específicos primeiro)
         "jwt_token": re.compile(
             r"eyJ[a-zA-Z0-9_-]*\.eyJ[a-zA-Z0-9_-]*\.[a-zA-Z0-9_-]*"
         ),
@@ -56,14 +45,12 @@ class SensitiveDataFilter:
         "auth_header": re.compile(
             r"(authorization[\s:]+)(basic|bearer)[\s]+[\w\-._=]+", re.IGNORECASE
         ),
-        # URLs com credenciais (antes de password para não conflitar)
         "url_with_password": re.compile(
             r"(https?://[^:@\s]+):([^@\s]+)@", re.IGNORECASE
         ),
         "password": re.compile(
             r'(password|senha|pwd|pass)[\s:="\'\[]*([^\s,\]"\'}@]{3,})', re.IGNORECASE
         ),
-        # Dados Pessoais (LGPD/GDPR)
         "email": re.compile(r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b"),
         "cnpj": re.compile(r"\b\d{2}\.?\d{3}\.?\d{3}/?\d{4}-?\d{2}\b"),
         "cpf": re.compile(r"\b\d{3}\.?\d{3}\.?\d{3}-?\d{2}\b"),
@@ -71,12 +58,10 @@ class SensitiveDataFilter:
         "phone_br": re.compile(
             r"\b(?:\+55[\s]?)?\(?[1-9]{2}\)?[\s]?9[\s]?\d{4}-?\d{4}\b"
         ),
-        # Dados Financeiros
         "credit_card": re.compile(r"\b\d{4}[\s\-]?\d{4}[\s\-]?\d{4}[\s\-]?\d{4}\b"),
         "cvv": re.compile(
             r'\b(cvv|cvc|security[\s]?code)[\s:="\']*([\d]{3,4})\b', re.IGNORECASE
         ),
-        # Endereços IP (podem ser sensíveis em alguns contextos)
         "ipv4": re.compile(
             r"\b(?:10|127|172\.(?:1[6-9]|2[0-9]|3[01])|192\.168)\.\d{1,3}\.\d{1,3}\b"
         ),
@@ -86,38 +71,31 @@ class SensitiveDataFilter:
     @lru_cache(maxsize=DEFAULT_CACHE_SIZE)
     def _filter_cached(cls, text: str) -> str:
         """
-        Remove ou mascara dados sensíveis do texto (versão cacheada).
-        Usa LRU cache para melhor performance e gerenciamento automático.
+        Removes or masks sensitive data from text (cached version).
+        Uses an LRU cache for improved performance and automatic management.
 
         Args:
-            text: Texto a ser filtrado
+            text: The text to be filtered.
 
         Returns:
-            Texto com dados sensíveis substituídos por placeholders
+            The text with sensitive data replaced by placeholders.
         """
         filtered_text = text
 
-        # Aplica cada padrão
         for pattern_name, pattern in cls._PATTERNS.items():
             if pattern_name == "password":
-                # Preserva a palavra "password" mas remove o valor
                 filtered_text = pattern.sub(r"\1[PASSWORD_REDACTED]", filtered_text)
             elif pattern_name == "secret":
-                # Preserva a palavra "secret" mas remove o valor
                 filtered_text = pattern.sub(r"\1[SECRET_REDACTED]", filtered_text)
             elif pattern_name == "cvv":
-                # Preserva o label mas remove o CVV
                 filtered_text = pattern.sub(r"\1[CVV_REDACTED]", filtered_text)
             elif pattern_name == "url_with_password":
-                # Remove credenciais de URLs
                 filtered_text = pattern.sub(
                     r"\1:[CREDENTIALS_REDACTED]@", filtered_text
                 )
             elif pattern_name == "auth_header":
-                # Preserva tipo de auth mas remove o token
                 filtered_text = pattern.sub(r"\1\2 [TOKEN_REDACTED]", filtered_text)
             else:
-                # Substituição completa para outros casos
                 filtered_text = pattern.sub(
                     f"[{pattern_name.upper()}_REDACTED]", filtered_text
                 )
@@ -127,13 +105,13 @@ class SensitiveDataFilter:
     @classmethod
     def filter(cls, text: str) -> str:
         """
-        Remove ou mascara dados sensíveis do texto.
+        Removes or masks sensitive data from a given text.
 
         Args:
-            text: Texto a ser filtrado
+            text: The text to be filtered.
 
         Returns:
-            Texto com dados sensíveis substituídos por placeholders
+            The text with sensitive data replaced by placeholders.
 
         Example:
             >>> text = "API Key: abc123xyz, email: user@example.com"
@@ -147,20 +125,20 @@ class SensitiveDataFilter:
 
     @classmethod
     def clear_cache(cls) -> None:
-        """Limpa o cache LRU de substituições."""
+        """Clears the LRU cache of replacements."""
         cls._filter_cached.cache_clear()
 
     @classmethod
     def mask_partial(cls, text: str, visible_chars: int = DEFAULT_VISIBLE_CHARS) -> str:
         """
-        Mascara parcialmente um texto, mantendo alguns caracteres visíveis.
+        Partially masks a text, keeping a specified number of characters visible.
 
         Args:
-            text: Texto a ser mascarado
-            visible_chars: Número de caracteres visíveis no final
+            text: The text to be masked.
+            visible_chars: The number of characters to keep visible at the end.
 
         Returns:
-            Texto mascarado
+            The masked text.
 
         Example:
             >>> SensitiveDataFilter.mask_partial("sk-1234567890abcdef", 4)
@@ -169,18 +147,21 @@ class SensitiveDataFilter:
         if len(text) <= visible_chars:
             return "*" * len(text)
 
+        if visible_chars <= 0:
+            return "*" * len(text)
+
         return "*" * (len(text) - visible_chars) + text[-visible_chars:]
 
     @classmethod
     def is_sensitive(cls, text: str) -> bool:
         """
-        Verifica se o texto contém dados sensíveis.
+        Checks if the given text contains sensitive data.
 
         Args:
-            text: Texto a ser verificado
+            text: The text to be checked.
 
         Returns:
-            True se o texto contém dados sensíveis
+            True if the text contains sensitive data, False otherwise.
         """
         if not text:
             return False

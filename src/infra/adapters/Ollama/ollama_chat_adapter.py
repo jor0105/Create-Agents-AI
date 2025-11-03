@@ -13,18 +13,17 @@ from src.infra.config.retry import retry_with_backoff
 
 
 class OllamaChatAdapter(ChatRepository):
-    """Adapter para comunicação com Ollama."""
+    """An adapter for communicating with Ollama."""
 
     def __init__(self):
         self.__logger = LoggingConfig.get_logger(__name__)
         self.__metrics: List[ChatMetrics] = []
 
-        # Carrega configurações opcionais do ambiente
         self.__host = EnvironmentConfig.get_env("OLLAMA_HOST", "http://localhost:11434")
         self.__max_retries = int(EnvironmentConfig.get_env("OLLAMA_MAX_RETRIES", "3"))
 
         self.__logger.info(
-            f"Ollama adapter inicializado (host: {self.__host}, "
+            f"Ollama adapter initialized (host: {self.__host}, "
             f"max_retries: {self.__max_retries})"
         )
 
@@ -36,15 +35,15 @@ class OllamaChatAdapter(ChatRepository):
         config: Dict[str, Any],
     ) -> ChatResponse:
         """
-        Chama a API do Ollama com retry automático.
+        Calls the Ollama API with automatic retries.
 
         Args:
-            model: Nome do modelo
-            messages: Lista de mensagens
-            config: Configurações internas da IA
+            model: The name of the model.
+            messages: A list of messages.
+            config: Internal AI settings.
 
         Returns:
-            Resposta da API
+            The API response.
         """
         if "max_tokens" in config:
             config["num_predict"] = config.pop("max_tokens")
@@ -59,10 +58,10 @@ class OllamaChatAdapter(ChatRepository):
 
     def __stop_model(self, model: str) -> None:
         """
-        Para o modelo Ollama após o uso para liberar memória.
+        Stops the Ollama model after use to free up memory.
 
         Args:
-            model: Nome do modelo a ser parado
+            model: The name of the model to stop.
         """
         try:
             subprocess.run(
@@ -71,11 +70,11 @@ class OllamaChatAdapter(ChatRepository):
                 timeout=10,
                 check=False,
             )
-            self.__logger.debug(f"Modelo {model} parado com sucesso")
+            self.__logger.debug(f"Model {model} stopped successfully.")
         except (FileNotFoundError, subprocess.TimeoutExpired) as e:
-            self.__logger.warning(f"Não foi possível parar o modelo {model}: {str(e)}")
+            self.__logger.warning(f"Could not stop model {model}: {str(e)}")
         except Exception as e:
-            self.__logger.warning(f"Erro ao tentar parar o modelo {model}: {str(e)}")
+            self.__logger.warning(f"Error trying to stop model {model}: {str(e)}")
 
     def chat(
         self,
@@ -86,25 +85,25 @@ class OllamaChatAdapter(ChatRepository):
         user_ask: str,
     ) -> str:
         """
-        Envia mensagem para o Ollama e retorna a resposta.
+        Sends a message to Ollama and returns the response.
 
         Args:
-            model: Nome do modelo
-            instructions: Instruções do sistema (opcional)
-            config: Configurações internas da IA
-            history: Histórico de conversas (lista de dicts com 'role' e 'content')
-            user_ask: Pergunta do usuário
+            model: The name of the model.
+            instructions: System instructions (optional).
+            config: Internal AI settings.
+            history: The conversation history.
+            user_ask: The user's question.
 
         Returns:
-            str: Resposta do modelo
+            The model's response.
 
         Raises:
-            ChatException: Se houver erro na comunicação
+            ChatException: If a communication error occurs.
         """
         start_time = time.time()
 
         try:
-            self.__logger.debug(f"Iniciando chat com modelo {model} no Ollama")
+            self.__logger.debug(f"Starting chat with model {model} on Ollama.")
 
             messages = []
             if instructions and instructions.strip():
@@ -116,8 +115,8 @@ class OllamaChatAdapter(ChatRepository):
 
             content: str = response_api.message.content
             if not content:
-                self.__logger.warning("Ollama retornou resposta vazia")
-                raise ChatException("Ollama retornou uma resposta vazia")
+                self.__logger.warning("Ollama returned an empty response.")
+                raise ChatException("Ollama returned an empty response.")
 
             latency = (time.time() - start_time) * 1000
 
@@ -128,8 +127,8 @@ class OllamaChatAdapter(ChatRepository):
             )
             self.__metrics.append(metrics)
 
-            self.__logger.info(f"Chat concluído: {metrics}")
-            self.__logger.debug(f"Resposta (primeiros 100 chars): {content[:100]}...")
+            self.__logger.info(f"Chat completed: {metrics}")
+            self.__logger.debug(f"Response (first 100 chars): {content[:100]}...")
 
             return content
 
@@ -139,7 +138,7 @@ class OllamaChatAdapter(ChatRepository):
                 model=model,
                 latency_ms=latency,
                 success=False,
-                error_message="Ollama retornou resposta vazia",
+                error_message="Ollama returned an empty response.",
             )
             self.__metrics.append(metrics)
             raise
@@ -149,14 +148,14 @@ class OllamaChatAdapter(ChatRepository):
                 model=model,
                 latency_ms=latency,
                 success=False,
-                error_message=f"Chave ausente: {str(e)}",
+                error_message=f"Missing key: {str(e)}",
             )
             self.__metrics.append(metrics)
             self.__logger.error(
-                f"Resposta do Ollama com formato inválido. Chave ausente: {str(e)}"
+                f"The Ollama response has an invalid format. Missing key: {str(e)}"
             )
             raise ChatException(
-                f"Resposta do Ollama com formato inválido. Chave ausente: {str(e)}",
+                f"The Ollama response has an invalid format. Missing key: {str(e)}",
                 original_error=e,
             )
         except TypeError as e:
@@ -165,14 +164,14 @@ class OllamaChatAdapter(ChatRepository):
                 model=model,
                 latency_ms=latency,
                 success=False,
-                error_message=f"Erro de tipo: {str(e)}",
+                error_message=f"Type error: {str(e)}",
             )
             self.__metrics.append(metrics)
             self.__logger.error(
-                f"Erro de tipo ao processar resposta do Ollama: {str(e)}"
+                f"A type error occurred while processing the Ollama response: {str(e)}"
             )
             raise ChatException(
-                f"Erro de tipo ao processar resposta do Ollama: {str(e)}",
+                f"A type error occurred while processing the Ollama response: {str(e)}",
                 original_error=e,
             )
         except Exception as e:
@@ -181,12 +180,14 @@ class OllamaChatAdapter(ChatRepository):
                 model=model, latency_ms=latency, success=False, error_message=str(e)
             )
             self.__metrics.append(metrics)
-            self.__logger.error(f"Erro ao comunicar com Ollama: {str(e)}")
+            self.__logger.error(
+                f"An error occurred while communicating with Ollama: {str(e)}"
+            )
             raise ChatException(
-                f"Erro ao comunicar com Ollama: {str(e)}", original_error=e
+                f"An error occurred while communicating with Ollama: {str(e)}",
+                original_error=e,
             )
         finally:
-            # Para o modelo automaticamente para liberar memória
             self.__stop_model(model)
 
     def get_metrics(self) -> List[ChatMetrics]:

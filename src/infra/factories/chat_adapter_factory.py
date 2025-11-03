@@ -7,14 +7,10 @@ from src.infra.adapters.OpenAI.openai_chat_adapter import OpenAIChatAdapter
 
 class ChatAdapterFactory:
     """
-    Factory para criar adapters de chat com cache.
+    A factory for creating chat adapters with caching.
 
-    Lógica:
-    - Se provider for "openai": usa OpenAI
-    - etc...
-
-    O cache evita a criação de múltiplas instâncias do mesmo adapter,
-    melhorando performance e reduzindo overhead de inicialização.
+    The caching mechanism prevents the creation of multiple instances of the same
+    adapter, improving performance and reducing initialization overhead.
     """
 
     __cache: Dict[Tuple[str, str], ChatRepository] = {}
@@ -26,26 +22,23 @@ class ChatAdapterFactory:
         model: str,
     ) -> ChatRepository:
         """
-        Cria o adapter apropriado com cache.
+        Creates the appropriate adapter with caching.
 
         Args:
-            model: Nome do modelo (ex: "gpt-4", "llama2")
-            provider: Provider específico ("openai", "ollama")
+            model: The name of the model (e.g., "gpt-4", "llama2").
+            provider: The specific provider ("openai", "ollama").
 
         Returns:
-            ChatRepository: Instância do adapter apropriado (cached se já existir)
+            An instance of the appropriate adapter, cached if it already exists.
 
         Raises:
-            ValueError: Se provider não for "openai" ou "ollama"
+            ValueError: If the provider is not "openai" or "ollama".
         """
-        # Normaliza o model para lowercase para garantir cache correto
         cache_key = (model.lower(), provider.lower())
 
-        # Verifica se já existe no cache
         if cache_key in cls.__cache:
             return cls.__cache[cache_key]
 
-        # Cria novo adapter baseado no provider
         provider_lower = provider.lower()
         adapter: ChatRepository
         if provider_lower == "openai":
@@ -53,9 +46,8 @@ class ChatAdapterFactory:
         elif provider_lower == "ollama":
             adapter = OllamaChatAdapter()
         else:
-            raise ValueError(f"Provider inválido: {provider}.")
+            raise ValueError(f"Invalid provider: {provider}.")
 
-        # Armazena no cache
         cls.__cache[cache_key] = adapter
 
         return adapter

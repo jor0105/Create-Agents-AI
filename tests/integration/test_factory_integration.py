@@ -44,13 +44,8 @@ class TestChatAdapterFactoryIntegration:
             assert isinstance(adapter, ChatRepository)
 
     def test_factory_provider_selection(self):
-        """Testa que factory respeita o parâmetro provider."""
-        # OpenAI provider
         adapter_openai = ChatAdapterFactory.create(provider="openai", model="any-model")
-        # Ollama provider
         adapter_ollama = ChatAdapterFactory.create(provider="ollama", model="any-model")
-
-        # Tipos diferentes baseados no provider
         assert type(adapter_openai) != type(adapter_ollama)
 
     @patch(
@@ -200,7 +195,7 @@ class TestChatAdapterFactoryIntegration:
 
         call_args = mock_client.responses.create.call_args
         messages = call_args.kwargs["input"]
-        assert len(messages) >= 3  # system + history + user
+        assert len(messages) >= 3
 
     @patch("src.infra.adapters.Ollama.ollama_chat_adapter.chat")
     def test_factory_with_ollama_and_different_models(self, mock_ollama_chat):
@@ -227,7 +222,6 @@ class TestChatAdapterFactoryIntegration:
             assert response == "Local response"
 
     def test_factory_returns_chat_repository_interface(self):
-        """Testa que factory retorna interface ChatRepository para todos os providers."""
         test_cases = [
             ("openai", "gpt-5-mini"),
             ("ollama", "gemma3:4b"),
@@ -260,12 +254,10 @@ class TestChatAdapterFactoryIntegration:
 
         mock_get_api_key.side_effect = EnvironmentError("API key not found")
 
-        with pytest.raises(ChatException, match="Erro ao configurar OpenAI"):
+        with pytest.raises(ChatException, match="Error configuring OpenAI"):
             ChatAdapterFactory.create(provider="openai", model="gpt-5-mini")
 
     def test_factory_logic_consistency(self):
-        """Testa consistência na escolha de adapters baseado no provider."""
-        # Testa Ollama provider
         ollama_models = ["gemma3:4b", "phi4-mini:latest", "llama2", "any-model"]
         for model in ollama_models:
             adapter = ChatAdapterFactory.create(provider="ollama", model=model)
@@ -273,7 +265,6 @@ class TestChatAdapterFactoryIntegration:
                 adapter, OllamaChatAdapter
             ), f"Model {model} with ollama provider should use OllamaChatAdapter"
 
-        # Testa OpenAI provider
         with patch(
             "src.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
         ) as mock_key:

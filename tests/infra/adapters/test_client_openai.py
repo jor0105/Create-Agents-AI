@@ -69,19 +69,14 @@ class TestClientOpenAI:
         mock_client = Mock()
         mock_openai.return_value = mock_client
 
-        # chamada posicional
         ClientOpenAI.get_client("positional-key")
-
-        # chamada por keyword (mesmo comportamento esperado)
         ClientOpenAI.get_client(api_key="keyword-key")
 
-        # O OpenAI deve ter sido chamado duas vezes com os argumentos corretos
         mock_openai.assert_any_call(api_key="positional-key")
         mock_openai.assert_any_call(api_key="keyword-key")
 
     @patch("src.infra.adapters.OpenAI.client_openai.OpenAI")
     def test_get_client_accepts_non_string_keys(self, mock_openai):
-        """Garante que tipos diferentes de chave ainda são repassados ao cliente."""
         from src.infra.adapters.OpenAI.client_openai import ClientOpenAI
 
         mock_client = Mock()
@@ -93,7 +88,6 @@ class TestClientOpenAI:
         mock_openai.assert_called_with(api_key=key_obj)
 
     def test_api_openai_name_constant_type(self):
-        """Valida que a constante `API_OPENAI_NAME` é uma string não vazia."""
         from src.infra.adapters.OpenAI.client_openai import ClientOpenAI
 
         assert isinstance(ClientOpenAI.API_OPENAI_NAME, str)
@@ -102,7 +96,54 @@ class TestClientOpenAI:
     def test_get_client_callable_from_instance(self):
         from src.infra.adapters.OpenAI.client_openai import ClientOpenAI
 
-        # não vamos patchar aqui; apenas inspeção de atributo
-        # verificar que o atributo é chamável (função/staticmethod descriptor)
         attr = getattr(ClientOpenAI, "get_client")
         assert callable(attr)
+
+    @patch("src.infra.adapters.OpenAI.client_openai.OpenAI")
+    def test_get_client_handles_initialization_error(self, mock_openai):
+        from src.infra.adapters.OpenAI.client_openai import ClientOpenAI
+
+        mock_openai.side_effect = Exception("OpenAI initialization failed")
+
+        with pytest.raises(Exception, match="OpenAI initialization failed"):
+            ClientOpenAI.get_client("test-key")
+
+    @patch("src.infra.adapters.OpenAI.client_openai.OpenAI")
+    def test_get_client_with_empty_string_key(self, mock_openai):
+        from src.infra.adapters.OpenAI.client_openai import ClientOpenAI
+
+        mock_client = Mock()
+        mock_openai.return_value = mock_client
+
+        client = ClientOpenAI.get_client("")
+        assert client is mock_client
+        mock_openai.assert_called_with(api_key="")
+
+    @patch("src.infra.adapters.OpenAI.client_openai.OpenAI")
+    def test_get_client_returns_different_clients_for_different_keys(self, mock_openai):
+        from src.infra.adapters.OpenAI.client_openai import ClientOpenAI
+
+        mock_client1 = Mock()
+        mock_client2 = Mock()
+        mock_openai.side_effect = [mock_client1, mock_client2]
+
+        client1 = ClientOpenAI.get_client("key1")
+        client2 = ClientOpenAI.get_client("key2")
+
+        assert client1 is mock_client1
+        assert client2 is mock_client2
+        assert client1 is not client2
+
+    def test_api_openai_name_is_uppercase(self):
+        from src.infra.adapters.OpenAI.client_openai import ClientOpenAI
+
+        assert ClientOpenAI.API_OPENAI_NAME.isupper()
+
+    @patch("src.infra.adapters.OpenAI.client_openai.OpenAI")
+    def test_get_client_with_none_key_raises_error(self, mock_openai):
+        from src.infra.adapters.OpenAI.client_openai import ClientOpenAI
+
+        mock_openai.side_effect = TypeError("api_key cannot be None")
+
+        with pytest.raises(TypeError):
+            ClientOpenAI.get_client(None)

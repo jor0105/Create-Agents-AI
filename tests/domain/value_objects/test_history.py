@@ -34,9 +34,7 @@ class TestHistory:
     def test_add_invalid_type_raises_error(self):
         history = History()
 
-        with pytest.raises(
-            TypeError, match="Apenas objetos do tipo Message podem ser adicionados"
-        ):
+        with pytest.raises(TypeError, match="Only Message objects can be added"):
             history.add("Not a message")
 
     def test_add_user_message(self):
@@ -164,15 +162,15 @@ class TestHistory:
 
     def test_history_invalid_max_size_raises(self):
         with pytest.raises(
-            ValueError, match="Tamanho máximo do histórico deve ser maior que zero"
+            ValueError, match="The history's max size must be greater than zero"
         ):
             History(max_size=None)
         with pytest.raises(
-            ValueError, match="Tamanho máximo do histórico deve ser maior que zero"
+            ValueError, match="The history's max size must be greater than zero"
         ):
             History(max_size=0)
         with pytest.raises(
-            ValueError, match="Tamanho máximo do histórico deve ser maior que zero"
+            ValueError, match="The history's max size must be greater than zero"
         ):
             History(max_size=-1)
 
@@ -273,6 +271,59 @@ class TestHistory:
         messages = history.get_messages()
         assert messages[0].content == multiline
 
+    def test_history_from_dict_list_preserves_order(self):
+        data = [
+            {"role": "user", "content": "First"},
+            {"role": "assistant", "content": "Second"},
+            {"role": "user", "content": "Third"},
+        ]
+        history = History.from_dict_list(data, max_size=10)
+
+        messages = history.get_messages()
+        assert len(messages) == 3
+        assert messages[0].content == "First"
+        assert messages[1].content == "Second"
+        assert messages[2].content == "Third"
+
+    def test_history_add_multiple_same_type(self):
+        history = History()
+
+        history.add_user_message("User 1")
+        history.add_user_message("User 2")
+        history.add_user_message("User 3")
+
+        messages = history.get_messages()
+        assert len(messages) == 3
+        assert all(msg.role == MessageRole.USER for msg in messages)
+
+    def test_history_clear_on_empty_history(self):
+        history = History()
+        history.clear()
+
+        assert len(history) == 0
+        assert bool(history) is False
+
+    def test_history_max_size_boundary(self):
+        history = History(max_size=5)
+
+        for i in range(5):
+            history.add_user_message(f"Msg {i}")
+
+        assert len(history) == 5
+
+        history.add_user_message("Msg 5")
+
+        assert len(history) == 5
+        messages = history.get_messages()
+        assert messages[0].content == "Msg 1"
+
+    def test_history_to_dict_list_empty(self):
+        history = History()
+        result = history.to_dict_list()
+
+        assert result == []
+        assert isinstance(result, list)
+
 
 @pytest.mark.unit
 class TestHistoryDequePerformance:
@@ -310,8 +361,6 @@ class TestHistoryDequePerformance:
 
 @pytest.mark.unit
 class TestHistoryConcurrency:
-    """Testes de concorrência para verificar se History é thread-safe."""
-
     def test_history_concurrent_additions_basic(self):
         import threading
 
@@ -507,7 +556,6 @@ class TestHistoryConcurrency:
             assert 0 <= result <= 100
 
     def test_history_concurrent_stress_test(self):
-        """Teste de estresse com múltiplas threads e operações."""
         import threading
 
         history = History(max_size=200)

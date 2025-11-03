@@ -5,30 +5,25 @@ import pytest
 from src.domain.exceptions import ChatException
 from src.infra.adapters.Ollama.ollama_chat_adapter import OllamaChatAdapter
 
-# Modelos para testes de integração
-IA_OLLAMA_TEST_1: str = "phi4-mini:latest"  # A IA DEVE ESTAR BAIXADA
-IA_OLLAMA_TEST_2: str = "gemma3:4b"  # A IA DEVE ESTAR BAIXADA
+IA_OLLAMA_TEST_1: str = "phi4-mini:latest"
+IA_OLLAMA_TEST_2: str = "gemma3:4b"
 
 
 def _check_ollama_available():
-    """Helper para verificar se o Ollama está disponível e rodando."""
     import subprocess
 
-    # Evitar executar chamadas reais em ambientes de CI por padrão
     if os.getenv("CI"):
         pytest.skip("Skipping real Ollama integration test on CI (set CI=0 to run)")
 
     try:
-        # Tenta verificar se o Ollama está rodando
         result = subprocess.run(["ollama", "list"], capture_output=True, timeout=5)
         if result.returncode != 0:
-            pytest.skip("Ollama não está disponível ou não está rodando")
+            pytest.skip("Ollama is not available or not running")
     except (FileNotFoundError, subprocess.TimeoutExpired):
-        pytest.skip("Ollama não está instalado ou não está respondendo")
+        pytest.skip("Ollama is not installed or not responding")
 
 
 def _check_model_available(model: str):
-    """Helper para verificar se um modelo específico está disponível no Ollama."""
     import subprocess
 
     try:
@@ -37,34 +32,23 @@ def _check_model_available(model: str):
         )
         if model not in result.stdout:
             pytest.skip(
-                f"Modelo {model} não está disponível no Ollama. Execute: ollama pull {model}"
+                f"Model {model} is not available in Ollama. Run: ollama pull {model}"
             )
     except Exception as e:
-        pytest.skip(f"Não foi possível verificar modelos disponíveis: {e}")
+        pytest.skip(f"Could not verify available models: {e}")
 
 
 @pytest.fixture(scope="session", autouse=True)
 def teardown_ollama_models():
-    """Teardown session-scoped: tenta parar/descarregar os modelos usados nos testes ao final.
-
-    A fixture é automática para os testes de integração e só tenta executar o comando
-    `ollama stop <model>` quando a ferramenta `ollama` estiver disponível e não
-    estivermos rodando em CI (onde testes reais são normalmente pulados).
-    """
-    # Setup: nada a fazer antes dos testes
     yield
 
     import subprocess
-    import os
 
-    # Não executar em CI
     if os.getenv("CI"):
         return
 
-    # Modelos que utilizamos nos testes
     models = [IA_OLLAMA_TEST_1, IA_OLLAMA_TEST_2]
 
-    # Verifica se o CLI está disponível
     try:
         subprocess.run(["ollama", "--version"], capture_output=True, timeout=3)
     except (FileNotFoundError, subprocess.TimeoutExpired):
@@ -72,17 +56,13 @@ def teardown_ollama_models():
 
     for m in models:
         try:
-            # Tenta parar o modelo se o comando 'ollama stop' for suportado
             subprocess.run(["ollama", "stop", m], capture_output=True, timeout=10)
         except Exception:
-            # Ignorar qualquer erro no teardown para não falhar a suíte
             continue
 
 
 @pytest.mark.integration
 class TestOllamaChatAdapterIntegration:
-    """Testes de integração para o OllamaChatAdapter com o Ollama real."""
-
     def test_adapter_initialization(self):
         _check_ollama_available()
 
@@ -153,7 +133,6 @@ class TestOllamaChatAdapterIntegration:
         assert response is not None
         assert isinstance(response, str)
         assert len(response) > 0
-        # A resposta deve mencionar Alice
         assert "alice" in response.lower()
 
     def test_chat_with_complex_instructions(self):
@@ -320,7 +299,6 @@ class TestOllamaChatAdapterIntegration:
             user_ask="",
         )
 
-        # O Ollama deve responder mesmo com entrada vazia
         assert response is not None
         assert isinstance(response, str)
 
@@ -425,7 +403,6 @@ class TestOllamaChatAdapterIntegration:
         assert all(m.success for m in metrics)
 
     def test_adapter_implements_chat_repository_interface(self):
-        """Verifica que o adapter implementa a interface ChatRepository."""
         _check_ollama_available()
 
         from src.application.interfaces.chat_repository import ChatRepository
@@ -440,7 +417,6 @@ class TestOllamaChatAdapterIntegration:
 
         adapter = OllamaChatAdapter()
 
-        # Cria um histórico com várias mensagens
         history = []
         for i in range(5):
             history.append({"role": "user", "content": f"Message number {i+1}"})
@@ -496,9 +472,7 @@ class TestOllamaChatAdapterIntegration:
         metrics1 = adapter.get_metrics()
         metrics2 = adapter.get_metrics()
 
-        # As listas devem ser diferentes objetos
         assert metrics1 is not metrics2
-        # Mas com o mesmo conteúdo
         assert len(metrics1) == len(metrics2)
 
     def test_chat_with_config_parameter(self):

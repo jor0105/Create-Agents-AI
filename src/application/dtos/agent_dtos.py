@@ -4,7 +4,7 @@ from typing import Any, Dict, List, Optional
 
 @dataclass
 class CreateAgentInputDTO:
-    """DTO para criação de um novo agente."""
+    """DTO for creating a new agent."""
 
     provider: str
     model: str
@@ -16,38 +16,38 @@ class CreateAgentInputDTO:
     def validate(self) -> None:
         if not isinstance(self.provider, str) or not self.provider.strip():
             raise ValueError(
-                "O campo 'provider' é obrigatório, deve ser uma string e não pode estar vazio"
+                "The 'provider' field is required, must be a string, and cannot be empty."
             )
 
         if not isinstance(self.model, str) or not self.model.strip():
             raise ValueError(
-                "O campo 'model' é obrigatório, deve ser uma string e não pode estar vazio"
+                "The 'model' field is required, must be a string, and cannot be empty."
             )
 
         if self.name is not None and (
             not isinstance(self.name, str) or not self.name.strip()
         ):
             raise ValueError(
-                "O campo 'name' deve ser uma string válida e não pode estar vazio"
+                "The 'name' field must be a valid string and cannot be empty."
             )
 
         if self.instructions is not None and (
             not isinstance(self.instructions, str) or not self.instructions.strip()
         ):
             raise ValueError(
-                "O campo 'instructions' deve ser uma string válida e não pode estar vazio"
+                "The 'instructions' field must be a valid string and cannot be empty."
             )
 
         if not isinstance(self.config, dict):
-            raise ValueError("O campo 'config' deve ser um dicionário (dict)")
+            raise ValueError("The 'config' field must be a dictionary (dict).")
 
         if not isinstance(self.history_max_size, int) or self.history_max_size <= 0:
-            raise ValueError("O campo 'history_max_size' deve ser um inteiro positivo")
+            raise ValueError("The 'history_max_size' field must be a positive integer.")
 
 
 @dataclass
 class AgentConfigOutputDTO:
-    """DTO para retornar configurações de um agente."""
+    """DTO for returning agent configurations."""
 
     provider: str
     model: str
@@ -71,20 +71,20 @@ class AgentConfigOutputDTO:
 
 @dataclass
 class ChatInputDTO:
-    """DTO para entrada de mensagem de chat."""
+    """DTO for chat message input."""
 
     message: str
 
     def validate(self) -> None:
         if not isinstance(self.message, str) or not self.message.strip():
             raise ValueError(
-                "O campo 'message' é obrigatório, deve ser uma string e não pode estar vazio"
+                "The 'message' field is required, must be a string, and cannot be empty."
             )
 
 
 @dataclass
 class ChatOutputDTO:
-    """DTO para resposta de chat."""
+    """DTO for chat response."""
 
     response: str
 

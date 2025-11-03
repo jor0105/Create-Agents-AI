@@ -1,17 +1,15 @@
 from typing import Any, Dict, List, Optional
 
-from src.application.dtos import ChatInputDTO
-from src.application.use_cases.chat_with_agent import ChatWithAgentUseCase
-from src.application.use_cases.get_config_agents import GetAgentConfigUseCase
-from src.domain.entities.agent_domain import Agent
-from src.infra.config.metrics import ChatMetrics
-from src.main.composers.agent_composer import AgentComposer
+from src.application import ChatInputDTO, ChatWithAgentUseCase, GetAgentConfigUseCase
+from src.domain import Agent
+from src.infra import ChatMetrics
+from src.main import AgentComposer
 
 
 class AIAgent:
     """
-    Controller da camada de apresentação para interação com agentes de IA.
-    Responsável por coordenar as requisições e respostas.
+    The presentation layer controller for interacting with AI agents.
+    It is responsible for coordinating requests and responses.
     """
 
     def __init__(
@@ -24,15 +22,15 @@ class AIAgent:
         history_max_size: int = 10,
     ) -> None:
         """
-        Inicializa o controller criando um agente e suas dependências.
+        Initializes the controller by creating an agent and its dependencies.
 
         Args:
-            provider: Provider específico ("openai" ou "ollama") - define qual API usar
-            model: Nome do modelo de IA
-            name: Nome do agente (opcional)
-            instructions: Instruções/prompt do agente (opcional)
-            configs: Configurações extras do agente, como max_tokens e temperature (opcional)
-            history_max_size: Tamanho máximo do histórico (padrão: 10)
+            provider: The specific provider ("openai" or "ollama"), which defines which API to use.
+            model: The name of the AI model.
+            name: The name of the agent (optional).
+            instructions: The agent's instructions or prompt (optional).
+            config: Extra agent configurations, such as `max_tokens` and `temperature` (optional).
+            history_max_size: The maximum history size (default: 10).
         """
         self.__agent: Agent = AgentComposer.create_agent(
             provider=provider,
@@ -55,13 +53,13 @@ class AIAgent:
         message: str,
     ) -> str:
         """
-        Envia uma mensagem ao agente e retorna a resposta.
+        Sends a message to the agent and returns the response.
 
         Args:
-            message: Mensagem do usuário
+            message: The user's message.
 
         Returns:
-            str: Resposta do agente
+            The agent's response.
         """
         input_dto = ChatInputDTO(
             message=message,
@@ -71,35 +69,36 @@ class AIAgent:
 
     def get_configs(self) -> Dict[str, Any]:
         """
-        Retorna as configurações do agente.
+        Returns the agent's configurations.
 
         Returns:
-            Dict: Configurações do agente
+            A dictionary containing the agent's configurations.
         """
         output_dto = self.__get_config_use_case.execute(self.__agent)
         return output_dto.to_dict()
 
     def clear_history(self) -> None:
+        """Clears the agent's history."""
         self.__agent.clear_history()
 
     def get_metrics(self) -> List[ChatMetrics]:
         """
-        Retorna as métricas de performance do adapter de chat.
+        Returns the performance metrics of the chat adapter.
 
         Returns:
-            List[ChatMetrics]: Lista de métricas coletadas durante as interações
+            A list of metrics collected during interactions.
         """
         return self.__chat_use_case.get_metrics()
 
     def export_metrics_json(self, filepath: Optional[str] = None) -> str:
         """
-        Exporta métricas em formato JSON.
+        Exports metrics in JSON format.
 
         Args:
-            filepath: Caminho do arquivo para salvar (opcional)
+            filepath: The file path to save the metrics (optional).
 
         Returns:
-            str: String JSON com as métricas
+            A JSON string with the metrics.
         """
         from src.infra.config.metrics import MetricsCollector
 
@@ -111,13 +110,13 @@ class AIAgent:
 
     def export_metrics_prometheus(self, filepath: Optional[str] = None) -> str:
         """
-        Exporta métricas em formato Prometheus.
+        Exports metrics in Prometheus format.
 
         Args:
-            filepath: Caminho do arquivo para salvar (opcional)
+            filepath: The file path to save the metrics (optional).
 
         Returns:
-            str: String no formato Prometheus com as métricas
+            A string in Prometheus format with the metrics.
         """
         from src.infra.config.metrics import MetricsCollector
 

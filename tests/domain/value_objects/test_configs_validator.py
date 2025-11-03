@@ -185,3 +185,57 @@ class TestValidateConfig:
         SupportedConfigs.validate_config("temperature", None)
         SupportedConfigs.validate_config("max_tokens", None)
         SupportedConfigs.validate_config("top_p", None)
+
+    def test_validate_config_boundary_values(self):
+        """Testa validação com valores nos limites exatos."""
+        # Temperature boundaries
+        SupportedConfigs.validate_config("temperature", 0.0)
+        SupportedConfigs.validate_config("temperature", 2.0)
+
+        # Top_p boundaries
+        SupportedConfigs.validate_config("top_p", 0.0)
+        SupportedConfigs.validate_config("top_p", 1.0)
+
+        # Max_tokens minimum
+        SupportedConfigs.validate_config("max_tokens", 1)
+
+    def test_validate_config_just_outside_boundaries(self):
+        """Testa validação com valores logo fora dos limites."""
+        # Temperature
+        with pytest.raises(InvalidAgentConfigException):
+            SupportedConfigs.validate_config("temperature", -0.01)
+        with pytest.raises(InvalidAgentConfigException):
+            SupportedConfigs.validate_config("temperature", 2.01)
+
+        # Top_p
+        with pytest.raises(InvalidAgentConfigException):
+            SupportedConfigs.validate_config("top_p", -0.01)
+        with pytest.raises(InvalidAgentConfigException):
+            SupportedConfigs.validate_config("top_p", 1.01)
+
+        # Max_tokens
+        with pytest.raises(InvalidAgentConfigException):
+            SupportedConfigs.validate_config("max_tokens", 0)
+
+    def test_get_available_configs_contains_all_supported(self):
+        """Verifica que todos os configs suportados estão listados."""
+        configs = SupportedConfigs.get_available_configs()
+        expected_configs = {"temperature", "max_tokens", "top_p"}
+        assert configs == expected_configs
+
+    def test_validate_max_tokens_with_large_value(self):
+        """Testa max_tokens com valor muito grande."""
+        SupportedConfigs.validate_max_tokens(1000000)
+        # Não deve lançar erro
+
+    def test_validate_temperature_precision(self):
+        """Testa temperature com valores de alta precisão."""
+        SupportedConfigs.validate_temperature(0.123456789)
+        SupportedConfigs.validate_temperature(1.999999999)
+        # Não deve lançar erro
+
+    def test_validate_top_p_precision(self):
+        """Testa top_p com valores de alta precisão."""
+        SupportedConfigs.validate_top_p(0.123456789)
+        SupportedConfigs.validate_top_p(0.999999999)
+        # Não deve lançar erro

@@ -143,7 +143,6 @@ class TestCreateAgentUseCase:
         assert agent.instructions == input_dto.instructions
 
     def test_execute_multiple_times_creates_different_agents(self):
-        """Testa que múltiplas chamadas criam instâncias diferentes."""
         use_case = CreateAgentUseCase()
         input_dto = CreateAgentInputDTO(
             provider="openai",
@@ -362,7 +361,6 @@ class TestCreateAgentUseCase:
 
     def test_execute_with_float_history_max_size_raises_error(self):
         use_case = CreateAgentUseCase()
-        # A tipagem vai falhar na validação do DTO
         input_dto = CreateAgentInputDTO(
             provider="openai",
             model="gpt-5-nano",
@@ -588,6 +586,18 @@ class TestCreateAgentUseCase:
 
         with pytest.raises(InvalidConfigTypeException):
             use_case.execute(input_dto)
+
+    def test_multiple_validations_same_dto(self):
+        dto = CreateAgentInputDTO(
+            provider="openai",
+            model="gpt-5-nano",
+            name="Test",
+            instructions="Test",
+        )
+
+        dto.validate()
+        dto.validate()
+        dto.validate()
 
     def test_execute_with_all_valid_configs_combined(self):
         use_case = CreateAgentUseCase()

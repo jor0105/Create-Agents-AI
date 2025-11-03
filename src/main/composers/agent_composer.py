@@ -1,17 +1,19 @@
 from typing import Any, Dict, Optional
 
-from src.application.dtos import CreateAgentInputDTO
-from src.application.use_cases.chat_with_agent import ChatWithAgentUseCase
-from src.application.use_cases.create_agent import CreateAgentUseCase
-from src.application.use_cases.get_config_agents import GetAgentConfigUseCase
-from src.domain.entities.agent_domain import Agent
-from src.infra.factories.chat_adapter_factory import ChatAdapterFactory
+from src.application import (
+    ChatWithAgentUseCase,
+    CreateAgentInputDTO,
+    CreateAgentUseCase,
+    GetAgentConfigUseCase,
+)
+from src.domain import Agent
+from src.infra import ChatAdapterFactory
 
 
 class AgentComposer:
     """
-    Composer responsável por criar e compor as dependências
-    necessárias para os use cases relacionados a agentes.
+    A composer responsible for creating and composing the necessary
+    dependencies for agent-related use cases.
     """
 
     @staticmethod
@@ -24,18 +26,18 @@ class AgentComposer:
         history_max_size: int = 10,
     ) -> Agent:
         """
-        Cria um novo agente utilizando o CreateAgentUseCase.
+        Creates a new agent using the CreateAgentUseCase.
 
         Args:
-            provider: Provider específico ("openai" ou "ollama")
-            model: Nome do modelo de IA
-            name: Nome do agente (opcional)
-            instructions: Instruções do agente (opcional)
-            configs: Configurações extras do agente, como max_tokens e temperature (opcional)
-            history_max_size: Tamanho máximo do histórico (padrão: 10)
+            provider: The specific provider ("openai" or "ollama").
+            model: The name of the AI model.
+            name: The name of the agent (optional).
+            instructions: The agent's instructions (optional).
+            config: Extra agent configurations, such as `max_tokens` and `temperature` (optional).
+            history_max_size: The maximum history size (default: 10).
 
         Returns:
-            Agent: Nova instância do agente
+            A new agent instance.
         """
         if config is None:
             config = {}
@@ -59,14 +61,14 @@ class AgentComposer:
         model: str,
     ) -> ChatWithAgentUseCase:
         """
-        Cria o ChatWithAgentUseCase com suas dependências injetadas.
+        Creates the ChatWithAgentUseCase with its dependencies injected.
 
         Args:
-            provider: Provider específico ("openai" ou "ollama")
-            model: Nome do modelo de IA
+            provider: The specific provider ("openai" or "ollama").
+            model: The name of the AI model.
 
         Returns:
-            ChatWithAgentUseCase: Use case configurado
+            A configured ChatWithAgentUseCase.
         """
         chat_adapter = ChatAdapterFactory.create(provider, model)
         return ChatWithAgentUseCase(chat_repository=chat_adapter)
@@ -74,9 +76,9 @@ class AgentComposer:
     @staticmethod
     def create_get_config_use_case() -> GetAgentConfigUseCase:
         """
-        Cria o GetAgentConfigUseCase.
+        Creates the GetAgentConfigUseCase.
 
         Returns:
-            GetAgentConfigUseCase: Use case configurado
+            A configured GetAgentConfigUseCase.
         """
         return GetAgentConfigUseCase()

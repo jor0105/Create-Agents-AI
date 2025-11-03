@@ -23,10 +23,8 @@ class TestSupportedProviders:
         providers = SupportedProviders.get_available_providers()
         original_size = len(providers)
 
-        # Tenta modificar a cópia
         providers.add("new_provider")
 
-        # Verifica que a lista original não foi alterada
         new_providers = SupportedProviders.get_available_providers()
         assert len(new_providers) == original_size
         assert "new_provider" not in new_providers
@@ -48,3 +46,21 @@ class TestSupportedProviders:
         for provider in providers:
             assert provider.strip() != ""
             assert len(provider) > 0
+
+    def test_providers_are_strings(self):
+        providers = SupportedProviders.get_available_providers()
+
+        for provider in providers:
+            assert isinstance(provider, str)
+
+    def test_specific_providers_exist(self):
+        providers = SupportedProviders.get_available_providers()
+
+        assert "openai" in providers
+        assert "ollama" in providers
+
+    def test_providers_no_duplicates(self):
+        providers = SupportedProviders.get_available_providers()
+
+        providers_list = list(providers)
+        assert len(providers_list) == len(set(providers_list))

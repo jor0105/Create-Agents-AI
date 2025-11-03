@@ -2,47 +2,44 @@ from typing import List
 
 from src.application.dtos import ChatInputDTO, ChatOutputDTO
 from src.application.interfaces.chat_repository import ChatRepository
-from src.domain.entities.agent_domain import Agent
-from src.domain.exceptions import ChatException
-from src.infra.config.logging_config import LoggingConfig
-from src.infra.config.metrics import ChatMetrics
+from src.domain import Agent, ChatException
+from src.infra import ChatMetrics, LoggingConfig
 
 
 class ChatWithAgentUseCase:
-    """Use Case para realizar chat com um agente."""
+    """Use Case for chatting with an agent."""
 
     def __init__(self, chat_repository: ChatRepository):
         """
-        Inicializa o Use Case com suas dependências.
+        Initializes the Use Case with its dependencies.
 
         Args:
-            chat_repository: Repositório para comunicação com IA
+            chat_repository: Repository for AI communication.
         """
         self.__chat_repository = chat_repository
         self.__logger = LoggingConfig.get_logger(__name__)
 
     def execute(self, agent: Agent, input_dto: ChatInputDTO) -> ChatOutputDTO:
         """
-        Envia mensagem ao agente e retorna a resposta.
+        Sends a message to the agent and returns the response.
 
         Args:
-            agent: Instância do agente
-            input_dto: DTO com a mensagem do usuário
+            agent: The agent instance.
+            input_dto: DTO with the user's message.
 
         Returns:
-            ChatOutputDTO: DTO com a resposta do agente
+            A DTO with the agent's response.
 
         Raises:
-            ValueError: Se os dados de entrada forem inválidos
-            ChatException: Se houver erro durante a comunicação com a IA
+            ValueError: If the input data is invalid.
+            ChatException: If an error occurs during AI communication.
         """
         input_dto.validate()
 
         self.__logger.info(
-            "Executando chat com agente '%s' (modelo: %s)", agent.name, agent.model
+            "Running chat with agent '%s' (model: %s)", agent.name, agent.model
         )
-        # Usa formatação lazy para evitar construção de string desnecessária
-        self.__logger.debug("Mensagem do usuário: %s...", input_dto.message[:100])
+        self.__logger.debug("User message: %s...", input_dto.message[:100])
 
         try:
             response = self.__chat_repository.chat(
@@ -54,54 +51,50 @@ class ChatWithAgentUseCase:
             )
 
             if not response:
-                self.__logger.error("Resposta vazia recebida do repositório")
-                raise ChatException("Resposta vazia recebida do repositório")
+                self.__logger.error("Empty response received from repository")
+                raise ChatException("Empty response received from repository")
 
             output_dto = ChatOutputDTO(response=response)
 
             agent.add_user_message(input_dto.message)
             agent.add_assistant_message(response)
 
-            self.__logger.info("Chat executado com sucesso")
-            self.__logger.debug("Resposta (primeiros 100 chars): %s...", response[:100])
+            self.__logger.info("Chat executed successfully")
+            self.__logger.debug("Response (first 100 chars): %s...", response[:100])
 
             return output_dto
 
         except ChatException:
-            # já é uma exceção esperada da camada de domínio/repositorio
-            self.__logger.error("ChatException durante execução do chat", exc_info=True)
+            self.__logger.error("ChatException during chat execution", exc_info=True)
             raise
         except (ValueError, TypeError, KeyError) as e:
             error_map = {
                 ValueError: (
-                    "Erro de validação",
-                    "Erro de validação durante o chat: {}",
+                    "Validation error",
+                    "Validation error during chat: {}",
                 ),
-                TypeError: ("Erro de tipo", "Erro de tipo durante o chat: {}"),
+                TypeError: ("Type error", "Type error during chat: {}"),
                 KeyError: (
-                    "Erro ao processar resposta",
-                    "Erro ao processar resposta da IA: {}",
+                    "Error processing response",
+                    "Error processing AI response: {}",
                 ),
             }
-            msg, user_msg = error_map.get(type(e), ("Erro", "Erro durante o chat: {}"))
-            # usa lazy formatting e registra exceção para debug
+            msg, user_msg = error_map.get(type(e), ("Error", "Error during chat: {}"))
             self.__logger.error("%s: %s", msg, str(e), exc_info=True)
             raise ChatException(user_msg.format(str(e)))
         except Exception as e:
-            # registra stacktrace completo
-            self.__logger.error("Erro inesperado: %s", str(e), exc_info=True)
+            self.__logger.error("Unexpected error: %s", str(e), exc_info=True)
             raise ChatException(
-                f"Erro inesperado durante comunicação com IA: {str(e)}",
+                f"Unexpected error during communication with AI: {str(e)}",
                 original_error=e,
             )
 
     def get_metrics(self) -> List[ChatMetrics]:
         """
-        Retorna as métricas coletadas pelo repositório de chat.
+        Returns the metrics collected by the chat repository.
 
         Returns:
-            List[ChatMetrics]: Lista de métricas se o repositório suportar,
-                              lista vazia caso contrário.
+            A list of metrics if the repository supports it; otherwise, an empty list.
         """
         if hasattr(self.__chat_repository, "get_metrics"):
             metrics = self.__chat_repository.get_metrics()

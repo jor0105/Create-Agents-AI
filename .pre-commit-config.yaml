@@ -1,6 +1,6 @@
 ---
 repos:
-  # Básico: Whitespace, EOF, YAML, AST, merge conflicts
+  # Basic: Whitespace, EOF, YAML, AST, merge conflicts
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v6.0.0
     hooks:
@@ -14,14 +14,14 @@ repos:
       - id: debug-statements
       - id: check-ast
 
-  # Formatação: Black
+  # Formatting: Black
   - repo: https://github.com/psf/black
     rev: 24.4.2
     hooks:
       - id: black
         args: [--line-length=88]
 
-  # Linting e formatação: Ruff
+  # Linting and formatting: Ruff
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.4.4
     hooks:
@@ -29,7 +29,7 @@ repos:
         args: [--fix]
       - id: ruff-format
 
-  # Organização de imports
+  # Import organization
   - repo: https://github.com/PyCQA/isort
     rev: 5.12.0
     hooks:

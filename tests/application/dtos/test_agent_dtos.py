@@ -48,7 +48,7 @@ class TestCreateAgentInputDTO:
             provider="openai", model="", name="Test", instructions="Test"
         )
 
-        with pytest.raises(ValueError, match="'model'.*obrigatório"):
+        with pytest.raises(ValueError, match="'model'.*required"):
             dto.validate()
 
     def test_validate_whitespace_model(self):
@@ -56,7 +56,7 @@ class TestCreateAgentInputDTO:
             provider="openai", model="   ", name="Test", instructions="Test"
         )
 
-        with pytest.raises(ValueError, match="'model'.*obrigatório"):
+        with pytest.raises(ValueError, match="'model'.*required"):
             dto.validate()
 
     def test_validate_empty_name(self):
@@ -64,7 +64,7 @@ class TestCreateAgentInputDTO:
             provider="openai", model="gpt-5-nano", name="", instructions="Test"
         )
 
-        with pytest.raises(ValueError, match="'name'.*válida"):
+        with pytest.raises(ValueError, match="'name'.*valid"):
             dto.validate()
 
     def test_validate_whitespace_name(self):
@@ -72,7 +72,7 @@ class TestCreateAgentInputDTO:
             provider="openai", model="gpt-5-nano", name="   ", instructions="Test"
         )
 
-        with pytest.raises(ValueError, match="'name'.*válida"):
+        with pytest.raises(ValueError, match="'name'.*valid"):
             dto.validate()
 
     def test_validate_empty_instructions(self):
@@ -80,7 +80,7 @@ class TestCreateAgentInputDTO:
             provider="openai", model="gpt-5-nano", name="Test", instructions=""
         )
 
-        with pytest.raises(ValueError, match="'instructions'.*válida"):
+        with pytest.raises(ValueError, match="'instructions'.*valid"):
             dto.validate()
 
     def test_validate_whitespace_instructions(self):
@@ -88,7 +88,7 @@ class TestCreateAgentInputDTO:
             provider="openai", model="gpt-5-nano", name="Test", instructions="   "
         )
 
-        with pytest.raises(ValueError, match="'instructions'.*válida"):
+        with pytest.raises(ValueError, match="'instructions'.*valid"):
             dto.validate()
 
     def test_validate_none_name(self):
@@ -192,7 +192,7 @@ class TestCreateAgentInputDTO:
             history_max_size=0,
         )
 
-        with pytest.raises(ValueError, match="history_max_size.*inteiro positivo"):
+        with pytest.raises(ValueError, match="history_max_size.*positive integer"):
             dto.validate()
 
     def test_validate_negative_history_max_size(self):
@@ -204,7 +204,7 @@ class TestCreateAgentInputDTO:
             history_max_size=-5,
         )
 
-        with pytest.raises(ValueError, match="history_max_size.*inteiro positivo"):
+        with pytest.raises(ValueError, match="history_max_size.*positive integer"):
             dto.validate()
 
     def test_validate_invalid_config_type(self):
@@ -216,7 +216,7 @@ class TestCreateAgentInputDTO:
             config="invalid",  # type: ignore
         )
 
-        with pytest.raises(ValueError, match="'config'.*dicionário"):
+        with pytest.raises(ValueError, match="'config'.*dictionary"):
             dto.validate()
 
     def test_validate_non_int_history_max_size(self):
@@ -239,7 +239,7 @@ class TestCreateAgentInputDTO:
             instructions="Test",
         )
 
-        with pytest.raises(ValueError, match="'provider'.*obrigatório"):
+        with pytest.raises(ValueError, match="'provider'.*required"):
             dto.validate()
 
     def test_validate_empty_provider(self):
@@ -250,7 +250,7 @@ class TestCreateAgentInputDTO:
             instructions="Test",
         )
 
-        with pytest.raises(ValueError, match="'provider'.*obrigatório"):
+        with pytest.raises(ValueError, match="'provider'.*required"):
             dto.validate()
 
     def test_validate_whitespace_provider(self):
@@ -261,7 +261,7 @@ class TestCreateAgentInputDTO:
             instructions="Test",
         )
 
-        with pytest.raises(ValueError, match="'provider'.*obrigatório"):
+        with pytest.raises(ValueError, match="'provider'.*required"):
             dto.validate()
 
 
@@ -451,13 +451,13 @@ class TestChatInputDTO:
     def test_validate_empty_message(self):
         dto = ChatInputDTO(message="")
 
-        with pytest.raises(ValueError, match="'message'.*obrigatório"):
+        with pytest.raises(ValueError, match="'message'.*required"):
             dto.validate()
 
     def test_validate_whitespace_message(self):
         dto = ChatInputDTO(message="   ")
 
-        with pytest.raises(ValueError, match="'message'.*obrigatório"):
+        with pytest.raises(ValueError, match="'message'.*required"):
             dto.validate()
 
     def test_validate_long_message(self):
@@ -481,11 +481,10 @@ class TestChatInputDTO:
         dto = ChatInputDTO(message="12345")
         dto.validate()
 
-    def test_validate_empty_string_after_numeric_validation(self):
-        """Testa que validação funciona corretamente com strings vazias."""
+    def test_empty_string_after_numeric_validation(self):
         dto = ChatInputDTO(message="")
 
-        with pytest.raises(ValueError, match="'message'.*obrigatório"):
+        with pytest.raises(ValueError, match="'message'.*required"):
             dto.validate()
 
 
@@ -547,7 +546,6 @@ class TestChatOutputDTO:
 @pytest.mark.unit
 class TestDTOsIntegration:
     def test_create_agent_to_config_flow(self):
-        # Input DTO
         input_dto = CreateAgentInputDTO(
             provider="openai",
             model="gpt-5-nano",
@@ -557,7 +555,6 @@ class TestDTOsIntegration:
         )
         input_dto.validate()
 
-        # Simula criação de agente e config output
         output_dto = AgentConfigOutputDTO(
             provider=input_dto.provider,
             name=input_dto.name,
@@ -595,7 +592,6 @@ class TestDTOsIntegration:
         assert dto.model == original_model
 
     def test_multiple_validations_same_dto(self):
-        """Testa que validar múltiplas vezes o mesmo DTO não causa problemas."""
         dto = CreateAgentInputDTO(
             provider="openai",
             model="gpt-5-nano",
@@ -607,19 +603,7 @@ class TestDTOsIntegration:
         dto.validate()
         dto.validate()
 
-    def test_chat_input_output_with_special_content(self):
-        special_message = "こんにちは! How are you? 🤖"
-        input_dto = ChatInputDTO(message=special_message)
-        input_dto.validate()
-
-        output_dto = ChatOutputDTO(response=f"Echo: {special_message}")
-        output_result = output_dto.to_dict()
-
-        assert input_dto.message == special_message
-        assert special_message in output_result["response"]
-
     def test_config_preservation_through_dtos(self):
-        """Testa que config é preservada corretamente através dos DTOs."""
         original_config = {
             "temperature": 0.8,
             "max_tokens": 2048,

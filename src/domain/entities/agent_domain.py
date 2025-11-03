@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 from typing import Any, Dict, Optional
 
-from src.domain.exceptions.domain_exceptions import (
+from src.domain.exceptions import (
     InvalidConfigTypeException,
     InvalidProviderException,
     UnsupportedConfigException,
@@ -11,15 +11,15 @@ from src.domain.value_objects import History, SupportedConfigs, SupportedProvide
 
 @dataclass
 class Agent:
-    """Entidade de domínio que representa um agente de IA.
+    """Represents an AI agent in the domain.
 
-    Responsabilidades:
-    - Manter a identidade e configuração do agente
-    - Gerenciar o histórico de conversas através do Value Object History
-    - Garantir a integridade dos dados do agente
+    Responsibilities:
+    - Maintain the agent's identity and configuration.
+    - Manage the conversation history through the History Value Object.
+    - Ensure the integrity of the agent's data.
 
-    As validações de regras de negócio são executadas no __post_init__.
-    A lógica de histórico é delegada ao Value Object History.
+    Business rule validations are performed in `__post_init__`.
+    The logic for history management is delegated to the History Value Object.
     """
 
     provider: str
@@ -30,55 +30,49 @@ class Agent:
     history: History = field(default_factory=History)
 
     def __post_init__(self):
-        """Inicializa o histórico se necessário e valida as configurações do agente.
+        """Initializes history if necessary and validates agent configurations.
 
         Raises:
-            InvalidProviderException: Se o provider não for suportado
-            UnsupportedConfigException: Se uma config não for suportada
-            InvalidConfigTypeException: Se o tipo de uma config for inválido
-            InvalidAgentConfigException: Se o valor de uma config for inválido
+            InvalidProviderException: If the provider is not supported.
+            UnsupportedConfigException: If a configuration is not supported.
+            InvalidConfigTypeException: If a configuration type is invalid.
+            InvalidAgentConfigException: If a configuration value is invalid.
         """
-        # Inicializa histórico se necessário
         if not isinstance(self.history, History):
             object.__setattr__(self, "history", History())
 
-        # Valida provider
         if self.provider.lower() not in SupportedProviders.get_available_providers():
             raise InvalidProviderException(
                 self.provider, SupportedProviders.get_available_providers()
             )
 
-        # Valida configurações extras
         for key, value in self.config.items():
-            # Verifica se a config é suportada
             if key not in SupportedConfigs.get_available_configs():
                 raise UnsupportedConfigException(
                     key, SupportedConfigs.get_available_configs()
                 )
 
-            # Verifica se o tipo é permitido
             if not isinstance(value, (int, float, str, bool, list, dict, type(None))):
                 raise InvalidConfigTypeException(key, type(value))
 
-            # Valida o valor da config
             SupportedConfigs.validate_config(key, value)
 
     def add_user_message(self, content: str) -> None:
-        """Adiciona uma mensagem do usuário ao histórico.
+        """Adds a user message to the history.
 
         Args:
-            content: Conteúdo da mensagem
+            content: The content of the message.
         """
         self.history.add_user_message(content)
 
     def add_assistant_message(self, content: str) -> None:
-        """Adiciona uma mensagem do assistente ao histórico.
+        """Adds an assistant message to the history.
 
         Args:
-            content: Conteúdo da mensagem
+            content: The content of the message.
         """
         self.history.add_assistant_message(content)
 
     def clear_history(self) -> None:
-        """Limpa o histórico de mensagens."""
+        """Clears the message history."""
         self.history.clear()

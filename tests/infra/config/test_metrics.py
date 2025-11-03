@@ -9,8 +9,6 @@ from src.infra.config.metrics import ChatMetrics, MetricsCollector
 
 @pytest.mark.unit
 class TestChatMetrics:
-    """Testes para ChatMetrics."""
-
     def test_create_metrics_with_required_fields(self):
         metrics = ChatMetrics(model="gpt-5-nano", latency_ms=150.5)
 
@@ -78,8 +76,6 @@ class TestChatMetrics:
 
 @pytest.mark.unit
 class TestMetricsCollector:
-    """Testes para MetricsCollector."""
-
     def test_create_collector(self):
         collector = MetricsCollector()
         assert collector.get_all() == []
@@ -228,31 +224,25 @@ class TestMetricsCollector:
         assert "No metrics available" in prom_text
 
     def test_collector_with_custom_max_metrics(self):
-        """Testa criação de collector com limite customizado."""
         collector = MetricsCollector(max_metrics=100)
 
         assert collector._max_metrics == 100
 
     def test_collector_uses_default_max_metrics(self):
-        """Testa que usa MAX_METRICS por padrão."""
         collector = MetricsCollector()
 
         assert collector._max_metrics == MetricsCollector.MAX_METRICS
         assert collector._max_metrics == 10000
 
     def test_max_metrics_limit_enforced(self):
-        """Testa que o limite máximo de métricas é respeitado."""
         collector = MetricsCollector(max_metrics=10)
 
-        # Adiciona 15 métricas
         for i in range(15):
             collector.add(ChatMetrics(model=f"model-{i}", latency_ms=100.0))
 
-        # Deve manter apenas as últimas 10
         metrics = collector.get_all()
         assert len(metrics) == 10
 
-        # Verifica que são as mais recentes
         models = [m.model for m in metrics]
         assert "model-5" in models
         assert "model-14" in models
@@ -260,7 +250,6 @@ class TestMetricsCollector:
         assert "model-4" not in models
 
     def test_max_metrics_removes_oldest_first(self):
-        """Testa que as métricas mais antigas são removidas primeiro."""
         collector = MetricsCollector(max_metrics=3)
 
         m1 = ChatMetrics(model="first", latency_ms=100.0)
@@ -276,7 +265,6 @@ class TestMetricsCollector:
         assert len(metrics) == 3
         assert metrics[0].model == "first"
 
-        # Adiciona quarta, deve remover primeira
         collector.add(m4)
 
         metrics = collector.get_all()
@@ -285,7 +273,6 @@ class TestMetricsCollector:
         assert metrics[2].model == "fourth"
 
     def test_thread_safety_add_metrics(self):
-        """Testa que add() é thread-safe."""
         collector = MetricsCollector()
         errors = []
 
@@ -303,10 +290,8 @@ class TestMetricsCollector:
         assert len(collector.get_all()) == 100
 
     def test_thread_safety_get_all(self):
-        """Testa que get_all() é thread-safe."""
         collector = MetricsCollector()
 
-        # Adiciona métricas
         for i in range(10):
             collector.add(ChatMetrics(model=f"model-{i}", latency_ms=100.0))
 
@@ -331,7 +316,6 @@ class TestMetricsCollector:
         assert all(r == 10 for r in results)
 
     def test_thread_safety_get_summary(self):
-        """Testa que get_summary() é thread-safe."""
         collector = MetricsCollector()
 
         for i in range(5):
@@ -358,7 +342,6 @@ class TestMetricsCollector:
         assert all(r == 5 for r in results)
 
     def test_thread_safety_clear(self):
-        """Testa que clear() é thread-safe."""
         collector = MetricsCollector()
 
         for i in range(10):
@@ -380,7 +363,6 @@ class TestMetricsCollector:
         assert len(collector.get_all()) == 0
 
     def test_concurrent_add_and_read(self):
-        """Testa operações concorrentes de adicionar e ler."""
         collector = MetricsCollector()
         errors = []
         read_results = []
@@ -413,7 +395,6 @@ class TestMetricsCollector:
         assert len(collector.get_all()) == 50
 
     def test_concurrent_add_with_limit(self):
-        """Testa adições concorrentes respeitando limite."""
         collector = MetricsCollector(max_metrics=50)
         errors = []
 
@@ -428,11 +409,9 @@ class TestMetricsCollector:
             concurrent.futures.wait(futures)
 
         assert len(errors) == 0
-        # Deve manter apenas 50
         assert len(collector.get_all()) == 50
 
     def test_summary_respects_limit(self):
-        """Testa que summary funciona corretamente após atingir limite."""
         collector = MetricsCollector(max_metrics=5)
 
         for i in range(10):
@@ -445,12 +424,10 @@ class TestMetricsCollector:
 
         summary = collector.get_summary()
 
-        # Deve ter apenas as últimas 5
         assert summary["total_requests"] == 5
-        assert summary["avg_latency_ms"] >= 150.0  # Métricas mais recentes
+        assert summary["avg_latency_ms"] >= 150.0
 
     def test_clear_resets_to_empty(self):
-        """Testa que clear reseta completamente."""
         collector = MetricsCollector(max_metrics=10)
 
         for i in range(15):
@@ -465,7 +442,6 @@ class TestMetricsCollector:
         assert summary["total_requests"] == 0
 
     def test_metrics_with_none_tokens_in_summary(self):
-        """Testa summary com métricas sem tokens."""
         collector = MetricsCollector()
 
         collector.add(ChatMetrics(model="model1", latency_ms=100.0, tokens_used=None))
@@ -475,10 +451,9 @@ class TestMetricsCollector:
         summary = collector.get_summary()
 
         assert summary["total_requests"] == 3
-        assert summary["total_tokens"] == 50  # Apenas o que tem token
+        assert summary["total_tokens"] == 50
 
     def test_massive_concurrent_stress_test(self):
-        """Teste de stress com muitas threads."""
         collector = MetricsCollector(max_metrics=1000)
         errors = []
 
@@ -498,11 +473,9 @@ class TestMetricsCollector:
             concurrent.futures.wait(futures)
 
         assert len(errors) == 0
-        # Deve ter no máximo 1000 métricas
         assert len(collector.get_all()) <= 1000
 
     def test_lock_prevents_race_conditions(self):
-        """Testa que lock previne race conditions."""
         collector = MetricsCollector(max_metrics=10)
         counters = {"add": 0, "get": 0}
         lock = threading.Lock()
@@ -524,8 +497,131 @@ class TestMetricsCollector:
             all_futures = add_futures + get_futures
             concurrent.futures.wait(all_futures)
 
-        # Todas as operações devem ter sido contadas
         assert counters["add"] == 50
         assert counters["get"] == 50
-        # Collector deve ter no máximo 10
         assert len(collector.get_all()) == 10
+
+    def test_export_json_with_unicode_characters(self):
+        collector = MetricsCollector()
+        collector.add(
+            ChatMetrics(
+                model="modelo-português-日本語",
+                latency_ms=100.0,
+                error_message="Erro: não encontrado 🚫",
+            )
+        )
+
+        json_str = collector.export_json()
+
+        assert "português" in json_str
+        assert "日本語" in json_str
+        assert "🚫" in json_str or "não encontrado" in json_str
+
+    def test_export_prometheus_with_special_model_names(self):
+        collector = MetricsCollector()
+        collector.add(ChatMetrics(model="model:v1.0", latency_ms=100.0))
+        collector.add(
+            ChatMetrics(model="model-with-dashes_and_underscores", latency_ms=150.0)
+        )
+
+        prom_text = collector.export_prometheus()
+
+        assert "model:v1.0" in prom_text or "model" in prom_text
+        assert "model-with-dashes_and_underscores" in prom_text or "dashes" in prom_text
+
+    def test_metrics_to_dict_with_none_values(self):
+        metrics = ChatMetrics(
+            model="test-model",
+            latency_ms=100.0,
+            tokens_used=None,
+            prompt_tokens=None,
+            completion_tokens=None,
+            error_message=None,
+        )
+
+        result = metrics.to_dict()
+
+        assert result["tokens_used"] is None
+        assert result["prompt_tokens"] is None
+        assert result["completion_tokens"] is None
+        assert result["error_message"] is None
+
+    def test_collector_export_json_empty_summary(self):
+        import json
+
+        collector = MetricsCollector()
+        json_str = collector.export_json()
+
+        data = json.loads(json_str)
+
+        assert data["summary"]["total_requests"] == 0
+        assert data["metrics"] == []
+
+    def test_summary_with_only_failed_requests(self):
+        collector = MetricsCollector()
+
+        for i in range(5):
+            collector.add(
+                ChatMetrics(
+                    model=f"model-{i}",
+                    latency_ms=100.0 + i * 10,
+                    success=False,
+                    error_message=f"Error {i}",
+                )
+            )
+
+        summary = collector.get_summary()
+
+        assert summary["total_requests"] == 5
+        assert summary["successful"] == 0
+        assert summary["failed"] == 5
+        assert summary["success_rate"] == 0.0
+
+    def test_summary_calculates_correct_averages(self):
+        collector = MetricsCollector()
+
+        latencies = [100.0, 200.0, 300.0, 400.0, 500.0]
+        for lat in latencies:
+            collector.add(ChatMetrics(model="test", latency_ms=lat))
+
+        summary = collector.get_summary()
+
+        assert summary["avg_latency_ms"] == 300.0
+        assert summary["min_latency_ms"] == 100.0
+        assert summary["max_latency_ms"] == 500.0
+
+    def test_collector_max_metrics_constant_defined(self):
+        assert hasattr(MetricsCollector, "MAX_METRICS")
+        assert MetricsCollector.MAX_METRICS == 10000
+
+    def test_add_and_export_large_dataset(self):
+        collector = MetricsCollector(max_metrics=1000)
+
+        for i in range(1000):
+            collector.add(
+                ChatMetrics(
+                    model=f"model-{i % 10}",
+                    latency_ms=100.0 + (i % 100),
+                    tokens_used=50 + (i % 50),
+                    success=(i % 3 != 0),
+                )
+            )
+
+        json_str = collector.export_json()
+        assert len(json_str) > 0
+
+        summary = collector.get_summary()
+        assert summary["total_requests"] == 1000
+        assert summary["successful"] > 0
+        assert summary["failed"] > 0
+
+    def test_metrics_timestamp_format_in_dict(self):
+        from datetime import datetime
+
+        metrics = ChatMetrics(model="test", latency_ms=100.0)
+        result = metrics.to_dict()
+
+        timestamp_str = result["timestamp"]
+        assert isinstance(timestamp_str, str)
+        parsed = datetime.fromisoformat(timestamp_str)
+        assert isinstance(parsed, datetime)

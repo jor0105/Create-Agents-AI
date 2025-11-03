@@ -1,27 +1,25 @@
 from src.application.dtos import CreateAgentInputDTO
-from src.domain.entities.agent_domain import Agent
-from src.domain.exceptions import InvalidAgentConfigException
-from src.domain.value_objects import History
+from src.domain import Agent, History, InvalidAgentConfigException
 
 
 class CreateAgentUseCase:
-    """Use Case para criar uma nova instância de agente."""
+    """Use Case for creating a new agent instance."""
 
     def execute(self, input_dto: CreateAgentInputDTO) -> Agent:
         """
-        Cria um novo agente com as configurações fornecidas.
+        Creates a new agent with the provided configurations.
 
         Args:
-            input_dto: DTO com os dados para criação do agente
+            input_dto: DTO with the data for agent creation.
 
         Returns:
-            Agent: Nova instância do agente configurado
+            A new instance of the configured agent.
 
         Raises:
-            InvalidAgentConfigException: Se os dados de entrada forem inválidos
-            InvalidProviderException: Se o provider não for suportado
-            UnsupportedConfigException: Se uma config não for suportada
-            InvalidConfigTypeException: Se o tipo de uma config for inválido
+            InvalidAgentConfigException: If the input data is invalid.
+            InvalidProviderException: If the provider is not supported.
+            UnsupportedConfigException: If a configuration is not supported.
+            InvalidConfigTypeException: If a configuration type is invalid.
         """
         try:
             input_dto.validate()

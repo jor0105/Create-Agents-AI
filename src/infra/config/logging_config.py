@@ -1,14 +1,14 @@
-"""Configuração centralizada de logging para a aplicação.
+"""Centralized logging configuration for the application.
 
-Este módulo fornece um logger configurável que pode ser usado
-em toda a aplicação para rastreamento e debugging.
+This module provides a configurable logger that can be used
+throughout the application for tracking and debugging.
 
 Features:
-- Filtragem automática de dados sensíveis
-- Rotação de arquivos de log
-- Configuração por variáveis de ambiente
-- Logs estruturados (JSON) opcional
-- Diferentes handlers para console e arquivo
+- Automatic sensitive data filtering
+- Log file rotation
+- Configuration via environment variables
+- Optional structured (JSON) logs
+- Different handlers for console and file
 """
 
 import json
@@ -23,25 +23,25 @@ from src.infra.config.sensitive_data_filter import SensitiveDataFilter
 
 
 class SensitiveDataFormatter(logging.Formatter):
-    """Formatter que aplica filtro de dados sensíveis.
+    """A formatter that applies sensitive data filtering.
 
-    Garante que nenhum dado sensível seja logado.
+    This ensures that no sensitive data is logged.
     """
 
     def format(self, record: logging.LogRecord) -> str:
-        """Formata o registro de log com filtro de dados sensíveis."""
+        """Formats the log record while filtering for sensitive data."""
         original = super().format(record)
         return SensitiveDataFilter.filter(original)
 
 
 class JSONFormatter(logging.Formatter):
-    """Formatter para logs estruturados em JSON.
+    """A formatter for structured JSON logs.
 
-    Útil para integração com ferramentas de análise de logs.
+    This is useful for integration with log analysis tools.
     """
 
     def format(self, record: logging.LogRecord) -> str:
-        """Formata o registro de log como JSON estruturado."""
+        """Formats the log record as a structured JSON object."""
         log_data = {
             "timestamp": self.formatTime(record, self.datefmt),
             "level": record.levelname,
@@ -55,21 +55,19 @@ class JSONFormatter(logging.Formatter):
         if record.exc_info:
             log_data["exception"] = self.formatException(record.exc_info)
 
-        # Aplica filtro de dados sensíveis no JSON
         json_str = json.dumps(log_data, ensure_ascii=False)
         return SensitiveDataFilter.filter(json_str)
 
 
 class LoggingConfig:
-    """Configuração centralizada de logging.
+    """A centralized configuration for logging.
 
-    Fornece loggers configurados para diferentes módulos com:
-    - Filtragem de dados sensíveis
-    - Rotação de arquivos
-    - Configuração por ambiente
+    This class provides configured loggers for different modules, featuring:
+    - Sensitive data filtering
+    - Log file rotation
+    - Configuration via environment variables
     """
 
-    # Constantes de configuração
     DEFAULT_LOG_LEVEL = logging.INFO
     DEFAULT_MAX_BYTES = 10 * 1024 * 1024  # 10MB
     DEFAULT_BACKUP_COUNT = 5
@@ -77,7 +75,6 @@ class LoggingConfig:
 
     _configured: bool = False
     _log_level: int = DEFAULT_LOG_LEVEL
-    # Tipagem explícita para evitar avisos de tipo
     _handlers: List[logging.Handler] = []
 
     @classmethod
@@ -92,72 +89,58 @@ class LoggingConfig:
         backup_count: int = DEFAULT_BACKUP_COUNT,
         json_format: bool = False,
     ) -> None:
-        """Configura o logging da aplicação.
+        """Configures the application's logging.
 
         Args:
-            level: Nível de logging (DEBUG, INFO, WARNING, ERROR, CRITICAL).
-                   Se None, lê de LOG_LEVEL env var (default: INFO)
-            format_string: String de formato customizada (opcional)
-            include_timestamp: Se deve incluir timestamp nos logs
-            log_to_file: Se deve logar em arquivo além do console
-            log_file_path: Caminho do arquivo de log. Se None, usa LOG_FILE_PATH env var
-            max_bytes: Tamanho máximo do arquivo antes de rotacionar (default: 10MB)
-            backup_count: Número de arquivos de backup a manter (default: 5)
-            json_format: Se deve usar formato JSON estruturado
+            level: The logging level (e.g., DEBUG, INFO). If None, it is read from the LOG_LEVEL environment variable.
+            format_string: A custom format string (optional).
+            include_timestamp: Whether to include a timestamp in the logs.
+            log_to_file: Whether to log to a file in addition to the console.
+            log_file_path: The path to the log file. If None, it uses the LOG_FILE_PATH environment variable.
+            max_bytes: The maximum file size before rotation (default: 10MB).
+            backup_count: The number of backup files to keep (default: 5).
+            json_format: Whether to use a structured JSON format.
         """
         if cls._configured:
             return
 
-        # Lê configurações do ambiente
         level = level or cls._get_log_level_from_env()
         log_to_file = log_to_file or os.getenv("LOG_TO_FILE", "false").lower() == "true"
-
-        # Resolve caminho do arquivo de log
         log_file_path = cls._resolve_log_file_path(log_file_path)
-
         json_format = (
             json_format or os.getenv("LOG_JSON_FORMAT", "false").lower() == "true"
         )
 
         cls._log_level = level
 
-        # Define formato padrão
         if format_string is None:
             if include_timestamp:
                 format_string = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
             else:
                 format_string = "%(name)s - %(levelname)s - %(message)s"
 
-        # Configura logger raiz
         root_logger = logging.getLogger()
         root_logger.setLevel(level)
 
-        # Remove handlers existentes
         for handler in root_logger.handlers[:]:
             root_logger.removeHandler(handler)
         cls._handlers.clear()
 
-        # Configura formatter com filtro de dados sensíveis
         if json_format:
             formatter: logging.Formatter = JSONFormatter()
         else:
-            # logging.Formatter aceita um fmt opcional
             formatter = SensitiveDataFormatter(format_string)
 
-        # Handler para console (stdout)
         console_handler = logging.StreamHandler(sys.stdout)
         console_handler.setLevel(level)
         console_handler.setFormatter(formatter)
         root_logger.addHandler(console_handler)
         cls._handlers.append(console_handler)
 
-        # Handler para arquivo com rotação (se habilitado)
         if log_to_file:
-            # Cria diretório se não existir
             log_path = Path(log_file_path)
             log_path.parent.mkdir(parents=True, exist_ok=True)
 
-            # RotatingFileHandler espera um caminho de arquivo (str ou file descriptor).
             file_handler = RotatingFileHandler(
                 str(log_file_path),
                 maxBytes=max_bytes,
@@ -173,23 +156,21 @@ class LoggingConfig:
 
     @classmethod
     def _resolve_log_file_path(cls, log_file_path: Optional[str]) -> str:
-        """Resolve e valida o caminho do arquivo de log.
+        """Resolves and validates the log file path.
 
-        Extrai a lógica complexa de validação para melhor legibilidade.
+        This method centralizes the logic for path validation to improve readability.
 
         Args:
-            log_file_path: Caminho fornecido ou None
+            log_file_path: The provided path, or None.
 
         Returns:
-            Caminho válido como string
+            A valid path as a string.
         """
         default_path = os.getenv("LOG_FILE_PATH", cls.DEFAULT_LOG_PATH)
 
-        # Se None ou bool inválido, usa default
         if log_file_path is None or isinstance(log_file_path, bool):
             return default_path
 
-        # Tenta converter para string
         try:
             return str(log_file_path)
         except Exception:
@@ -197,10 +178,10 @@ class LoggingConfig:
 
     @classmethod
     def _get_log_level_from_env(cls) -> int:
-        """Obtém o nível de log da variável de ambiente LOG_LEVEL.
+        """Retrieves the log level from the LOG_LEVEL environment variable.
 
         Returns:
-            Nível de logging (default: INFO)
+            The logging level (default: INFO).
         """
         level_name = os.getenv("LOG_LEVEL", "INFO").upper()
         level_map = {
@@ -214,13 +195,13 @@ class LoggingConfig:
 
     @classmethod
     def get_logger(cls, name: str) -> logging.Logger:
-        """Obtém um logger configurado para o módulo especificado.
+        """Retrieves a configured logger for the specified module.
 
         Args:
-            name: Nome do módulo (geralmente __name__)
+            name: The name of the module (usually `__name__`).
 
         Returns:
-            Logger configurado
+            A configured logger.
         """
         if not cls._configured:
             cls.configure()
@@ -231,19 +212,19 @@ class LoggingConfig:
 
     @classmethod
     def set_level(cls, level: int) -> None:
-        """Ajusta o nível de logging em runtime.
+        """Adjusts the logging level at runtime.
 
         Args:
-            level: Novo nível de logging
+            level: The new logging level.
         """
         cls._log_level = level
         logging.getLogger().setLevel(level)
 
     @classmethod
     def reset(cls) -> None:
-        """Reseta a configuração de logging (útil para testes).
+        """Resets the logging configuration, which is useful for tests.
 
-        Remove todos os handlers e marca como não configurado.
+        This method removes all handlers and marks the configuration as not set.
         """
         cls._configured = False
         root_logger = logging.getLogger()
@@ -257,9 +238,9 @@ class LoggingConfig:
 
     @classmethod
     def get_handlers(cls) -> list:
-        """Retorna a lista de handlers configurados.
+        """Returns a list of the configured handlers.
 
         Returns:
-            Lista de handlers ativos
+            A list of active handlers.
         """
         return cls._handlers.copy()

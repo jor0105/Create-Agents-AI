@@ -1,10 +1,3 @@
-"""
-Utilitários para retry com backoff exponencial.
-
-Fornece decorators e funções para adicionar retry automático
-em operações que podem falhar temporariamente.
-"""
-
 import random
 import time
 from functools import wraps
@@ -22,19 +15,20 @@ def retry_with_backoff(
     on_retry: Optional[Callable[[int, Exception], None]] = None,
 ):
     """
-    Decorator para retry com backoff exponencial e jitter.
+    A decorator for retrying with exponential backoff and jitter.
 
     Args:
-        max_attempts: Número máximo de tentativas
-        initial_delay: Delay inicial em segundos
-        backoff_factor: Fator de multiplicação do delay a cada tentativa
-        exceptions: Tupla de exceções que devem causar retry
-        jitter: Se True, adiciona variação aleatória ao delay (±10%)
-                para prevenir thundering herd em sistemas distribuídos
-        on_retry: Callback opcional chamado a cada retry (attempt, exception)
+        max_attempts: The maximum number of attempts.
+        initial_delay: The initial delay in seconds.
+        backoff_factor: The multiplication factor for the delay at each attempt.
+        exceptions: A tuple of exceptions that should trigger a retry.
+        jitter: If True, adds random variation to the delay (±10%) to prevent
+                the "thundering herd" problem in distributed systems.
+        on_retry: An optional callback to be called on each retry, receiving
+                  the attempt number and the exception.
 
     Returns:
-        Decorator function
+        A decorator function.
 
     Example:
         >>> @retry_with_backoff(max_attempts=3, initial_delay=1.0, jitter=True)
@@ -56,33 +50,28 @@ def retry_with_backoff(
                     last_exception = e
 
                     if attempt == max_attempts:
-                        logger.error(f"Falha após {max_attempts} tentativas: {str(e)}")
+                        logger.error(f"Failure after {max_attempts} attempts: {str(e)}")
                         raise
 
-                    # Chama callback customizado se fornecido
                     if on_retry:
                         try:
                             on_retry(attempt, e)
                         except Exception as callback_error:
-                            logger.warning(
-                                f"Erro no callback de retry: {callback_error}"
-                            )
+                            logger.warning(f"Error in retry callback: {callback_error}")
 
-                    # Aplica jitter se habilitado (variação de ±10%)
                     actual_delay = delay
                     if jitter:
                         jitter_factor = 1 + random.uniform(-0.1, 0.1)
                         actual_delay = delay * jitter_factor
 
                     logger.warning(
-                        f"Tentativa {attempt}/{max_attempts} falhou: {str(e)}. "
-                        f"Aguardando {actual_delay:.2f}s antes de retry..."
+                        f"Attempt {attempt}/{max_attempts} failed: {str(e)}. "
+                        f"Waiting {actual_delay:.2f}s before retrying..."
                     )
 
                     time.sleep(actual_delay)
                     delay *= backoff_factor
 
-            # Nunca deve chegar aqui, mas por segurança
             if last_exception:
                 raise last_exception
 

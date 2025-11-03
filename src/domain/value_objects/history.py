@@ -8,11 +8,11 @@ from .message import Message, MessageRole
 @dataclass
 class History:
     """
-    Value Object que gerencia o histórico de mensagens do chat.
-    Encapsula a lógica de limite de tamanho do histórico.
+    Manages the chat message history.
+    This Value Object encapsulates the logic for limiting the history size.
 
-    Utiliza deque com maxlen para performance otimizada,
-    removendo automaticamente mensagens antigas sem recriar estrutura.
+    It uses a deque with `maxlen` for optimized performance, automatically
+    removing old messages without recreating the data structure.
     """
 
     max_size: int = 10
@@ -20,88 +20,87 @@ class History:
 
     def __post_init__(self) -> None:
         if not isinstance(self.max_size, int) or self.max_size <= 0:
-            raise ValueError("Tamanho máximo do histórico deve ser maior que zero")
+            raise ValueError("The history's max size must be greater than zero.")
 
-        # Converte _messages para deque com maxlen, independente do tipo inicial
         messages = list(self._messages) if self._messages else []
         object.__setattr__(self, "_messages", deque(messages, maxlen=self.max_size))
 
     def add(self, message: Message) -> None:
         """
-        Adiciona uma mensagem ao histórico.
-        O deque com maxlen mantém automaticamente o limite de tamanho.
+        Adds a message to the history.
+        The deque with `maxlen` automatically maintains the size limit.
 
         Args:
-            message: Mensagem a ser adicionada
+            message: The message to be added.
         """
         if not isinstance(message, Message):
-            raise TypeError("Apenas objetos do tipo Message podem ser adicionados")
+            raise TypeError("Only Message objects can be added.")
 
         self._messages.append(message)
 
     def add_user_message(self, content: str) -> None:
         """
-        Atalho para adicionar uma mensagem do usuário.
+        A shortcut to add a user message.
 
         Args:
-            content: Conteúdo da mensagem
+            content: The content of the message.
         """
         message = Message(role=MessageRole.USER, content=content)
         self.add(message)
 
     def add_assistant_message(self, content: str) -> None:
         """
-        Atalho para adicionar uma mensagem do assistente.
+        A shortcut to add an assistant message.
 
         Args:
-            content: Conteúdo da mensagem
+            content: The content of the message.
         """
         message = Message(role=MessageRole.ASSISTANT, content=content)
         self.add(message)
 
     def add_system_message(self, content: str) -> None:
         """
-        Atalho para adicionar uma mensagem do sistema.
+        A shortcut to add a system message.
 
         Args:
-            content: Conteúdo da mensagem
+            content: The content of the message.
         """
         message = Message(role=MessageRole.SYSTEM, content=content)
         self.add(message)
 
     def clear(self) -> None:
-        """Limpa todo o histórico de mensagens."""
+        """Clears all messages from the history."""
         self._messages.clear()
 
     def get_messages(self) -> List[Message]:
         """
-        Retorna uma cópia da lista de mensagens.
+        Returns a copy of the message list.
 
         Returns:
-            Lista de mensagens
+            A list of messages.
         """
         return list(self._messages)
 
     def to_dict_list(self) -> List[Dict[str, str]]:
         """
-        Converte o histórico para uma lista de dicionários.
+        Converts the history to a list of dictionaries.
 
         Returns:
-            Lista de dicionários com role e content
+            A list of dictionaries, each with a role and content.
         """
         return [message.to_dict() for message in self._messages]
 
     @classmethod
     def from_dict_list(cls, data: List[Dict[str, str]], max_size: int) -> "History":
         """
-        Cria uma instância de History a partir de uma lista de dicionários.
+        Creates a History instance from a list of dictionaries.
 
         Args:
-            data: Lista de dicionários com 'role' e 'content'
-            max_size: Tamanho máximo do histórico
+            data: A list of dictionaries, each with 'role' and 'content'.
+            max_size: The maximum size of the history.
 
         Returns:
-            Nova instância de History
+            A new History instance.
         """
         history = cls(max_size=max_size)
         for item in data:

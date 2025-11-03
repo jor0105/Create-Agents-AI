@@ -257,7 +257,6 @@ class TestGetAgentConfigUseCase:
         assert output.instructions == "Be helpful! @#$%^&*()"
 
     def test_execute_preserves_history_order(self):
-        """Testa se a ordem do histórico é preservada."""
         use_case = GetAgentConfigUseCase()
         agent = Agent(
             provider="openai", model="gpt-5-nano", name="Test", instructions="Test"
@@ -281,3 +280,88 @@ class TestGetAgentConfigUseCase:
         for i, (expected_role, expected_content) in enumerate(messages):
             assert output.history[i]["role"] == expected_role
             assert output.history[i]["content"] == expected_content
+
+    def test_execute_returns_correct_history_max_size(self):
+        from src.domain.value_objects import History
+
+        use_case = GetAgentConfigUseCase()
+        agent = Agent(
+            provider="openai",
+            model="gpt-5-nano",
+            name="Test",
+            instructions="Test",
+            history=History(max_size=20),
+        )
+
+        output = use_case.execute(agent)
+
+        assert output.history_max_size == 20
+
+    def test_execute_default_history_max_size(self):
+        use_case = GetAgentConfigUseCase()
+        agent = Agent(
+            provider="openai",
+            model="gpt-5-nano",
+            name="Test",
+            instructions="Test",
+        )
+
+        output = use_case.execute(agent)
+
+        assert output.history_max_size == 10
+
+    def test_execute_to_dict_includes_history_max_size(self):
+        from src.domain.value_objects import History
+
+        use_case = GetAgentConfigUseCase()
+        agent = Agent(
+            provider="openai",
+            model="gpt-5-nano",
+            name="Test",
+            instructions="Test",
+            history=History(max_size=15),
+        )
+
+        output = use_case.execute(agent)
+        result = output.to_dict()
+
+        assert "history_max_size" in result
+        assert result["history_max_size"] == 15
+
+    def test_execute_with_different_history_max_sizes(self):
+        use_case = GetAgentConfigUseCase()
+
+        for max_size in [1, 5, 10, 20, 50, 100]:
+            from src.domain.value_objects import History
+
+            agent = Agent(
+                provider="openai",
+                model="gpt-5-nano",
+                name="Test",
+                instructions="Test",
+                history=History(max_size=max_size),
+            )
+
+            output = use_case.execute(agent)
+
+            assert output.history_max_size == max_size
+
+    def test_execute_history_max_size_reflects_agent_state(self):
+        from src.domain.value_objects import History
+
+        use_case = GetAgentConfigUseCase()
+        agent = Agent(
+            provider="openai",
+            model="gpt-5-nano",
+            name="Test",
+            instructions="Test",
+            history=History(max_size=25),
+        )
+
+        for i in range(30):
+            agent.add_user_message(f"Message {i}")
+
+        output = use_case.execute(agent)
+
+        assert output.history_max_size == 25
+        assert len(output.history) == 25

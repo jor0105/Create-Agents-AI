@@ -3,17 +3,17 @@ from src.domain.entities.agent_domain import Agent
 
 
 class GetAgentConfigUseCase:
-    """Use Case para obter as configurações de um agente."""
+    """Use Case for obtaining an agent's configurations."""
 
     def execute(self, agent: Agent) -> AgentConfigOutputDTO:
         """
-        Retorna as configurações do agente em formato de DTO.
+        Returns the agent's configurations as a DTO.
 
         Args:
-            agent: Instância do agente
+            agent: The agent instance.
 
         Returns:
-            AgentConfigOutputDTO: DTO com as configurações do agente
+            A DTO containing the agent's configurations.
         """
         return AgentConfigOutputDTO(
             provider=agent.provider,
@@ -21,6 +21,6 @@ class GetAgentConfigUseCase:
             name=agent.name,
             instructions=agent.instructions,
             config=agent.config,
-            history=agent.history.to_dict_list(),  # Converte History para list[dict]
+            history=agent.history.to_dict_list(),
             history_max_size=agent.history.max_size,
         )

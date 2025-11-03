@@ -80,7 +80,7 @@ class TestAIAgentInitialization:
         assert agent.history.max_size == 10
 
     def test_initialization_with_invalid_provider_raises_error(self):
-        with pytest.raises(Exception):  # Pode ser InvalidAgentConfigException ou outra
+        with pytest.raises(Exception):
             AIAgent(
                 provider="invalid_provider",
                 model="gpt-5",
@@ -315,7 +315,6 @@ class TestAIAgentGetConfigs:
 
     @patch("src.presentation.agent_controller.AgentComposer.create_get_config_use_case")
     def test_get_configs_when_use_case_raises_exception(self, mock_create_config):
-        """Testa que exceções do use case são propagadas."""
         mock_use_case = Mock()
         mock_use_case.execute.side_effect = Exception("Config Error")
         mock_create_config.return_value = mock_use_case
@@ -460,7 +459,6 @@ class TestAIAgentMetrics:
 
     @patch("src.presentation.agent_controller.AgentComposer.create_chat_use_case")
     def test_get_metrics_calls_use_case_method(self, mock_create_chat):
-        """Testa que get_metrics chama o método correto do use case."""
         mock_use_case = Mock()
         mock_use_case.get_metrics.return_value = []
         mock_create_chat.return_value = mock_use_case
@@ -626,14 +624,12 @@ class TestAIAgentMetrics:
         prom_text = controller.export_metrics_prometheus()
 
         assert isinstance(prom_text, str)
-        # Prometheus deve retornar algo mesmo sem métricas
 
 
 @pytest.mark.unit
 class TestAIAgentIntegration:
     @patch("src.presentation.agent_controller.AgentComposer.create_chat_use_case")
     def test_chat_and_get_configs_together(self, mock_create_chat):
-        """Testa uso combinado de chat e get_configs."""
         mock_use_case = Mock()
         mock_output = Mock()
         mock_output.response = "Response"
@@ -644,17 +640,14 @@ class TestAIAgentIntegration:
             provider="openai", model="gpt-5", name="Test", instructions="Test"
         )
 
-        # Chat primeiro
         response = controller.chat("Hello")
         assert response == "Response"
 
-        # Depois get_configs
         configs = controller.get_configs()
         assert isinstance(configs, dict)
 
     @patch("src.presentation.agent_controller.AgentComposer.create_chat_use_case")
     def test_chat_clear_history_chat_again(self, mock_create_chat):
-        """Testa fluxo: chat -> clear_history -> chat novamente."""
         mock_use_case = Mock()
         mock_output = Mock()
         mock_output.response = "Response"
@@ -671,22 +664,18 @@ class TestAIAgentIntegration:
             provider="openai", model="gpt-5", name="Test", instructions="Test"
         )
 
-        # Primeiro chat
         controller.chat("Message 1")
         agent = controller._AIAgent__agent
         assert len(agent.history) == 2
 
-        # Limpa histórico
         controller.clear_history()
         assert len(agent.history) == 0
 
-        # Segundo chat
         controller.chat("Message 2")
         assert len(agent.history) == 2
 
     @patch("src.presentation.agent_controller.AgentComposer.create_chat_use_case")
     def test_metrics_accumulate_after_multiple_chats(self, mock_create_chat):
-        """Testa que métricas se acumulam após múltiplos chats."""
         from src.infra.config.metrics import ChatMetrics
 
         mock_use_case = Mock()
@@ -694,7 +683,6 @@ class TestAIAgentIntegration:
         mock_output.response = "Response"
         mock_use_case.execute.return_value = mock_output
 
-        # Simula acúmulo de métricas
         metrics_list = []
 
         def get_metrics_side_effect():
@@ -712,20 +700,16 @@ class TestAIAgentIntegration:
             provider="openai", model="gpt-5", name="Test", instructions="Test"
         )
 
-        # Faz 3 chats
         controller.chat("Message 1")
         controller.chat("Message 2")
         controller.chat("Message 3")
 
-        # Verifica métricas
         metrics = controller.get_metrics()
         assert len(metrics) == 3
 
 
 @pytest.mark.unit
 class TestAIAgentEdgeCases:
-    """Testes de casos extremos e edge cases."""
-
     def test_initialization_with_very_long_instructions(self):
         long_instructions = "A" * 10000
         controller = AIAgent(
@@ -812,9 +796,6 @@ class TestAIAgentEdgeCases:
             )
 
     def test_initialization_with_negative_history_max_size(self):
-        """Testa que tamanho negativo de histórico pode causar erro."""
-        # Isso pode ou não lançar erro dependendo da implementação
-        # Vamos testar que o sistema lida com isso de alguma forma
         try:
             controller = AIAgent(
                 provider="openai",
@@ -823,10 +804,8 @@ class TestAIAgentEdgeCases:
                 instructions="Test",
                 history_max_size=-1,
             )
-            # Se não lançar erro, pelo menos verifica que foi criado
             assert hasattr(controller, "_AIAgent__agent")
         except (ValueError, InvalidAgentConfigException):
-            # É aceitável que lance erro
             pass
 
     def test_initialization_with_empty_config_dict(self):
@@ -843,7 +822,6 @@ class TestAIAgentEdgeCases:
 
     @patch("src.presentation.agent_controller.AgentComposer.create_chat_use_case")
     def test_export_metrics_to_nonexistent_directory(self, mock_create_chat, tmp_path):
-        """Testa exportação de métricas para diretório inexistente."""
         from src.infra.config.metrics import ChatMetrics
 
         mock_use_case = Mock()
@@ -856,13 +834,221 @@ class TestAIAgentEdgeCases:
             provider="openai", model="gpt-5", name="Test", instructions="Test"
         )
 
-        # Tenta salvar em diretório que não existe
         nonexistent_path = tmp_path / "nonexistent" / "metrics.json"
 
-        # Pode lançar erro ou criar o diretório automaticamente
-        # dependendo da implementação
         try:
             controller.export_metrics_json(str(nonexistent_path))
         except (FileNotFoundError, OSError):
-            # É aceitável que lance erro
             pass
+
+    @patch("src.presentation.agent_controller.AgentComposer.create_chat_use_case")
+    def test_chat_preserves_message_order(self, mock_create_chat):
+        mock_use_case = Mock()
+        mock_output = Mock()
+        mock_output.response = "Response"
+
+        def execute_side_effect(agent, input_dto):
+            agent.add_user_message(input_dto.message)
+            agent.add_assistant_message(mock_output.response)
+            return mock_output
+
+        mock_use_case.execute.side_effect = execute_side_effect
+        mock_create_chat.return_value = mock_use_case
+
+        controller = AIAgent(
+            provider="openai", model="gpt-5", name="Test", instructions="Test"
+        )
+
+        controller.chat("First message")
+        controller.chat("Second message")
+        controller.chat("Third message")
+
+        agent = controller._AIAgent__agent
+        history = agent.history.get_messages()
+
+        assert len(history) == 6
+        assert history[0].content == "First message"
+        assert history[2].content == "Second message"
+        assert history[4].content == "Third message"
+
+    @patch("src.presentation.agent_controller.AgentComposer.create_chat_use_case")
+    def test_get_metrics_does_not_modify_internal_state(self, mock_create_chat):
+        from src.infra.config.metrics import ChatMetrics
+
+        mock_use_case = Mock()
+
+        def get_metrics_side_effect():
+            return [ChatMetrics(model="gpt-5", latency_ms=100.0)]
+
+        mock_use_case.get_metrics.side_effect = get_metrics_side_effect
+        mock_create_chat.return_value = mock_use_case
+
+        controller = AIAgent(
+            provider="openai", model="gpt-5", name="Test", instructions="Test"
+        )
+
+        metrics1 = controller.get_metrics()
+        metrics1.clear()
+        metrics2 = controller.get_metrics()
+        assert len(metrics2) == 1
+
+    def test_controller_has_all_required_methods(self):
+        controller = AIAgent(
+            provider="openai", model="gpt-5", name="Test", instructions="Test"
+        )
+
+        required_methods = [
+            "chat",
+            "get_configs",
+            "clear_history",
+            "get_metrics",
+            "export_metrics_json",
+            "export_metrics_prometheus",
+        ]
+
+        for method_name in required_methods:
+            assert hasattr(controller, method_name), f"Missing method: {method_name}"
+            assert callable(
+                getattr(controller, method_name)
+            ), f"{method_name} is not callable"
+
+    @patch("src.presentation.agent_controller.AgentComposer.create_chat_use_case")
+    def test_export_metrics_json_without_filepath(self, mock_create_chat):
+        from src.infra.config.metrics import ChatMetrics
+
+        mock_use_case = Mock()
+        mock_use_case.get_metrics.return_value = [
+            ChatMetrics(model="gpt-5", latency_ms=100.0)
+        ]
+        mock_create_chat.return_value = mock_use_case
+
+        controller = AIAgent(
+            provider="openai", model="gpt-5", name="Test", instructions="Test"
+        )
+
+        json_str = controller.export_metrics_json()
+
+        assert isinstance(json_str, str)
+        assert len(json_str) > 0
+        assert "summary" in json_str
+
+    @patch("src.presentation.agent_controller.AgentComposer.create_chat_use_case")
+    def test_export_metrics_prometheus_without_filepath(self, mock_create_chat):
+        from src.infra.config.metrics import ChatMetrics
+
+        mock_use_case = Mock()
+        mock_use_case.get_metrics.return_value = [
+            ChatMetrics(model="gpt-5", latency_ms=100.0)
+        ]
+        mock_create_chat.return_value = mock_use_case
+
+        controller = AIAgent(
+            provider="openai", model="gpt-5", name="Test", instructions="Test"
+        )
+
+        prom_text = controller.export_metrics_prometheus()
+
+        assert isinstance(prom_text, str)
+        assert len(prom_text) > 0
+
+    @patch("src.presentation.agent_controller.AgentComposer.create_chat_use_case")
+    @patch("src.presentation.agent_controller.AgentComposer.create_get_config_use_case")
+    def test_controller_workflow_chat_config_clear_repeat(
+        self, mock_create_config, mock_create_chat
+    ):
+        mock_chat_use_case = Mock()
+        mock_output = Mock()
+        mock_output.response = "Response"
+
+        def execute_side_effect(agent, input_dto):
+            agent.add_user_message(input_dto.message)
+            agent.add_assistant_message(mock_output.response)
+            return mock_output
+
+        mock_chat_use_case.execute.side_effect = execute_side_effect
+        mock_create_chat.return_value = mock_chat_use_case
+
+        mock_config_use_case = Mock()
+        mock_config_output = Mock()
+        mock_config_output.to_dict.return_value = {
+            "name": "Test",
+            "model": "gpt-5",
+            "history": [],
+        }
+        mock_config_use_case.execute.return_value = mock_config_output
+        mock_create_config.return_value = mock_config_use_case
+
+        controller = AIAgent(
+            provider="openai", model="gpt-5", name="Test", instructions="Test"
+        )
+
+        controller.chat("Hello")
+        agent = controller._AIAgent__agent
+        assert len(agent.history) == 2
+
+        configs = controller.get_configs()
+        assert isinstance(configs, dict)
+
+        controller.clear_history()
+        assert len(agent.history) == 0
+
+        controller.chat("New conversation")
+        assert len(agent.history) == 2
+
+        configs2 = controller.get_configs()
+        assert isinstance(configs2, dict)
+
+    def test_initialization_with_all_optional_params_none(self):
+        controller = AIAgent(
+            provider="openai",
+            model="gpt-5",
+            name=None,
+            instructions=None,
+            config=None,
+        )
+
+        agent = controller._AIAgent__agent
+        assert agent.name is None
+        assert agent.instructions is None
+        assert agent.config == {}
+
+    @patch("src.presentation.agent_controller.AgentComposer.create_chat_use_case")
+    def test_multiple_consecutive_clear_history_calls(self, mock_create_chat):
+        mock_use_case = Mock()
+        mock_output = Mock()
+        mock_output.response = "Response"
+
+        def execute_side_effect(agent, input_dto):
+            agent.add_user_message(input_dto.message)
+            agent.add_assistant_message(mock_output.response)
+            return mock_output
+
+        mock_use_case.execute.side_effect = execute_side_effect
+        mock_create_chat.return_value = mock_use_case
+
+        controller = AIAgent(
+            provider="openai", model="gpt-5", name="Test", instructions="Test"
+        )
+
+        controller.chat("Message")
+        assert len(controller._AIAgent__agent.history) == 2
+
+        controller.clear_history()
+        assert len(controller._AIAgent__agent.history) == 0
+
+        controller.clear_history()
+        assert len(controller._AIAgent__agent.history) == 0
+
+        controller.clear_history()
+        assert len(controller._AIAgent__agent.history) == 0
+
+    def test_initialization_provider_case_variations(self):
+        providers = ["openai", "OPENAI", "OpenAI", "oPeNaI"]
+
+        for provider in providers:
+            controller = AIAgent(
+                provider=provider, model="gpt-5", name="Test", instructions="Test"
+            )
+
+            agent = controller._AIAgent__agent
+            assert agent.provider.lower() == "openai"

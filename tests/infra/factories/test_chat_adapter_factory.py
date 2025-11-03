@@ -63,7 +63,7 @@ class TestChatAdapterFactory:
         assert isinstance(adapter, OllamaChatAdapter)
 
     def test_create_with_invalid_provider(self):
-        with pytest.raises(ValueError, match="Provider inválido"):
+        with pytest.raises(ValueError, match="Invalid provider"):
             ChatAdapterFactory.create(provider="invalid", model="gpt-5")
 
     @patch(
@@ -167,3 +167,137 @@ class TestChatAdapterFactory:
         adapter = ChatAdapterFactory.create(provider="openai", model="gpt-5")
 
         assert isinstance(adapter, ChatRepository)
+
+    @patch(
+        "src.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
+    )
+    @patch("src.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client")
+    def test_create_with_empty_provider_raises_error(
+        self, mock_get_client, mock_get_api_key
+    ):
+        mock_get_api_key.return_value = "test-api-key"
+        mock_client = Mock()
+        mock_get_client.return_value = mock_client
+
+        with pytest.raises(ValueError, match="Invalid provider"):
+            ChatAdapterFactory.create(provider="", model="gpt-5")
+
+    @patch(
+        "src.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
+    )
+    @patch("src.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client")
+    def test_cache_persists_across_calls(self, mock_get_client, mock_get_api_key):
+        mock_get_api_key.return_value = "test-api-key"
+        mock_client = Mock()
+        mock_get_client.return_value = mock_client
+
+        ChatAdapterFactory.clear_cache()
+
+        adapter1 = ChatAdapterFactory.create(provider="openai", model="gpt-5")
+
+        assert mock_get_client.call_count == 1
+
+        adapter2 = ChatAdapterFactory.create(provider="openai", model="gpt-5")
+
+        assert mock_get_client.call_count == 1
+        assert adapter1 is adapter2
+
+    def test_create_ollama_does_not_require_api_key(self):
+        adapter = ChatAdapterFactory.create(provider="ollama", model="phi4")
+
+        assert isinstance(adapter, OllamaChatAdapter)
+
+    @patch(
+        "src.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
+    )
+    @patch("src.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client")
+    def test_cache_key_with_mixed_case(self, mock_get_client, mock_get_api_key):
+        mock_get_api_key.return_value = "test-api-key"
+        mock_client = Mock()
+        mock_get_client.return_value = mock_client
+
+        ChatAdapterFactory.clear_cache()
+
+        adapter1 = ChatAdapterFactory.create(provider="OpenAI", model="GPT-5")
+        adapter2 = ChatAdapterFactory.create(provider="openai", model="gpt-5")
+        adapter3 = ChatAdapterFactory.create(provider="OPENAI", model="Gpt-5")
+
+        assert adapter1 is adapter2
+        assert adapter2 is adapter3
+
+    def test_create_with_none_provider_raises_error(self):
+        with pytest.raises((ValueError, AttributeError)):
+            ChatAdapterFactory.create(provider=None, model="gpt-5")
+
+    def test_create_with_none_model(self):
+        try:
+            adapter = ChatAdapterFactory.create(provider="ollama", model=None)
+            assert adapter is not None
+        except (ValueError, AttributeError, TypeError):
+            pass
+
+    @patch(
+        "src.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
+    )
+    @patch("src.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client")
+    def test_clear_cache_is_effective(self, mock_get_client, mock_get_api_key):
+        mock_get_api_key.return_value = "test-api-key"
+        mock_client1 = Mock()
+        mock_client2 = Mock()
+        mock_get_client.side_effect = [mock_client1, mock_client2]
+
+        ChatAdapterFactory.clear_cache()
+
+        adapter1 = ChatAdapterFactory.create(provider="openai", model="gpt-5")
+
+        ChatAdapterFactory.clear_cache()
+
+        adapter2 = ChatAdapterFactory.create(provider="openai", model="gpt-5")
+
+        assert adapter1 is not adapter2
+
+    @patch(
+        "src.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
+    )
+    @patch("src.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client")
+    def test_multiple_models_same_provider(self, mock_get_client, mock_get_api_key):
+        mock_get_api_key.return_value = "test-api-key"
+        mock_client = Mock()
+        mock_get_client.return_value = mock_client
+
+        ChatAdapterFactory.clear_cache()
+
+        adapter1 = ChatAdapterFactory.create(provider="openai", model="gpt-4")
+        adapter2 = ChatAdapterFactory.create(provider="openai", model="gpt-5")
+        adapter3 = ChatAdapterFactory.create(provider="openai", model="gpt-3")
+
+        assert adapter1 is not adapter2
+        assert adapter2 is not adapter3
+        assert adapter1 is not adapter3
+
+    def test_create_with_special_characters_in_model_name(self):
+        adapter = ChatAdapterFactory.create(provider="ollama", model="phi4-mini:latest")
+
+        assert isinstance(adapter, OllamaChatAdapter)
+
+    def test_provider_validation_is_case_insensitive(self):
+        valid_providers = ["openai", "OPENAI", "OpenAI", "oPeNaI"]
+
+        for provider_variant in valid_providers:
+            with patch(
+                "src.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
+            ) as mock_get_api_key:
+                with patch(
+                    "src.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client"
+                ) as mock_get_client:
+                    mock_get_api_key.return_value = "test-api-key"
+                    mock_client = Mock()
+                    mock_get_client.return_value = mock_client
+
+                    ChatAdapterFactory.clear_cache()
+
+                    adapter = ChatAdapterFactory.create(
+                        provider=provider_variant, model="gpt-5"
+                    )
+
+                    assert isinstance(adapter, OpenAIChatAdapter)

@@ -11,13 +11,12 @@ from src.infra.config.retry import retry_with_backoff
 
 
 class OpenAIChatAdapter(ChatRepository):
-    """Adapter para comunicação com OpenAI API."""
+    """An adapter for communicating with the OpenAI API."""
 
     def __init__(self):
         self.__logger = LoggingConfig.get_logger(__name__)
         self.__metrics: List[ChatMetrics] = []
 
-        # Configurações de timeout e retry
         self.__timeout = int(EnvironmentConfig.get_env("OPENAI_TIMEOUT", "30"))
         self.__max_retries = int(EnvironmentConfig.get_env("OPENAI_MAX_RETRIES", "3"))
 
@@ -25,12 +24,12 @@ class OpenAIChatAdapter(ChatRepository):
             api_key = EnvironmentConfig.get_api_key(ClientOpenAI.API_OPENAI_NAME)
             self.__client = ClientOpenAI.get_client(api_key)
             self.__logger.info(
-                f"OpenAI adapter inicializado (timeout: {self.__timeout}s, "
+                f"OpenAI adapter initialized (timeout: {self.__timeout}s, "
                 f"max_retries: {self.__max_retries})"
             )
         except EnvironmentError as e:
-            self.__logger.error(f"Erro ao configurar OpenAI: {str(e)}")
-            raise ChatException(f"Erro ao configurar OpenAI: {str(e)}", e)
+            self.__logger.error(f"Error configuring OpenAI: {str(e)}")
+            raise ChatException(f"Error configuring OpenAI: {str(e)}", e)
 
     @retry_with_backoff(max_attempts=3, initial_delay=1.0, exceptions=(Exception,))
     def __call_openai_api(
@@ -40,17 +39,16 @@ class OpenAIChatAdapter(ChatRepository):
         config: Dict[str, Any],
     ) -> Any:
         """
-        Chama a API da OpenAI com retry automático.
+        Calls the OpenAI API with automatic retries.
 
         Args:
-            model: Nome do modelo
-            messages: Lista de mensagens
-            config: Configurações internas da IA
+            model: The name of the model.
+            messages: A list of messages.
+            config: Internal AI configuration.
 
         Returns:
-            Resposta da API
+            The API response.
         """
-        # Prepara kwargs com configs opcionais
         api_kwargs = {
             "model": model,
             "input": messages,
@@ -78,25 +76,25 @@ class OpenAIChatAdapter(ChatRepository):
         user_ask: str,
     ) -> str:
         """
-        Envia mensagem para OpenAI e retorna a resposta.
+        Sends a message to OpenAI and returns the response.
 
         Args:
-            model: Nome do modelo
-            instructions: Instruções do sistema (opcional)
-            config: Configurações internas da IA
-            history: Histórico de conversas (lista de dicts com 'role' e 'content')
-            user_ask: Pergunta do usuário
+            model: The name of the model.
+            instructions: System instructions (optional).
+            config: Internal AI configuration.
+            history: The conversation history.
+            user_ask: The user's question.
 
         Returns:
-            str: Resposta do modelo
+            The model's response.
 
         Raises:
-            ChatException: Se houver erro na comunicação
+            ChatException: If a communication error occurs.
         """
         start_time = time.time()
 
         try:
-            self.__logger.debug(f"Iniciando chat com modelo {model} na OpenAI")
+            self.__logger.debug(f"Starting chat with model {model} on OpenAI.")
 
             messages = []
             if instructions and instructions.strip():
@@ -104,15 +102,13 @@ class OpenAIChatAdapter(ChatRepository):
             messages.extend(history)
             messages.append({"role": "user", "content": user_ask})
 
-            # Chama a API da OpenAI com retry automático
             response_api = self.__call_openai_api(model, messages, config)
 
             content: str = response_api.output_text
             if not content:
-                self.__logger.warning("OpenAI retornou resposta vazia")
-                raise ChatException("OpenAI retornou uma resposta vazia")
+                self.__logger.warning("OpenAI returned an empty response.")
+                raise ChatException("OpenAI returned an empty response.")
 
-            # Captura métricas
             latency = (time.time() - start_time) * 1000
 
             usage = getattr(response_api, "usage", None)
@@ -135,8 +131,8 @@ class OpenAIChatAdapter(ChatRepository):
             )
             self.__metrics.append(metrics)
 
-            self.__logger.info(f"Chat concluído: {metrics}")
-            self.__logger.debug(f"Resposta (primeiros 100 chars): {content[:100]}...")
+            self.__logger.info(f"Chat completed: {metrics}")
+            self.__logger.debug(f"Response (first 100 chars): {content[:100]}...")
 
             return content
 
@@ -146,7 +142,7 @@ class OpenAIChatAdapter(ChatRepository):
                 model=model,
                 latency_ms=latency,
                 success=False,
-                error_message="OpenAI retornou resposta vazia",
+                error_message="OpenAI returned an empty response.",
             )
             self.__metrics.append(metrics)
             raise
@@ -156,12 +152,12 @@ class OpenAIChatAdapter(ChatRepository):
                 model=model,
                 latency_ms=latency,
                 success=False,
-                error_message=f"Erro ao acessar resposta: {str(e)}",
+                error_message=f"Error accessing response: {str(e)}",
             )
             self.__metrics.append(metrics)
-            self.__logger.error(f"Erro ao acessar resposta da OpenAI: {str(e)}")
+            self.__logger.error(f"Error accessing OpenAI response: {str(e)}")
             raise ChatException(
-                f"Erro ao acessar resposta da OpenAI: {str(e)}", original_error=e
+                f"Error accessing OpenAI response: {str(e)}", original_error=e
             )
         except IndexError as e:
             latency = (time.time() - start_time) * 1000
@@ -169,12 +165,12 @@ class OpenAIChatAdapter(ChatRepository):
                 model=model,
                 latency_ms=latency,
                 success=False,
-                error_message=f"Formato inesperado: {str(e)}",
+                error_message=f"Unexpected format: {str(e)}",
             )
             self.__metrics.append(metrics)
-            self.__logger.error(f"Resposta da OpenAI com formato inesperado: {str(e)}")
+            self.__logger.error(f"OpenAI response has an unexpected format: {str(e)}")
             raise ChatException(
-                f"Resposta da OpenAI com formato inesperado: {str(e)}", original_error=e
+                f"OpenAI response has an unexpected format: {str(e)}", original_error=e
             )
         except Exception as e:
             latency = (time.time() - start_time) * 1000
@@ -182,9 +178,9 @@ class OpenAIChatAdapter(ChatRepository):
                 model=model, latency_ms=latency, success=False, error_message=str(e)
             )
             self.__metrics.append(metrics)
-            self.__logger.error(f"Erro ao comunicar com OpenAI: {str(e)}")
+            self.__logger.error(f"Error communicating with OpenAI: {str(e)}")
             raise ChatException(
-                f"Erro ao comunicar com OpenAI: {str(e)}", original_error=e
+                f"Error communicating with OpenAI: {str(e)}", original_error=e
             )
 
     def get_metrics(self) -> List[ChatMetrics]:

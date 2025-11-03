@@ -37,11 +37,11 @@ class TestInvalidAgentConfigException:
 
         assert "model" in str(exception)
         assert "cannot be empty" in str(exception)
-        assert "Configuração inválida" in str(exception)
+        assert "Invalid configuration" in str(exception)
 
     def test_exception_message_format(self):
         exception = InvalidAgentConfigException("name", "too short")
-        expected = "Configuração inválida no campo 'name': too short"
+        expected = "Invalid configuration in field 'name': too short"
 
         assert str(exception) == expected
 
@@ -66,11 +66,11 @@ class TestInvalidModelException:
         exception = InvalidModelException("invalid_model")
 
         assert "invalid_model" in str(exception)
-        assert "não suportado" in str(exception)
+        assert "not supported" in str(exception) or "Unsupported" in str(exception)
 
     def test_exception_message_format(self):
         exception = InvalidModelException("gpt-5")
-        expected = "Modelo de IA não suportado: 'gpt-5'"
+        expected = "Unsupported AI model: 'gpt-5'"
 
         assert str(exception) == expected
 
@@ -132,11 +132,11 @@ class TestAdapterNotFoundException:
         exception = AdapterNotFoundException("CustomAdapter")
 
         assert "CustomAdapter" in str(exception)
-        assert "não encontrado" in str(exception)
+        assert "not found" in str(exception)
 
     def test_exception_message_format(self):
         exception = AdapterNotFoundException("TestAdapter")
-        expected = "Adapter não encontrado: 'TestAdapter'"
+        expected = "Adapter not found: 'TestAdapter'"
 
         assert str(exception) == expected
 
@@ -216,7 +216,7 @@ class TestInvalidProviderException:
         exception = InvalidProviderException("invalid", available)
 
         assert "invalid" in str(exception)
-        assert "não está disponível" in str(exception)
+        assert "is not available" in str(exception)
         assert "openai" in str(exception) or "ollama" in str(exception)
 
     def test_exception_message_format(self):
@@ -224,7 +224,7 @@ class TestInvalidProviderException:
         exception = InvalidProviderException("custom", available)
 
         assert "custom" in str(exception)
-        assert "Providers disponíveis" in str(exception)
+        assert "Available providers" in str(exception)
 
     def test_is_agent_exception(self):
         exception = InvalidProviderException("test", {"openai"})
@@ -241,7 +241,6 @@ class TestInvalidProviderException:
         exception = InvalidProviderException("test", available)
 
         message = str(exception)
-        # Verifica se todos providers disponíveis aparecem na mensagem
         for provider in available:
             assert provider in message
 
@@ -253,14 +252,14 @@ class TestUnsupportedConfigException:
         exception = UnsupportedConfigException("invalid_config", available)
 
         assert "invalid_config" in str(exception)
-        assert "não é suportada" in str(exception)
+        assert "is not supported" in str(exception)
 
     def test_exception_message_format(self):
         available = {"temperature", "max_tokens"}
         exception = UnsupportedConfigException("custom", available)
 
         assert "custom" in str(exception)
-        assert "Opções válidas" in str(exception)
+        assert "Valid options" in str(exception)
 
     def test_is_agent_exception(self):
         exception = UnsupportedConfigException("test", {"temperature"})
@@ -277,7 +276,6 @@ class TestUnsupportedConfigException:
         exception = UnsupportedConfigException("test", available)
 
         message = str(exception)
-        # Verifica se todas configs disponíveis aparecem na mensagem
         assert "temperature" in message or "max_tokens" in message or "top_p" in message
 
 
@@ -287,7 +285,7 @@ class TestInvalidConfigTypeException:
         exception = InvalidConfigTypeException("temperature", object)
 
         assert "temperature" in str(exception)
-        assert "tipo inválido" in str(exception)
+        assert "has invalid type" in str(exception)
         assert "object" in str(exception)
 
     def test_exception_message_format(self):
