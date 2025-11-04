@@ -83,9 +83,9 @@ config = {
 
 agent = AIAgent(
     model="gpt-4",
-    config=config,
     name="Assistente",
     instructions="Seja conciso"
+    config=config,
 )
 ```
 
