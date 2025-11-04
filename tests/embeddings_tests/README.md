@@ -1,353 +1,363 @@
-# 🚀 Pipeline Modular de Embeddings com Ollama - Versão Profissional
+# Sistema RAG (Retrieval-Augmented Generation)
 
-Sistema extremamente simples e modular para criar embeddings de documentos usando modelos do Ollama, com **detecção automática de índice** e melhores práticas da indústria.
+Sistema completo de RAG profissional com indexação de documentos, busca vetorial, reranking BM25 e geração de respostas.
 
-## ✨ Características
+## 📋 Estrutura
 
-- ✅ **Ultra Simples**: Uma única função para tudo
-- ✅ **Totalmente Modular**: Customize qualquer parâmetro
-- ✅ **Múltiplos Formatos**: PDF, CSV, Parquet, Excel, TXT, MD
-- ✅ **Processamento Paralelo**: Aproveita múltiplos cores
-- ✅ **Seguro para Notebooks**: Logs detalhados e tratamento de erros
-- ✅ **Eficiente em Memória**: Streaming de dados grandes
-- 🆕 **Detecção Automática de Índice**: Escolhe Flat ou IVF baseado no volume
-- 🆕 **Normalização de Embeddings**: Para similaridade coseno eficiente
-- 🆕 **Deduplicação Automática**: Economiza 20-40% de espaço
-- 🆕 **Metadados Profissionais**: Rastreamento completo (15+ campos)
+```
+embeddings_tests/
+├── indexar.py          # Pipeline de indexação de documentos
+├── perguntar.py        # Sistema RAG de perguntas e respostas
+├── main.py            # Script para criar índices
+├── test_rag.py        # Script de testes do sistema RAG
+└── README.md          # Esta documentação
+```
 
-## 📦 Instalação
+## 🚀 Como Usar
+
+### 1. Instalar Dependências
 
 ```bash
-pip install ollama faiss-cpu numpy pandas pyarrow pymupdf langchain-text-splitters openpyxl
+poetry install
 ```
 
-## 🎯 Uso Rápido
+As dependências necessárias incluem:
 
-### Exemplo Básico (com Detecção Automática)
+- `pymupdf` (fitz) - Para processar PDFs
+- `pandas` - Para processar CSV/Excel
+- `pyarrow` - Para processar Parquet
+- `numpy` - Operações numéricas
+- `faiss-cpu` - Indexação vetorial
+- `ollama` - API para modelos de embedding e LLM
 
-```python
-from indexar import create_embeddings
+### 2. Criar Índice de Documentos
 
-# O sistema decide automaticamente o melhor índice!
-result = create_embeddings(
-    documents=["./meus_documentos"],  # Diretório ou lista de arquivos
-    model_name="qwen3-embedding:4b"   # Modelo do Ollama
-)
-
-# < 10.000 chunks → IndexFlatL2 (busca exata)
-# ≥ 10.000 chunks → IndexIVFFlat (busca aproximada, escalável)
-
-print(f"✓ {result['total_chunks']} chunks indexados")
-print(f"🔧 Índice: {result['index_type']} ({'automático' if result['index_auto_selected'] else 'manual'})")
-print(f"🗑️  Duplicados removidos: {result['duplicates_removed']}")
-```
-
-### Exemplo com Arquivos Específicos
+Edite o arquivo `main.py` para configurar seus documentos:
 
 ```python
 result = create_embeddings(
-    documents=[
-        "artigo1.pdf",
-        "dados.csv",
-        "relatorio.parquet",
-        "planilha.xlsx"
-    ],
+    documents=["/caminho/para/seu/documento.pdf"],
     model_name="qwen3-embedding:4b",
-    chunk_size=800,
-    chunk_overlap=100,
-    output_prefix="arquivos_especificos"
-)
-```
-
-### Exemplo Completo com Todas as Opções
-
-````python
-result = create_embeddings(
-    # Documentos
-    documents=["./docs_tecnicos", "./relatorios"],
-
-    # Modelo de IA
-    model_name="qwen3-embedding:4b",
-
-    # Configuração de chunking
-    chunk_size=1200,
-    chunk_overlap=200,
-    min_chunk_size=50,  # ✅ Ignora chunks muito pequenos
-
-    # Qualidade RAG (RECOMENDADO - sempre True)
-    normalize_embeddings=True,  # ✅ Para similaridade coseno
-    deduplicate=True,  # ✅ Remove duplicados (-20 a -40%)
-    add_document_context=True,  # ✅ Metadados ricos
-
-    # Índice FAISS (detecção automática por padrão)
-    # use_ivf_index=None (padrão) - Sistema decide automaticamente
-    # use_ivf_index=True - Força IVF
-    # use_ivf_index=False - Força Flat
-    ivf_threshold=10000,  # Threshold para ativar IVF
-
-    # Metadados customizados
-    custom_metadata={
-        "project": "RAG System",
-        "version": "2.0"
-    },
-
-    # Performance
+    chunk_size=1000,
+    chunk_overlap=150,
     batch_size=512,
     num_workers=4,
-    output_prefix="indice_completo"
-)
-```## 📋 Parâmetros
-
-| Parâmetro | Tipo | Padrão | Descrição |
-|-----------|------|--------|-----------|
-| `documents` | List[str] | **Obrigatório** | Arquivos ou diretórios para processar |
-| `model_name` | str | "qwen3-embedding:4b" | Modelo Ollama para embeddings |
-| `chunk_size` | int | 1000 | Tamanho máximo de cada chunk (caracteres) |
-| `chunk_overlap` | int | 150 | Sobreposição entre chunks (caracteres) |
-| `batch_size` | int | 512 | Chunks a processar por vez |
-| `num_workers` | int | 4 | Número de threads paralelas |
-| `output_prefix` | str | "vector_index" | Prefixo dos arquivos de saída |
-| `normalize_embeddings` | bool | True | ✅ Normaliza vetores (RECOMENDADO) |
-| `deduplicate` | bool | True | ✅ Remove duplicados (RECOMENDADO) |
-| `min_chunk_size` | int | 50 | Tamanho mínimo de chunk |
-| `add_document_context` | bool | True | Adiciona contexto do documento |
-| `use_ivf_index` | bool\|None | None | None=automático, True=IVF, False=Flat |
-| `ivf_threshold` | int | 10000 | Chunks para ativar IVF automaticamente |
-| `ivf_nlist` | int | 100 | Número de clusters IVF |
-| `custom_metadata` | Dict | None | Metadados customizados (JSON) |
-
-## 📄 Formatos Suportados
-
-- **PDF** (.pdf) - Documentos de texto (com rastreamento de páginas)
-- **CSV** (.csv) - Planilhas de dados
-- **Parquet** (.parquet) - Dados colunares
-- **Excel** (.xlsx, .xls) - Planilhas do Microsoft Excel
-- **Texto** (.txt) - Arquivos de texto simples
-- **Markdown** (.md) - Documentos Markdown
-
-## 🆕 Detecção Automática de Índice FAISS
-
-O sistema agora escolhe **automaticamente** o melhor tipo de índice baseado no volume de documentos:
-
-| Volume de Chunks | Índice Selecionado | Características |
-|------------------|-------------------|-----------------|
-| **< 10.000** | IndexFlatL2 | ✅ Busca exata, muito rápida |
-| **≥ 10.000** | IndexIVFFlat | ✅ Busca aproximada, escalável (10-100x mais rápido) |
-
-**Você não precisa se preocupar!** O sistema otimiza automaticamente.
-
-### Controlando Manualmente (se necessário):
-
-```python
-# Detecção automática (RECOMENDADO)
-result = create_embeddings(documents=["./docs"])
-
-# Forçar Flat (busca exata)
-result = create_embeddings(documents=["./docs"], use_ivf_index=False)
-
-# Forçar IVF (grande escala)
-result = create_embeddings(documents=["./docs"], use_ivf_index=True)
-
-# Ajustar threshold (padrão: 10.000)
-result = create_embeddings(documents=["./docs"], ivf_threshold=15000)
-````
-
-## 🎨 Modelos do Ollama Recomendados
-
-```python
-# Para português (recomendado)
-model_name="qwen3-embedding:4b"
-
-# Alternativas
-model_name="llama2"
-model_name="nomic-embed-text"
-model_name="mxbai-embed-large"
-```
-
-## ⚙️ Otimização de Performance
-
-### Máxima Velocidade (usa mais recursos)
-
-```python
-batch_size=1024      # Lotes grandes
-num_workers=16       # Muitas threads
-```
-
-### Mínimo de Recursos (mais lento, mas seguro)
-
-```python
-batch_size=128       # Lotes pequenos
-num_workers=2        # Poucas threads
-```
-
-### Balanceado (recomendado)
-
-```python
-batch_size=512       # Lotes médios
-num_workers=4        # Threads moderadas
-```
-
-## 📊 Chunks por Tipo de Documento
-
-### Documentos Técnicos/Científicos
-
-```python
-chunk_size=1500      # Chunks grandes
-chunk_overlap=250    # Overlap maior
-```
-
-### Dados Tabulares (CSV/Excel)
-
-```python
-chunk_size=500       # Chunks pequenos
-chunk_overlap=50     # Overlap mínimo
-```
-
-### Documentos Gerais
-
-```python
-chunk_size=1000      # Tamanho médio
-chunk_overlap=150    # Overlap médio
-```
-
-## 📂 Arquivos Gerados
-
-Após o processamento, dois arquivos são criados:
-
-1. **`[output_prefix].faiss`** - Índice vetorial FAISS para busca
-2. **`[output_prefix].jsonl`** - Metadados de cada chunk
-
-## 💡 Exemplos Práticos
-
-### 1. Processar diretório inteiro
-
-```python
-result = create_embeddings(
-    documents=["./documentos"],
-    model_name="qwen3-embedding:4b"
+    output_prefix="meu_index",
 )
 ```
 
-### 2. Múltiplas fontes
+Execute:
+
+```bash
+poetry run python tests/embeddings_tests/main.py
+```
+
+**Arquivos gerados:**
+
+- `meu_index.faiss` - Índice FAISS com embeddings
+- `meu_index.jsonl` - Metadados dos chunks
+- `meu_index_stats.json` - Estatísticas do processamento
+- `meu_index_metrics.jsonl` - Métricas de indexação (opcional)
+
+### 3. Fazer Perguntas
+
+Edite o arquivo `test_rag.py` para configurar suas perguntas:
+
+```python
+# Configuração
+INDEX_PREFIX = "meu_index"
+EMBEDDING_MODEL = "qwen3-embedding:4b"
+LLM_MODEL = "qwen3:latest"
+
+# Perguntas
+perguntas = [
+    "Sua pergunta aqui?",
+    "Outra pergunta?",
+]
+```
+
+Execute:
+
+```bash
+poetry run python tests/embeddings_tests/test_rag.py
+```
+
+## 📊 Funcionalidades
+
+### Sistema de Indexação (`indexar.py`)
+
+#### ✨ Principais Features:
+
+1. **Splitter Recursivo Inteligente**
+
+   - Respeita limites semânticos (não corta listas, citações, blocos de código)
+   - Overlap baseado em sentenças completas
+   - Proteção contra recursão infinita
+   - Mínimo de chunk size configurável
+
+2. **Suporte a Múltiplos Formatos**
+
+   - PDF (com rastreamento preciso de páginas)
+   - CSV/Excel (com contexto de colunas/sheets)
+   - Parquet (com schema)
+   - TXT/Markdown
+
+3. **Deduplicação Automática**
+
+   - Hash SHA256 para identificação única
+   - Remove chunks duplicados automaticamente
+
+4. **Escolha Automática de Índice**
+
+   - FAISS Flat para volumes pequenos (< 10k chunks)
+   - FAISS IVF para grandes volumes (≥ 10k chunks)
+   - Configuração manual também disponível
+
+5. **Metadados Ricos**
+
+   - Fonte, página, tipo de documento
+   - Timestamps de criação e indexação
+   - Contexto do documento
+
+6. **Logging Estruturado**
+   - Métricas em JSON (JSONL)
+   - Rastreamento de performance
+   - Análise posterior facilitada
+
+### Sistema RAG (`perguntar.py`)
+
+#### ✨ Principais Features:
+
+1. **Query Expansion**
+
+   - Expande queries com sinônimos e termos relacionados
+   - Dicionário customizável
+   - Melhora recall sem modelos pesados
+
+2. **BM25 Reranking**
+
+   - Reordena resultados vetoriais usando BM25
+   - Sem modelos extras (apenas TF-IDF)
+   - Ideal para ambientes com RAM limitada
+
+3. **Busca Vetorial FAISS**
+
+   - Busca eficiente por similaridade
+   - Suporta índices Flat e IVF
+   - Normalização de embeddings
+
+4. **Geração de Respostas**
+
+   - Usa contexto recuperado para gerar respostas
+   - Metadados nas fontes citadas
+   - Controle de alucinação ("Não sei" quando apropriado)
+
+5. **Métricas Detalhadas**
+   - Tempo de retrieval, reranking e geração
+   - Número de documentos usados
+   - Scores de similaridade e BM25
+   - Logging em JSON para análise
+
+## ⚙️ Configurações Avançadas
+
+### Parâmetros de Indexação
+
+```python
+create_embeddings(
+    documents=["..."],
+    model_name="qwen3-embedding:4b",
+
+    # Chunking
+    chunk_size=1000,              # Tamanho máximo do chunk
+    chunk_overlap=150,            # Overlap entre chunks
+    min_chunk_size=50,            # Tamanho mínimo aceitável
+
+    # Performance
+    batch_size=512,               # Chunks por lote
+    num_workers=4,                # Threads paralelas
+
+    # Índice
+    use_ivf_index=None,           # None=automático, True/False=manual
+    ivf_nlist=100,                # Clusters para IVF
+    ivf_threshold=10000,          # Threshold para ativar IVF
+
+    # Qualidade
+    normalize_embeddings=True,    # Normaliza vetores
+    deduplicate=True,             # Remove duplicados
+    add_document_context=True,    # Adiciona contexto do doc
+
+    # Output
+    output_prefix="meu_index",
+    enable_structured_logging=True,
+    custom_metadata={"projeto": "RAG", "versão": "1.0"}
+)
+```
+
+### Parâmetros de Query
+
+```python
+rag.query(
+    question="Sua pergunta?",
+    k=10,                 # Docs iniciais (busca vetorial)
+    rerank_to=4          # Docs finais (após BM25)
+)
+```
+
+## 📈 Métricas e Análise
+
+### Arquivo de Métricas (`*_metrics.jsonl`)
+
+Exemplo de entrada:
+
+```json
+{
+  "timestamp": "2025-11-04T08:31:33",
+  "session_id": "a1b2c3d4",
+  "event_type": "retrieval",
+  "original_query": "Qual é a data?",
+  "expanded_query": "qual é a data do primeiro registro",
+  "num_results": 3,
+  "retrieval_time_ms": 820,
+  "rerank_time_ms": 5,
+  "vector_avg_score": 0.7234,
+  "bm25_avg_score": 12.45
+}
+```
+
+### Análise de Métricas
+
+```python
+import json
+import pandas as pd
+
+# Carrega métricas
+metrics = []
+with open("meu_index_metrics.jsonl", "r") as f:
+    for line in f:
+        metrics.append(json.loads(line))
+
+df = pd.DataFrame(metrics)
+
+# Análise
+print(f"Tempo médio de retrieval: {df['retrieval_time_ms'].mean():.2f}ms")
+print(f"Tempo médio de reranking: {df['rerank_time_ms'].mean():.2f}ms")
+print(f"Score vetorial médio: {df['vector_avg_score'].mean():.4f}")
+```
+
+## 🔧 Troubleshooting
+
+### Erro: "Modelo não encontrado"
+
+```bash
+# Liste modelos disponíveis
+ollama list
+
+# Baixe o modelo necessário
+ollama pull qwen3-embedding:4b
+ollama pull qwen3:latest
+```
+
+### Erro: "Chunk size muito grande"
+
+Reduza o `chunk_size` para caber no contexto do modelo:
+
+```python
+chunk_size=800,  # Reduzido de 1000
+```
+
+### Performance lenta
+
+1. Aumente `num_workers` (paralelização)
+2. Aumente `batch_size` (menos lotes)
+3. Use índice IVF para grandes volumes
+4. Considere modelo de embedding menor
+
+### Respostas de baixa qualidade
+
+1. Aumente `k` (mais documentos recuperados)
+2. Ajuste `chunk_overlap` (melhor contexto)
+3. Use reranking (`use_reranking=True`)
+4. Ative query expansion (`use_query_expansion=True`)
+5. Teste diferentes modelos LLM
+
+## 📚 Exemplos de Uso
+
+### Indexar Múltiplos Documentos
 
 ```python
 result = create_embeddings(
     documents=[
-        "./artigos",
-        "./relatorios",
-        "documento_importante.pdf"
+        "/docs/manual.pdf",
+        "/docs/relatorio.xlsx",
+        "/docs/dados.csv",
+        "/docs/notas/",  # Diretório inteiro
     ],
-    model_name="qwen3-embedding:4b"
+    model_name="qwen3-embedding:4b",
+    output_prefix="conhecimento_base",
 )
 ```
 
-### 3. Usar em Jupyter Notebook
+### Query Customizada
 
 ```python
-# Os logs aparecem automaticamente mostrando progresso
-result = create_embeddings(
-    documents=["./dados"],
-    output_prefix="notebook_index"
+from perguntar import AdvancedRAG
+
+rag = AdvancedRAG(
+    index_path="conhecimento_base.faiss",
+    metadata_path="conhecimento_base.jsonl",
+    embedding_model="qwen3-embedding:4b",
+    llm_model="qwen3:latest",
+    use_reranking=True,
+    use_query_expansion=True,
 )
 
-# Resultados disponíveis para análise
-print(f"Chunks: {result['total_chunks']}")
-print(f"Tempo: {result['time_seconds']}s")
-```
-
-## 🔧 Uso via Linha de Comando
-
-```bash
-# Processar documentos via CLI
-python indexar.py ./documentos --model qwen3-embedding:4b --chunk-size 1000 --output meu_indice
-
-# Ver todas as opções
-python indexar.py --help
-```
-
-## 📝 Arquivos no Projeto
-
-- **`indexar.py`** - Módulo principal com a função `create_embeddings()`
-- **`exemplo_uso.py`** - Exemplos de uso em scripts Python
-- **`exemplo_embeddings.ipynb`** - Notebook interativo com exemplos
-- **`indexar_antigo.py`** - Versão anterior (backup)
-
-## 🚀 Começando Rápido
-
-1. Instale as dependências
-2. Garanta que o Ollama está rodando
-3. Importe e use:
-
-```python
-from indexar import create_embeddings
-
-result = create_embeddings(
-    documents=["./meus_docs"],
-    model_name="qwen3-embedding:4b"
+result = rag.query(
+    question="Como configurar o sistema?",
+    k=15,
+    rerank_to=5
 )
+
+print(result["answer"])
 ```
 
-Pronto! Seus embeddings estão criados.
-
-## 🤝 Integração com RAG
-
-Os arquivos gerados podem ser usados diretamente em sistemas RAG:
+### Adicionar Expansões Customizadas
 
 ```python
-import faiss
-import json
+from perguntar import QueryExpander
 
-# Carregar índice
-index = faiss.read_index("meu_indice.faiss")
+expander = QueryExpander()
+expander.add_custom_expansion("RAG", ["retrieval", "augmented", "generation"])
+expander.add_custom_expansion("AI", ["inteligência artificial", "machine learning", "deep learning"])
 
-# Carregar metadados
-metadata = []
-with open("meu_indice.jsonl", "r") as f:
-    for line in f:
-        metadata.append(json.loads(line))
-
-# Fazer busca
-query_vector = [...]  # Seu vetor de consulta
-distances, indices = index.search(query_vector, k=5)
-
-# Recuperar chunks relevantes
-for idx in indices[0]:
-    print(metadata[idx])
+query_expandida = expander.expand("Como usar RAG com AI?")
+print(query_expandida)
 ```
 
-## 📖 Documentação Adicional
+## 🎯 Boas Práticas
 
-- **Ollama**: https://ollama.ai
-- **FAISS**: https://github.com/facebookresearch/faiss
-- **LangChain**: https://python.langchain.com
+1. **Chunking**
 
-## 🐛 Solução de Problemas
+   - Use `chunk_size` entre 500-1500 caracteres
+   - `chunk_overlap` entre 10-20% do chunk_size
+   - `min_chunk_size` ≈ 5-10% do chunk_size
 
-### "Prompt too long"
+2. **Indexação**
 
-Reduza o `chunk_size`:
+   - Sempre use `deduplicate=True`
+   - Ative `normalize_embeddings=True`
+   - Use `add_document_context=True` para melhor rastreabilidade
 
-```python
-chunk_size=800  # ou 500
-```
+3. **Query**
 
-### Processamento muito lento
+   - Comece com `k=10` e `rerank_to=3-5`
+   - Ative reranking para melhor precisão
+   - Use query expansion para melhor recall
 
-Aumente `num_workers` e `batch_size`:
+4. **Performance**
+   - Monitore métricas regularmente
+   - Ajuste `num_workers` baseado em CPU
+   - Use IVF para > 10k chunks
 
-```python
-num_workers=8
-batch_size=1024
-```
+## 📝 Licença
 
-### Usando muita RAM
-
-Reduza `batch_size`:
-
-```python
-batch_size=128
-```
-
-## 📄 Licença
-
-Este código é fornecido como está para uso educacional.
+Este sistema RAG é parte do projeto AI_Agent.

@@ -1,0 +1,1 @@
+{"timestamp": "2025-11-04T09:06:23.381659", "session_id": "e5aca8cc", "event_type": "indexing", "metrics": {"total_documents": 1, "config": {"model": "qwen3-embedding:4b", "chunk_size": 1000, "chunk_overlap": 150, "batch_size": 512, "num_workers": 4, "normalize": true, "deduplicate": true}}}
