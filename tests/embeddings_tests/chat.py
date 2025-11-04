@@ -2,17 +2,19 @@
 """
 Script interativo para fazer perguntas ao sistema RAG
 """
+
 import sys
 from pathlib import Path
+
 from perguntar import AdvancedRAG
 
 
 def main():
     # Configuração
     PROJECT_ROOT = Path(__file__).parent.parent.parent
-    INDEX_PREFIX = "notebook_index"
+    INDEX_PREFIX = "DFP_INDEX"
     EMBEDDING_MODEL = "qwen3-embedding:4b"
-    LLM_MODEL = "granite4:latest"
+    LLM_MODEL = "gemma3:4b"
 
     print("\n" + "=" * 70)
     print("💬 SISTEMA RAG INTERATIVO")
@@ -53,27 +55,23 @@ def main():
 
         # Processa pergunta
         try:
-            result = rag.query(
-                question=pergunta,
-                k=10,
-                rerank_to=4
-            )
+            result = rag.query(question=pergunta, k=10, rerank_to=4)
 
             # Exibe resultado
             print("\n" + "=" * 70)
             print("💡 RESPOSTA:")
             print("=" * 70)
             print(result["answer"])
-            
+
             print("\n📚 FONTES:")
             for i, source in enumerate(result["sources"], 1):
                 print(f"  {i}. {source['source']} (pág. {source['page']})")
-            
+
             print("\n📊 MÉTRICAS:")
             metrics = result["metrics"]
             print(f"  ⏱️  Tempo total: {metrics['total_time']:.2f}s")
             print(f"  📄 Documentos usados: {metrics['context_chunks']}")
-            
+
         except KeyboardInterrupt:
             print("\n\n👋 Até logo!")
             break
