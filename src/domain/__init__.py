@@ -7,6 +7,7 @@ from .exceptions import (
     InvalidBaseToolException,
     InvalidModelException,
 )
+from .services import ToolExecutionResult, ToolExecutor
 from .value_objects import BaseTool, History, Message, MessageRole
 
 __all__ = [
@@ -21,4 +22,6 @@ __all__ = [
     "MessageRole",
     "History",
     "BaseTool",
+    "ToolExecutor",
+    "ToolExecutionResult",
 ]

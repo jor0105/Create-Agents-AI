@@ -1,4 +1,5 @@
 from .base_tools import BaseTool
+from .chat_response import ChatResponse, ToolCallInfo
 from .configs_validator import SupportedConfigs
 from .history import History
 from .message import Message, MessageRole
@@ -11,4 +12,6 @@ __all__ = [
     "SupportedProviders",
     "SupportedConfigs",
     "BaseTool",
+    "ChatResponse",
+    "ToolCallInfo",
 ]

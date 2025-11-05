@@ -68,6 +68,16 @@ class History:
         message = Message(role=MessageRole.SYSTEM, content=content)
         self.add(message)
 
+    def add_tool_message(self, content: str) -> None:
+        """
+        A shortcut to add a tool message (tool execution result).
+
+        Args:
+            content: The content of the tool result.
+        """
+        message = Message(role=MessageRole.TOOL, content=content)
+        self.add(message)
+
     def clear(self) -> None:
         """Clears all messages from the history."""
         self._messages.clear()

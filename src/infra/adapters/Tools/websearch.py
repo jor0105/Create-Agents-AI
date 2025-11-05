@@ -13,6 +13,16 @@ class WebSearchTool(BaseTool):
         "Use this tool to obtain current information or answer questions about "
         "recent events. The input should be a clear search query."
     )
+    parameters = {
+        "type": "object",
+        "properties": {
+            "query": {
+                "type": "string",
+                "description": "The search query to look up on the web",
+            }
+        },
+        "required": ["query"],
+    }
 
     def execute(self, query: str) -> str:
         """Execute a simulated web search.

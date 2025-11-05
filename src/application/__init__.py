@@ -1,14 +1,17 @@
 from .dtos import AgentConfigOutputDTO, ChatInputDTO, ChatOutputDTO, CreateAgentInputDTO
-from .use_cases.chat_with_agent import ChatWithAgentUseCase
-from .use_cases.create_agent import CreateAgentUseCase
-from .use_cases.get_config_agents import GetAgentConfigUseCase
+from .interfaces import ChatRepository
+from .use_cases import ChatWithAgentUseCase, CreateAgentUseCase, GetAgentConfigUseCase
 
 __all__ = [
+    # use cases
     "CreateAgentUseCase",
     "ChatWithAgentUseCase",
     "GetAgentConfigUseCase",
+    # dtos
     "CreateAgentInputDTO",
     "AgentConfigOutputDTO",
     "ChatInputDTO",
     "ChatOutputDTO",
+    # interfaces
+    "ChatRepository",
 ]

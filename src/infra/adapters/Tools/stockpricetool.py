@@ -14,6 +14,16 @@ class StockPriceTool(BaseTool):
         "Use this tool to obtain the most recent closing price for a Brazilian "
         "stock (B3). The input should be the ticker symbol (e.g., 'PETR4', 'VALE3')."
     )
+    parameters = {
+        "type": "object",
+        "properties": {
+            "ticker": {
+                "type": "string",
+                "description": "The stock ticker symbol from B3 (e.g., 'PETR4', 'VALE3')",
+            }
+        },
+        "required": ["ticker"],
+    }
 
     def execute(self, ticker: str) -> str:
         """Execute a simulated stock price lookup.

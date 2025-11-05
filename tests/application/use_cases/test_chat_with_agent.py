@@ -57,6 +57,7 @@ class TestChatWithAgentUseCase:
             config={},
             user_ask="Test message",
             history=[],
+            tools=None,
         )
 
     def test_execute_with_existing_history(self, mock_chat_repository):
@@ -199,6 +200,7 @@ class TestChatWithAgentUseCase:
             config=config,
             user_ask="Test message",
             history=[],
+            tools=None,
         )
 
     def test_get_metrics_when_repository_supports_it(self):

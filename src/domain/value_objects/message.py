@@ -9,6 +9,7 @@ class MessageRole(str, Enum):
     SYSTEM = "system"
     USER = "user"
     ASSISTANT = "assistant"
+    TOOL = "tool"  # For tool execution results
 
     def __str__(self) -> str:
         return self.value

@@ -48,6 +48,10 @@ class TestOpenAIChatAdapter:
         mock_response.usage.total_tokens = 100
         mock_response.usage.input_tokens = 50
         mock_response.usage.output_tokens = 50
+        mock_response.choices = [MagicMock()]
+        mock_response.choices[0].message.tool_calls = None  # No tool calls
+        mock_response.choices = [MagicMock()]
+        mock_response.choices[0].message.tool_calls = None  # No tool calls
         mock_client.responses.create.return_value = mock_response
         mock_get_client.return_value = mock_client
 
@@ -79,6 +83,8 @@ class TestOpenAIChatAdapter:
         mock_response.usage.total_tokens = 100
         mock_response.usage.input_tokens = 50
         mock_response.usage.output_tokens = 50
+        mock_response.choices = [MagicMock()]
+        mock_response.choices[0].message.tool_calls = None  # No tool calls
         mock_client.responses.create.return_value = mock_response
         mock_get_client.return_value = mock_client
 
@@ -113,6 +119,8 @@ class TestOpenAIChatAdapter:
         mock_response.usage.total_tokens = 100
         mock_response.usage.input_tokens = 50
         mock_response.usage.output_tokens = 50
+        mock_response.choices = [MagicMock()]
+        mock_response.choices[0].message.tool_calls = None  # No tool calls
         mock_client.responses.create.return_value = mock_response
         mock_get_client.return_value = mock_client
 
@@ -144,6 +152,8 @@ class TestOpenAIChatAdapter:
         mock_response.usage.total_tokens = 100
         mock_response.usage.input_tokens = 50
         mock_response.usage.output_tokens = 50
+        mock_response.choices = [MagicMock()]
+        mock_response.choices[0].message.tool_calls = None  # No tool calls
         mock_client.responses.create.return_value = mock_response
         mock_get_client.return_value = mock_client
 
@@ -182,6 +192,8 @@ class TestOpenAIChatAdapter:
         mock_response.usage.total_tokens = 100
         mock_response.usage.input_tokens = 50
         mock_response.usage.output_tokens = 50
+        mock_response.choices = [MagicMock()]
+        mock_response.choices[0].message.tool_calls = None  # No tool calls
         mock_client.responses.create.return_value = mock_response
         mock_get_client.return_value = mock_client
 
@@ -210,6 +222,8 @@ class TestOpenAIChatAdapter:
         mock_client = Mock()
         mock_response = MagicMock()
         mock_response.output_text = ""
+        mock_response.choices = [MagicMock()]
+        mock_response.choices[0].message.tool_calls = None  # No tool calls
         mock_client.responses.create.return_value = mock_response
         mock_get_client.return_value = mock_client
 
@@ -236,6 +250,8 @@ class TestOpenAIChatAdapter:
         mock_client = Mock()
         mock_response = MagicMock()
         mock_response.output_text = None
+        mock_response.choices = [MagicMock()]
+        mock_response.choices[0].message.tool_calls = None  # No tool calls
         mock_client.responses.create.return_value = mock_response
         mock_get_client.return_value = mock_client
 
@@ -419,6 +435,8 @@ class TestOpenAIChatAdapter:
         mock_response.usage.total_tokens = 100
         mock_response.usage.input_tokens = 50
         mock_response.usage.output_tokens = 50
+        mock_response.choices = [MagicMock()]
+        mock_response.choices[0].message.tool_calls = None  # No tool calls
         mock_client.responses.create.return_value = mock_response
         mock_get_client.return_value = mock_client
 
@@ -448,6 +466,8 @@ class TestOpenAIChatAdapter:
         mock_response.usage.total_tokens = 100
         mock_response.usage.input_tokens = 50
         mock_response.usage.output_tokens = 50
+        mock_response.choices = [MagicMock()]
+        mock_response.choices[0].message.tool_calls = None  # No tool calls
         mock_client.responses.create.return_value = mock_response
         mock_get_client.return_value = mock_client
 
@@ -496,6 +516,8 @@ class TestOpenAIChatAdapter:
         mock_response.usage.total_tokens = 150
         mock_response.usage.input_tokens = 75
         mock_response.usage.output_tokens = 75
+        mock_response.choices = [MagicMock()]
+        mock_response.choices[0].message.tool_calls = None  # No tool calls
         mock_client.responses.create.return_value = mock_response
         mock_get_client.return_value = mock_client
 
@@ -562,6 +584,8 @@ class TestOpenAIChatAdapter:
         mock_response.usage.total_tokens = 100
         mock_response.usage.input_tokens = 50
         mock_response.usage.output_tokens = 50
+        mock_response.choices = [MagicMock()]
+        mock_response.choices[0].message.tool_calls = None  # No tool calls
         mock_client.responses.create.return_value = mock_response
         mock_get_client.return_value = mock_client
 
@@ -617,6 +641,8 @@ class TestOpenAIChatAdapter:
         mock_response.usage.total_tokens = 100
         mock_response.usage.input_tokens = 50
         mock_response.usage.output_tokens = 50
+        mock_response.choices = [MagicMock()]
+        mock_response.choices[0].message.tool_calls = None  # No tool calls
         mock_client.responses.create.return_value = mock_response
         mock_get_client.return_value = mock_client
 
@@ -653,6 +679,8 @@ class TestOpenAIChatAdapter:
         mock_response.usage.total_tokens = 100
         mock_response.usage.input_tokens = 50
         mock_response.usage.output_tokens = 50
+        mock_response.choices = [MagicMock()]
+        mock_response.choices[0].message.tool_calls = None  # No tool calls
         mock_client.responses.create.return_value = mock_response
         mock_get_client.return_value = mock_client
 
@@ -689,6 +717,8 @@ class TestOpenAIChatAdapter:
         mock_response.usage.total_tokens = 100
         mock_response.usage.input_tokens = 50
         mock_response.usage.output_tokens = 50
+        mock_response.choices = [MagicMock()]
+        mock_response.choices[0].message.tool_calls = None  # No tool calls
         mock_client.responses.create.return_value = mock_response
         mock_get_client.return_value = mock_client
 
@@ -736,7 +766,7 @@ class TestOpenAIChatAdapter:
 
         metrics = adapter.get_metrics()
         assert len(metrics) == 1
-        assert metrics[0].error_message == "OpenAI returned an empty response."
+        assert metrics[0].error_message == "OpenAI chat error"
         assert metrics[0].success is False
 
     @patch(
@@ -750,6 +780,8 @@ class TestOpenAIChatAdapter:
         mock_response = MagicMock()
         mock_response.output_text = "Response"
         mock_response.usage = MagicMock()
+        mock_response.choices = [MagicMock()]
+        mock_response.choices[0].message.tool_calls = None  # No tool calls
         del mock_response.usage.total_tokens
         del mock_response.usage.input_tokens
         del mock_response.usage.output_tokens
@@ -806,6 +838,8 @@ class TestOpenAIChatAdapter:
         mock_client = Mock()
         mock_response = MagicMock()
         mock_response.output_text = "   \n\t  "
+        mock_response.choices = [MagicMock()]
+        mock_response.choices[0].message.tool_calls = None  # No tool calls
         mock_client.responses.create.return_value = mock_response
         mock_get_client.return_value = mock_client
 
@@ -836,6 +870,8 @@ class TestOpenAIChatAdapter:
         mock_response.usage.total_tokens = 100
         mock_response.usage.input_tokens = 50
         mock_response.usage.output_tokens = 50
+        mock_response.choices = [MagicMock()]
+        mock_response.choices[0].message.tool_calls = None  # No tool calls
         mock_client.responses.create.return_value = mock_response
         mock_get_client.return_value = mock_client
 
@@ -886,11 +922,15 @@ class TestOpenAIChatAdapter:
 
         mock_client = Mock()
         mock_response = MagicMock()
+        mock_response.choices = [MagicMock()]
+        mock_response.choices[0].message.tool_calls = None  # No tool calls
         long_text = "A" * 10000
         mock_response.output_text = long_text
         mock_response.usage.total_tokens = 2500
         mock_response.usage.input_tokens = 500
         mock_response.usage.output_tokens = 2000
+        mock_response.choices = [MagicMock()]
+        mock_response.choices[0].message.tool_calls = None  # No tool calls
         mock_client.responses.create.return_value = mock_response
         mock_get_client.return_value = mock_client
 
@@ -920,6 +960,8 @@ class TestOpenAIChatAdapter:
         mock_response.usage.total_tokens = 100
         mock_response.usage.input_tokens = 50
         mock_response.usage.output_tokens = 50
+        mock_response.choices = [MagicMock()]
+        mock_response.choices[0].message.tool_calls = None  # No tool calls
         mock_client.responses.create.return_value = mock_response
         mock_get_client.return_value = mock_client
 
@@ -950,6 +992,8 @@ class TestOpenAIChatAdapter:
         mock_response.usage.total_tokens = 100
         mock_response.usage.input_tokens = 50
         mock_response.usage.output_tokens = 50
+        mock_response.choices = [MagicMock()]
+        mock_response.choices[0].message.tool_calls = None  # No tool calls
         mock_client.responses.create.return_value = mock_response
         mock_get_client.return_value = mock_client
 
@@ -980,6 +1024,8 @@ class TestOpenAIChatAdapter:
         mock_response.usage.total_tokens = 100
         mock_response.usage.input_tokens = 50
         mock_response.usage.output_tokens = 50
+        mock_response.choices = [MagicMock()]
+        mock_response.choices[0].message.tool_calls = None  # No tool calls
         mock_client.responses.create.return_value = mock_response
         mock_get_client.return_value = mock_client
 
@@ -1010,6 +1056,8 @@ class TestOpenAIChatAdapter:
         mock_response.usage.total_tokens = 100
         mock_response.usage.input_tokens = 50
         mock_response.usage.output_tokens = 50
+        mock_response.choices = [MagicMock()]
+        mock_response.choices[0].message.tool_calls = None  # No tool calls
         mock_client.responses.create.return_value = mock_response
         mock_get_client.return_value = mock_client
 
@@ -1049,6 +1097,8 @@ class TestOpenAIChatAdapter:
         mock_response.usage.total_tokens = 100
         mock_response.usage.input_tokens = 50
         mock_response.usage.output_tokens = 50
+        mock_response.choices = [MagicMock()]
+        mock_response.choices[0].message.tool_calls = None  # No tool calls
         mock_client.responses.create.return_value = mock_response
         mock_get_client.return_value = mock_client
 
@@ -1082,6 +1132,8 @@ class TestOpenAIChatAdapter:
         mock_response.usage.total_tokens = 100
         mock_response.usage.input_tokens = 50
         mock_response.usage.output_tokens = 50
+        mock_response.choices = [MagicMock()]
+        mock_response.choices[0].message.tool_calls = None  # No tool calls
         mock_client.responses.create.return_value = mock_response
         mock_get_client.return_value = mock_client
 
@@ -1116,6 +1168,8 @@ class TestOpenAIChatAdapter:
         mock_response.usage.total_tokens = 100
         mock_response.usage.input_tokens = 50
         mock_response.usage.output_tokens = 50
+        mock_response.choices = [MagicMock()]
+        mock_response.choices[0].message.tool_calls = None  # No tool calls
         mock_client.responses.create.return_value = mock_response
         mock_get_client.return_value = mock_client
 
@@ -1184,6 +1238,8 @@ class TestOpenAIChatAdapter:
         mock_response.usage.total_tokens = 100
         mock_response.usage.input_tokens = 50
         mock_response.usage.output_tokens = 50
+        mock_response.choices = [MagicMock()]
+        mock_response.choices[0].message.tool_calls = None  # No tool calls
         mock_client.responses.create.return_value = mock_response
         mock_get_client.return_value = mock_client
 
@@ -1218,6 +1274,8 @@ class TestOpenAIChatAdapter:
         mock_response.usage.total_tokens = 100
         mock_response.usage.input_tokens = 50
         mock_response.usage.output_tokens = 50
+        mock_response.choices = [MagicMock()]
+        mock_response.choices[0].message.tool_calls = None  # No tool calls
         mock_client.responses.create.return_value = mock_response
         mock_get_client.return_value = mock_client
 
@@ -1270,6 +1328,8 @@ class TestOpenAIChatAdapter:
         mock_response.usage.total_tokens = 100
         mock_response.usage.input_tokens = 50
         mock_response.usage.output_tokens = 50
+        mock_response.choices = [MagicMock()]
+        mock_response.choices[0].message.tool_calls = None  # No tool calls
 
         mock_client.responses.create.side_effect = [
             Exception("Error 1"),

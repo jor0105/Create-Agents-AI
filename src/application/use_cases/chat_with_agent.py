@@ -48,6 +48,7 @@ class ChatWithAgentUseCase:
                 config=agent.config,
                 history=agent.history.to_dict_list(),
                 user_ask=input_dto.message,
+                tools=agent.tools,
             )
 
             if not response:

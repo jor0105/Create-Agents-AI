@@ -269,6 +269,7 @@ class TestCreateAgentInputDTO:
 class TestAgentConfigOutputDTO:
     def test_create_with_all_fields(self):
         dto = AgentConfigOutputDTO(
+            tools=None,
             provider="openai",
             name="Test Agent",
             model="gpt-5-nano",
@@ -286,6 +287,7 @@ class TestAgentConfigOutputDTO:
 
     def test_create_with_ollama_provider(self):
         dto = AgentConfigOutputDTO(
+            tools=None,
             provider="ollama",
             name="Test",
             model="phi4-mini:latest",
@@ -298,6 +300,7 @@ class TestAgentConfigOutputDTO:
 
     def test_to_dict_conversion(self):
         dto = AgentConfigOutputDTO(
+            tools=None,
             provider="ollama",
             name="Test",
             model="phi4-mini:latest",
@@ -318,6 +321,7 @@ class TestAgentConfigOutputDTO:
 
     def test_to_dict_with_empty_history(self):
         dto = AgentConfigOutputDTO(
+            tools=None,
             provider="openai",
             name="Test",
             model="gpt-5-nano",
@@ -337,6 +341,7 @@ class TestAgentConfigOutputDTO:
             {"role": "user", "content": "How are you?"},
         ]
         dto = AgentConfigOutputDTO(
+            tools=None,
             provider="openai",
             name="Test",
             model="gpt-5-nano",
@@ -352,6 +357,7 @@ class TestAgentConfigOutputDTO:
 
     def test_to_dict_all_keys_present(self):
         dto = AgentConfigOutputDTO(
+            tools=None,
             provider="openai",
             name="Test",
             model="gpt-5-nano",
@@ -368,6 +374,7 @@ class TestAgentConfigOutputDTO:
             "name",
             "instructions",
             "config",
+            "tools",
             "history",
             "history_max_size",
         }
@@ -380,6 +387,7 @@ class TestAgentConfigOutputDTO:
             "list": [1, 2, 3],
         }
         dto = AgentConfigOutputDTO(
+            tools=None,
             provider="ollama",
             name="Test",
             model="phi:latest",
@@ -394,6 +402,7 @@ class TestAgentConfigOutputDTO:
 
     def test_create_with_none_name(self):
         dto = AgentConfigOutputDTO(
+            tools=None,
             provider="openai",
             name=None,
             model="gpt-5-nano",
@@ -408,6 +417,7 @@ class TestAgentConfigOutputDTO:
 
     def test_create_with_none_instructions(self):
         dto = AgentConfigOutputDTO(
+            tools=None,
             provider="openai",
             name="Test",
             model="gpt-5-nano",
@@ -422,6 +432,7 @@ class TestAgentConfigOutputDTO:
 
     def test_create_with_both_none(self):
         dto = AgentConfigOutputDTO(
+            tools=None,
             provider="openai",
             name=None,
             model="gpt-5-nano",
@@ -556,6 +567,7 @@ class TestDTOsIntegration:
         input_dto.validate()
 
         output_dto = AgentConfigOutputDTO(
+            tools=None,
             provider=input_dto.provider,
             name=input_dto.name,
             model=input_dto.model,
@@ -621,6 +633,7 @@ class TestDTOsIntegration:
         input_dto.validate()
 
         output_dto = AgentConfigOutputDTO(
+            tools=None,
             provider=input_dto.provider,
             model=input_dto.model,
             name=input_dto.name,

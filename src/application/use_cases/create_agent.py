@@ -33,7 +33,9 @@ class CreateAgentUseCase:
 
         format_instructions = FormatInstructionsUseCase()
         instructions = format_instructions.execute(
-            instructions=input_dto.instructions, tools=validated_tools
+            instructions=input_dto.instructions,
+            tools=validated_tools,
+            provider=input_dto.provider,  # Pass provider for conditional formatting
         )
 
         agent = Agent(

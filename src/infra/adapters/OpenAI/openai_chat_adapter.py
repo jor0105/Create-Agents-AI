@@ -1,9 +1,11 @@
 import time
 from typing import Any, Dict, List, Optional
 
-from src.application.interfaces.chat_repository import ChatRepository
-from src.domain.exceptions import ChatException
+from src.application.interfaces import ChatRepository
+from src.domain import BaseTool, ChatException, ToolExecutor
 from src.infra.adapters.OpenAI.client_openai import ClientOpenAI
+from src.infra.adapters.OpenAI.tool_call_parser import ToolCallParser
+from src.infra.adapters.OpenAI.tool_schema_formatter import ToolSchemaFormatter
 from src.infra.config.environment import EnvironmentConfig
 from src.infra.config.logging_config import LoggingConfig
 from src.infra.config.metrics import ChatMetrics
@@ -19,6 +21,9 @@ class OpenAIChatAdapter(ChatRepository):
 
         self.__timeout = int(EnvironmentConfig.get_env("OPENAI_TIMEOUT", "30"))
         self.__max_retries = int(EnvironmentConfig.get_env("OPENAI_MAX_RETRIES", "3"))
+        self.__max_tool_iterations = int(
+            EnvironmentConfig.get_env("OPENAI_MAX_TOOL_ITERATIONS", "5")
+        )
 
         try:
             api_key = EnvironmentConfig.get_api_key(ClientOpenAI.API_OPENAI_NAME)
@@ -37,6 +42,7 @@ class OpenAIChatAdapter(ChatRepository):
         model: str,
         messages: List[Dict[str, str]],
         config: Dict[str, Any],
+        tools: Optional[List[Dict[str, Any]]] = None,
     ) -> Any:
         """
         Calls the OpenAI API with automatic retries.
@@ -45,25 +51,32 @@ class OpenAIChatAdapter(ChatRepository):
             model: The name of the model.
             messages: A list of messages.
             config: Internal AI configuration.
+            tools: Optional list of tool schemas for function calling.
 
         Returns:
             The API response.
         """
         api_kwargs = {
             "model": model,
-            "input": messages,
+            "messages": messages,  # Corrigido: 'messages' em vez de 'input'
         }
 
         param_mapping = {
             "temperature": "temperature",
-            "max_tokens": "max_output_tokens",
+            "max_tokens": "max_tokens",  # Corrigido: 'max_tokens' em vez de 'max_output_tokens'
             "top_p": "top_p",
         }
         for config_key, api_key in param_mapping.items():
             if config_key in config:
                 api_kwargs[api_key] = config[config_key]
 
-        response_api = self.__client.responses.create(**api_kwargs)
+        # Add tools if provided
+        if tools:
+            api_kwargs["tools"] = tools
+
+        response_api = self.__client.chat.completions.create(
+            **api_kwargs
+        )  # Corrigido: chat.completions em vez de responses
 
         return response_api
 
@@ -74,9 +87,16 @@ class OpenAIChatAdapter(ChatRepository):
         config: Dict[str, Any],
         history: List[Dict[str, str]],
         user_ask: str,
+        tools: Optional[List[BaseTool]] = None,
     ) -> str:
         """
         Sends a message to OpenAI and returns the response.
+
+        Implements tool calling loop:
+        1. Send message to LLM
+        2. If LLM requests tool calls, execute them
+        3. Send tool results back to LLM
+        4. Repeat until LLM provides final response
 
         Args:
             model: The name of the model.
@@ -84,6 +104,7 @@ class OpenAIChatAdapter(ChatRepository):
             config: Internal AI configuration.
             history: The conversation history.
             user_ask: The user's question.
+            tools: Optional list of tools available to the agent.
 
         Returns:
             The model's response.
@@ -96,45 +117,134 @@ class OpenAIChatAdapter(ChatRepository):
         try:
             self.__logger.debug(f"Starting chat with model {model} on OpenAI.")
 
+            # Build initial messages
             messages = []
             if instructions and instructions.strip():
                 messages.append({"role": "system", "content": instructions})
             messages.extend(history)
             messages.append({"role": "user", "content": user_ask})
 
-            response_api = self.__call_openai_api(model, messages, config)
+            # Prepare tool schemas if tools are provided
+            tool_schemas = None
+            tool_executor = None
+            if tools:
+                # Convert domain tools to OpenAI-specific format (Infrastructure concern)
+                tool_schemas = ToolSchemaFormatter.format_tools_for_openai(tools)
+                tool_executor = ToolExecutor(tools)
+                self.__logger.debug(f"Tools enabled: {[tool.name for tool in tools]}")
 
-            content: str = response_api.output_text
-            if not content:
-                self.__logger.warning("OpenAI returned an empty response.")
-                raise ChatException("OpenAI returned an empty response.")
+            # Tool calling loop
+            iteration = 0
+            while iteration < self.__max_tool_iterations:
+                iteration += 1
+                self.__logger.debug(f"Tool iteration {iteration}")
 
-            latency = (time.time() - start_time) * 1000
+                # Call OpenAI API
+                response_api = self.__call_openai_api(
+                    model, messages, config, tool_schemas
+                )
 
-            usage = getattr(response_api, "usage", None)
-            if usage:
-                tokens_used = getattr(usage, "total_tokens", None)
-                prompt_tokens = getattr(usage, "input_tokens", None)
-                completion_tokens = getattr(usage, "output_tokens", None)
-            else:
-                tokens_used = None
-                prompt_tokens = None
-                completion_tokens = None
+                # Check if response contains tool calls
+                if ToolCallParser.has_tool_calls(response_api):
+                    self.__logger.info("Tool calls detected in response")
 
-            metrics = ChatMetrics(
-                model=model,
-                latency_ms=latency,
-                tokens_used=tokens_used,
-                prompt_tokens=prompt_tokens,
-                completion_tokens=completion_tokens,
-                success=True,
+                    # Verify that tools were provided
+                    if tool_executor is None:
+                        self.__logger.error(
+                            "Tool calls detected but no tools were provided"
+                        )
+                        raise ChatException(
+                            "Tool calls detected but no tools were provided to the agent"
+                        )
+
+                    # Add assistant message with tool calls to conversation
+                    assistant_msg = (
+                        ToolCallParser.get_assistant_message_with_tool_calls(
+                            response_api
+                        )
+                    )
+                    if assistant_msg:
+                        messages.append(assistant_msg)
+
+                    # Extract and execute tool calls
+                    tool_calls = ToolCallParser.extract_tool_calls(response_api)
+                    self.__logger.debug(f"Executing {len(tool_calls)} tool(s)")
+
+                    for tool_call in tool_calls:
+                        tool_name = tool_call["name"]
+                        tool_args = tool_call["arguments"]
+                        tool_id = tool_call["id"]
+
+                        self.__logger.debug(
+                            f"Executing tool '{tool_name}' with args: {tool_args}"
+                        )
+
+                        # Execute tool
+                        execution_result = tool_executor.execute_tool(
+                            tool_name, **tool_args
+                        )
+
+                        # Format result for OpenAI
+                        tool_result_msg = ToolCallParser.format_tool_results_for_llm(
+                            tool_call_id=tool_id,
+                            tool_name=tool_name,
+                            result=(
+                                str(execution_result.result)
+                                if execution_result.success
+                                else str(execution_result.error)
+                            ),
+                        )
+                        messages.append(tool_result_msg)
+
+                    # Continue loop to get final response from LLM
+                    continue
+
+                # No tool calls - extract final response
+                content: str = response_api.choices[
+                    0
+                ].message.content  # Corrigido: formato Chat Completions
+                if not content:
+                    self.__logger.warning("OpenAI returned an empty response.")
+                    raise ChatException("OpenAI returned an empty response.")
+
+                # Record metrics
+                latency = (time.time() - start_time) * 1000
+                usage = getattr(response_api, "usage", None)
+                if usage:
+                    tokens_used = getattr(usage, "total_tokens", None)
+                    prompt_tokens = getattr(
+                        usage, "prompt_tokens", None
+                    )  # Corrigido: prompt_tokens
+                    completion_tokens = getattr(
+                        usage, "completion_tokens", None
+                    )  # Corrigido: completion_tokens
+                else:
+                    tokens_used = None
+                    prompt_tokens = None
+                    completion_tokens = None
+
+                metrics = ChatMetrics(
+                    model=model,
+                    latency_ms=latency,
+                    tokens_used=tokens_used,
+                    prompt_tokens=prompt_tokens,
+                    completion_tokens=completion_tokens,
+                    success=True,
+                )
+                self.__metrics.append(metrics)
+
+                self.__logger.info(f"Chat completed: {metrics}")
+                self.__logger.debug(f"Response (first 100 chars): {content[:100]}...")
+
+                return content
+
+            # Max iterations reached
+            self.__logger.warning(
+                f"Max tool iterations ({self.__max_tool_iterations}) reached"
             )
-            self.__metrics.append(metrics)
-
-            self.__logger.info(f"Chat completed: {metrics}")
-            self.__logger.debug(f"Response (first 100 chars): {content[:100]}...")
-
-            return content
+            raise ChatException(
+                f"Max tool calling iterations ({self.__max_tool_iterations}) exceeded"
+            )
 
         except ChatException:
             latency = (time.time() - start_time) * 1000
@@ -142,7 +252,7 @@ class OpenAIChatAdapter(ChatRepository):
                 model=model,
                 latency_ms=latency,
                 success=False,
-                error_message="OpenAI returned an empty response.",
+                error_message="OpenAI chat error",
             )
             self.__metrics.append(metrics)
             raise
