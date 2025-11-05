@@ -1,3 +1,4 @@
+from .available_tools import AvailableTools
 from .environment import EnvironmentConfig
 from .logging_config import LoggingConfig
 from .metrics import ChatMetrics, MetricsCollector
@@ -11,4 +12,5 @@ __all__ = [
     "MetricsCollector",
     "retry_with_backoff",
     "SensitiveDataFilter",
+    "AvailableTools",
 ]

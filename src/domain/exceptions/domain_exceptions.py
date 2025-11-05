@@ -1,4 +1,4 @@
-from typing import Optional, Set
+from typing import Any, Optional, Set
 
 
 class AgentException(Exception):
@@ -71,4 +71,12 @@ class InvalidConfigTypeException(AgentException):
         message = (
             f"Configuration '{config_key}' has invalid type: {value_type.__name__}"
         )
+        super().__init__(message)
+
+
+class InvalidBaseToolException(AgentException):
+    """Exception raised when a provided tool does not match the BaseTool interface."""
+
+    def __init__(self, tool: Any):
+        message = f"Tool '{tool}' is invalid. It must inherit from BaseTool and implement the attributes 'name' (string type), 'description' (string type), and the 'execute' method."
         super().__init__(message)

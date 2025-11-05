@@ -1,7 +1,7 @@
 from typing import List
 
 from src.application.dtos import ChatInputDTO, ChatOutputDTO
-from src.application.interfaces.chat_repository import ChatRepository
+from src.application.interfaces import ChatRepository
 from src.domain import Agent, ChatException
 from src.infra import ChatMetrics, LoggingConfig
 

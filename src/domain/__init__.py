@@ -4,18 +4,21 @@ from .exceptions import (
     AgentException,
     ChatException,
     InvalidAgentConfigException,
+    InvalidBaseToolException,
     InvalidModelException,
 )
-from .value_objects import History, Message, MessageRole
+from .value_objects import BaseTool, History, Message, MessageRole
 
 __all__ = [
     "Agent",
     "AgentException",
     "InvalidAgentConfigException",
     "InvalidModelException",
+    "InvalidBaseToolException",
     "ChatException",
     "AdapterNotFoundException",
     "Message",
     "MessageRole",
     "History",
+    "BaseTool",
 ]

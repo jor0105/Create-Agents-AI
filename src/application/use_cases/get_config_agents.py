@@ -1,5 +1,5 @@
 from src.application.dtos import AgentConfigOutputDTO
-from src.domain.entities.agent_domain import Agent
+from src.domain import Agent
 
 
 class GetAgentConfigUseCase:
@@ -21,6 +21,7 @@ class GetAgentConfigUseCase:
             name=agent.name,
             instructions=agent.instructions,
             config=agent.config,
+            tools=agent.tools,
             history=agent.history.to_dict_list(),
             history_max_size=agent.history.max_size,
         )

@@ -1,6 +1,9 @@
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional
 
+from src.domain import BaseTool, InvalidBaseToolException
+from src.infra import AvailableTools
+
 
 @dataclass
 class CreateAgentInputDTO:
@@ -11,9 +14,20 @@ class CreateAgentInputDTO:
     name: Optional[str] = None
     instructions: Optional[str] = None
     config: Dict[str, Any] = field(default_factory=dict)
+    tools: Optional[List[str | BaseTool]] = None
     history_max_size: int = 10
 
     def validate(self) -> None:
+        """Validate and transform the DTO data.
+
+        This method validates all fields and converts string tool names
+        to BaseTool instances. After calling this method, the 'tools'
+        attribute will only contain BaseTool instances (or None).
+
+        Raises:
+            ValueError: If any field validation fails.
+            InvalidBaseToolException: If a tool is invalid or not found.
+        """
         if not isinstance(self.provider, str) or not self.provider.strip():
             raise ValueError(
                 "The 'provider' field is required, must be a string, and cannot be empty."
@@ -41,8 +55,51 @@ class CreateAgentInputDTO:
         if not isinstance(self.config, dict):
             raise ValueError("The 'config' field must be a dictionary (dict).")
 
+        if self.tools:
+            validated_tools: List[BaseTool] = []
+            for tool in self.tools:
+                if isinstance(tool, str):
+                    available_tools = AvailableTools.get_available_tools()
+                    if tool.lower() in available_tools:
+                        validated_tools.append(available_tools[tool.lower()])
+                    else:
+                        raise InvalidBaseToolException(tool)
+                elif isinstance(tool, BaseTool):
+                    # Validate that the tool has required attributes and methods
+                    required_method = "execute"
+                    if not hasattr(tool, required_method) or not callable(
+                        getattr(tool, required_method)
+                    ):
+                        raise InvalidBaseToolException(tool)
+                    if not isinstance(tool.name, str) or not tool.name.strip():
+                        raise InvalidBaseToolException(tool)
+                    if (
+                        not isinstance(tool.description, str)
+                        or not tool.description.strip()
+                    ):
+                        raise InvalidBaseToolException(tool)
+                    validated_tools.append(tool)
+                else:
+                    raise InvalidBaseToolException(tool)
+
+            # Replace the tools list with validated tools only
+            object.__setattr__(self, "tools", validated_tools)
+
         if not isinstance(self.history_max_size, int) or self.history_max_size <= 0:
             raise ValueError("The 'history_max_size' field must be a positive integer.")
+
+    def get_validated_tools(self) -> Optional[List[BaseTool]]:
+        """Get the validated tools list.
+
+        This method should be called after validate() to ensure type safety.
+
+        Returns:
+            A list of BaseTool instances, or None if no tools were provided.
+        """
+        if self.tools is None:
+            return None
+        # At this point, after validation, all items are guaranteed to be BaseTool
+        return self.tools  # type: ignore
 
 
 @dataclass
@@ -54,6 +111,7 @@ class AgentConfigOutputDTO:
     name: Optional[str]
     instructions: Optional[str]
     config: Dict[str, Any]
+    tools: Optional[List[BaseTool]]
     history: List[Dict[str, str]]
     history_max_size: int = 10
 
@@ -64,6 +122,7 @@ class AgentConfigOutputDTO:
             "name": self.name,
             "instructions": self.instructions,
             "config": self.config,
+            "tools": self.tools,
             "history": self.history,
             "history_max_size": self.history_max_size,
         }

@@ -1,3 +1,4 @@
+from .base_tools import BaseTool
 from .configs_validator import SupportedConfigs
 from .history import History
 from .message import Message, MessageRole
@@ -9,4 +10,5 @@ __all__ = [
     "History",
     "SupportedProviders",
     "SupportedConfigs",
+    "BaseTool",
 ]
