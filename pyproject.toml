@@ -11,6 +11,11 @@ python = "^3.12"
 openai = "^2.7.1"
 python-dotenv = "^1.1.1"
 ollama = "^0.6.0"
+tiktoken = "^0.8.0"
+pymupdf = "^1.25.1"
+pandas = "^2.2.3"
+openpyxl = "^3.1.5"
+pyarrow = "^18.1.0"
 
 [tool.poetry.group.dev.dependencies]
 pre-commit = "^4.3.0"

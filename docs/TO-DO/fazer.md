@@ -1,5 +1,6 @@
 Criar tools de abrir doc
 criar um get das tools internas no aigent
+adicionar think nas configs
 Fazer tests das tools
 Atualizar logs em todos os codigos novos
 Atualizar documentação
