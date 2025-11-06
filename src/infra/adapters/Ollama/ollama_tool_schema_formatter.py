@@ -1,0 +1,102 @@
+"""Tool schema formatter for Ollama native tool calling.
+
+Converts BaseTool instances to Ollama's native function calling format.
+Ollama now supports native tool calling similar to OpenAI.
+"""
+
+from typing import Any, Dict, List
+
+from src.domain import BaseTool
+from src.infra.config.logging_config import LoggingConfig
+
+
+class OllamaToolSchemaFormatter:
+    """Formatter for Ollama native tool calling schemas.
+
+    Converts BaseTool instances to Ollama's function calling format.
+
+    Ollama expects tools in this format:
+    ```python
+    {
+        "type": "function",
+        "function": {
+            "name": "tool_name",
+            "description": "Tool description",
+            "parameters": {
+                "type": "object",
+                "properties": {...},
+                "required": [...]
+            }
+        }
+    }
+    ```
+    """
+
+    _logger = LoggingConfig.get_logger(__name__)
+
+    @staticmethod
+    def format_tools_for_ollama(tools: List[BaseTool]) -> List[Dict[str, Any]]:
+        """Convert BaseTool instances to Ollama's native tool format.
+
+        Args:
+            tools: List of BaseTool instances.
+
+        Returns:
+            List of tool schemas in Ollama's format.
+
+        Example:
+            Input: [WebSearchTool(), StockPriceTool()]
+            Output: [
+                {
+                    "type": "function",
+                    "function": {
+                        "name": "web_search",
+                        "description": "Search the web...",
+                        "parameters": {
+                            "type": "object",
+                            "properties": {
+                                "query": {
+                                    "type": "string",
+                                    "description": "The search query"
+                                }
+                            },
+                            "required": ["query"]
+                        }
+                    }
+                },
+                ...
+            ]
+        """
+        if not tools:
+            OllamaToolSchemaFormatter._logger.debug("No tools to format")
+            return []
+
+        formatted_tools = []
+        for tool in tools:
+            try:
+                schema = tool.get_schema()
+
+                # Convert to Ollama's native format
+                ollama_tool = {
+                    "type": "function",
+                    "function": {
+                        "name": schema["name"],
+                        "description": schema["description"],
+                        "parameters": schema["parameters"],
+                    },
+                }
+
+                formatted_tools.append(ollama_tool)
+                OllamaToolSchemaFormatter._logger.debug(
+                    f"Formatted tool '{schema['name']}' for Ollama"
+                )
+            except Exception as e:
+                OllamaToolSchemaFormatter._logger.error(
+                    f"Error formatting tool {tool.name}: {str(e)}", exc_info=True
+                )
+                continue
+
+        OllamaToolSchemaFormatter._logger.info(
+            f"Formatted {len(formatted_tools)} tool(s) for Ollama native API"
+        )
+        return formatted_tools

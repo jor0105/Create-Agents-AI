@@ -3,7 +3,6 @@ from dataclasses import dataclass
 from typing import Any, Dict, List, Optional
 
 from src.domain.value_objects import BaseTool
-from src.infra.config.logging_config import LoggingConfig
 
 
 @dataclass
@@ -72,6 +71,9 @@ class ToolExecutor:
             tools: List of tool instances available for execution.
                    If None, no tools will be available.
         """
+        # Import here to avoid circular dependency
+        from src.infra.config.logging_config import LoggingConfig
+
         self._tools_map: Dict[str, BaseTool] = {}
         self.__logger = LoggingConfig.get_logger(__name__)
 

@@ -12,7 +12,6 @@ from src.domain.value_objects import (
     SupportedConfigs,
     SupportedProviders,
 )
-from src.infra.config.logging_config import LoggingConfig
 
 
 @dataclass
@@ -45,6 +44,9 @@ class Agent:
             UnsupportedConfigException: if a configuration key is unsupported.
             InvalidConfigTypeException: if a configuration value has an invalid type.
         """
+        # Import here to avoid circular dependency
+        from src.infra.config.logging_config import LoggingConfig
+
         # Initialize logger
         object.__setattr__(self, "_logger", LoggingConfig.get_logger(__name__))
 

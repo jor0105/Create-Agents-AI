@@ -22,6 +22,14 @@ from typing import List, Optional
 from src.infra.config.sensitive_data_filter import SensitiveDataFilter
 
 
+class ErrorOnlyFilter(logging.Filter):
+    """A filter that only allows ERROR and CRITICAL messages."""
+
+    def filter(self, record: logging.LogRecord) -> bool:
+        """Only allow ERROR and CRITICAL level messages."""
+        return record.levelno >= logging.ERROR
+
+
 class SensitiveDataFormatter(logging.Formatter):
     """A formatter that applies sensitive data filtering.
 
@@ -101,8 +109,9 @@ class LoggingConfig:
             backup_count: The number of backup files to keep (default: 5).
             json_format: Whether to use a structured JSON format.
         """
-        if cls._configured:
-            return
+        # Remove a verificação anterior - sempre reconfigurar se chamado
+        # if cls._configured:
+        #     return
 
         level = level or cls._get_log_level_from_env()
         log_to_file = log_to_file or os.getenv("LOG_TO_FILE", "false").lower() == "true"
@@ -122,9 +131,21 @@ class LoggingConfig:
         root_logger = logging.getLogger()
         root_logger.setLevel(level)
 
+        # Remove todos os handlers existentes
         for handler in root_logger.handlers[:]:
             root_logger.removeHandler(handler)
         cls._handlers.clear()
+
+        # Força todos os loggers existentes a respeitarem o novo nível e adiciona filtro
+        for logger_name in list(logging.Logger.manager.loggerDict):
+            logger = logging.getLogger(logger_name)
+            logger.setLevel(level)
+            # Remove handlers antigos
+            for handler in logger.handlers[:]:
+                logger.removeHandler(handler)
+            # Se nível é ERROR, adiciona filtro
+            if level >= logging.ERROR:
+                logger.addFilter(ErrorOnlyFilter())
 
         if json_format:
             formatter: logging.Formatter = JSONFormatter()
@@ -134,6 +155,11 @@ class LoggingConfig:
         console_handler = logging.StreamHandler(sys.stdout)
         console_handler.setLevel(level)
         console_handler.setFormatter(formatter)
+
+        # Se o nível é ERROR ou CRITICAL, adiciona um filtro para bloquear INFO/WARNING
+        if level >= logging.ERROR:
+            console_handler.addFilter(ErrorOnlyFilter())
+
         root_logger.addHandler(console_handler)
         cls._handlers.append(console_handler)
 
@@ -149,6 +175,11 @@ class LoggingConfig:
             )
             file_handler.setLevel(level)
             file_handler.setFormatter(formatter)
+
+            # Se o nível é ERROR ou CRITICAL, adiciona um filtro para bloquear INFO/WARNING
+            if level >= logging.ERROR:
+                file_handler.addFilter(ErrorOnlyFilter())
+
             root_logger.addHandler(file_handler)
             cls._handlers.append(file_handler)
 
@@ -208,6 +239,11 @@ class LoggingConfig:
 
         logger = logging.getLogger(name)
         logger.setLevel(cls._log_level)
+
+        # Se o nível é ERROR, adiciona filtro ao logger
+        if cls._log_level >= logging.ERROR:
+            logger.addFilter(ErrorOnlyFilter())
+
         return logger
 
     @classmethod

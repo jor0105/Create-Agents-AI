@@ -6,7 +6,9 @@ from ollama import ChatResponse, chat
 
 from src.application import ChatRepository
 from src.domain import BaseTool, ChatException, ToolExecutor
-from src.infra.adapters.Ollama.ollama_tool_call_parser import OllamaToolCallParser
+from src.infra.adapters.Ollama.ollama_tool_schema_formatter import (
+    OllamaToolSchemaFormatter,
+)
 from src.infra.config.environment import EnvironmentConfig
 from src.infra.config.logging_config import LoggingConfig
 from src.infra.config.metrics import ChatMetrics
@@ -16,16 +18,14 @@ from src.infra.config.retry import retry_with_backoff
 class OllamaChatAdapter(ChatRepository):
     """An adapter for communicating with Ollama.
 
-    This adapter now supports tool calling via prompt engineering.
-    Unlike OpenAI which has native function calling, Ollama models
-    are prompted to output tool requests in XML-like format that
-    can be parsed and executed.
+    This adapter supports native tool calling using Ollama's built-in
+    function calling capability (similar to OpenAI).
 
     Tool calling flow:
-    1. Model outputs <tool_call> tags in response
-    2. Parser detects and extracts tool calls
-    3. Tools are executed
-    4. Results are formatted and sent back to model
+    1. Send tools schema to Ollama API
+    2. Model decides whether to call tools based on the query
+    3. If tool calls are detected, execute them
+    4. Send tool results back to model
     5. Model generates final response
     """
 
@@ -51,6 +51,7 @@ class OllamaChatAdapter(ChatRepository):
         model: str,
         messages: List[Dict[str, str]],
         config: Dict[str, Any],
+        tools: Optional[List[Dict[str, Any]]] = None,
     ) -> ChatResponse:
         """
         Calls the Ollama API with automatic retries.
@@ -70,6 +71,7 @@ class OllamaChatAdapter(ChatRepository):
             model=model,
             messages=messages,
             options=config,
+            tools=tools,
         )
 
         return response_api
@@ -106,9 +108,9 @@ class OllamaChatAdapter(ChatRepository):
         """
         Sends a message to Ollama and returns the response.
 
-        Implements tool calling loop via prompt engineering:
-        1. Send message to model
-        2. If model outputs <tool_call> tags, parse and execute them
+        Implements native tool calling loop (similar to OpenAI):
+        1. Send message to model with tools schema
+        2. If model requests tool calls, execute them
         3. Send tool results back to model
         4. Repeat until model provides final response
 
@@ -118,7 +120,7 @@ class OllamaChatAdapter(ChatRepository):
             config: Internal AI settings.
             history: The conversation history.
             user_ask: The user's question.
-            tools: Optional list of tools (via prompt engineering).
+            tools: Optional list of tools (native Ollama API).
 
         Returns:
             The model's response.
@@ -131,15 +133,16 @@ class OllamaChatAdapter(ChatRepository):
         try:
             self.__logger.debug(f"Starting chat with model {model} on Ollama.")
 
-            # Setup tool executor if tools are provided
+            # Setup tool executor and schemas if tools are provided
             tool_executor = None
+            tool_schemas = None
             if tools:
                 tool_executor = ToolExecutor(tools)
+                tool_schemas = OllamaToolSchemaFormatter.format_tools_for_ollama(tools)
                 self.__logger.debug(
-                    f"Tools enabled (via prompt): {[tool.name for tool in tools]}"
+                    f"Tools enabled (native API): {[tool.name for tool in tools]}"
                 )
 
-            # Build initial messages
             messages = []
             if instructions and instructions.strip():
                 messages.append({"role": "system", "content": instructions})
@@ -157,17 +160,20 @@ class OllamaChatAdapter(ChatRepository):
                 )
                 self.__logger.debug(f"Current message history size: {len(messages)}")
 
-                # Call Ollama API
-                response_api = self.__call_ollama_api(model, messages, config)
-                content: str = response_api.message.content
+                # Call Ollama API with tools
+                response_api = self.__call_ollama_api(
+                    model, messages, config, tool_schemas
+                )
 
-                if not content:
-                    self.__logger.warning("Ollama returned an empty response.")
-                    raise ChatException("Ollama returned an empty response.")
-
-                # Check if response contains tool calls
-                if OllamaToolCallParser.has_tool_calls(content):
-                    self.__logger.info("Tool calls detected in response")
+                # Check if response contains tool calls (native format)
+                if (
+                    hasattr(response_api.message, "tool_calls")
+                    and response_api.message.tool_calls
+                ):
+                    tool_calls = response_api.message.tool_calls
+                    self.__logger.info(
+                        f"Tool calls detected: {len(tool_calls)} tool(s)"
+                    )
 
                     # Verify that tools were provided
                     if tool_executor is None:
@@ -179,17 +185,13 @@ class OllamaChatAdapter(ChatRepository):
                         )
 
                     # Add assistant message with tool calls to conversation
-                    messages.append({"role": "assistant", "content": content})
-
-                    # Extract and execute tool calls
-                    tool_calls = OllamaToolCallParser.extract_tool_calls(content)
-                    self.__logger.debug(f"Executing {len(tool_calls)} tool(s)")
+                    # For Ollama, we need to include the full message object
+                    messages.append(response_api.message)
 
                     # Execute tools and collect results
-                    tool_results = []
                     for tool_call in tool_calls:
-                        tool_name = tool_call["name"]
-                        tool_args = tool_call["arguments"]
+                        tool_name = tool_call.function.name
+                        tool_args = tool_call.function.arguments
 
                         self.__logger.debug(
                             f"Executing tool '{tool_name}' with args: {tool_args}"
@@ -207,21 +209,29 @@ class OllamaChatAdapter(ChatRepository):
                             else f"Error: {execution_result.error}"
                         )
 
-                        tool_result_formatted = (
-                            OllamaToolCallParser.format_tool_results_for_llm(
-                                tool_name=tool_name, result=result_text
-                            )
+                        # Add tool result to messages (Ollama native format)
+                        messages.append(
+                            {
+                                "role": "tool",
+                                "tool_name": tool_name,
+                                "content": result_text,
+                            }
                         )
-                        tool_results.append(tool_result_formatted)
 
-                    # Add tool results as user message (simulating tool response)
-                    combined_results = "\n\n".join(tool_results)
-                    messages.append({"role": "user", "content": combined_results})
+                        self.__logger.debug(
+                            f"Tool '{tool_name}' executed, result added to conversation"
+                        )
 
                     # Continue loop to get final response from model
                     continue
 
                 # No tool calls - this is the final response
+                content: str = response_api.message.content
+
+                if not content:
+                    self.__logger.warning("Ollama returned an empty response.")
+                    raise ChatException("Ollama returned an empty response.")
+
                 final_response = content
                 break
 
@@ -233,11 +243,6 @@ class OllamaChatAdapter(ChatRepository):
                 raise ChatException(
                     f"Max tool calling iterations ({self.__max_tool_iterations}) exceeded"
                 )
-
-            # Remove any remaining tool call tags from final response
-            final_response = OllamaToolCallParser.remove_tool_calls_from_response(
-                final_response
-            )
 
             # Record metrics
             latency = (time.time() - start_time) * 1000
