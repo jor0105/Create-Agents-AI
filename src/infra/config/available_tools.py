@@ -1,7 +1,7 @@
 from typing import Dict
 
 from src.domain import BaseTool
-from src.infra.adapters.Tools import StockPriceTool, WebSearchTool
+from src.infra.adapters import ReadLocalFileTool
 
 
 class AvailableTools:
@@ -12,8 +12,7 @@ class AvailableTools:
     """
 
     __AVAILABLE_TOOLS: Dict[str, BaseTool] = {
-        "web_search": WebSearchTool(),
-        "stock_price": StockPriceTool(),
+        "readlocalfile": ReadLocalFileTool(),
     }
 
     @classmethod

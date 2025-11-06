@@ -6,7 +6,7 @@ from src.infra.config.logging_config import LoggingConfig
 LoggingConfig.configure(level=logging.ERROR)
 
 
-tools = ["stock_price", "web_search"]
+tools = ["web_search"]
 
 config = {
     "temperature": 0.7,

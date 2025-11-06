@@ -216,7 +216,6 @@ class ToolExecutor:
             ```python
             tool_calls = [
                 {"name": "web_search", "arguments": {"query": "Python"}},
-                {"name": "stock_price", "arguments": {"ticker": "AAPL"}},
             ]
             results = executor.execute_multiple_tools(tool_calls)
             ```

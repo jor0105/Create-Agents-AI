@@ -45,7 +45,7 @@ class OllamaToolSchemaFormatter:
             List of tool schemas in Ollama's format.
 
         Example:
-            Input: [WebSearchTool(), StockPriceTool()]
+            Input: [WebSearchTool()]
             Output: [
                 {
                     "type": "function",

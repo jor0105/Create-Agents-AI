@@ -1,8 +1,5 @@
-Testar tools com a openai
-Testar configs com openai
-arrumar tools com ollama
-Testar tools com ollama
-Testar configs com openai
+Criar tools de abrir doc
+criar um get das tools internas no aigent
 Fazer tests das tools
 Atualizar logs em todos os codigos novos
 Atualizar documentação
