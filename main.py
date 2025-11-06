@@ -7,6 +7,7 @@ LoggingConfig.configure(level=logging.ERROR)
 
 
 tools = ["stock_price", "web_search"]
+
 config = {
     "temperature": 0.7,
     "max_tokens": 300,
@@ -32,13 +33,17 @@ agent2 = AIAgent(
     model="gpt-oss:120b-cloud",
     name="Agente Ollama",
     instructions="Responda como uma pessoa extremamente culta",
-    config=config,
+    # config=config,
     tools=tools,
 )
 
 # Exemplo de chat
-user_message = "qual é o preço atual da PETR4?"
+user_message = "que dia será a black friday nesse ano?"
+
 # response = agent.chat(user_message)
-response2 = agent2.chat(user_message)
 # print(f"Resposta do agente: {response}")
+
+print(100 * "_")
+
+response2 = agent2.chat(user_message)
 print(f"Resposta do agente 2: {response2}")

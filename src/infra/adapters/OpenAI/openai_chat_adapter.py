@@ -20,7 +20,7 @@ class OpenAIChatAdapter(ChatRepository):
         self.__timeout = int(EnvironmentConfig.get_env("OPENAI_TIMEOUT", "30"))
         self.__max_retries = int(EnvironmentConfig.get_env("OPENAI_MAX_RETRIES", "3"))
         self.__max_tool_iterations = int(
-            EnvironmentConfig.get_env("OPENAI_MAX_TOOL_ITERATIONS", "5")
+            EnvironmentConfig.get_env("OPENAI_MAX_TOOL_ITERATIONS", "100")
         )
 
         try:

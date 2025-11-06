@@ -36,7 +36,7 @@ class OllamaChatAdapter(ChatRepository):
         self.__host = EnvironmentConfig.get_env("OLLAMA_HOST", "http://localhost:11434")
         self.__max_retries = int(EnvironmentConfig.get_env("OLLAMA_MAX_RETRIES", "3"))
         self.__max_tool_iterations = int(
-            EnvironmentConfig.get_env("OLLAMA_MAX_TOOL_ITERATIONS", "5")
+            EnvironmentConfig.get_env("OLLAMA_MAX_TOOL_ITERATIONS", "100")
         )
 
         self.__logger.info(
@@ -60,21 +60,31 @@ class OllamaChatAdapter(ChatRepository):
             model: The name of the model.
             messages: A list of messages.
             config: Internal AI settings.
+            tools: Optional list of tool schemas.
 
         Returns:
             The API response.
+
+        Raises:
+            ChatException: If the API call fails after retries.
         """
-        if "max_tokens" in config:
-            config["num_predict"] = config.pop("max_tokens")
+        try:
+            if "max_tokens" in config:
+                config["num_predict"] = config.pop("max_tokens")
 
-        response_api: ChatResponse = chat(
-            model=model,
-            messages=messages,
-            options=config,
-            tools=tools,
-        )
+            response_api: ChatResponse = chat(
+                model=model,
+                messages=messages,
+                options=config,
+                tools=tools,
+            )
 
-        return response_api
+            return response_api
+        except Exception as e:
+            self.__logger.error(
+                f"Error calling Ollama API for model '{model}': {str(e)}"
+            )
+            raise
 
     def __stop_model(self, model: str) -> None:
         """
@@ -152,6 +162,8 @@ class OllamaChatAdapter(ChatRepository):
             # Tool calling loop
             iteration = 0
             final_response = None
+            empty_response_count = 0
+            max_empty_responses = 2
 
             while iteration < self.__max_tool_iterations:
                 iteration += 1
@@ -229,8 +241,50 @@ class OllamaChatAdapter(ChatRepository):
                 content: str = response_api.message.content
 
                 if not content:
-                    self.__logger.warning("Ollama returned an empty response.")
-                    raise ChatException("Ollama returned an empty response.")
+                    empty_response_count += 1
+                    self.__logger.warning(
+                        f"Ollama returned an empty response (count: {empty_response_count}/{max_empty_responses})"
+                    )
+
+                    # If we keep getting empty responses, try to generate a summary
+                    if empty_response_count >= max_empty_responses:
+                        self.__logger.warning(
+                            "Max empty responses reached. Generating summary from conversation history."
+                        )
+                        # Generate a summary response based on the conversation
+                        summary_prompt = self.__generate_summary_from_tools(messages)
+                        if summary_prompt:
+                            final_response = summary_prompt
+                            break
+                        else:
+                            raise ChatException(
+                                "Ollama returned multiple empty responses and could not generate summary."
+                            )
+
+                    # Retry without tool calls - send a simpler prompt
+                    retry_messages = messages.copy()
+                    retry_messages.append(
+                        {
+                            "role": "user",
+                            "content": "Based on the information gathered, please provide a final answer to the original question.",
+                        }
+                    )
+
+                    response_api = self.__call_ollama_api(
+                        model, retry_messages, config, None
+                    )
+                    content = response_api.message.content
+
+                    if content:
+                        final_response = content
+                        break
+                    else:
+                        # If still empty, use the content we have or raise
+                        if iteration >= self.__max_tool_iterations - 1:
+                            raise ChatException(
+                                "Ollama returned empty responses. Unable to generate final answer."
+                            )
+                        continue
 
                 final_response = content
                 break
@@ -317,6 +371,38 @@ class OllamaChatAdapter(ChatRepository):
             )
         finally:
             self.__stop_model(model)
+
+    def __generate_summary_from_tools(
+        self, messages: List[Dict[str, Any]]
+    ) -> Optional[str]:
+        """Generate a summary response based on tool results in the conversation history.
+
+        This is a fallback when the model returns empty responses after multiple
+        tool calls. It extracts information from tool results and creates a summary.
+        """
+        try:
+            tool_results = []
+            for msg in messages:
+                if msg.get("role") == "tool":
+                    tool_name = msg.get("tool_name", "unknown")
+                    content = msg.get("content", "")
+                    if content:
+                        tool_results.append(f"From {tool_name}: {content[:500]}")
+
+            if not tool_results:
+                return None
+
+            # Create a summary based on gathered tool results
+            summary = "Based on the gathered information:\n\n" + "\n\n".join(
+                tool_results[:3]
+            )
+            self.__logger.info(
+                f"Generated summary from {len(tool_results)} tool result(s)"
+            )
+            return summary
+        except Exception as e:
+            self.__logger.error(f"Error generating summary: {str(e)}")
+            return None
 
     def get_metrics(self) -> List[ChatMetrics]:
         return self.__metrics.copy()
