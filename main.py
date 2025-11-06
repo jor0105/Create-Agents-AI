@@ -5,7 +5,7 @@ provider = "openai"  # ou "ollama"
 model = "gpt-4.1-mini"  # ou outro modelo suportado
 name = "AgenteTeste"
 instructions = "Responda como um assistente educado."
-tools = ["stock_price"]
+tools = ["stock_price", "web_search"]
 config = {
     "temperature": 0.7,
     "max_tokens": 300,
@@ -31,6 +31,7 @@ agent2 = AIAgent(
     name="Agente Tests",
     instructions="Responda como uma pessoa extremamente culta",
     config=config,
+    tools=tools,
 )
 
 # Exemplo de chat

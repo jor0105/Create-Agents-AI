@@ -152,7 +152,10 @@ class OllamaChatAdapter(ChatRepository):
 
             while iteration < self.__max_tool_iterations:
                 iteration += 1
-                self.__logger.debug(f"Tool iteration {iteration}")
+                self.__logger.info(
+                    f"Ollama tool calling iteration {iteration}/{self.__max_tool_iterations}"
+                )
+                self.__logger.debug(f"Current message history size: {len(messages)}")
 
                 # Call Ollama API
                 response_api = self.__call_ollama_api(model, messages, config)

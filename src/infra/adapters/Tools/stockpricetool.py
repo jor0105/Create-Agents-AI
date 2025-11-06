@@ -1,4 +1,5 @@
 from src.domain import BaseTool
+from src.infra.config.logging_config import LoggingConfig
 
 
 class StockPriceTool(BaseTool):
@@ -25,6 +26,10 @@ class StockPriceTool(BaseTool):
         "required": ["ticker"],
     }
 
+    def __init__(self):
+        """Initialize the StockPriceTool with logging."""
+        self.__logger = LoggingConfig.get_logger(__name__)
+
     def execute(self, ticker: str) -> str:
         """Execute a simulated stock price lookup.
 
@@ -34,7 +39,7 @@ class StockPriceTool(BaseTool):
         Returns:
             A string with the stock price or an error message.
         """
-        print(f"[StockPriceTool] Looking up price for: {ticker}")
+        self.__logger.info(f"Executing stock price lookup for ticker: '{ticker}'")
 
         # Simulated database of stock prices
         db_prices = {
@@ -49,6 +54,10 @@ class StockPriceTool(BaseTool):
         price = db_prices.get(ticker_upper)
 
         if price is not None:
-            return f"Observation: The most recent closing price for {ticker_upper} is R$ {price:.2f}."
+            result = f"Observation: The most recent closing price for {ticker_upper} is R$ {price:.2f}."
+            self.__logger.debug(f"Stock price found: {ticker_upper} = R$ {price:.2f}")
+            return result
         else:
-            return f"Observation: Ticker symbol '{ticker_upper}' not found in the database. Available tickers: {', '.join(db_prices.keys())}."
+            result = f"Observation: Ticker symbol '{ticker_upper}' not found in the database. Available tickers: {', '.join(db_prices.keys())}."
+            self.__logger.warning(f"Stock ticker not found: {ticker_upper}")
+            return result

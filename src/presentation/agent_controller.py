@@ -3,6 +3,7 @@ from typing import Any, Dict, List, Optional, Sequence, Union
 from src.application import ChatInputDTO, ChatWithAgentUseCase, GetAgentConfigUseCase
 from src.domain import Agent, BaseTool
 from src.infra import ChatMetrics
+from src.infra.config.logging_config import LoggingConfig
 from src.main import AgentComposer
 
 
@@ -33,6 +34,12 @@ class AIAgent:
             config: Extra agent configurations, such as `max_tokens` and `temperature` (optional).
             history_max_size: The maximum history size (default: 10).
         """
+        self.__logger = LoggingConfig.get_logger(__name__)
+
+        self.__logger.info(
+            f"Initializing AIAgent controller - Provider: {provider}, Model: {model}, Name: {name}"
+        )
+
         self.__agent: Agent = AgentComposer.create_agent(
             provider=provider,
             model=model,
@@ -50,6 +57,10 @@ class AIAgent:
             AgentComposer.create_get_config_use_case()
         )
 
+        self.__logger.info(
+            f"AIAgent controller initialized successfully - Agent: {self.__agent.name}"
+        )
+
     def chat(
         self,
         message: str,
@@ -63,10 +74,18 @@ class AIAgent:
         Returns:
             The agent's response.
         """
+        self.__logger.debug(
+            f"Chat request received - Message length: {len(message)} chars"
+        )
+
         input_dto = ChatInputDTO(
             message=message,
         )
         output_dto = self.__chat_use_case.execute(self.__agent, input_dto)
+
+        self.__logger.debug(
+            f"Chat response generated - Response length: {len(output_dto.response)} chars"
+        )
         return output_dto.response
 
     def get_configs(self) -> Dict[str, Any]:
@@ -76,12 +95,15 @@ class AIAgent:
         Returns:
             A dictionary containing the agent's configurations.
         """
+        self.__logger.debug("Retrieving agent configurations")
         output_dto = self.__get_config_use_case.execute(self.__agent)
         return output_dto.to_dict()
 
     def clear_history(self) -> None:
         """Clears the agent's history."""
+        history_size = len(self.__agent.history)
         self.__agent.clear_history()
+        self.__logger.info(f"Agent history cleared - Removed {history_size} message(s)")
 
     def get_metrics(self) -> List[ChatMetrics]:
         """
@@ -90,7 +112,9 @@ class AIAgent:
         Returns:
             A list of metrics collected during interactions.
         """
-        return self.__chat_use_case.get_metrics()
+        metrics = self.__chat_use_case.get_metrics()
+        self.__logger.debug(f"Retrieved {len(metrics)} metric(s)")
+        return metrics
 
     def export_metrics_json(self, filepath: Optional[str] = None) -> str:
         """
@@ -104,11 +128,22 @@ class AIAgent:
         """
         from src.infra.config.metrics import MetricsCollector
 
+        self.__logger.debug(
+            f"Exporting metrics to JSON - Filepath: {filepath or 'None (return string)'}"
+        )
+
         collector = MetricsCollector()
         for metric in self.get_metrics():
             collector.add(metric)
 
-        return collector.export_json(filepath)
+        json_result = collector.export_json(filepath)
+
+        if filepath:
+            self.__logger.info(f"Metrics exported to JSON file: {filepath}")
+        else:
+            self.__logger.debug("Metrics exported as JSON string")
+
+        return json_result
 
     def export_metrics_prometheus(self, filepath: Optional[str] = None) -> str:
         """
@@ -122,6 +157,10 @@ class AIAgent:
         """
         from src.infra.config.metrics import MetricsCollector
 
+        self.__logger.debug(
+            f"Exporting metrics to Prometheus - Filepath: {filepath or 'None (return string)'}"
+        )
+
         collector = MetricsCollector()
         for metric in self.get_metrics():
             collector.add(metric)
@@ -130,5 +169,8 @@ class AIAgent:
 
         if filepath:
             collector.export_prometheus_to_file(filepath)
+            self.__logger.info(f"Metrics exported to Prometheus file: {filepath}")
+        else:
+            self.__logger.debug("Metrics exported as Prometheus string")
 
         return prometheus_text

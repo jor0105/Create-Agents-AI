@@ -1,6 +1,7 @@
 from typing import Any, Dict, List
 
 from src.domain import BaseTool
+from src.infra.config.logging_config import LoggingConfig
 
 
 class ToolSchemaFormatter:
@@ -15,6 +16,8 @@ class ToolSchemaFormatter:
     - Keep provider-specific logic out of the domain layer
     """
 
+    _logger = LoggingConfig.get_logger(__name__)
+
     @staticmethod
     def format_tool_for_openai(tool: BaseTool) -> Dict[str, Any]:
         """Convert a tool to OpenAI function calling format (Completions API).
@@ -26,6 +29,10 @@ class ToolSchemaFormatter:
             A dictionary formatted for OpenAI's tools parameter.
         """
         schema = tool.get_schema()
+
+        ToolSchemaFormatter._logger.debug(
+            f"Formatting tool '{schema['name']}' for OpenAI Completions API"
+        )
 
         return {
             "type": "function",
@@ -48,6 +55,10 @@ class ToolSchemaFormatter:
         """
         schema = tool.get_schema()
 
+        ToolSchemaFormatter._logger.debug(
+            f"Formatting tool '{schema['name']}' for OpenAI Responses API"
+        )
+
         return {
             "type": "function",
             "name": schema["name"],
@@ -65,7 +76,17 @@ class ToolSchemaFormatter:
         Returns:
             List of dictionaries formatted for OpenAI's tools parameter.
         """
-        return [ToolSchemaFormatter.format_tool_for_openai(tool) for tool in tools]
+        ToolSchemaFormatter._logger.info(
+            f"Formatting {len(tools)} tool(s) for OpenAI Completions API"
+        )
+
+        formatted = [ToolSchemaFormatter.format_tool_for_openai(tool) for tool in tools]
+
+        ToolSchemaFormatter._logger.debug(
+            f"Formatted tools: {[t['function']['name'] for t in formatted]}"
+        )
+
+        return formatted
 
     @staticmethod
     def format_tools_for_responses_api(tools: List[BaseTool]) -> List[Dict[str, Any]]:
@@ -77,6 +98,16 @@ class ToolSchemaFormatter:
         Returns:
             List of dictionaries formatted for Responses API's tools parameter.
         """
-        return [
+        ToolSchemaFormatter._logger.info(
+            f"Formatting {len(tools)} tool(s) for OpenAI Responses API"
+        )
+
+        formatted = [
             ToolSchemaFormatter.format_tool_for_responses_api(tool) for tool in tools
         ]
+
+        ToolSchemaFormatter._logger.debug(
+            f"Formatted tools: {[t['name'] for t in formatted]}"
+        )
+
+        return formatted

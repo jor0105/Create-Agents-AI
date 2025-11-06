@@ -130,7 +130,10 @@ class OpenAIChatAdapter(ChatRepository):
             iteration = 0
             while iteration < self.__max_tool_iterations:
                 iteration += 1
-                self.__logger.debug(f"Tool iteration {iteration}")
+                self.__logger.info(
+                    f"OpenAI tool calling iteration {iteration}/{self.__max_tool_iterations}"
+                )
+                self.__logger.debug(f"Current message history size: {len(messages)}")
 
                 # Call OpenAI API
                 response_api = self.__call_openai_api(

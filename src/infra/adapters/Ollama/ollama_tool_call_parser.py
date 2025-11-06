@@ -30,6 +30,8 @@ import re
 import xml.etree.ElementTree as ET
 from typing import Any, Dict, List, Optional
 
+from src.infra.config.logging_config import LoggingConfig
+
 
 class OllamaToolCallParser:
     """Parser for Ollama tool calls via prompt engineering.
@@ -47,6 +49,8 @@ class OllamaToolCallParser:
         r"<tool_call>(.*?)</tool_call>", re.DOTALL | re.IGNORECASE
     )
 
+    _logger = LoggingConfig.get_logger(__name__)
+
     @staticmethod
     def has_tool_calls(response: str) -> bool:
         """Check if the response contains tool call requests.
@@ -58,9 +62,20 @@ class OllamaToolCallParser:
             True if tool calls are detected, False otherwise.
         """
         if not response or not isinstance(response, str):
+            OllamaToolCallParser._logger.debug("Response is empty or not a string")
             return False
 
-        return bool(OllamaToolCallParser.TOOL_CALL_PATTERN.search(response))
+        has_calls = bool(OllamaToolCallParser.TOOL_CALL_PATTERN.search(response))
+        if has_calls:
+            OllamaToolCallParser._logger.debug(
+                "Tool call pattern detected in Ollama response"
+            )
+        else:
+            OllamaToolCallParser._logger.debug(
+                "No tool call pattern found in Ollama response"
+            )
+
+        return has_calls
 
     @staticmethod
     def extract_tool_calls(response: str) -> List[Dict[str, Any]]:
@@ -84,29 +99,56 @@ class OllamaToolCallParser:
             ```
         """
         if not OllamaToolCallParser.has_tool_calls(response):
+            OllamaToolCallParser._logger.debug(
+                "No tool calls to extract from Ollama response"
+            )
             return []
 
+        OllamaToolCallParser._logger.debug("Extracting tool calls from Ollama response")
         tool_calls = []
         matches = OllamaToolCallParser.TOOL_CALL_PATTERN.findall(response)
 
-        for match in matches:
+        OllamaToolCallParser._logger.debug(
+            f"Found {len(matches)} tool call pattern match(es)"
+        )
+
+        for idx, match in enumerate(matches, 1):
             try:
+                OllamaToolCallParser._logger.debug(
+                    f"Parsing tool call {idx}/{len(matches)}"
+                )
+
                 # Try parsing as XML first
                 tool_call = OllamaToolCallParser._parse_xml_tool_call(match)
                 if tool_call:
                     tool_calls.append(tool_call)
+                    OllamaToolCallParser._logger.debug(
+                        f"Successfully parsed XML tool call: {tool_call.get('name', 'unknown')}"
+                    )
                     continue
 
                 # Try parsing as JSON
                 tool_call = OllamaToolCallParser._parse_json_tool_call(match)
                 if tool_call:
                     tool_calls.append(tool_call)
+                    OllamaToolCallParser._logger.debug(
+                        f"Successfully parsed JSON tool call: {tool_call.get('name', 'unknown')}"
+                    )
+                else:
+                    OllamaToolCallParser._logger.warning(
+                        f"Failed to parse tool call {idx} as XML or JSON"
+                    )
 
             except Exception as e:
                 # Log error but continue processing other tool calls
-                print(f"Warning: Failed to parse tool call: {e}")
+                OllamaToolCallParser._logger.error(
+                    f"Failed to parse tool call {idx}: {str(e)}", exc_info=True
+                )
                 continue
 
+        OllamaToolCallParser._logger.info(
+            f"Extracted {len(tool_calls)} tool call(s) from Ollama response"
+        )
         return tool_calls
 
     @staticmethod
@@ -135,6 +177,9 @@ class OllamaToolCallParser:
             # Extract tool name
             name_elem = root.find("name")
             if name_elem is None or not name_elem.text:
+                OllamaToolCallParser._logger.debug(
+                    "XML parsing failed: no name element found"
+                )
                 return None
 
             tool_name = name_elem.text.strip()
@@ -142,6 +187,9 @@ class OllamaToolCallParser:
             # Extract arguments
             args_elem = root.find("arguments")
             if args_elem is None:
+                OllamaToolCallParser._logger.debug(
+                    f"XML tool call '{tool_name}' has no arguments"
+                )
                 return {"name": tool_name, "arguments": {}}
 
             # Convert XML arguments to dict
@@ -153,11 +201,18 @@ class OllamaToolCallParser:
                 # Try to convert to appropriate type
                 arguments[arg_name] = OllamaToolCallParser._convert_value(arg_value)
 
+            OllamaToolCallParser._logger.debug(
+                f"Successfully parsed XML tool call '{tool_name}' with {len(arguments)} argument(s)"
+            )
             return {"name": tool_name, "arguments": arguments}
 
-        except ET.ParseError:
+        except ET.ParseError as e:
+            OllamaToolCallParser._logger.debug(f"XML parse error: {str(e)}")
             return None
-        except Exception:
+        except Exception as e:
+            OllamaToolCallParser._logger.debug(
+                f"Unexpected error parsing XML: {str(e)}"
+            )
             return None
 
     @staticmethod
@@ -182,21 +237,37 @@ class OllamaToolCallParser:
             data = json.loads(json_content.strip())
 
             if not isinstance(data, dict):
+                OllamaToolCallParser._logger.debug(
+                    "JSON parsing failed: data is not a dict"
+                )
                 return None
 
             tool_name = data.get("name")
             if not tool_name:
+                OllamaToolCallParser._logger.debug(
+                    "JSON parsing failed: no 'name' field"
+                )
                 return None
 
             arguments = data.get("arguments", {})
             if not isinstance(arguments, dict):
+                OllamaToolCallParser._logger.debug(
+                    "JSON parsing failed: 'arguments' is not a dict"
+                )
                 return None
 
+            OllamaToolCallParser._logger.debug(
+                f"Successfully parsed JSON tool call '{tool_name}' with {len(arguments)} argument(s)"
+            )
             return {"name": tool_name, "arguments": arguments}
 
-        except json.JSONDecodeError:
+        except json.JSONDecodeError as e:
+            OllamaToolCallParser._logger.debug(f"JSON decode error: {str(e)}")
             return None
-        except Exception:
+        except Exception as e:
+            OllamaToolCallParser._logger.debug(
+                f"Unexpected error parsing JSON: {str(e)}"
+            )
             return None
 
     @staticmethod
@@ -243,7 +314,10 @@ class OllamaToolCallParser:
         Returns:
             Response with tool call tags removed.
         """
-        return OllamaToolCallParser.TOOL_CALL_PATTERN.sub("", response).strip()
+        cleaned = OllamaToolCallParser.TOOL_CALL_PATTERN.sub("", response).strip()
+        if cleaned != response:
+            OllamaToolCallParser._logger.debug("Removed tool call tags from response")
+        return cleaned
 
     @staticmethod
     def format_tool_results_for_llm(tool_name: str, result: str) -> str:
@@ -260,4 +334,9 @@ class OllamaToolCallParser:
         Returns:
             Formatted text to add to the conversation.
         """
-        return f"<tool_result>\n<name>{tool_name}</name>\n<result>{result}</result>\n</tool_result>"
+        OllamaToolCallParser._logger.debug(
+            f"Formatting tool result for '{tool_name}' (length: {len(result)} chars)"
+        )
+
+        formatted = f"<tool_result>\n<name>{tool_name}</name>\n<result>{result}</result>\n</tool_result>"
+        return formatted

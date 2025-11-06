@@ -3,6 +3,7 @@ from typing import Dict, Tuple
 from src.application import ChatRepository
 from src.infra.adapters.Ollama.ollama_chat_adapter import OllamaChatAdapter
 from src.infra.adapters.OpenAI.openai_chat_adapter import OpenAIChatAdapter
+from src.infra.config.logging_config import LoggingConfig
 
 
 class ChatAdapterFactory:
@@ -14,6 +15,7 @@ class ChatAdapterFactory:
     """
 
     __cache: Dict[Tuple[str, str], ChatRepository] = {}
+    __logger = LoggingConfig.get_logger(__name__)
 
     @classmethod
     def create(
@@ -37,21 +39,38 @@ class ChatAdapterFactory:
         cache_key = (model.lower(), provider.lower())
 
         if cache_key in cls.__cache:
+            cls.__logger.debug(
+                f"Returning cached adapter for provider '{provider}' and model '{model}'"
+            )
             return cls.__cache[cache_key]
+
+        cls.__logger.info(
+            f"Creating new chat adapter - Provider: {provider}, Model: {model}"
+        )
 
         provider_lower = provider.lower()
         adapter: ChatRepository
+
         if provider_lower == "openai":
+            cls.__logger.debug("Creating OpenAI chat adapter")
             adapter = OpenAIChatAdapter()
         elif provider_lower == "ollama":
+            cls.__logger.debug("Creating Ollama chat adapter")
             adapter = OllamaChatAdapter()
         else:
+            cls.__logger.error(f"Invalid provider requested: {provider}")
             raise ValueError(f"Invalid provider: {provider}.")
 
         cls.__cache[cache_key] = adapter
+        cls.__logger.debug(f"Adapter cached with key: {cache_key}")
 
         return adapter
 
     @classmethod
     def clear_cache(cls) -> None:
+        """Clear the adapter cache."""
+        cache_size = len(cls.__cache)
         cls.__cache.clear()
+        cls.__logger.info(
+            f"Adapter cache cleared - Removed {cache_size} cached adapter(s)"
+        )
