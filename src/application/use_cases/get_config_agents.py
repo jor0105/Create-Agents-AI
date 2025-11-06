@@ -3,8 +3,6 @@ from src.domain import Agent
 
 
 class GetAgentConfigUseCase:
-    """Use Case for obtaining an agent's configurations."""
-
     def execute(self, agent: Agent) -> AgentConfigOutputDTO:
         """
         Returns the agent's configurations as a DTO.

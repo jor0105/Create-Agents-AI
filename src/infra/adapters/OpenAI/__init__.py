@@ -4,8 +4,8 @@ from .tool_call_parser import ToolCallParser
 from .tool_schema_formatter import ToolSchemaFormatter
 
 __all__ = [
-    "OpenAIChatAdapter",
     "ClientOpenAI",
+    "OpenAIChatAdapter",
     "ToolCallParser",
     "ToolSchemaFormatter",
 ]

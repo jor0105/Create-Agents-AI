@@ -1,8 +1,7 @@
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Sequence, Union
 
 from src.domain import BaseTool, InvalidBaseToolException
-from src.infra import AvailableTools
 
 
 @dataclass
@@ -14,7 +13,7 @@ class CreateAgentInputDTO:
     name: Optional[str] = None
     instructions: Optional[str] = None
     config: Dict[str, Any] = field(default_factory=dict)
-    tools: Optional[List[str | BaseTool]] = None
+    tools: Optional[Sequence[Union[str, BaseTool]]] = None
     history_max_size: int = 10
 
     def validate(self) -> None:
@@ -56,6 +55,9 @@ class CreateAgentInputDTO:
             raise ValueError("The 'config' field must be a dictionary (dict).")
 
         if self.tools:
+            # Import here to avoid circular dependency
+            from src.infra import AvailableTools
+
             validated_tools: List[BaseTool] = []
             for tool in self.tools:
                 if isinstance(tool, str):
@@ -65,7 +67,6 @@ class CreateAgentInputDTO:
                     else:
                         raise InvalidBaseToolException(tool)
                 elif isinstance(tool, BaseTool):
-                    # Validate that the tool has required attributes and methods
                     required_method = "execute"
                     if not hasattr(tool, required_method) or not callable(
                         getattr(tool, required_method)
@@ -82,24 +83,10 @@ class CreateAgentInputDTO:
                 else:
                     raise InvalidBaseToolException(tool)
 
-            # Replace the tools list with validated tools only
             object.__setattr__(self, "tools", validated_tools)
 
         if not isinstance(self.history_max_size, int) or self.history_max_size <= 0:
             raise ValueError("The 'history_max_size' field must be a positive integer.")
-
-    def get_validated_tools(self) -> Optional[List[BaseTool]]:
-        """Get the validated tools list.
-
-        This method should be called after validate() to ensure type safety.
-
-        Returns:
-            A list of BaseTool instances, or None if no tools were provided.
-        """
-        if self.tools is None:
-            return None
-        # At this point, after validation, all items are guaranteed to be BaseTool
-        return self.tools  # type: ignore
 
 
 @dataclass

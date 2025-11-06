@@ -1,12 +1,3 @@
-"""Tool schema formatter for OpenAI.
-
-This module is responsible for converting generic tool schemas
-(from the domain layer) into OpenAI-specific formats.
-
-This follows the Dependency Inversion Principle: the domain defines
-a generic schema, and the infrastructure adapts it to specific providers.
-"""
-
 from typing import Any, Dict, List
 
 from src.domain import BaseTool
@@ -16,7 +7,7 @@ class ToolSchemaFormatter:
     """Formats tool schemas for OpenAI API.
 
     This class converts domain-level tool schemas into the specific
-    format required by OpenAI's function calling API.
+    format required by OpenAI's function calling API and Responses API.
 
     Responsibilities:
     - Transform generic tool schemas to OpenAI format
@@ -26,34 +17,13 @@ class ToolSchemaFormatter:
 
     @staticmethod
     def format_tool_for_openai(tool: BaseTool) -> Dict[str, Any]:
-        """Convert a tool to OpenAI function calling format.
+        """Convert a tool to OpenAI function calling format (Completions API).
 
         Args:
             tool: A BaseTool instance from the domain layer.
 
         Returns:
             A dictionary formatted for OpenAI's tools parameter.
-
-        Example:
-            ```python
-            {
-                "type": "function",
-                "function": {
-                    "name": "web_search",
-                    "description": "Search the web for information",
-                    "parameters": {
-                        "type": "object",
-                        "properties": {
-                            "query": {
-                                "type": "string",
-                                "description": "The search query"
-                            }
-                        },
-                        "required": ["query"]
-                    }
-                }
-            }
-            ```
         """
         schema = tool.get_schema()
 
@@ -67,8 +37,27 @@ class ToolSchemaFormatter:
         }
 
     @staticmethod
+    def format_tool_for_responses_api(tool: BaseTool) -> Dict[str, Any]:
+        """Convert a tool to OpenAI Responses API format.
+
+        Args:
+            tool: A BaseTool instance from the domain layer.
+
+        Returns:
+            A dictionary formatted for Responses API's tools parameter.
+        """
+        schema = tool.get_schema()
+
+        return {
+            "type": "function",
+            "name": schema["name"],
+            "description": schema["description"],
+            "parameters": schema["parameters"],
+        }
+
+    @staticmethod
     def format_tools_for_openai(tools: List[BaseTool]) -> List[Dict[str, Any]]:
-        """Convert multiple tools to OpenAI format.
+        """Convert multiple tools to OpenAI Completions API format.
 
         Args:
             tools: List of BaseTool instances.
@@ -77,3 +66,17 @@ class ToolSchemaFormatter:
             List of dictionaries formatted for OpenAI's tools parameter.
         """
         return [ToolSchemaFormatter.format_tool_for_openai(tool) for tool in tools]
+
+    @staticmethod
+    def format_tools_for_responses_api(tools: List[BaseTool]) -> List[Dict[str, Any]]:
+        """Convert multiple tools to OpenAI Responses API format.
+
+        Args:
+            tools: List of BaseTool instances.
+
+        Returns:
+            List of dictionaries formatted for Responses API's tools parameter.
+        """
+        return [
+            ToolSchemaFormatter.format_tool_for_responses_api(tool) for tool in tools
+        ]

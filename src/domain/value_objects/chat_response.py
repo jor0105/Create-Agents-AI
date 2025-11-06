@@ -1,9 +1,3 @@
-"""Chat response with optional tool call information.
-
-This value object encapsulates the response from a chat interaction,
-including any tool calls that were executed during the conversation.
-"""
-
 from dataclasses import dataclass, field
 from typing import List
 

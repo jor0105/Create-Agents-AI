@@ -1,7 +1,7 @@
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Sequence, Union
 
 from src.application import ChatInputDTO, ChatWithAgentUseCase, GetAgentConfigUseCase
-from src.domain import Agent
+from src.domain import Agent, BaseTool
 from src.infra import ChatMetrics
 from src.main import AgentComposer
 
@@ -9,7 +9,7 @@ from src.main import AgentComposer
 class AIAgent:
     """
     The presentation layer controller for interacting with AI agents.
-    It is responsible for coordinating requests and responses.
+    It is responsibility for coordinating requests and responses.
     """
 
     def __init__(
@@ -19,6 +19,7 @@ class AIAgent:
         name: Optional[str] = None,
         instructions: Optional[str] = None,
         config: Optional[Dict[str, Any]] = None,
+        tools: Optional[Sequence[Union[str, BaseTool]]] = None,
         history_max_size: int = 10,
     ) -> None:
         """
@@ -38,6 +39,7 @@ class AIAgent:
             name=name,
             instructions=instructions,
             config=config,
+            tools=tools,
             history_max_size=history_max_size,
         )
 

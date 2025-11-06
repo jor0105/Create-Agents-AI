@@ -28,14 +28,11 @@ class CreateAgentUseCase:
         except ValueError as e:
             raise InvalidAgentConfigException("input_dto", str(e))
 
-        # Get validated tools (guaranteed to be List[BaseTool] or None after validation)
-        validated_tools = input_dto.get_validated_tools()
-
         format_instructions = FormatInstructionsUseCase()
         instructions = format_instructions.execute(
             instructions=input_dto.instructions,
-            tools=validated_tools,
-            provider=input_dto.provider,  # Pass provider for conditional formatting
+            tools=input_dto.tools,  # type: ignore
+            provider=input_dto.provider,
         )
 
         agent = Agent(
@@ -44,7 +41,7 @@ class CreateAgentUseCase:
             name=input_dto.name,
             instructions=instructions,
             config=input_dto.config,
-            tools=validated_tools,
+            tools=input_dto.tools,  # type: ignore
             history=History(max_size=input_dto.history_max_size),
         )
 

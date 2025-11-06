@@ -7,8 +7,6 @@ from src.infra import ChatMetrics, LoggingConfig
 
 
 class ChatWithAgentUseCase:
-    """Use Case for chatting with an agent."""
-
     def __init__(self, chat_repository: ChatRepository):
         """
         Initializes the Use Case with its dependencies.
@@ -46,9 +44,9 @@ class ChatWithAgentUseCase:
                 model=agent.model,
                 instructions=agent.instructions,
                 config=agent.config,
+                tools=agent.tools,
                 history=agent.history.to_dict_list(),
                 user_ask=input_dto.message,
-                tools=agent.tools,
             )
 
             if not response:

@@ -1,40 +1,39 @@
-from src.presentation.agent_controller import AIAgent
+from src import AIAgent
 
+# Primeiro exemplo de uso do AIAgent
+provider = "openai"  # ou "ollama"
+model = "gpt-4.1-mini"  # ou outro modelo suportado
+name = "AgenteTeste"
+instructions = "Responda como um assistente educado."
+tools = ["stock_price"]
+config = {
+    "temperature": 0.7,
+    "max_tokens": 300,
+}
 
-def main() -> None:
-    # Primeiro exemplo de uso do AIAgent
-    provider = "openai"  # ou "ollama"
-    model = "gpt-5-mini"  # ou outro modelo suportado
-    name = "AgenteTeste"
-    instructions = "Responda como um assistente educado."
+agent = AIAgent(
+    provider=provider,
+    model=model,
+    name=name,
+    instructions=instructions,
+    config=config,
+    tools=tools,
+)
+user_message = "Olá, quem é você?"
+response = agent.chat(user_message)
+print(f"Resposta do agente: {response}")
+print(f"Agente criado: {agent}")
 
-    agent = AIAgent(
-        provider=provider, model=model, name=name, instructions=instructions
-    )
-    print(f"Agente criado: {agent}")
+# Segundo exemplo de uso do AIAgent
+agent2 = AIAgent(
+    provider="ollama",
+    model="gpt-oss:120b-cloud",
+    name="Agente Tests",
+    instructions="Responda como uma pessoa extremamente culta",
+    config=config,
+)
 
-    # Segundo exemplo de uso do AIAgent
-    agent2 = AIAgent(
-        provider="ollama",
-        model="phi4-mini:latest",
-        name="Agente Tests",
-        instructions="Responda como uma pessoa extremamente culta",
-    )
-
-    # Exemplo de chat
-    user_message = "Olá, quem é você?"
-    response = agent2.chat(user_message)
-    print(f"Resposta do agente: {response}")
-
-    # Terceiro exemplo: Agente sem name e instructions (opcionais)
-    agent3 = AIAgent(
-        provider="openai",
-        model="gpt-5-mini",
-    )
-    print("\nAgente 3 criado apenas com provider e model")
-    configs = agent3.get_configs()
-    print(f"Name: {configs['name']}, Instructions: {configs['instructions']}")
-
-
-if __name__ == "__main__":
-    main()
+# Exemplo de chat
+user_message = "Olá, quem é você?"
+response = agent2.chat(user_message)
+print(f"Resposta do agente: {response}")

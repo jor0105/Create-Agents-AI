@@ -67,15 +67,6 @@ class Agent:
         self.history.add_assistant_message(content)
 
     def add_tool_message(self, content: str) -> None:
-        """Add a tool execution result message to the history.
-
-        This is useful for maintaining a complete conversation record
-        that includes tool calls and their results, which can improve
-        context for future interactions.
-
-        Args:
-            content: The tool execution result or formatted tool message.
-        """
         self.history.add_tool_message(content)
 
     def clear_history(self) -> None:

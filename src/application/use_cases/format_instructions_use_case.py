@@ -45,7 +45,7 @@ class FormatInstructionsUseCase:
         if tools:
             prompt_part = "Você pode usar as seguintes ferramentas:\n\n"
             for tool in tools:
-                schema = tool.get_schema_for_llm()
+                schema = tool.get_schema()
                 prompt_part += "<tool>\n"
                 prompt_part += f"  <name>{schema['name']}</name>\n"
                 prompt_part += f"  <description>{schema['description']}</description>\n"

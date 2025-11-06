@@ -1,4 +1,4 @@
-from .entities.agent_domain import Agent
+from .entities import Agent
 from .exceptions import (
     AdapterNotFoundException,
     AgentException,

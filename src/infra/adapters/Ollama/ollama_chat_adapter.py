@@ -4,7 +4,7 @@ from typing import Any, Dict, List, Optional
 
 from ollama import ChatResponse, chat
 
-from src.application.interfaces import ChatRepository
+from src.application import ChatRepository
 from src.domain import BaseTool, ChatException, ToolExecutor
 from src.infra.adapters.Ollama.ollama_tool_call_parser import OllamaToolCallParser
 from src.infra.config.environment import EnvironmentConfig
@@ -99,9 +99,9 @@ class OllamaChatAdapter(ChatRepository):
         model: str,
         instructions: Optional[str],
         config: Dict[str, Any],
+        tools: Optional[List[BaseTool]],
         history: List[Dict[str, str]],
         user_ask: str,
-        tools: Optional[List[BaseTool]] = None,
     ) -> str:
         """
         Sends a message to Ollama and returns the response.

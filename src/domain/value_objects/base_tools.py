@@ -97,17 +97,3 @@ class BaseTool(ABC):
             "description": self.description,
             "parameters": self.parameters,
         }
-
-    def get_schema_for_llm(self) -> dict:
-        """Return a schema describing the tool for LLM prompts.
-
-        Deprecated: Use get_schema() instead.
-        This method is kept for backward compatibility.
-
-        Returns:
-            A dictionary with 'name' and 'description' keys.
-        """
-        return {
-            "name": self.name,
-            "description": self.description,
-        }

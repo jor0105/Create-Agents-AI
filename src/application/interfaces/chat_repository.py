@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Any, Dict, List, Optional
 
-from src.domain.value_objects import BaseTool
+from src.domain import BaseTool
 
 
 class ChatRepository(ABC):
@@ -11,8 +11,8 @@ class ChatRepository(ABC):
         model: str,
         instructions: Optional[str],
         config: Dict[str, Any],
+        tools: Optional[List[BaseTool]],
         history: List[Dict[str, str]],
         user_ask: str,
-        tools: Optional[List[BaseTool]] = None,
     ) -> str:
         pass

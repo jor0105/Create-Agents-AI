@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Sequence, Union
 
 from src.application import (
     ChatWithAgentUseCase,
@@ -6,7 +6,7 @@ from src.application import (
     CreateAgentUseCase,
     GetAgentConfigUseCase,
 )
-from src.domain import Agent
+from src.domain import Agent, BaseTool
 from src.infra import ChatAdapterFactory
 
 
@@ -23,6 +23,7 @@ class AgentComposer:
         name: Optional[str] = None,
         instructions: Optional[str] = None,
         config: Optional[Dict[str, Any]] = None,
+        tools: Optional[Sequence[Union[str, BaseTool]]] = None,
         history_max_size: int = 10,
     ) -> Agent:
         """
@@ -48,6 +49,7 @@ class AgentComposer:
             name=name,
             instructions=instructions,
             config=config,
+            tools=tools,
             history_max_size=history_max_size,
         )
 

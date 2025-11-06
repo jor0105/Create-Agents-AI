@@ -1,15 +1,3 @@
-"""Tool execution service for the domain layer.
-
-This service is responsible for orchestrating tool execution,
-following the Single Responsibility Principle. It handles:
-- Tool validation and lookup
-- Safe execution with error handling
-- Result formatting
-
-By keeping this in the domain layer, we ensure that tool execution
-logic is independent of infrastructure concerns.
-"""
-
 import json
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional
@@ -36,7 +24,6 @@ class ToolExecutionResult:
     execution_time_ms: Optional[float] = None
 
     def to_dict(self) -> Dict[str, Any]:
-        """Convert to dictionary representation."""
         return {
             "tool_name": self.tool_name,
             "success": self.success,
@@ -77,7 +64,7 @@ class ToolExecutor:
         ```
     """
 
-    def __init__(self, tools: Optional[List[BaseTool]] = None):
+    def __init__(self, tools: List[BaseTool]):
         """Initialize the executor with available tools.
 
         Args:
@@ -86,9 +73,8 @@ class ToolExecutor:
         """
         self._tools_map: Dict[str, BaseTool] = {}
 
-        if tools:
-            for tool in tools:
-                self._tools_map[tool.name] = tool
+        for tool in tools:
+            self._tools_map[tool.name] = tool
 
     def get_available_tool_names(self) -> List[str]:
         """Get list of available tool names.
@@ -134,7 +120,6 @@ class ToolExecutor:
 
         start_time = time.time()
 
-        # Validate tool existence
         if not self.has_tool(tool_name):
             available = ", ".join(self.get_available_tool_names())
             error_msg = (
@@ -148,7 +133,6 @@ class ToolExecutor:
                 execution_time_ms=(time.time() - start_time) * 1000,
             )
 
-        # Execute tool with error handling
         try:
             tool = self._tools_map[tool_name]
             result = tool.execute(**kwargs)
@@ -163,7 +147,6 @@ class ToolExecutor:
             )
 
         except TypeError as e:
-            # Handle invalid arguments
             error_msg = f"Invalid arguments for tool '{tool_name}': {str(e)}"
             return ToolExecutionResult(
                 tool_name=tool_name,
@@ -173,7 +156,6 @@ class ToolExecutor:
             )
 
         except Exception as e:
-            # Handle any other execution errors
             error_msg = f"Error executing tool '{tool_name}': {str(e)}"
             return ToolExecutionResult(
                 tool_name=tool_name,
@@ -209,7 +191,6 @@ class ToolExecutor:
             tool_name = call.get("name", "")
             arguments = call.get("arguments", {})
 
-            # Ensure arguments is a dict
             if isinstance(arguments, str):
                 try:
                     arguments = json.loads(arguments)

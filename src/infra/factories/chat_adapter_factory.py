@@ -1,6 +1,6 @@
 from typing import Dict, Tuple
 
-from src.application.interfaces.chat_repository import ChatRepository
+from src.application import ChatRepository
 from src.infra.adapters.Ollama.ollama_chat_adapter import OllamaChatAdapter
 from src.infra.adapters.OpenAI.openai_chat_adapter import OpenAIChatAdapter
 
