@@ -1,15 +1,17 @@
 from pathlib import Path
 from typing import Any, Dict, Optional
 
-import pandas as pd
-import PyPDF2
-import tiktoken
-from base_tool_module import BaseTool  # ajuste conforme sua estrutura
+# import pandas as pd
+# import PyPDF2
+# import tiktoken
+from src.domain import BaseTool
 
 
 def _count_tokens(text: str) -> int:
-    enc = tiktoken.get_encoding("cl100k_base")
-    return len(enc.encode(text))
+    # enc = tiktoken.get_encoding("cl100k_base")
+    # return len(enc.encode(text))
+    test = 5
+    return test
 
 
 class ReadLocalFileTool(BaseTool):

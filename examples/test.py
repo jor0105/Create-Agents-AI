@@ -1,12 +1,13 @@
 import logging
 
+from examples.websearchtool import WebSearchTool
 from src import AIAgent
 from src.infra.config.logging_config import LoggingConfig
 
 LoggingConfig.configure(level=logging.ERROR)
 
 
-tools = ["web_search"]
+tools = [WebSearchTool()]
 
 config = {
     "temperature": 0.7,
@@ -38,7 +39,7 @@ agent2 = AIAgent(
 )
 
 # Exemplo de chat
-user_message = "que dia será a black friday nesse ano?"
+user_message = "como ficar milionario hoje com marketing digital? qual é a melhor estrategia atualmente e pensando no futuro?"
 
 # response = agent.chat(user_message)
 # print(f"Resposta do agente: {response}")

@@ -1,7 +1,7 @@
 from typing import Dict
 
 from src.domain import BaseTool
-from src.infra.adapters import ReadLocalFileTool
+from src.infra.adapters.Tools import ReadLocalFileTool
 
 
 class AvailableTools:
