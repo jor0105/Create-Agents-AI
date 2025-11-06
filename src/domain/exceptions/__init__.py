@@ -2,6 +2,7 @@ from .domain_exceptions import (
     AdapterNotFoundException,
     AgentException,
     ChatException,
+    FileReadException,
     InvalidAgentConfigException,
     InvalidBaseToolException,
     InvalidConfigTypeException,
@@ -20,4 +21,5 @@ __all__ = [
     "UnsupportedConfigException",
     "InvalidConfigTypeException",
     "InvalidBaseToolException",
+    "FileReadException",
 ]

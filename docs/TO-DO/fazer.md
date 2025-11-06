@@ -1,4 +1,4 @@
-Criar tools de abrir doc
+arrumar analise de docs que são imagens
 criar um get das tools internas no aigent
 adicionar think nas configs
 Fazer tests das tools

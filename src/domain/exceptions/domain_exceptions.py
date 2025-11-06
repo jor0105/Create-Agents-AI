@@ -80,3 +80,11 @@ class InvalidBaseToolException(AgentException):
     def __init__(self, tool: Any):
         message = f"Tool '{tool}' is invalid. It must inherit from BaseTool and implement the attributes 'name' (string type), 'description' (string type), and the 'execute' method."
         super().__init__(message)
+
+
+class FileReadException(AgentException):
+    """Exception raised when file reading operation fails."""
+
+    def __init__(self, file_path: str, reason: str):
+        message = f"Failed to read file '{file_path}': {reason}"
+        super().__init__(message)

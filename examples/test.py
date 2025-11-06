@@ -61,12 +61,15 @@ arquivos = [
     "/home/jordan/Downloads/Carteira_EStudante.pdf",
     "/home/jordan/Downloads/Databases/Documentos_B3/Ações_B3.parquet",
     "/home/jordan/Downloads/Databases/Documentos_B3/Ações_do_IBOV.parquet",
+    "/home/jordan/Downloads/cad_cia_aberta.csv",
 ]
 
-for caminho in arquivos:
-    user_message = f"Leia o arquivo {caminho} e me dê um resumo do conteúdo dele."
-    response = agent2.chat(user_message)
-    print("\n" + "-" * 100)
-    print(f"ARQUIVO: {caminho}")
-    print(f"\nResposta do agente: {response}")
-    print("\n" + "-" * 100)
+caminho = "/home/jordan/Downloads/cad_cia_aberta.csv"
+
+# for caminho in arquivos:
+user_message = f"Leia o arquivo {caminho} e me dê um resumo do conteúdo dele. Use a tool 'readlocalfile' para ler o arquivo e coloque max_tokens=100000."
+response = agent2.chat(user_message)
+print("\n" + "-" * 100)
+print(f"ARQUIVO: {caminho}")
+print(f"\nResposta do agente: {response}")
+print("\n" + "-" * 100)
