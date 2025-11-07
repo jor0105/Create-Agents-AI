@@ -10,6 +10,7 @@ class FileType(Enum):
     EXCEL = "excel"
     PDF = "pdf"
     PARQUET = "parquet"
+    DOCUMENT = "document"  # Word, PowerPoint, etc. handled by unstructured
     UNKNOWN = "unknown"
 
 
@@ -38,6 +39,20 @@ TEXT_EXTENSIONS: Final[FrozenSet[str]] = frozenset(
 )
 
 EXCEL_EXTENSIONS: Final[FrozenSet[str]] = frozenset({"xls", "xlsx", "xlsm"})
+
+# Document types that unstructured can handle
+DOCUMENT_EXTENSIONS: Final[FrozenSet[str]] = frozenset(
+    {
+        "doc",
+        "docx",
+        "ppt",
+        "pptx",
+        "odt",
+        "epub",
+        "msg",
+        "rtf",
+    }
+)
 
 # Maximum file size in bytes (100 MB) as an additional safety check
 MAX_FILE_SIZE_BYTES: Final[int] = 100 * 1024 * 1024

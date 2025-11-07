@@ -6,6 +6,7 @@ from src.infra.config.logging_config import LoggingConfig
 
 from .constants import (
     COMMON_ENCODINGS,
+    DOCUMENT_EXTENSIONS,
     EXCEL_EXTENSIONS,
     TEXT_EXTENSIONS,
     TIKTOKEN_ENCODING,
@@ -213,8 +214,7 @@ def read_csv_file(file_path: Path) -> str:
                     engine="python",  # More flexible parser
                 )
 
-                # Check if we got meaningful data (at least 2 columns)
-                if df.shape[1] >= 2:
+                if not df.empty:
                     logger.debug(
                         f"Read CSV file with encoding {encoding}, "
                         f"delimiter '{delimiter}', shape: {df.shape}"
@@ -354,7 +354,9 @@ def read_parquet_file(file_path: Path) -> str:
 def read_pdf_file(file_path: Path) -> str:
     """Read a PDF file and extract text from all pages with error handling.
 
-    Handles various PDF formats and corrupted pages gracefully.
+    Uses unstructured library for robust PDF parsing that handles various formats,
+    including scanned PDFs with OCR capabilities. Supports additional document types
+    beyond basic PDFs.
 
     Args:
         file_path: Path to the PDF file.
@@ -364,44 +366,71 @@ def read_pdf_file(file_path: Path) -> str:
 
     Raises:
         FileReadException: If PDF reading fails.
-        RuntimeError: If pymupdf (fitz) is not installed.
+        RuntimeError: If unstructured is not installed.
     """
     try:
-        import fitz
+        from unstructured.partition.pdf import partition_pdf
     except ImportError as e:
         raise RuntimeError(
-            "pymupdf is required for PDF reading. "
+            "unstructured is required for PDF reading. "
             "Install with: pip install ai-agent[file-tools]"
         ) from e
 
     try:
-        content_parts: list[str] = []
+        logger.debug(f"Reading PDF file: {file_path}")
 
-        with fitz.open(str(file_path)) as doc:
-            page_count = len(doc)
-            logger.debug(f"Reading PDF with {page_count} pages")
+        # partition_pdf automatically handles:
+        # - Text extraction from native PDFs
+        # - OCR for scanned PDFs (if pytesseract is available)
+        # - Layout detection and element classification
+        # - Tables, images, and other structured content
+        elements = partition_pdf(
+            filename=str(file_path),
+            strategy="auto",  # Automatically chooses best strategy (fast, hi_res, ocr_only)
+            infer_table_structure=True,  # Extract tables as structured data
+        )
 
-            for page_num in range(page_count):
-                try:
-                    page = doc[page_num]
-                    page_text = page.get_text()
-                    if page_text.strip():
-                        content_parts.append(
-                            f"--- Page {page_num + 1} ---\n{page_text}"
-                        )
-                except Exception as e:
-                    logger.warning(
-                        f"Failed to extract text from page {page_num + 1}: {e}"
-                    )
-                    content_parts.append(
-                        f"--- Page {page_num + 1} --- [Error extracting text: {e}]\n"
-                    )
-                    continue
-
-        if not content_parts:
+        if not elements:
             raise FileReadException(str(file_path), "No readable content found in PDF")
 
-        return "\n".join(content_parts)
+        # Combine all extracted text elements
+        content_parts: list[str] = []
+        current_page = None
+        page_content: list[str] = []
+
+        for element in elements:
+            # Group content by page if metadata is available
+            element_page = (
+                getattr(element.metadata, "page_number", None)
+                if hasattr(element, "metadata")
+                else None
+            )
+
+            if element_page is not None and element_page != current_page:
+                # Save previous page content
+                if page_content:
+                    content_parts.append(
+                        f"--- Page {current_page} ---\n" + "\n".join(page_content)
+                    )
+                    page_content = []
+                current_page = element_page
+
+            element_text = str(element).strip()
+            if element_text:
+                page_content.append(element_text)
+
+        # Add last page
+        if page_content:
+            if current_page is not None:
+                content_parts.append(
+                    f"--- Page {current_page} ---\n" + "\n".join(page_content)
+                )
+            else:
+                content_parts.extend(page_content)
+
+        result = "\n\n".join(content_parts)
+        logger.debug(f"Successfully extracted {len(elements)} elements from PDF")
+        return result
 
     except FileReadException:
         raise
@@ -409,6 +438,62 @@ def read_pdf_file(file_path: Path) -> str:
         raise FileReadException(
             str(file_path),
             f"PDF processing failed: {type(e).__name__}: {e}",
+        )
+
+
+def read_document_file(file_path: Path) -> str:
+    """Read various document formats using unstructured library.
+
+    Supports Word documents (.doc, .docx), PowerPoint (.ppt, .pptx),
+    OpenDocument (.odt), EPUB, MSG, RTF, and other formats.
+
+    Args:
+        file_path: Path to the document file.
+
+    Returns:
+        Extracted text from the document.
+
+    Raises:
+        FileReadException: If document reading fails.
+        RuntimeError: If unstructured is not installed.
+    """
+    try:
+        from unstructured.partition.auto import partition
+    except ImportError as e:
+        raise RuntimeError(
+            "unstructured is required for document reading. "
+            "Install with: pip install ai-agent[file-tools]"
+        ) from e
+
+    try:
+        logger.debug(f"Reading document file: {file_path}")
+
+        # partition automatically detects file type and uses appropriate parser
+        elements = partition(
+            filename=str(file_path),
+            strategy="auto",
+            infer_table_structure=True,
+        )
+
+        if not elements:
+            raise FileReadException(
+                str(file_path), "No readable content found in document"
+            )
+
+        content_parts = [
+            str(element).strip() for element in elements if str(element).strip()
+        ]
+
+        result = "\n\n".join(content_parts)
+        logger.debug(f"Successfully extracted {len(elements)} elements from document")
+        return result
+
+    except FileReadException:
+        raise
+    except Exception as e:
+        raise FileReadException(
+            str(file_path),
+            f"Document processing failed: {type(e).__name__}: {e}",
         )
 
 
@@ -431,6 +516,8 @@ def determine_file_type(extension: str) -> FileType:
         return FileType.PDF
     elif extension == "parquet":
         return FileType.PARQUET
+    elif extension in DOCUMENT_EXTENSIONS:
+        return FileType.DOCUMENT
     else:
         return FileType.UNKNOWN
 
@@ -459,6 +546,8 @@ def read_file_by_type(file_path: Path, file_type: FileType) -> str:
             return read_pdf_file(file_path)
         elif file_type == FileType.PARQUET:
             return read_parquet_file(file_path)
+        elif file_type == FileType.DOCUMENT:
+            return read_document_file(file_path)
         else:
             # Try as text file (fallback for unknown types)
             try:
