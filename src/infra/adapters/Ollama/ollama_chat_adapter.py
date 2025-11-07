@@ -50,7 +50,7 @@ class OllamaChatAdapter(ChatRepository):
         self,
         model: str,
         messages: List[Dict[str, str]],
-        config: Dict[str, Any],
+        config: Optional[Dict[str, Any]],
         tools: Optional[List[Dict[str, Any]]] = None,
     ) -> ChatResponse:
         """
@@ -59,7 +59,8 @@ class OllamaChatAdapter(ChatRepository):
         Args:
             model: The name of the model.
             messages: A list of messages.
-            config: Internal AI settings.
+            config: I            "think": cls.validate_think,
+            "stream": cls.validate_stream,nternal AI settings.
             tools: Optional list of tool schemas.
 
         Returns:
@@ -69,15 +70,24 @@ class OllamaChatAdapter(ChatRepository):
             ChatException: If the API call fails after retries.
         """
         try:
-            if "max_tokens" in config:
-                config["num_predict"] = config.pop("max_tokens")
+            chat_kwargs: Dict[str, Any] = {
+                "model": model,
+                "messages": messages,
+            }
 
-            response_api: ChatResponse = chat(
-                model=model,
-                messages=messages,
-                options=config,
-                tools=tools,
-            )
+            if tools:
+                chat_kwargs["tools"] = tools
+            if config:
+                config_copy = config.copy()
+                if "think" in config_copy:
+                    chat_kwargs["think"] = config_copy.pop("think")
+                if "stream" in config_copy:
+                    chat_kwargs["stream"] = config_copy.pop("stream")
+                if "max_tokens" in config_copy:
+                    config_copy["num_predict"] = config_copy.pop("max_tokens")
+                chat_kwargs["options"] = config_copy
+
+            response_api: ChatResponse = chat(**chat_kwargs)
 
             return response_api
         except Exception as e:
@@ -110,7 +120,7 @@ class OllamaChatAdapter(ChatRepository):
         self,
         model: str,
         instructions: Optional[str],
-        config: Dict[str, Any],
+        config: Optional[Dict[str, Any]],
         tools: Optional[List[BaseTool]],
         history: List[Dict[str, str]],
         user_ask: str,

@@ -1,4 +1,4 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Sequence, Union
 
 from src.domain import BaseTool, InvalidBaseToolException
@@ -12,7 +12,7 @@ class CreateAgentInputDTO:
     model: str
     name: Optional[str] = None
     instructions: Optional[str] = None
-    config: Dict[str, Any] = field(default_factory=dict)
+    config: Optional[Dict[str, Any]] = None
     tools: Optional[Sequence[Union[str, BaseTool]]] = None
     history_max_size: int = 10
 
@@ -51,11 +51,10 @@ class CreateAgentInputDTO:
                 "The 'instructions' field must be a valid string and cannot be empty."
             )
 
-        if not isinstance(self.config, dict):
+        if self.config is not None and not isinstance(self.config, dict):
             raise ValueError("The 'config' field must be a dictionary (dict).")
 
         if self.tools:
-            # Import here to avoid circular dependency
             from src.infra import AvailableTools
 
             validated_tools: List[BaseTool] = []
@@ -97,7 +96,7 @@ class AgentConfigOutputDTO:
     model: str
     name: Optional[str]
     instructions: Optional[str]
-    config: Dict[str, Any]
+    config: Optional[Dict[str, Any]]
     tools: Optional[List[BaseTool]]
     history: List[Dict[str, str]]
     history_max_size: int = 10

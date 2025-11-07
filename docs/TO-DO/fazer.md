@@ -1,4 +1,6 @@
+arrumar think mode da open ai, mudando para reasoning
 arrumar analise de docs que são imagens
+criar tool de data
 criar um get das tools internas no aigent
 adicionar think nas configs
 Fazer tests das tools

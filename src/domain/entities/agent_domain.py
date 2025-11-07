@@ -31,7 +31,7 @@ class Agent:
     model: str
     name: Optional[str] = None
     instructions: Optional[str] = None
-    config: Dict[str, Any] = field(default_factory=dict)
+    config: Optional[Dict[str, Any]] = None
     tools: Optional[List[BaseTool]] = None
     history: History = field(default_factory=History)
     _logger: Optional[Any] = field(default=None, init=False, repr=False)
@@ -66,19 +66,24 @@ class Agent:
 
         self._logger.debug(f"Provider '{self.provider}' validated successfully")
 
-        for key, value in self.config.items():
-            available_configs = SupportedConfigs.get_available_configs()
-            if key not in available_configs:
-                self._logger.error(
-                    f"Unsupported config key: {key}. Available: {available_configs}"
-                )
-                raise UnsupportedConfigException(key, set(available_configs))
+        if self.config:
+            for key, value in self.config.items():
+                available_configs = SupportedConfigs.get_available_configs()
+                if key not in available_configs:
+                    self._logger.error(
+                        f"Unsupported config key: {key}. Available: {available_configs}"
+                    )
+                    raise UnsupportedConfigException(key, set(available_configs))
 
-            if not isinstance(value, (int, float, str, bool, list, dict, type(None))):
-                self._logger.error(f"Invalid config type for '{key}': {type(value)}")
-                raise InvalidConfigTypeException(key, type(value))
+                if not isinstance(
+                    value, (int, float, str, bool, list, dict, type(None))
+                ):
+                    self._logger.error(
+                        f"Invalid config type for '{key}': {type(value)}"
+                    )
+                    raise InvalidConfigTypeException(key, type(value))
 
-            SupportedConfigs.validate_config(key, value)
+                SupportedConfigs.validate_config(key, value)
 
         self._logger.info(
             f"Agent initialized - Name: {self.name}, Provider: {self.provider}, "

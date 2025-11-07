@@ -39,7 +39,7 @@ class OpenAIChatAdapter(ChatRepository):
         self,
         model: str,
         messages: List[Dict[str, str]],
-        config: Dict[str, Any],
+        config: Optional[Dict[str, Any]],
         tools: Optional[List[Dict[str, Any]]] = None,
     ) -> Any:
         """
@@ -54,25 +54,29 @@ class OpenAIChatAdapter(ChatRepository):
         Returns:
             The API response.
         """
-        api_kwargs: Dict[str, Any] = {
+        chat_kwargs: Dict[str, Any] = {
             "model": model,
             "input": messages,
         }
 
-        param_mapping: Dict[str, str] = {
-            "temperature": "temperature",
-            "max_output_tokens": "max_tokens",
-            "max_output_tokens": "max_output_tokens",
-            "top_p": "top_p",
-        }
-        for config_key, api_key in param_mapping.items():
-            if config_key in config:
-                api_kwargs[api_key] = config[config_key]
-
         if tools:
-            api_kwargs["tools"] = tools
+            chat_kwargs["tools"] = tools
+        if config:
+            config_copy = config.copy()
+            if "think" in config_copy:
+                _ = config_copy.pop("think")
+            if "stream" in config_copy:
+                chat_kwargs["stream"] = config_copy.pop("stream")
+            param_to_change: Dict[str, str] = {
+                "max_output_tokens": "max_tokens",
+            }
+            for api_key, config_key in param_to_change.items():
+                if config_key in config_copy:
+                    chat_kwargs[api_key] = config_copy.pop(config_key)
+            for key, config_data in config_copy.items():
+                chat_kwargs[key] = config_data
 
-        response_api = self.__client.responses.create(**api_kwargs)
+        response_api = self.__client.responses.create(**chat_kwargs)
 
         return response_api
 
@@ -80,7 +84,7 @@ class OpenAIChatAdapter(ChatRepository):
         self,
         model: str,
         instructions: Optional[str],
-        config: Dict[str, Any],
+        config: Optional[Dict[str, Any]],
         tools: Optional[List[BaseTool]],
         history: List[Dict[str, str]],
         user_ask: str,

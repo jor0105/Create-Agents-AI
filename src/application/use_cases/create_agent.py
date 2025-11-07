@@ -2,8 +2,6 @@ from src.application.dtos import CreateAgentInputDTO
 from src.domain import Agent, History, InvalidAgentConfigException
 from src.infra.config.logging_config import LoggingConfig
 
-from .format_instructions_use_case import FormatInstructionsUseCase
-
 
 class CreateAgentUseCase:
     """Use Case for creating a new agent instance."""
@@ -44,22 +42,11 @@ class CreateAgentUseCase:
             self.__logger.error(f"Validation error in input DTO: {str(e)}")
             raise InvalidAgentConfigException("input_dto", str(e))
 
-        format_instructions = FormatInstructionsUseCase()
-        instructions = format_instructions.execute(
-            instructions=input_dto.instructions,
-            tools=input_dto.tools,  # type: ignore
-            provider=input_dto.provider,
-        )
-
-        self.__logger.debug(
-            f"Instructions formatted - Length: {len(instructions) if instructions else 0} chars"
-        )
-
         agent = Agent(
             provider=input_dto.provider,
             model=input_dto.model,
             name=input_dto.name,
-            instructions=instructions,
+            instructions=input_dto.instructions,
             config=input_dto.config,
             tools=input_dto.tools,  # type: ignore
             history=History(max_size=input_dto.history_max_size),

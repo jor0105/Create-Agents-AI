@@ -12,10 +12,11 @@ web_search_tool = WebSearchTool()
 
 tools = ["readlocalfile"]
 
-# config = {
-#     "temperature": 0.7,
-#     "max_tokens": 300,
-# }
+config = {
+    "temperature": 0.7,
+    "max_tokens": 300,
+    "think": True,
+}
 
 # agent = AIAgent(
 #     provider="openai",
@@ -32,12 +33,12 @@ tools = ["readlocalfile"]
 
 
 # Segundo exemplo de uso do AIAgent
-agent2 = AIAgent(
-    provider="ollama",
-    model="gpt-oss:120b-cloud",
+agent = AIAgent(
+    provider="openai",
+    model="gpt-4.1-mini",
     name="Agente Ollama",
     instructions="Você é um assistente que pode buscar informações lendo arquivos locais. Sempre que precisar de informações atualizadas, use a ferramenta de busca web. Quando precisar ler um arquivo, use a ferramenta de leitura de arquivos.",
-    # config=config,
+    config=config,
     tools=tools,
 )
 
@@ -54,7 +55,6 @@ print("=" * 100)
 
 
 arquivos = [
-    "/home/jordan/Downloads/MAPA.docx",
     "/home/jordan/Downloads/HistoricalQuotations_B3.pdf",
     "/home/jordan/Downloads/ibovespa.png",
     "/home/jordan/Downloads/Petição inicial.pdf",
@@ -62,14 +62,20 @@ arquivos = [
     "/home/jordan/Downloads/Databases/Documentos_B3/Ações_B3.parquet",
     "/home/jordan/Downloads/Databases/Documentos_B3/Ações_do_IBOV.parquet",
     "/home/jordan/Downloads/cad_cia_aberta.csv",
+    "/home/jordan/Downloads/Sem título 1.xlsx",
 ]
 
-caminho = "/home/jordan/Downloads/cad_cia_aberta.csv"
-
-# for caminho in arquivos:
-user_message = f"Leia o arquivo {caminho} e me dê um resumo do conteúdo dele. Use a tool 'readlocalfile' para ler o arquivo e coloque max_tokens=100000."
-response = agent2.chat(user_message)
-print("\n" + "-" * 100)
-print(f"ARQUIVO: {caminho}")
+caminho = "/home/jordan/Downloads/HistoricalQuotations_B3.pdf"
+user_message = f"me diga algo sobre esse documento {caminho}"
+response = agent.chat(user_message)
 print(f"\nResposta do agente: {response}")
 print("\n" + "-" * 100)
+
+# for caminho in arquivos:
+
+# user_message = f"Leia o arquivo {caminho} e me dê um resumo do conteúdo dele. Use a tool 'readlocalfile' para ler o arquivo e coloque max_tokens=100000."
+# response = agent.chat(user_message)
+# print("\n" + "-" * 100)
+# print(f"ARQUIVO: {caminho}")
+# print(f"\nResposta do agente: {response}")
+# print("\n" + "-" * 100)
