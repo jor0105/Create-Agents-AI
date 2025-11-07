@@ -1,12 +1,9 @@
-"""Infrastructure adapters with lazy loading for heavy tools."""
-
 from typing import TYPE_CHECKING
 
 from .Ollama import OllamaChatAdapter
 from .OpenAI import ClientOpenAI, OpenAIChatAdapter
 from .Tools import CurrentDateTool
 
-# Type hints only - not imported at runtime
 if TYPE_CHECKING:
     from .Tools import ReadLocalFileTool
 

@@ -30,6 +30,7 @@ cp .env.example .env
 Este projeto oferece instalação modular para manter a biblioteca leve:
 
 **Instalação Básica** (apenas funcionalidades essenciais):
+
 ```bash
 pip install ai-agent
 # ou
@@ -37,6 +38,7 @@ poetry install
 ```
 
 **Com ferramentas de leitura de arquivos** (PDF, Excel, CSV, Parquet):
+
 ```bash
 pip install ai-agent[file-tools]
 # ou
@@ -44,6 +46,7 @@ poetry install -E file-tools
 ```
 
 **Instalação completa** (todas as funcionalidades):
+
 ```bash
 pip install ai-agent[all]
 # ou
@@ -52,10 +55,10 @@ poetry install -E all
 
 #### 📋 Extras Disponíveis
 
-| Extra | Dependências | Funcionalidades |
-|-------|--------------|-----------------|
+| Extra        | Dependências                                          | Funcionalidades                                                                       |
+| ------------ | ----------------------------------------------------- | ------------------------------------------------------------------------------------- |
 | `file-tools` | tiktoken, pymupdf, pandas, openpyxl, pyarrow, chardet | Ferramenta ReadLocalFileTool para ler arquivos locais (TXT, CSV, Excel, PDF, Parquet) |
-| `all` | Todas acima | Todas as funcionalidades opcionais |
+| `all`        | Todas acima                                           | Todas as funcionalidades opcionais                                                    |
 
 ### Uso básico em 3 linhas
 

@@ -6,7 +6,6 @@ from src.infra.config.logging_config import LoggingConfig
 
 from .constants import MAX_FILE_SIZE_BYTES
 
-# Lazy imports for heavy dependencies
 try:
     from .file_utils import (
         count_tokens,

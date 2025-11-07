@@ -1,15 +1,7 @@
-"""Tools module with lazy loading for heavy dependencies.
-
-This module implements lazy loading to avoid importing heavy dependencies
-(like pandas, tiktoken, pymupdf) unless they are actually needed.
-"""
-
 from typing import TYPE_CHECKING
 
-# Always import lightweight tools
 from .Current_Data_Tool import CurrentDateTool
 
-# Type hints only - not imported at runtime
 if TYPE_CHECKING:
     from .Read_Local_File_Tool import ReadLocalFileTool
 

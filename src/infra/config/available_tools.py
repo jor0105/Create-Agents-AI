@@ -1,5 +1,3 @@
-"""Registry of available tools with lazy loading for heavy dependencies."""
-
 from typing import Dict, Optional
 
 from src.domain import BaseTool

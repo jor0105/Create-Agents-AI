@@ -33,25 +33,27 @@ print("TESTE: Leitura Datas")
 print("=" * 100)
 
 
-arquivos = [
-    "/home/jordan/Downloads/HistoricalQuotations_B3.pdf",
-    "/home/jordan/Downloads/ibovespa.png",
-    "/home/jordan/Downloads/Petição inicial.pdf",
-    "/home/jordan/Downloads/Carteira_EStudante.pdf",
-    "/home/jordan/Downloads/Databases/Documentos_B3/Ações_B3.parquet",
-    "/home/jordan/Downloads/Databases/Documentos_B3/Ações_do_IBOV.parquet",
-    "/home/jordan/Downloads/cad_cia_aberta.csv",
-    "/home/jordan/Downloads/Sem título 1.xlsx",
-]
+# arquivos = [
+#     "/home/jordan/Downloads/HistoricalQuotations_B3.pdf",
+#     "/home/jordan/Downloads/ibovespa.png",
+#     "/home/jordan/Downloads/Petição inicial.pdf",
+#     "/home/jordan/Downloads/Carteira_EStudante.pdf",
+#     "/home/jordan/Downloads/Databases/Documentos_B3/Ações_B3.parquet",
+#     "/home/jordan/Downloads/Databases/Documentos_B3/Ações_do_IBOV.parquet",
+#     "/home/jordan/Downloads/cad_cia_aberta.csv",
+#     "/home/jordan/Downloads/Sem título 1.xlsx",
+# ]
 
-caminho = "/home/jordan/Downloads/HistoricalQuotations_B3.pdf"
-user_message = f"me diga algo sobre esse documento {caminho}"
-response = agent.chat(user_message)
-metrics = agent.get_metrics()
+# caminho = "/home/jordan/Downloads/HistoricalQuotations_B3.pdf"
+# user_message = f"me diga algo sobre esse documento {caminho}"
+# response = agent.chat(user_message)
+# metrics = agent.get_metrics()
 print("\n" + "-" * 100)
-print(f"\nResposta do agente: {response}")
+print(f"\nResposta do agente: {agent.chat('como ficar rico em 2025')}")
 print("\n" + "-" * 100)
-print(f"Métricas: {metrics}")
+print(
+    f"\nResposta do agente: {agent.chat('que horas, data e dia da semana são hoje? No brasil e no japao')}"
+)
 
 
 # for caminho in arquivos:

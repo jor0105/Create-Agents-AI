@@ -1,10 +1,16 @@
 from datetime import datetime
+from functools import lru_cache
 from typing import Any, Dict
-from zoneinfo import ZoneInfo
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from src.domain import BaseTool
-from src.infra.adapters.Tools.Utils import TextSanitizer
 from src.infra.config.logging_config import LoggingConfig
+from src.utils import TextSanitizer
+
+
+@lru_cache(maxsize=32)
+def _get_zoneinfo(tz: str) -> ZoneInfo:
+    return ZoneInfo(tz)
 
 
 class CurrentDateTool(BaseTool):
@@ -34,7 +40,7 @@ class CurrentDateTool(BaseTool):
             "action": {
                 "type": "string",
                 "enum": ["date", "time", "datetime", "timestamp", "date_with_weekday"],
-                "description": "What information to return: 'date' (just the date), 'time' (just the time), 'datetime' (both), 'timestamp' (unix seconds), or 'date_with_weekday' (full date with weekday in Portuguese)",
+                "description": "What information to return: 'date' (just the date), 'time' (just the time), 'datetime' (both), 'timestamp' (unix seconds), or 'date_with_weekday' (full date with weekday)",
             },
             "tz": {
                 "type": "string",
@@ -50,6 +56,13 @@ class CurrentDateTool(BaseTool):
 
     def __init__(self) -> None:
         self.__logger = LoggingConfig.get_logger(__name__)
+
+    @staticmethod
+    def __resolve_zone(tz: str) -> ZoneInfo:
+        try:
+            return _get_zoneinfo(tz.strip())
+        except ZoneInfoNotFoundError:
+            raise ValueError(f"Invalid timezone: {tz}")
 
     def execute(
         self,
@@ -79,9 +92,8 @@ class CurrentDateTool(BaseTool):
                 f"Invalid action '{action}'. Allowed: {sorted(allowed)}"
             )
 
-        # Validate timezone
         try:
-            zone = ZoneInfo(tz)
+            zone = self.__resolve_zone(tz)
         except Exception:
             return self.__error(f"Invalid timezone '{tz}'")
 

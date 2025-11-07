@@ -13,9 +13,11 @@ As ferramentas são **funcionalidades adicionais** que seus agentes podem usar p
 Estas ferramentas são leves e vêm instaladas por padrão:
 
 #### 1. **CurrentDateTool**
+
 - **Descrição**: Obtém a data e hora atuais
 - **Dependências**: Nenhuma (biblioteca padrão Python)
 - **Uso**:
+
 ```python
 from src.infra.adapters.Tools import CurrentDateTool
 
@@ -29,10 +31,12 @@ print(result)  # "2025-11-07 14:30:00"
 Estas ferramentas possuem dependências pesadas e precisam ser instaladas separadamente:
 
 #### 2. **ReadLocalFileTool**
+
 - **Descrição**: Lê arquivos locais com suporte a múltiplos formatos
 - **Formatos Suportados**: TXT, MD, CSV, Excel (XLS/XLSX), PDF, Parquet, JSON, YAML, e mais
 - **Dependências**: `tiktoken`, `pymupdf`, `pandas`, `openpyxl`, `pyarrow`, `chardet`
 - **Instalação**:
+
 ```bash
 # Com pip
 pip install ai-agent[file-tools]
@@ -42,6 +46,7 @@ poetry install -E file-tools
 ```
 
 - **Uso**:
+
 ```python
 from src.infra.adapters.Tools import ReadLocalFileTool
 
@@ -101,15 +106,18 @@ print(response)  # O agente lerá o PDF e criará um resumo
 ## 📋 Checklist de Instalação
 
 ### Instalação Básica ✅
+
 - [x] OpenAI / Ollama adapters
 - [x] CurrentDateTool
 - [x] Gerenciamento de histórico
 - [x] Métricas e performance
 
 ### Instalação Completa com File Tools 📁
+
 ```bash
 poetry install -E file-tools
 ```
+
 - [x] Tudo da instalação básica
 - [x] ReadLocalFileTool
 - [x] Suporte para PDF, Excel, CSV, Parquet
@@ -156,11 +164,13 @@ tools = AvailableTools.get_available_tools()
 ### Impacto no Tempo de Importação
 
 **Sem lazy loading (antigo)**:
+
 ```python
 import src.infra.adapters  # ~2-3 segundos (carrega pandas, tiktoken, etc)
 ```
 
 **Com lazy loading (novo)**:
+
 ```python
 import src.infra.adapters  # ~0.1 segundos (só carrega o necessário)
 from src.infra.adapters import ReadLocalFileTool  # ~2 segundos (só quando usado)
@@ -168,10 +178,10 @@ from src.infra.adapters import ReadLocalFileTool  # ~2 segundos (só quando usad
 
 ### Uso de Memória
 
-| Instalação | Memória Base | Com ReadLocalFileTool |
-|-----------|--------------|----------------------|
-| Básica | ~50MB | N/A (não instalada) |
-| Com file-tools | ~50MB | ~200MB (quando usada) |
+| Instalação     | Memória Base | Com ReadLocalFileTool |
+| -------------- | ------------ | --------------------- |
+| Básica         | ~50MB        | N/A (não instalada)   |
+| Com file-tools | ~50MB        | ~200MB (quando usada) |
 
 ## 🎨 Criando Suas Próprias Ferramentas
 

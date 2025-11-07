@@ -1,10 +1,5 @@
 from pathlib import Path
-from typing import Optional
-
-import chardet
-import fitz
-import pandas as pd
-import tiktoken
+from typing import TYPE_CHECKING, Optional
 
 from src.domain import FileReadException
 from src.infra.config.logging_config import LoggingConfig
@@ -17,29 +12,64 @@ from .constants import (
     FileType,
 )
 
+if TYPE_CHECKING:
+    import tiktoken
+
 logger = LoggingConfig.get_logger(__name__)
 
 
-def initialize_tiktoken() -> tiktoken.Encoding:
+def _lazy_import(module_name: str, package_name: str):
+    """Import a module lazily with helpful error messages.
+
+    Args:
+        module_name: Name of the module to import (e.g., 'pandas')
+        package_name: Name used in pip install (e.g., 'pandas')
+
+    Returns:
+        The imported module
+
+    Raises:
+        RuntimeError: If module is not available with helpful installation message
+    """
+    try:
+        return __import__(module_name)
+    except ImportError as e:
+        error_msg = (
+            f"'{module_name}' is required for this operation. "
+            f"Install it with: pip install ai-agent[file-tools] "
+            f"or poetry install -E file-tools"
+        )
+        logger.error(error_msg)
+        raise RuntimeError(error_msg) from e
+
+
+def initialize_tiktoken() -> "tiktoken.Encoding":
     """Initialize the tiktoken encoder for token counting.
 
     Returns:
         Initialized tiktoken encoding instance.
 
     Raises:
-        RuntimeError: If encoder initialization fails.
+        RuntimeError: If tiktoken is not installed or initialization fails.
     """
     try:
+        import tiktoken
+
         encoding = tiktoken.get_encoding(TIKTOKEN_ENCODING)
         logger.debug(f"Initialized tiktoken encoder: {TIKTOKEN_ENCODING}")
         return encoding
+    except ImportError as e:
+        raise RuntimeError(
+            "tiktoken is required for token counting. "
+            "Install with: pip install ai-agent[file-tools]"
+        ) from e
     except Exception as e:
         error_msg = f"Failed to initialize tiktoken encoder: {e}"
         logger.error(error_msg)
         raise RuntimeError(error_msg) from e
 
 
-def count_tokens(text: str, encoding: tiktoken.Encoding) -> int:
+def count_tokens(text: str, encoding: "tiktoken.Encoding") -> int:
     """Count the number of tokens in the given text.
 
     Args:
@@ -67,26 +97,33 @@ def detect_encoding(file_path: Path) -> str:
         Detected encoding name, or 'utf-8' as fallback.
     """
     try:
-        with open(file_path, "rb") as file:
-            raw_data = file.read(100000)  # Read first 100KB for detection
-            result = chardet.detect(raw_data)
-            detected_encoding = result.get("encoding", "utf-8")
-            confidence = result.get("confidence", 0)
+        import chardet
 
-            logger.debug(
-                f"Detected encoding: {detected_encoding} (confidence: {confidence:.2f})"
-            )
+        try:
+            with open(file_path, "rb") as file:
+                raw_data = file.read(100000)  # Read first 100KB for detection
+                result = chardet.detect(raw_data)
+                detected_encoding = result.get("encoding", "utf-8")
+                confidence = result.get("confidence", 0)
 
-            # If confidence is low, fallback to utf-8
-            if confidence < 0.7:
-                logger.warning(
-                    f"Low confidence ({confidence:.2f}) in detected encoding, trying common encodings"
+                logger.debug(
+                    f"Detected encoding: {detected_encoding} (confidence: {confidence:.2f})"
                 )
-                return "utf-8"
 
-            return detected_encoding or "utf-8"
-    except Exception as e:
-        logger.warning(f"Encoding detection failed: {e}, using utf-8")
+                # If confidence is low, fallback to utf-8
+                if confidence < 0.7:
+                    logger.warning(
+                        f"Low confidence ({confidence:.2f}) in detected encoding, trying common encodings"
+                    )
+                    return "utf-8"
+
+                return detected_encoding or "utf-8"
+        except Exception as e:
+            logger.warning(f"Encoding detection failed: {e}, using utf-8")
+            return "utf-8"
+
+    except ImportError:
+        logger.warning("chardet not available, using utf-8 as default encoding")
         return "utf-8"
 
 
@@ -142,7 +179,16 @@ def read_csv_file(file_path: Path) -> str:
 
     Raises:
         FileReadException: If CSV parsing fails with all strategies.
+        RuntimeError: If pandas is not installed.
     """
+    try:
+        import pandas as pd
+    except ImportError as e:
+        raise RuntimeError(
+            "pandas is required for CSV reading. "
+            "Install with: pip install ai-agent[file-tools]"
+        ) from e
+
     # Try detected encoding first
     detected_encoding = detect_encoding(file_path)
 
@@ -221,7 +267,16 @@ def read_excel_file(file_path: Path) -> str:
 
     Raises:
         FileReadException: If Excel reading fails with all strategies.
+        RuntimeError: If pandas is not installed.
     """
+    try:
+        import pandas as pd
+    except ImportError as e:
+        raise RuntimeError(
+            "pandas is required for Excel reading. "
+            "Install with: pip install ai-agent[file-tools]"
+        ) from e
+
     # Determine which engine to try based on file extension
     extension = file_path.suffix.lower()
     engines_to_try = []
@@ -266,7 +321,16 @@ def read_parquet_file(file_path: Path) -> str:
 
     Raises:
         FileReadException: If Parquet reading fails with all strategies.
+        RuntimeError: If pandas is not installed.
     """
+    try:
+        import pandas as pd
+    except ImportError as e:
+        raise RuntimeError(
+            "pandas is required for Parquet reading. "
+            "Install with: pip install ai-agent[file-tools]"
+        ) from e
+
     engines_to_try = ["pyarrow", "fastparquet"]
     last_error: Optional[Exception] = None
 
@@ -300,7 +364,16 @@ def read_pdf_file(file_path: Path) -> str:
 
     Raises:
         FileReadException: If PDF reading fails.
+        RuntimeError: If pymupdf (fitz) is not installed.
     """
+    try:
+        import fitz
+    except ImportError as e:
+        raise RuntimeError(
+            "pymupdf is required for PDF reading. "
+            "Install with: pip install ai-agent[file-tools]"
+        ) from e
+
     try:
         content_parts: list[str] = []
 
