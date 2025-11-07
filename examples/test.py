@@ -13,44 +13,23 @@ web_search_tool = WebSearchTool()
 tools = ["readlocalfile"]
 
 config = {
-    "temperature": 0.7,
-    "max_tokens": 300,
-    "think": True,
+    "temperature": 1,
+    # "max_tokens": 300,
 }
 
-# agent = AIAgent(
-#     provider="openai",
-#     model="gpt-5-mini",
-#     name="AgenteTeste",
-#     instructions="Responda como um assistente educado.",
-#     # config=config,
-#     tools=tools,
-# )
-# user_message = "Olá, quem é você?"
-# response = agent.chat(user_message)
-# print(f"Resposta do agente: {response}")
-# print(f"Agente criado: {agent}")
 
-
-# Segundo exemplo de uso do AIAgent
 agent = AIAgent(
     provider="openai",
     model="gpt-4.1-mini",
-    name="Agente Ollama",
+    name="Agente AI",
     instructions="Você é um assistente que pode buscar informações lendo arquivos locais. Sempre que precisar de informações atualizadas, use a ferramenta de busca web. Quando precisar ler um arquivo, use a ferramenta de leitura de arquivos.",
     config=config,
     tools=tools,
 )
 
-# Teste 1: Busca na web
-# print("=" * 100)
-# print("TESTE 1: Busca na Web")
-# print("=" * 100)
 
-
-# Teste 2: Leitura de arquivo (primeiro vamos criar um arquivo de teste)
 print("\n" + "=" * 100)
-print("TESTE 2: Leitura de Arquivo")
+print("TESTE: Leitura de Arquivo")
 print("=" * 100)
 
 
@@ -68,8 +47,12 @@ arquivos = [
 caminho = "/home/jordan/Downloads/HistoricalQuotations_B3.pdf"
 user_message = f"me diga algo sobre esse documento {caminho}"
 response = agent.chat(user_message)
+metrics = agent.get_metrics()
+print("\n" + "-" * 100)
 print(f"\nResposta do agente: {response}")
 print("\n" + "-" * 100)
+print(f"Métricas: {metrics}")
+
 
 # for caminho in arquivos:
 

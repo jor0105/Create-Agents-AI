@@ -18,7 +18,6 @@ class SupportedConfigs:
         "max_tokens",
         "top_p",
         "think",
-        "stream",
         "top_k",
     }
 
@@ -120,20 +119,6 @@ class SupportedConfigs:
         )
 
     @staticmethod
-    def validate_stream(value: Optional[bool]) -> None:
-        """
-        Validates the 'stream' parameter.
-
-        Args:
-            value: The stream value, which must be a boolean.
-
-        Raises:
-            InvalidAgentConfigException: If the value is not a boolean.
-        """
-        if value is not None and not isinstance(value, bool):
-            raise InvalidAgentConfigException("stream", "must be a boolean value")
-
-    @staticmethod
     def validate_top_k(value: Optional[int]) -> None:
         """
         Validates the 'top_k' parameter.
@@ -163,7 +148,6 @@ class SupportedConfigs:
         """
         validators = {
             "think": cls.validate_think,
-            "stream": cls.validate_stream,
             "temperature": cls.validate_temperature,
             "max_tokens": cls.validate_max_tokens,
             "top_p": cls.validate_top_p,

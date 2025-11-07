@@ -60,7 +60,6 @@ class OllamaChatAdapter(ChatRepository):
             model: The name of the model.
             messages: A list of messages.
             config: I            "think": cls.validate_think,
-            "stream": cls.validate_stream,nternal AI settings.
             tools: Optional list of tool schemas.
 
         Returns:
@@ -81,8 +80,6 @@ class OllamaChatAdapter(ChatRepository):
                 config_copy = config.copy()
                 if "think" in config_copy:
                     chat_kwargs["think"] = config_copy.pop("think")
-                if "stream" in config_copy:
-                    chat_kwargs["stream"] = config_copy.pop("stream")
                 if "max_tokens" in config_copy:
                     config_copy["num_predict"] = config_copy.pop("max_tokens")
                 chat_kwargs["options"] = config_copy
