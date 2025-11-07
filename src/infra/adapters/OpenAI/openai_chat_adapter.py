@@ -63,11 +63,10 @@ class OpenAIChatAdapter(ChatRepository):
             chat_kwargs["tools"] = tools
         if config:
             config_copy = config.copy()
-            if "think" in config_copy:
-                _ = config_copy.pop("think")
             if "stream" in config_copy:
                 chat_kwargs["stream"] = config_copy.pop("stream")
             param_to_change: Dict[str, str] = {
+                "reasoning": "think",
                 "max_output_tokens": "max_tokens",
             }
             for api_key, config_key in param_to_change.items():

@@ -1,4 +1,4 @@
-from typing import Set
+from typing import Dict, Optional, Set, Union
 
 from src.domain.exceptions.domain_exceptions import InvalidAgentConfigException
 
@@ -20,7 +20,6 @@ class SupportedConfigs:
         "think",
         "stream",
         "top_k",
-        "top_p",
     }
 
     @classmethod
@@ -34,7 +33,7 @@ class SupportedConfigs:
         return cls.__AVAILABLE_CONFIGS.copy()
 
     @staticmethod
-    def validate_temperature(value: float) -> None:
+    def validate_temperature(value: Optional[float]) -> None:
         """
         Validates the 'temperature' parameter.
 
@@ -42,15 +41,16 @@ class SupportedConfigs:
             value: The temperature value, which must be between 0.0 and 2.0.
 
         Raises:
-            InvalidAgentConfigException: If the value is outside the allowed range.
+            InvalidAgentConfigException: If the value is outside the allowed range or of the wrong type.
         """
-        if value is not None and not (0.0 <= value <= 2.0):
-            raise InvalidAgentConfigException(
-                "temperature", "must be a float between 0.0 and 2.0"
-            )
+        if value is not None:
+            if not isinstance(value, (float, int)) or not (0.0 <= float(value) <= 2.0):
+                raise InvalidAgentConfigException(
+                    "temperature", "must be a float between 0.0 and 2.0"
+                )
 
     @staticmethod
-    def validate_max_tokens(value: int) -> None:
+    def validate_max_tokens(value: Optional[int]) -> None:
         """
         Validates the 'max_tokens' parameter.
 
@@ -66,7 +66,7 @@ class SupportedConfigs:
             )
 
     @staticmethod
-    def validate_top_p(value: float) -> None:
+    def validate_top_p(value: Optional[float]) -> None:
         """
         Validates the 'top_p' parameter.
 
@@ -74,29 +74,53 @@ class SupportedConfigs:
             value: The top_p value, which must be between 0.0 and 1.0.
 
         Raises:
-            InvalidAgentConfigException: If the value is outside the allowed range.
+            InvalidAgentConfigException: If the value is outside the allowed range or of the wrong type.
         """
-        if value is not None and not (0.0 <= value <= 1.0):
-            raise InvalidAgentConfigException(
-                "top_p", "must be a float between 0.0 and 1.0"
-            )
+        if value is not None:
+            if not isinstance(value, (float, int)) or not (0.0 <= float(value) <= 1.0):
+                raise InvalidAgentConfigException(
+                    "top_p", "must be a float between 0.0 and 1.0"
+                )
 
     @staticmethod
-    def validate_think(value: bool) -> None:
+    def validate_think(value: Optional[Union[bool, Dict[str, str]]]) -> None:
         """
         Validates the 'think' parameter.
 
+        The `think` option can be provided in two shapes depending on the provider:
+        - Ollama provider: a boolean (True/False)
+        - OpenAI provider: a dict with string keys and string values
+
         Args:
-            value: The think value, which must be a boolean.
+            value: The think value to validate (or None).
 
         Raises:
-            InvalidAgentConfigException: If the value is not a boolean.
+            InvalidAgentConfigException: If the value does not match the allowed shapes.
         """
-        if value is not None and not isinstance(value, bool):
-            raise InvalidAgentConfigException("think", "must be a boolean value")
+        if value is None:
+            return
+
+        # boolean is allowed
+        if isinstance(value, bool):
+            return
+
+        if isinstance(value, dict):
+            if not all(
+                isinstance(k, str) and isinstance(v, str) for k, v in value.items()
+            ):
+                raise InvalidAgentConfigException(
+                    "think",
+                    "must be a boolean (for Ollama Provider) or a dict[str, str] (for OpenAI Provider)",
+                )
+            return
+
+        raise InvalidAgentConfigException(
+            "think",
+            "must be a boolean (for Ollama Provider) or a dict[str, str] (for OpenAI Provider)",
+        )
 
     @staticmethod
-    def validate_stream(value: bool) -> None:
+    def validate_stream(value: Optional[bool]) -> None:
         """
         Validates the 'stream' parameter.
 
@@ -110,7 +134,7 @@ class SupportedConfigs:
             raise InvalidAgentConfigException("stream", "must be a boolean value")
 
     @staticmethod
-    def validate_top_k(value: int) -> None:
+    def validate_top_k(value: Optional[int]) -> None:
         """
         Validates the 'top_k' parameter.
 
