@@ -1,8 +1,35 @@
 import re
 import unicodedata
+from typing import List
 
 
 class TextSanitizer:
+    @staticmethod
+    def _wrap_text(text: str, width: int) -> List[str]:
+        words = text.split()
+        lines: List[str] = []
+        current_line: List[str] = []
+        current_length = 0
+
+        for word in words:
+            word_length = len(word)
+            if current_length + word_length + len(current_line) > width:
+                if current_line:
+                    lines.append(" ".join(current_line))
+                    current_line = [word]
+                    current_length = word_length
+                else:
+                    lines.append(word)
+                    current_length = 0
+            else:
+                current_line.append(word)
+                current_length += word_length
+
+        if current_line:
+            lines.append(" ".join(current_line))
+
+        return lines
+
     @staticmethod
     def sanitize(text: str) -> str:
         if not isinstance(text, str):
@@ -43,6 +70,12 @@ class TextSanitizer:
         # First, sanitize problematic unicode characters
         text = TextSanitizer.sanitize(text)
 
+        # Remove HTML <br> tags and replace with newlines
+        text = re.sub(r"<br\s*/?>\s*", "\n", text, flags=re.IGNORECASE)
+
+        # Remove other common HTML tags
+        text = re.sub(r"<[^>]+>", "", text)
+
         # Convert headers (#, ##, ###) into visually highlighted text
         text = re.sub(r"^######\s+(.+)$", r"━━ \1 ━━", text, flags=re.MULTILINE)
         text = re.sub(r"^#####\s+(.+)$", r"━━ \1 ━━", text, flags=re.MULTILINE)
@@ -73,13 +106,14 @@ class TextSanitizer:
         lines = text.split("\n")
         formatted_lines = []
         in_table = False
+        max_line_width = 80
 
         for i, line in enumerate(lines):
             # Detect if this is a table line
             if "|" in line and line.strip().startswith("|"):
                 if not in_table:
                     in_table = True
-                    formatted_lines.append("\n" + "─" * 80)
+                    formatted_lines.append("\n" + "─" * max_line_width)
 
                 # Remove pipes and format cells
                 cells = [cell.strip() for cell in line.split("|")]
@@ -89,17 +123,34 @@ class TextSanitizer:
                 if all(re.match(r"^[\-:]+$", cell) for cell in cells):
                     continue  # Skip separator lines
 
-                # Format data line
-                formatted_line = "  ".join(f"{cell:30s}"[:30] for cell in cells)
-                formatted_lines.append(formatted_line)
+                # Format table row with better readability
+                if len(cells) == 2:
+                    # Two-column table: format as label-value pairs
+                    label, value = cells[0], cells[1]
+                    formatted_lines.append(f"  ▪ {label}")
+
+                    # Wrap long values to fit terminal width
+                    if len(value) > max_line_width - 6:
+                        wrapped_lines = TextSanitizer._wrap_text(
+                            value, max_line_width - 6
+                        )
+                        for wrapped_line in wrapped_lines:
+                            formatted_lines.append(f"    {wrapped_line}")
+                    else:
+                        formatted_lines.append(f"    {value}")
+                    formatted_lines.append("")  # Add blank line between rows
+                else:
+                    # Multi-column table: join with separators
+                    formatted_line = " │ ".join(str(cell) for cell in cells)
+                    formatted_lines.append(f"  {formatted_line}")
             else:
                 if in_table:
-                    formatted_lines.append("─" * 80 + "\n")
+                    formatted_lines.append("─" * max_line_width + "\n")
                     in_table = False
                 formatted_lines.append(line)
 
         if in_table:
-            formatted_lines.append("─" * 80)
+            formatted_lines.append("─" * max_line_width)
 
         text = "\n".join(formatted_lines)
 
