@@ -3,7 +3,7 @@ from typing import Any, Dict
 from zoneinfo import ZoneInfo
 
 from src.domain import BaseTool
-from src.infra.adapters.utils import TextSanitizer
+from src.infra.adapters.Tools.Utils import TextSanitizer
 from src.infra.config.logging_config import LoggingConfig
 
 

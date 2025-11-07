@@ -11,13 +11,51 @@ Um sistema modular e profissional para criar agentes de IA com suporte a múltip
 git clone https://github.com/jor0105/AI_Agent.git
 cd AI_Agent
 
-# Instale as dependências com Poetry
+# Instalação básica (sem ferramentas pesadas)
 poetry install
+
+# OU Instalação completa (inclui ferramentas de leitura de arquivos)
+poetry install -E file-tools
+
+# OU Instalação com todas as funcionalidades
+poetry install -E all
 
 # Configure suas credenciais
 cp .env.example .env
 # Edite .env e adicione sua chave OpenAI
 ```
+
+### 📦 Instalação de Extras Opcionais
+
+Este projeto oferece instalação modular para manter a biblioteca leve:
+
+**Instalação Básica** (apenas funcionalidades essenciais):
+```bash
+pip install ai-agent
+# ou
+poetry install
+```
+
+**Com ferramentas de leitura de arquivos** (PDF, Excel, CSV, Parquet):
+```bash
+pip install ai-agent[file-tools]
+# ou
+poetry install -E file-tools
+```
+
+**Instalação completa** (todas as funcionalidades):
+```bash
+pip install ai-agent[all]
+# ou
+poetry install -E all
+```
+
+#### 📋 Extras Disponíveis
+
+| Extra | Dependências | Funcionalidades |
+|-------|--------------|-----------------|
+| `file-tools` | tiktoken, pymupdf, pandas, openpyxl, pyarrow, chardet | Ferramenta ReadLocalFileTool para ler arquivos locais (TXT, CSV, Excel, PDF, Parquet) |
+| `all` | Todas acima | Todas as funcionalidades opcionais |
 
 ### Uso básico em 3 linhas
 

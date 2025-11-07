@@ -1,6 +1,14 @@
+"""Infrastructure adapters with lazy loading for heavy tools."""
+
+from typing import TYPE_CHECKING
+
 from .Ollama import OllamaChatAdapter
 from .OpenAI import ClientOpenAI, OpenAIChatAdapter
-from .Tools import CurrentDateTool, ReadLocalFileTool
+from .Tools import CurrentDateTool
+
+# Type hints only - not imported at runtime
+if TYPE_CHECKING:
+    from .Tools import ReadLocalFileTool
 
 __all__ = [
     "OllamaChatAdapter",
@@ -10,3 +18,24 @@ __all__ = [
     "ReadLocalFileTool",
     "CurrentDateTool",
 ]
+
+
+def __getattr__(name: str):
+    """Lazy load heavy tools only when accessed.
+
+    Args:
+        name: The name being imported.
+
+    Returns:
+        The requested module/class.
+
+    Raises:
+        AttributeError: If the name doesn't exist.
+        ImportError: If optional dependencies are not installed.
+    """
+    if name == "ReadLocalFileTool":
+        from .Tools import ReadLocalFileTool
+
+        return ReadLocalFileTool
+
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")

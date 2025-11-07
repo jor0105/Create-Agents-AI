@@ -5,12 +5,20 @@ from src.domain import BaseTool, FileReadException
 from src.infra.config.logging_config import LoggingConfig
 
 from .constants import MAX_FILE_SIZE_BYTES
-from .file_utils import (
-    count_tokens,
-    determine_file_type,
-    initialize_tiktoken,
-    read_file_by_type,
-)
+
+# Lazy imports for heavy dependencies
+try:
+    from .file_utils import (
+        count_tokens,
+        determine_file_type,
+        initialize_tiktoken,
+        read_file_by_type,
+    )
+
+    DEPENDENCIES_AVAILABLE = True
+except ImportError as e:
+    DEPENDENCIES_AVAILABLE = False
+    IMPORT_ERROR = e
 
 
 class ReadLocalFileTool(BaseTool):
@@ -56,8 +64,15 @@ class ReadLocalFileTool(BaseTool):
         """Initialize the ReadLocalFileTool.
 
         Raises:
-            RuntimeError: If tiktoken encoder initialization fails.
+            RuntimeError: If tiktoken encoder initialization fails or dependencies are missing.
         """
+        if not DEPENDENCIES_AVAILABLE:
+            raise RuntimeError(
+                "ReadLocalFileTool requires optional dependencies. "
+                "Install with: pip install ai-agent[file-tools] or poetry install -E file-tools\n"
+                f"Missing dependencies error: {IMPORT_ERROR}"
+            )
+
         self.__logger = LoggingConfig.get_logger(__name__)
         self.__encoding = initialize_tiktoken()
 
