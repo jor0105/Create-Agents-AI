@@ -1,6 +1,6 @@
 from .Ollama import OllamaChatAdapter
 from .OpenAI import ClientOpenAI, OpenAIChatAdapter
-from .Tools import ReadLocalFileTool
+from .Tools import CurrentDateTool, ReadLocalFileTool
 
 __all__ = [
     "OllamaChatAdapter",
@@ -8,4 +8,5 @@ __all__ = [
     "ClientOpenAI",
     # tools
     "ReadLocalFileTool",
+    "CurrentDateTool",
 ]

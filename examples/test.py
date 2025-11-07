@@ -10,26 +10,26 @@ LoggingConfig.configure(level=logging.ERROR)
 # Inicializar as ferramentas
 web_search_tool = WebSearchTool()
 
-tools = ["readlocalfile"]
+tools = ["readlocalfile", "currentdate"]
 
 config = {
-    "temperature": 1,
+    "temperature": 0.7,
     # "max_tokens": 300,
 }
 
 
 agent = AIAgent(
-    provider="openai",
-    model="gpt-4.1-mini",
+    provider="ollama",
+    model="gpt-oss:120b-cloud",
     name="Agente AI",
-    instructions="Você é um assistente que pode buscar informações lendo arquivos locais. Sempre que precisar de informações atualizadas, use a ferramenta de busca web. Quando precisar ler um arquivo, use a ferramenta de leitura de arquivos.",
+    instructions="Você é um assistente inteligente que ajuda os usuários a responder perguntas e realizar tarefas.",
     config=config,
     tools=tools,
 )
 
 
 print("\n" + "=" * 100)
-print("TESTE: Leitura de Arquivo")
+print("TESTE: Leitura Datas")
 print("=" * 100)
 
 

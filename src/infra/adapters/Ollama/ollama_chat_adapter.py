@@ -319,6 +319,10 @@ class OllamaChatAdapter(ChatRepository):
                 f"Response (first 100 chars): {final_response[:100]}..."
             )
 
+            self.__logger.debug(
+                f"Response after sanitization (first 100 chars): {final_response[:100]}..."
+            )
+
             return final_response
 
         except ChatException:

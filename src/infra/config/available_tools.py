@@ -1,7 +1,7 @@
 from typing import Dict
 
 from src.domain import BaseTool
-from src.infra.adapters.Tools import ReadLocalFileTool
+from src.infra.adapters.Tools import CurrentDateTool, ReadLocalFileTool
 
 
 class AvailableTools:
@@ -13,6 +13,7 @@ class AvailableTools:
 
     __AVAILABLE_TOOLS: Dict[str, BaseTool] = {
         "readlocalfile": ReadLocalFileTool(),
+        "currentdate": CurrentDateTool(),
     }
 
     @classmethod

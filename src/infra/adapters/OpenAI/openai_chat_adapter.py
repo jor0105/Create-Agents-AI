@@ -218,6 +218,10 @@ class OpenAIChatAdapter(ChatRepository):
                 self.__logger.info(f"Chat completed: {metrics}")
                 self.__logger.debug(f"Response (first 100 chars): {content[:100]}...")
 
+                self.__logger.debug(
+                    f"Response after sanitization (first 100 chars): {content[:100]}..."
+                )
+
                 return content
 
             self.__logger.warning(
