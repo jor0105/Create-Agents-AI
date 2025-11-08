@@ -648,7 +648,7 @@ class TestOllamaChatAdapterToolsIntegration:
                 "ReadLocalFileTool not available (missing optional dependencies)"
             )
 
-        file_path = os.path.abspath("tests/fixtures/sample_text.txt")
+        file_path = os.path.abspath(".fixtures/sample_text.txt")
 
         response = adapter.chat(
             model=IA_OLLAMA_TEST_1,
@@ -681,7 +681,7 @@ class TestOllamaChatAdapterToolsIntegration:
                 "ReadLocalFileTool not available (missing optional dependencies)"
             )
 
-        file_path = os.path.abspath("tests/fixtures/sample_data.csv")
+        file_path = os.path.abspath(".fixtures/sample_data.csv")
 
         response = adapter.chat(
             model=IA_OLLAMA_TEST_1,

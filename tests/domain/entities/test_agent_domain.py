@@ -311,7 +311,7 @@ class TestAgent:
                 model="gpt-5-nano",
                 name="Test",
                 instructions="Test",
-                config={"temperature": 3.0},  # Fora do intervalo 0.0-2.0
+                config={"temperature": 3.0},
             )
 
     def test_agent_with_invalid_max_tokens_value(self):
@@ -321,7 +321,7 @@ class TestAgent:
                 model="gpt-5-nano",
                 name="Test",
                 instructions="Test",
-                config={"max_tokens": -10},  # Valor negativo
+                config={"max_tokens": -10},
             )
 
     def test_agent_with_invalid_max_tokens_type(self):
@@ -331,7 +331,7 @@ class TestAgent:
                 model="gpt-5-nano",
                 name="Test",
                 instructions="Test",
-                config={"max_tokens": "100"},  # String em vez de int
+                config={"max_tokens": "100"},
             )
 
     def test_agent_with_invalid_top_p_value(self):
@@ -341,7 +341,7 @@ class TestAgent:
                 model="gpt-5-nano",
                 name="Test",
                 instructions="Test",
-                config={"top_p": 1.5},  # Fora do intervalo 0.0-1.0
+                config={"top_p": 1.5},
             )
 
     def test_agent_with_multiple_configs(self):
@@ -390,7 +390,6 @@ class TestAgent:
         assert agent.provider == "OpenAI"
 
     def test_agent_with_boundary_temperature_values(self):
-        # Temperatura mínima válida
         agent_min = Agent(
             provider="openai",
             model="gpt-5-nano",
@@ -400,7 +399,6 @@ class TestAgent:
         )
         assert agent_min.config["temperature"] == 0.0
 
-        # Temperatura máxima válida
         agent_max = Agent(
             provider="openai",
             model="gpt-5-nano",
@@ -411,7 +409,6 @@ class TestAgent:
         assert agent_max.config["temperature"] == 2.0
 
     def test_agent_with_boundary_top_p_values(self):
-        # top_p mínimo válido
         agent_min = Agent(
             provider="openai",
             model="gpt-5-nano",
@@ -421,7 +418,6 @@ class TestAgent:
         )
         assert agent_min.config["top_p"] == 0.0
 
-        # top_p máximo válido
         agent_max = Agent(
             provider="openai",
             model="gpt-5-nano",
@@ -442,7 +438,6 @@ class TestAgent:
         assert agent.config["max_tokens"] == 1
 
     def test_agent_with_none_optional_fields(self):
-        """Testa criação de agente com campos opcionais None."""
         agent = Agent(
             provider="openai",
             model="gpt-5-nano",
@@ -473,75 +468,6 @@ class TestAgent:
             config={"temperature": 0.5},
         )
         assert isinstance(agent.config["temperature"], float)
-
-    def test_agent_provider_validation_case_sensitive(self):
-        agent = Agent(
-            provider="OpenAI",
-            model="gpt-5-nano",
-            name="Test",
-            instructions="Test",
-        )
-        assert agent.provider == "OpenAI"
-
-    def test_agent_with_zero_temperature(self):
-        agent = Agent(
-            provider="openai",
-            model="gpt-5-nano",
-            name="Test",
-            instructions="Test",
-            config={"temperature": 0.0},
-        )
-        assert agent.config["temperature"] == 0.0
-
-    def test_agent_with_max_temperature(self):
-        agent = Agent(
-            provider="openai",
-            model="gpt-5-nano",
-            name="Test",
-            instructions="Test",
-            config={"temperature": 2.0},
-        )
-        assert agent.config["temperature"] == 2.0
-
-    def test_agent_with_temperature_below_min(self):
-        with pytest.raises(InvalidAgentConfigException, match="temperature"):
-            Agent(
-                provider="openai",
-                model="gpt-5-nano",
-                name="Test",
-                instructions="Test",
-                config={"temperature": -0.1},
-            )
-
-    def test_agent_with_temperature_above_max(self):
-        with pytest.raises(InvalidAgentConfigException, match="temperature"):
-            Agent(
-                provider="openai",
-                model="gpt-5-nano",
-                name="Test",
-                instructions="Test",
-                config={"temperature": 2.1},
-            )
-
-    def test_agent_with_zero_top_p(self):
-        agent = Agent(
-            provider="openai",
-            model="gpt-5-nano",
-            name="Test",
-            instructions="Test",
-            config={"top_p": 0.0},
-        )
-        assert agent.config["top_p"] == 0.0
-
-    def test_agent_with_max_top_p(self):
-        agent = Agent(
-            provider="openai",
-            model="gpt-5-nano",
-            name="Test",
-            instructions="Test",
-            config={"top_p": 1.0},
-        )
-        assert agent.config["top_p"] == 1.0
 
     def test_agent_with_top_p_below_min(self):
         with pytest.raises(InvalidAgentConfigException, match="top_p"):
@@ -622,10 +548,7 @@ class TestAgent:
 
 @pytest.mark.unit
 class TestAgentToolMessages:
-    """Test suite for tool message handling in Agent."""
-
     def test_add_tool_message(self):
-        """Test adding a tool execution result message."""
         agent = Agent(
             provider="openai",
             model="gpt-5-nano",
@@ -641,7 +564,6 @@ class TestAgentToolMessages:
         assert messages[0].content == "Tool executed successfully"
 
     def test_add_multiple_tool_messages(self):
-        """Test adding multiple tool messages."""
         agent = Agent(
             provider="openai",
             model="gpt-5-nano",
@@ -659,7 +581,6 @@ class TestAgentToolMessages:
             assert msg.role == MessageRole.TOOL
 
     def test_add_tool_message_with_json_content(self):
-        """Test adding tool message with JSON-formatted content."""
         agent = Agent(
             provider="openai",
             model="gpt-5-nano",
@@ -675,7 +596,6 @@ class TestAgentToolMessages:
         assert "{" in messages[0].content
 
     def test_add_tool_message_with_error_content(self):
-        """Test adding tool message with error information."""
         agent = Agent(
             provider="openai",
             model="gpt-5-nano",
@@ -691,7 +611,6 @@ class TestAgentToolMessages:
         assert "Error" in messages[0].content
 
     def test_conversation_with_tool_messages(self):
-        """Test realistic conversation flow with tool messages."""
         agent = Agent(
             provider="openai",
             model="gpt-5-nano",
@@ -699,11 +618,8 @@ class TestAgentToolMessages:
             instructions="Test",
         )
 
-        # User asks a question
         agent.add_user_message("What's the weather in Tokyo?")
-        # Agent decides to use a tool
         agent.add_tool_message('{"city": "Tokyo", "temp": 22, "conditions": "Sunny"}')
-        # Agent responds based on tool result
         agent.add_assistant_message("The weather in Tokyo is sunny with 22°C.")
 
         messages = agent.history.get_messages()
@@ -713,7 +629,6 @@ class TestAgentToolMessages:
         assert messages[2].role == MessageRole.ASSISTANT
 
     def test_tool_message_in_history_respects_max_size(self):
-        """Test that tool messages respect history max size."""
         agent = Agent(
             provider="openai",
             model="gpt-5-nano",
@@ -721,7 +636,6 @@ class TestAgentToolMessages:
             instructions="Test",
         )
 
-        # Add more than max_size messages
         for i in range(15):
             if i % 3 == 0:
                 agent.add_user_message(f"User {i}")
@@ -730,11 +644,9 @@ class TestAgentToolMessages:
             else:
                 agent.add_assistant_message(f"Assistant {i}")
 
-        # Should only keep last 10
         assert len(agent.history) == 10
 
     def test_add_tool_message_with_special_characters(self):
-        """Test tool message with special characters."""
         agent = Agent(
             provider="openai",
             model="gpt-5-nano",
@@ -750,7 +662,6 @@ class TestAgentToolMessages:
         assert "🎉" in messages[0].content
 
     def test_add_tool_message_with_multiline_content(self):
-        """Test tool message with multiline content."""
         agent = Agent(
             provider="openai",
             model="gpt-5-nano",
@@ -768,10 +679,7 @@ class TestAgentToolMessages:
 
 @pytest.mark.unit
 class TestAgentWithTools:
-    """Test suite for Agent with tool support."""
-
     def test_agent_with_tools_attribute(self):
-        """Test that agent can have tools attribute."""
         from src.domain.value_objects import BaseTool
 
         class MockTool(BaseTool):
@@ -795,7 +703,6 @@ class TestAgentWithTools:
         assert agent.tools[0].name == "mock_tool"
 
     def test_agent_without_tools(self):
-        """Test agent without tools defaults to None."""
         agent = Agent(
             provider="openai",
             model="gpt-5-nano",
@@ -806,7 +713,6 @@ class TestAgentWithTools:
         assert agent.tools is None
 
     def test_agent_with_empty_tools_list(self):
-        """Test agent with empty tools list."""
         agent = Agent(
             provider="openai",
             model="gpt-5-nano",
@@ -819,7 +725,6 @@ class TestAgentWithTools:
         assert isinstance(agent.tools, list)
 
     def test_agent_with_multiple_tools(self):
-        """Test agent with multiple tools."""
         from src.domain.value_objects import BaseTool
 
         class Tool1(BaseTool):

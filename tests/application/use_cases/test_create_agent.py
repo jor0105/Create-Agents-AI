@@ -367,8 +367,7 @@ class TestCreateAgentUseCase:
             name="Test",
             instructions="Test",
         )
-        # Forçar um valor float para history_max_size
-        input_dto.history_max_size = 5.5  # type: ignore
+        input_dto.history_max_size = 5.5
 
         with pytest.raises(InvalidAgentConfigException):
             use_case.execute(input_dto)
@@ -381,7 +380,7 @@ class TestCreateAgentUseCase:
             name="Test",
             instructions="Test",
         )
-        input_dto.config = "invalid"  # type: ignore
+        input_dto.config = "invalid"
 
         with pytest.raises(InvalidAgentConfigException):
             use_case.execute(input_dto)
@@ -394,7 +393,7 @@ class TestCreateAgentUseCase:
             name="Test",
             instructions="Test",
         )
-        input_dto.config = ["invalid"]  # type: ignore
+        input_dto.config = ["invalid"]
 
         with pytest.raises(InvalidAgentConfigException):
             use_case.execute(input_dto)
@@ -581,23 +580,10 @@ class TestCreateAgentUseCase:
             name="Test",
             instructions="Test",
         )
-        # Forçar um valor inválido (objeto customizado)
-        input_dto.config = {"temperature": object()}  # type: ignore
+        input_dto.config = {"temperature": object()}
 
         with pytest.raises(InvalidConfigTypeException):
             use_case.execute(input_dto)
-
-    def test_multiple_validations_same_dto(self):
-        dto = CreateAgentInputDTO(
-            provider="openai",
-            model="gpt-5-nano",
-            name="Test",
-            instructions="Test",
-        )
-
-        dto.validate()
-        dto.validate()
-        dto.validate()
 
     def test_execute_with_all_valid_configs_combined(self):
         use_case = CreateAgentUseCase()

@@ -214,7 +214,7 @@ class TestCreateAgentInputDTO:
             model="gpt-5-nano",
             name="Test",
             instructions="Test",
-            config="invalid",  # type: ignore
+            config="invalid",
         )
 
         with pytest.raises(ValueError, match="'config'.*dictionary"):
@@ -226,7 +226,7 @@ class TestCreateAgentInputDTO:
             model="gpt-5-nano",
             name="Test",
             instructions="Test",
-            history_max_size="invalid",  # type: ignore
+            history_max_size="invalid",
         )
 
         with pytest.raises(ValueError, match="history_max_size"):
@@ -234,7 +234,7 @@ class TestCreateAgentInputDTO:
 
     def test_validate_non_string_provider(self):
         dto = CreateAgentInputDTO(
-            provider=123,  # type: ignore
+            provider=123,
             model="gpt-5-nano",
             name="Test",
             instructions="Test",
@@ -268,10 +268,7 @@ class TestCreateAgentInputDTO:
 
 @pytest.mark.unit
 class TestCreateAgentInputDTOWithTools:
-    """Test suite for CreateAgentInputDTO tools validation."""
-
     def test_validate_with_string_tool_names(self):
-        """Test validation with tool names as strings."""
         dto = CreateAgentInputDTO(
             provider="openai",
             model="gpt-5-nano",
@@ -280,16 +277,12 @@ class TestCreateAgentInputDTOWithTools:
             tools=["web_search"],
         )
 
-        # This will fail if web_search is not in AvailableTools
-        # We're testing the validation logic here
         try:
             dto.validate()
         except Exception:
-            # Expected if tool doesn't exist
             pass
 
     def test_validate_with_base_tool_instances(self):
-        """Test validation with BaseTool instances."""
         from src.domain.value_objects import BaseTool
 
         class CustomTool(BaseTool):
@@ -315,7 +308,6 @@ class TestCreateAgentInputDTOWithTools:
         assert isinstance(dto.tools[0], BaseTool)
 
     def test_validate_with_multiple_tools(self):
-        """Test validation with multiple BaseTool instances."""
         from src.domain.value_objects import BaseTool
 
         class Tool1(BaseTool):
@@ -346,7 +338,6 @@ class TestCreateAgentInputDTOWithTools:
         assert len(dto.tools) == 2
 
     def test_validate_with_invalid_tool_missing_execute(self):
-        """Test validation fails when tool is missing execute method."""
         from src.domain.exceptions import InvalidBaseToolException
 
         class InvalidTool:
@@ -358,19 +349,18 @@ class TestCreateAgentInputDTOWithTools:
             model="gpt-5-nano",
             name="Test",
             instructions="Test",
-            tools=[InvalidTool()],  # type: ignore
+            tools=[InvalidTool()],
         )
 
         with pytest.raises(InvalidBaseToolException):
             dto.validate()
 
     def test_validate_with_invalid_tool_missing_name(self):
-        """Test validation fails when tool has invalid name."""
         from src.domain.exceptions import InvalidBaseToolException
         from src.domain.value_objects import BaseTool
 
         class NoNameTool(BaseTool):
-            name = ""  # Empty name
+            name = ""
             description = "No name"
 
             def execute(self) -> str:
@@ -388,13 +378,12 @@ class TestCreateAgentInputDTOWithTools:
             dto.validate()
 
     def test_validate_with_invalid_tool_missing_description(self):
-        """Test validation fails when tool has no description."""
         from src.domain.exceptions import InvalidBaseToolException
         from src.domain.value_objects import BaseTool
 
         class NoDescTool(BaseTool):
             name = "no_desc"
-            description = ""  # Empty description
+            description = ""
 
             def execute(self) -> str:
                 return "result"
@@ -411,7 +400,6 @@ class TestCreateAgentInputDTOWithTools:
             dto.validate()
 
     def test_validate_with_invalid_tool_string_not_found(self):
-        """Test validation fails with non-existent tool name."""
         from src.domain.exceptions import InvalidBaseToolException
 
         dto = CreateAgentInputDTO(
@@ -426,7 +414,6 @@ class TestCreateAgentInputDTOWithTools:
             dto.validate()
 
     def test_validate_with_mixed_tool_types(self):
-        """Test validation with mixed string and BaseTool instances."""
         from src.domain.value_objects import BaseTool
 
         class CustomTool(BaseTool):
@@ -449,7 +436,6 @@ class TestCreateAgentInputDTOWithTools:
         assert all(isinstance(tool, BaseTool) for tool in dto.tools)
 
     def test_validate_with_none_tools(self):
-        """Test validation with None tools."""
         dto = CreateAgentInputDTO(
             provider="openai",
             model="gpt-5-nano",
@@ -463,7 +449,6 @@ class TestCreateAgentInputDTOWithTools:
         assert dto.tools is None
 
     def test_validate_with_empty_tools_list(self):
-        """Test validation with empty tools list."""
         dto = CreateAgentInputDTO(
             provider="openai",
             model="gpt-5-nano",
@@ -474,13 +459,9 @@ class TestCreateAgentInputDTOWithTools:
 
         dto.validate()
 
-        # Empty list remains empty after validation
         assert dto.tools == []
 
     def test_validate_converts_string_tools_to_basetool(self):
-        """Test that string tool names are converted to BaseTool instances."""
-        # This test depends on AvailableTools having actual tools
-        # If no tools are available, it will raise InvalidBaseToolException
         dto = CreateAgentInputDTO(
             provider="openai",
             model="gpt-5-nano",
@@ -491,32 +472,29 @@ class TestCreateAgentInputDTOWithTools:
 
         dto.validate()
 
-        # After validation, tools should be a list of BaseTool instances
         if dto.tools:
             assert all(isinstance(tool, BaseTool) for tool in dto.tools)
 
     def test_validate_with_tool_not_callable_execute(self):
-        """Test validation fails when execute is not callable."""
         from src.domain.exceptions import InvalidBaseToolException
 
         class NotCallableExecute:
             name = "not_callable"
             description = "Execute not callable"
-            execute = "not a function"  # Not callable
+            execute = "not a function"
 
         dto = CreateAgentInputDTO(
             provider="openai",
             model="gpt-5-nano",
             name="Test",
             instructions="Test",
-            tools=[NotCallableExecute()],  # type: ignore
+            tools=[NotCallableExecute()],
         )
 
         with pytest.raises(InvalidBaseToolException):
             dto.validate()
 
     def test_validate_with_invalid_tool_type(self):
-        """Test validation fails with completely invalid tool type."""
         from src.domain.exceptions import InvalidBaseToolException
 
         dto = CreateAgentInputDTO(
@@ -524,14 +502,13 @@ class TestCreateAgentInputDTOWithTools:
             model="gpt-5-nano",
             name="Test",
             instructions="Test",
-            tools=[123],  # type: ignore - invalid type
+            tools=[123],
         )
 
         with pytest.raises(InvalidBaseToolException):
             dto.validate()
 
     def test_tools_attribute_after_validation(self):
-        """Test that tools attribute is properly transformed after validation."""
         from src.domain.value_objects import BaseTool
 
         class TestTool(BaseTool):

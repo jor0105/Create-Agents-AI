@@ -24,7 +24,7 @@ class TestOllamaChatAdapter:
     def test_chat_with_valid_input(self, mock_chat):
         mock_response = MagicMock()
         mock_response.message.content = "Ollama response"
-        mock_response.message.tool_calls = None  # No tool calls in response
+        mock_response.message.tool_calls = None
         mock_response.get.return_value = None
         mock_chat.return_value = mock_response
 
@@ -46,7 +46,7 @@ class TestOllamaChatAdapter:
     def test_chat_constructs_messages_correctly(self, mock_chat):
         mock_response = MagicMock()
         mock_response.message.content = "Response"
-        mock_response.message.tool_calls = None  # No tool calls
+        mock_response.message.tool_calls = None
         mock_response.get.return_value = None
         mock_chat.return_value = mock_response
 
@@ -73,7 +73,7 @@ class TestOllamaChatAdapter:
     def test_chat_with_empty_history(self, mock_chat):
         mock_response = MagicMock()
         mock_response.message.content = "Response"
-        mock_response.message.tool_calls = None  # No tool calls
+        mock_response.message.tool_calls = None
         mock_response.get.return_value = None
         mock_chat.return_value = mock_response
 
@@ -97,7 +97,7 @@ class TestOllamaChatAdapter:
     def test_chat_with_multiple_history_items(self, mock_chat):
         mock_response = MagicMock()
         mock_response.message.content = "Response"
-        mock_response.message.tool_calls = None  # No tool calls
+        mock_response.message.tool_calls = None
         mock_response.get.return_value = None
         mock_chat.return_value = mock_response
 
@@ -128,7 +128,7 @@ class TestOllamaChatAdapter:
     def test_chat_passes_correct_model(self, mock_chat):
         mock_response = MagicMock()
         mock_response.message.content = "Response"
-        mock_response.message.tool_calls = None  # No tool calls
+        mock_response.message.tool_calls = None
         mock_response.get.return_value = None
         mock_chat.return_value = mock_response
 
@@ -150,7 +150,7 @@ class TestOllamaChatAdapter:
     def test_chat_with_empty_response_raises_error(self, mock_chat):
         mock_response = MagicMock()
         mock_response.message.content = ""
-        mock_response.message.tool_calls = None  # No tool calls
+        mock_response.message.tool_calls = None
         mock_response.get.return_value = None
         mock_chat.return_value = mock_response
 
@@ -172,7 +172,7 @@ class TestOllamaChatAdapter:
     def test_chat_with_none_response_raises_error(self, mock_chat):
         mock_response = MagicMock()
         mock_response.message.content = None
-        mock_response.message.tool_calls = None  # No tool calls
+        mock_response.message.tool_calls = None
         mock_response.get.return_value = None
         mock_chat.return_value = mock_response
 
@@ -316,7 +316,7 @@ class TestOllamaChatAdapter:
     def test_chat_with_special_characters(self, mock_chat):
         mock_response = MagicMock()
         mock_response.message.content = "Resposta com 你好 e emojis 🎉"
-        mock_response.message.tool_calls = None  # No tool calls
+        mock_response.message.tool_calls = None
         mock_response.get.return_value = None
         mock_chat.return_value = mock_response
 
@@ -338,7 +338,7 @@ class TestOllamaChatAdapter:
     def test_chat_with_multiline_content(self, mock_chat):
         mock_response = MagicMock()
         mock_response.message.content = "Line 1\nLine 2\nLine 3"
-        mock_response.message.tool_calls = None  # No tool calls
+        mock_response.message.tool_calls = None
         mock_response.get.return_value = None
         mock_chat.return_value = mock_response
 
@@ -369,7 +369,7 @@ class TestOllamaChatAdapter:
     def test_chat_collects_metrics_on_success(self, mock_chat):
         mock_response = MagicMock()
         mock_response.message.content = "Success response"
-        mock_response.message.tool_calls = None  # No tool calls
+        mock_response.message.tool_calls = None
         mock_response.get.return_value = 100
         mock_chat.return_value = mock_response
 
@@ -420,7 +420,7 @@ class TestOllamaChatAdapter:
     def test_chat_collects_multiple_metrics(self, mock_chat):
         mock_response = MagicMock()
         mock_response.message.content = "Response"
-        mock_response.message.tool_calls = None  # No tool calls
+        mock_response.message.tool_calls = None
         mock_response.get.return_value = None
         mock_chat.return_value = mock_response
 
@@ -461,7 +461,7 @@ class TestOllamaChatAdapter:
     def test_chat_with_empty_string_in_history(self, mock_chat):
         mock_response = MagicMock()
         mock_response.message.content = "Response"
-        mock_response.message.tool_calls = None  # No tool calls
+        mock_response.message.tool_calls = None
         mock_response.get.return_value = None
         mock_chat.return_value = mock_response
 
@@ -490,7 +490,7 @@ class TestOllamaChatAdapter:
     def test_chat_with_long_history(self, mock_chat):
         mock_response = MagicMock()
         mock_response.message.content = "Response"
-        mock_response.message.tool_calls = None  # No tool calls
+        mock_response.message.tool_calls = None
         mock_response.get.return_value = None
         mock_chat.return_value = mock_response
 
@@ -519,7 +519,7 @@ class TestOllamaChatAdapter:
     def test_chat_with_config_parameter(self, mock_chat):
         mock_response = MagicMock()
         mock_response.message.content = "Response"
-        mock_response.message.tool_calls = None  # No tool calls
+        mock_response.message.tool_calls = None
         mock_response.get.return_value = None
         mock_chat.return_value = mock_response
 
@@ -541,7 +541,7 @@ class TestOllamaChatAdapter:
     @patch("src.infra.adapters.Ollama.ollama_chat_adapter.chat")
     def test_chat_with_key_error_raises_chat_exception(self, mock_chat):
         mock_response = MagicMock()
-        mock_response.message.tool_calls = None  # No tool calls
+        mock_response.message.tool_calls = None
         type(mock_response.message).content = property(
             lambda self: (_ for _ in ()).throw(KeyError("test_key"))
         )
@@ -563,7 +563,7 @@ class TestOllamaChatAdapter:
     def test_chat_metrics_contain_error_message_on_empty_response(self, mock_chat):
         mock_response = MagicMock()
         mock_response.message.content = ""
-        mock_response.message.tool_calls = None  # No tool calls
+        mock_response.message.tool_calls = None
         mock_response.get.return_value = None
         mock_chat.return_value = mock_response
 
@@ -590,7 +590,7 @@ class TestOllamaChatAdapter:
     def test_chat_passes_temperature_config(self, mock_chat):
         mock_response = MagicMock()
         mock_response.message.content = "Response"
-        mock_response.message.tool_calls = None  # No tool calls
+        mock_response.message.tool_calls = None
         mock_response.get.return_value = None
         mock_chat.return_value = mock_response
 
@@ -612,7 +612,7 @@ class TestOllamaChatAdapter:
     def test_chat_passes_max_tokens_as_num_predict(self, mock_chat):
         mock_response = MagicMock()
         mock_response.message.content = "Response"
-        mock_response.message.tool_calls = None  # No tool calls
+        mock_response.message.tool_calls = None
         mock_response.get.return_value = None
         mock_chat.return_value = mock_response
 
@@ -634,7 +634,7 @@ class TestOllamaChatAdapter:
     def test_chat_passes_top_p_config(self, mock_chat):
         mock_response = MagicMock()
         mock_response.message.content = "Response"
-        mock_response.message.tool_calls = None  # No tool calls
+        mock_response.message.tool_calls = None
         mock_response.get.return_value = None
         mock_chat.return_value = mock_response
 
@@ -656,7 +656,7 @@ class TestOllamaChatAdapter:
     def test_chat_passes_all_configs(self, mock_chat):
         mock_response = MagicMock()
         mock_response.message.content = "Response"
-        mock_response.message.tool_calls = None  # No tool calls
+        mock_response.message.tool_calls = None
         mock_response.get.return_value = None
         mock_chat.return_value = mock_response
 
@@ -689,7 +689,7 @@ class TestOllamaChatAdapter:
     def test_chat_with_empty_config_does_not_pass_options(self, mock_chat):
         mock_response = MagicMock()
         mock_response.message.content = "Response"
-        mock_response.message.tool_calls = None  # No tool calls
+        mock_response.message.tool_calls = None
         mock_response.get.return_value = None
         mock_chat.return_value = mock_response
 
@@ -705,7 +705,6 @@ class TestOllamaChatAdapter:
         )
 
         call_args = mock_chat.call_args
-        # When config is empty, options should not be passed or be None
         assert call_args.kwargs.get("options") in (None, {})
         assert "model" in call_args.kwargs
         assert "messages" in call_args.kwargs
@@ -715,7 +714,7 @@ class TestOllamaChatAdapter:
     def test_stop_model_is_called_after_chat(self, mock_chat, mock_subprocess):
         mock_response = MagicMock()
         mock_response.message.content = "Response"
-        mock_response.message.tool_calls = None  # No tool calls
+        mock_response.message.tool_calls = None
         mock_response.get.return_value = None
         mock_chat.return_value = mock_response
         mock_subprocess.return_value = Mock()
@@ -762,7 +761,7 @@ class TestOllamaChatAdapter:
     def test_stop_model_handles_file_not_found(self, mock_chat, mock_subprocess):
         mock_response = MagicMock()
         mock_response.message.content = "Response"
-        mock_response.message.tool_calls = None  # No tool calls
+        mock_response.message.tool_calls = None
         mock_response.get.return_value = None
         mock_chat.return_value = mock_response
         mock_subprocess.side_effect = FileNotFoundError("ollama not found")
@@ -787,7 +786,7 @@ class TestOllamaChatAdapter:
 
         mock_response = MagicMock()
         mock_response.message.content = "Response"
-        mock_response.message.tool_calls = None  # No tool calls
+        mock_response.message.tool_calls = None
         mock_response.get.return_value = None
         mock_chat.return_value = mock_response
         mock_subprocess.side_effect = subprocess.TimeoutExpired("ollama", 10)
@@ -810,7 +809,7 @@ class TestOllamaChatAdapter:
     def test_stop_model_handles_generic_exception(self, mock_chat, mock_subprocess):
         mock_response = MagicMock()
         mock_response.message.content = "Response"
-        mock_response.message.tool_calls = None  # No tool calls
+        mock_response.message.tool_calls = None
         mock_response.get.return_value = None
         mock_chat.return_value = mock_response
         mock_subprocess.side_effect = RuntimeError("Unknown error")
@@ -832,7 +831,7 @@ class TestOllamaChatAdapter:
     def test_chat_with_none_instructions_omits_system_message(self, mock_chat):
         mock_response = MagicMock()
         mock_response.message.content = "Response"
-        mock_response.message.tool_calls = None  # No tool calls
+        mock_response.message.tool_calls = None
         mock_response.get.return_value = None
         mock_chat.return_value = mock_response
 
@@ -857,7 +856,7 @@ class TestOllamaChatAdapter:
     def test_chat_with_whitespace_only_instructions(self, mock_chat):
         mock_response = MagicMock()
         mock_response.message.content = "Response"
-        mock_response.message.tool_calls = None  # No tool calls
+        mock_response.message.tool_calls = None
         mock_response.get.return_value = None
         mock_chat.return_value = mock_response
 

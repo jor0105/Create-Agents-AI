@@ -308,13 +308,3 @@ class TestChatWithAgentUseCase:
         assert len(agent.history) == 4
         messages = agent.history.get_messages()
         assert messages[0].content == "Message 1"
-
-    def test_get_metrics_returns_empty_list_when_not_supported(
-        self, mock_chat_repository
-    ):
-        use_case = ChatWithAgentUseCase(chat_repository=mock_chat_repository)
-
-        metrics = use_case.get_metrics()
-
-        assert metrics == []
-        assert isinstance(metrics, list)

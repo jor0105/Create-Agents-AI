@@ -1,7 +1,3 @@
-"""
-Tests for ChatResponse and ToolCallInfo value objects.
-"""
-
 import pytest
 
 from src.domain.value_objects.chat_response import ChatResponse, ToolCallInfo
@@ -9,10 +5,7 @@ from src.domain.value_objects.chat_response import ChatResponse, ToolCallInfo
 
 @pytest.mark.unit
 class TestToolCallInfo:
-    """Test suite for ToolCallInfo value object."""
-
     def test_create_tool_call_info_with_all_fields(self):
-        """Test creating ToolCallInfo with all fields."""
         tool_call = ToolCallInfo(
             tool_name="web_search",
             arguments={"query": "Python tutorials"},
@@ -26,7 +19,6 @@ class TestToolCallInfo:
         assert tool_call.success is True
 
     def test_create_tool_call_info_minimal(self):
-        """Test creating ToolCallInfo with minimal required fields."""
         tool_call = ToolCallInfo(
             tool_name="calculator",
             arguments={"expression": "2+2"},
@@ -36,10 +28,9 @@ class TestToolCallInfo:
         assert tool_call.tool_name == "calculator"
         assert tool_call.arguments == {"expression": "2+2"}
         assert tool_call.result == "4"
-        assert tool_call.success is True  # default value
+        assert tool_call.success is True
 
     def test_tool_call_info_is_frozen(self):
-        """Test that ToolCallInfo is immutable."""
         tool_call = ToolCallInfo(
             tool_name="test",
             arguments={},
@@ -50,7 +41,6 @@ class TestToolCallInfo:
             tool_call.tool_name = "modified"
 
     def test_tool_call_info_with_failed_execution(self):
-        """Test ToolCallInfo with failed execution."""
         tool_call = ToolCallInfo(
             tool_name="api_call",
             arguments={"endpoint": "/users"},
@@ -62,7 +52,6 @@ class TestToolCallInfo:
         assert "Error" in tool_call.result
 
     def test_tool_call_info_with_empty_arguments(self):
-        """Test ToolCallInfo with empty arguments."""
         tool_call = ToolCallInfo(
             tool_name="time",
             arguments={},
@@ -73,7 +62,6 @@ class TestToolCallInfo:
         assert len(tool_call.arguments) == 0
 
     def test_tool_call_info_with_complex_arguments(self):
-        """Test ToolCallInfo with complex nested arguments."""
         complex_args = {
             "query": "search term",
             "filters": {
@@ -93,7 +81,6 @@ class TestToolCallInfo:
         assert tool_call.arguments["filters"]["category"] == "tech"
 
     def test_tool_call_info_with_long_result(self):
-        """Test ToolCallInfo with long result string."""
         long_result = "A" * 10000
         tool_call = ToolCallInfo(
             tool_name="large_data",
@@ -105,7 +92,6 @@ class TestToolCallInfo:
         assert tool_call.result == long_result
 
     def test_tool_call_info_with_special_characters(self):
-        """Test ToolCallInfo with special characters in result."""
         tool_call = ToolCallInfo(
             tool_name="translate",
             arguments={"text": "Hello"},
@@ -117,7 +103,6 @@ class TestToolCallInfo:
         assert "Bonjour" in tool_call.result
 
     def test_tool_call_info_equality(self):
-        """Test equality of ToolCallInfo instances."""
         tool_call1 = ToolCallInfo(
             tool_name="test",
             arguments={"x": 1},
@@ -141,7 +126,6 @@ class TestToolCallInfo:
         assert tool_call1 != tool_call3
 
     def test_tool_call_info_with_different_argument_types(self):
-        """Test ToolCallInfo with various argument types."""
         tool_call = ToolCallInfo(
             tool_name="multi_type",
             arguments={
@@ -165,10 +149,7 @@ class TestToolCallInfo:
 
 @pytest.mark.unit
 class TestChatResponse:
-    """Test suite for ChatResponse value object."""
-
     def test_create_chat_response_with_content_only(self):
-        """Test creating ChatResponse with content only."""
         response = ChatResponse(content="Hello, how can I help you?")
 
         assert response.content == "Hello, how can I help you?"
@@ -176,7 +157,6 @@ class TestChatResponse:
         assert isinstance(response.tool_calls, list)
 
     def test_create_chat_response_with_tool_calls(self):
-        """Test creating ChatResponse with tool calls."""
         tool_call = ToolCallInfo(
             tool_name="calculator",
             arguments={"expression": "2+2"},
@@ -192,7 +172,6 @@ class TestChatResponse:
         assert response.tool_calls[0].tool_name == "calculator"
 
     def test_create_chat_response_with_multiple_tool_calls(self):
-        """Test ChatResponse with multiple tool calls."""
         tool_calls = [
             ToolCallInfo("tool1", {"arg": "1"}, "result1"),
             ToolCallInfo("tool2", {"arg": "2"}, "result2"),
@@ -209,27 +188,23 @@ class TestChatResponse:
         assert response.tool_calls[2].tool_name == "tool3"
 
     def test_chat_response_is_frozen(self):
-        """Test that ChatResponse is immutable."""
         response = ChatResponse(content="Test")
 
         with pytest.raises(AttributeError):
             response.content = "Modified"
 
     def test_has_tool_calls_returns_false_when_empty(self):
-        """Test has_tool_calls returns False when no tools were called."""
         response = ChatResponse(content="No tools used")
 
         assert response.has_tool_calls() is False
 
     def test_has_tool_calls_returns_true_when_present(self):
-        """Test has_tool_calls returns True when tools were called."""
         tool_call = ToolCallInfo("test", {}, "result")
         response = ChatResponse(content="Used tool", tool_calls=[tool_call])
 
         assert response.has_tool_calls() is True
 
     def test_has_tool_calls_with_multiple_tools(self):
-        """Test has_tool_calls with multiple tool calls."""
         tool_calls = [
             ToolCallInfo("tool1", {}, "result1"),
             ToolCallInfo("tool2", {}, "result2"),
@@ -240,7 +215,6 @@ class TestChatResponse:
         assert len(response.tool_calls) == 2
 
     def test_to_dict_with_no_tool_calls(self):
-        """Test to_dict conversion with no tool calls."""
         response = ChatResponse(content="Simple response")
 
         result = response.to_dict()
@@ -250,7 +224,6 @@ class TestChatResponse:
         assert result["tool_calls"] == []
 
     def test_to_dict_with_tool_calls(self):
-        """Test to_dict conversion with tool calls."""
         tool_call = ToolCallInfo(
             tool_name="calculator",
             arguments={"expression": "5*5"},
@@ -269,7 +242,6 @@ class TestChatResponse:
         assert result["tool_calls"][0]["success"] is True
 
     def test_to_dict_with_multiple_tool_calls(self):
-        """Test to_dict with multiple tool calls."""
         tool_calls = [
             ToolCallInfo("search", {"q": "python"}, "Found 100 results", True),
             ToolCallInfo("filter", {"type": "tutorial"}, "Filtered", True),
@@ -283,7 +255,6 @@ class TestChatResponse:
         assert result["tool_calls"][1]["tool_name"] == "filter"
 
     def test_to_dict_structure(self):
-        """Test that to_dict returns correct structure."""
         response = ChatResponse(content="Test")
 
         result = response.to_dict()
@@ -293,14 +264,12 @@ class TestChatResponse:
         assert isinstance(result["tool_calls"], list)
 
     def test_chat_response_with_empty_content(self):
-        """Test ChatResponse with empty content string."""
         response = ChatResponse(content="")
 
         assert response.content == ""
         assert response.has_tool_calls() is False
 
     def test_chat_response_with_long_content(self):
-        """Test ChatResponse with very long content."""
         long_content = "A" * 100000
         response = ChatResponse(content=long_content)
 
@@ -308,7 +277,6 @@ class TestChatResponse:
         assert response.content == long_content
 
     def test_chat_response_with_multiline_content(self):
-        """Test ChatResponse with multiline content."""
         multiline = "Line 1\nLine 2\nLine 3"
         response = ChatResponse(content=multiline)
 
@@ -316,7 +284,6 @@ class TestChatResponse:
         assert response.content.count("\n") == 2
 
     def test_chat_response_with_special_characters(self):
-        """Test ChatResponse with special characters."""
         special = "Hello! 你好 🤖 @#$%^&*()"
         response = ChatResponse(content=special)
 
@@ -324,7 +291,6 @@ class TestChatResponse:
         assert "🤖" in response.content
 
     def test_chat_response_equality(self):
-        """Test equality of ChatResponse instances."""
         response1 = ChatResponse(content="Test")
         response2 = ChatResponse(content="Test")
         response3 = ChatResponse(content="Different")
@@ -333,7 +299,6 @@ class TestChatResponse:
         assert response1 != response3
 
     def test_chat_response_with_failed_tool_call(self):
-        """Test ChatResponse with failed tool execution."""
         failed_call = ToolCallInfo(
             tool_name="api_call",
             arguments={"url": "http://example.com"},
@@ -350,7 +315,6 @@ class TestChatResponse:
         assert "Error" in response.tool_calls[0].result
 
     def test_to_dict_preserves_all_tool_call_fields(self):
-        """Test that to_dict preserves all ToolCallInfo fields."""
         tool_call = ToolCallInfo(
             tool_name="test_tool",
             arguments={"key": "value"},
@@ -368,7 +332,6 @@ class TestChatResponse:
         assert "success" in tool_dict
 
     def test_chat_response_default_tool_calls(self):
-        """Test that tool_calls defaults to empty list."""
         response = ChatResponse(content="Test")
 
         assert response.tool_calls == []
@@ -378,10 +341,7 @@ class TestChatResponse:
 
 @pytest.mark.unit
 class TestChatResponseEdgeCases:
-    """Test suite for edge cases and boundary conditions."""
-
     def test_response_with_tool_call_without_result(self):
-        """Test response with tool call that has no result."""
         tool_call = ToolCallInfo(
             tool_name="void_tool",
             arguments={},
@@ -393,7 +353,6 @@ class TestChatResponseEdgeCases:
         assert response.tool_calls[0].result == ""
 
     def test_response_with_mixed_success_tool_calls(self):
-        """Test response with both successful and failed tool calls."""
         tool_calls = [
             ToolCallInfo("success1", {}, "OK", success=True),
             ToolCallInfo("failed", {}, "Error", success=False),
@@ -409,7 +368,6 @@ class TestChatResponseEdgeCases:
         assert len(failed) == 1
 
     def test_to_dict_with_complex_nested_arguments(self):
-        """Test to_dict with deeply nested tool arguments."""
         complex_args = {
             "level1": {
                 "level2": {"level3": {"level4": {"data": "deep"}}},
@@ -426,18 +384,14 @@ class TestChatResponseEdgeCases:
         assert args["level1"]["array"][2]["nested"] == "value"
 
     def test_has_tool_calls_is_consistent(self):
-        """Test that has_tool_calls is consistent with tool_calls list."""
-        # No tools
         response1 = ChatResponse(content="Test")
         assert response1.has_tool_calls() == (len(response1.tool_calls) > 0)
 
-        # With tools
         tool_call = ToolCallInfo("test", {}, "result")
         response2 = ChatResponse(content="Test", tool_calls=[tool_call])
         assert response2.has_tool_calls() == (len(response2.tool_calls) > 0)
 
     def test_multiple_responses_are_independent(self):
-        """Test that multiple ChatResponse instances are independent."""
         tool_call1 = ToolCallInfo("tool1", {}, "result1")
         response1 = ChatResponse(content="Response 1", tool_calls=[tool_call1])
 
@@ -448,7 +402,6 @@ class TestChatResponseEdgeCases:
         assert response1.tool_calls[0].tool_name != response2.tool_calls[0].tool_name
 
     def test_to_dict_returns_new_dict(self):
-        """Test that to_dict returns a new dict each time."""
         response = ChatResponse(content="Test")
 
         dict1 = response.to_dict()
@@ -458,7 +411,6 @@ class TestChatResponseEdgeCases:
         assert dict1 is not dict2
 
     def test_response_with_json_like_content(self):
-        """Test response with JSON-formatted content."""
         json_content = '{"key": "value", "number": 42}'
         response = ChatResponse(content=json_content)
 
@@ -467,18 +419,16 @@ class TestChatResponseEdgeCases:
         assert "}" in response.content
 
     def test_tool_call_info_with_none_result(self):
-        """Test ToolCallInfo with None as result."""
         tool_call = ToolCallInfo(
             tool_name="none_tool",
             arguments={},
-            result="None",  # String "None", not None object
+            result="None",
         )
 
         assert tool_call.result == "None"
         assert isinstance(tool_call.result, str)
 
     def test_large_number_of_tool_calls(self):
-        """Test ChatResponse with many tool calls."""
         tool_calls = [
             ToolCallInfo(f"tool_{i}", {"index": i}, f"result_{i}") for i in range(100)
         ]

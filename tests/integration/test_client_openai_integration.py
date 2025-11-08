@@ -1256,7 +1256,7 @@ class TestOpenAIChatAdapterToolsIntegration:
                 "ReadLocalFileTool not available (missing optional dependencies)"
             )
 
-        file_path = os.path.abspath("tests/fixtures/sample_text.txt")
+        file_path = os.path.abspath(".fixtures/sample_text.txt")
 
         response = adapter.chat(
             model=IA_OPENAI_TEST_1,
@@ -1288,7 +1288,7 @@ class TestOpenAIChatAdapterToolsIntegration:
                 "ReadLocalFileTool not available (missing optional dependencies)"
             )
 
-        file_path = os.path.abspath("tests/fixtures/sample_data.csv")
+        file_path = os.path.abspath(".fixtures/sample_data.csv")
 
         response = adapter.chat(
             model=IA_OPENAI_TEST_2,

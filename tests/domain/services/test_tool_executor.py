@@ -1,11 +1,12 @@
+import json
+import time
+
 import pytest
 
 from src.domain import BaseTool, ToolExecutionResult, ToolExecutor
 
 
 class MockCalculatorTool(BaseTool):
-    """Mock calculator tool for testing."""
-
     name = "calculator"
     description = "Performs basic mathematical calculations"
     parameters = {
@@ -20,7 +21,6 @@ class MockCalculatorTool(BaseTool):
     }
 
     def execute(self, expression: str) -> str:
-        """Execute calculation."""
         try:
             result = eval(expression)
             return f"Result: {result}"
@@ -29,8 +29,6 @@ class MockCalculatorTool(BaseTool):
 
 
 class MockGreeterTool(BaseTool):
-    """Mock greeter tool for testing."""
-
     name = "greeter"
     description = "Greets people by name"
     parameters = {
@@ -40,28 +38,22 @@ class MockGreeterTool(BaseTool):
     }
 
     def execute(self, name: str) -> str:
-        """Execute greeting."""
         return f"Hello, {name}!"
 
 
 class TestToolExecutor:
-    """Test suite for ToolExecutor."""
-
     def test_initialization_with_tools(self):
-        """Test executor initialization with tools."""
         tools = [MockCalculatorTool(), MockGreeterTool()]
         executor = ToolExecutor(tools)
 
         assert executor.get_available_tool_names() == ["calculator", "greeter"]
 
     def test_initialization_without_tools(self):
-        """Test executor initialization without tools."""
         executor = ToolExecutor([])
 
         assert executor.get_available_tool_names() == []
 
     def test_has_tool(self):
-        """Test checking if tool exists."""
         tools = [MockCalculatorTool()]
         executor = ToolExecutor(tools)
 
@@ -69,7 +61,6 @@ class TestToolExecutor:
         assert executor.has_tool("nonexistent") is False
 
     def test_execute_tool_success(self):
-        """Test successful tool execution."""
         tools = [MockCalculatorTool()]
         executor = ToolExecutor(tools)
 
@@ -84,7 +75,6 @@ class TestToolExecutor:
         assert result.execution_time_ms > 0
 
     def test_execute_tool_with_kwargs(self):
-        """Test tool execution with keyword arguments."""
         tools = [MockGreeterTool()]
         executor = ToolExecutor(tools)
 
@@ -94,7 +84,6 @@ class TestToolExecutor:
         assert "Alice" in result.result
 
     def test_execute_nonexistent_tool(self):
-        """Test executing a tool that doesn't exist."""
         executor = ToolExecutor([])
 
         result = executor.execute_tool("nonexistent", arg="value")
@@ -105,29 +94,24 @@ class TestToolExecutor:
         assert result.execution_time_ms is not None
 
     def test_execute_tool_with_invalid_arguments(self):
-        """Test tool execution with invalid arguments."""
         tools = [MockCalculatorTool()]
         executor = ToolExecutor(tools)
 
-        # Missing required argument
         result = executor.execute_tool("calculator")
 
         assert result.success is False
         assert "invalid arguments" in result.error.lower()
 
     def test_execute_tool_with_execution_error(self):
-        """Test tool that raises an error during execution."""
         tools = [MockCalculatorTool()]
         executor = ToolExecutor(tools)
 
-        # Invalid expression that will cause eval to fail
         result = executor.execute_tool("calculator", expression="invalid + syntax")
 
         assert result.success is False
         assert result.error is not None
 
     def test_execute_multiple_tools(self):
-        """Test executing multiple tools in sequence."""
         tools = [MockCalculatorTool(), MockGreeterTool()]
         executor = ToolExecutor(tools)
 
@@ -145,9 +129,6 @@ class TestToolExecutor:
         assert "Bob" in results[1].result
 
     def test_execute_multiple_tools_with_json_string_arguments(self):
-        """Test multiple tool execution with JSON string arguments."""
-        import json
-
         tools = [MockGreeterTool()]
         executor = ToolExecutor(tools)
 
@@ -162,7 +143,6 @@ class TestToolExecutor:
         assert "Charlie" in results[0].result
 
     def test_execute_multiple_tools_with_invalid_json(self):
-        """Test multiple tool execution with invalid JSON arguments."""
         tools = [MockGreeterTool()]
         executor = ToolExecutor(tools)
 
@@ -177,7 +157,6 @@ class TestToolExecutor:
         assert "invalid json" in results[0].error.lower()
 
     def test_tool_execution_result_to_dict(self):
-        """Test converting ToolExecutionResult to dictionary."""
         result = ToolExecutionResult(
             tool_name="test_tool",
             success=True,
@@ -194,7 +173,6 @@ class TestToolExecutor:
         assert result_dict["execution_time_ms"] == 123.45
 
     def test_tool_execution_result_to_llm_message_success(self):
-        """Test formatting successful result as LLM message."""
         result = ToolExecutionResult(
             tool_name="calculator", success=True, result="Result: 42"
         )
@@ -206,7 +184,6 @@ class TestToolExecutor:
         assert "42" in message
 
     def test_tool_execution_result_to_llm_message_failure(self):
-        """Test formatting failed result as LLM message."""
         result = ToolExecutionResult(
             tool_name="calculator", success=False, error="Invalid input"
         )
@@ -220,11 +197,7 @@ class TestToolExecutor:
 
 @pytest.mark.unit
 class TestToolExecutorEdgeCases:
-    """Additional edge case tests for ToolExecutor."""
-
     def test_execute_tool_with_none_value_argument(self):
-        """Test tool execution with None as argument value."""
-
         class NullableTool(BaseTool):
             name = "nullable"
             description = "Accepts None values"
@@ -241,15 +214,12 @@ class TestToolExecutorEdgeCases:
         assert "None" in result.result
 
     def test_execute_tool_tracks_execution_time(self):
-        """Test that execution time is tracked for all executions."""
-        import time
-
         class SlowTool(BaseTool):
             name = "slow"
             description = "Slow tool"
 
             def execute(self) -> str:
-                time.sleep(0.01)  # Sleep 10ms
+                time.sleep(0.01)
                 return "done"
 
         tools = [SlowTool()]
@@ -258,11 +228,9 @@ class TestToolExecutorEdgeCases:
         result = executor.execute_tool("slow")
 
         assert result.execution_time_ms is not None
-        assert result.execution_time_ms >= 10  # At least 10ms
+        assert result.execution_time_ms >= 10
 
     def test_execute_tool_tracks_time_on_failure(self):
-        """Test that execution time is tracked even on failure."""
-
         class FailingTool(BaseTool):
             name = "failing"
             description = "Always fails"
@@ -280,8 +248,6 @@ class TestToolExecutorEdgeCases:
         assert result.execution_time_ms > 0
 
     def test_execute_tool_with_extra_kwargs(self):
-        """Test execute with extra unexpected kwargs."""
-
         class SimpleToolWithKwargs(BaseTool):
             name = "simple"
             description = "Simple tool"
@@ -292,7 +258,6 @@ class TestToolExecutorEdgeCases:
         tools = [SimpleToolWithKwargs()]
         executor = ToolExecutor(tools)
 
-        # Extra unexpected argument
         result = executor.execute_tool("simple", arg1="value", extra="ignored")
 
         assert result.success is False
@@ -302,8 +267,6 @@ class TestToolExecutorEdgeCases:
         )
 
     def test_execute_tool_with_complex_return_types(self):
-        """Test tool that returns complex data structures."""
-
         class ComplexReturnTool(BaseTool):
             name = "complex"
             description = "Returns complex data"
@@ -320,7 +283,6 @@ class TestToolExecutorEdgeCases:
         assert isinstance(result.result, dict)
 
     def test_execute_multiple_tools_with_empty_list(self):
-        """Test execute_multiple_tools with empty list."""
         executor = ToolExecutor([])
 
         results = executor.execute_multiple_tools([])
@@ -329,8 +291,6 @@ class TestToolExecutorEdgeCases:
         assert isinstance(results, list)
 
     def test_execute_multiple_tools_handles_partial_failures(self):
-        """Test that some tools can fail while others succeed."""
-
         class SuccessTool(BaseTool):
             name = "success"
             description = "Always succeeds"
@@ -362,8 +322,6 @@ class TestToolExecutorEdgeCases:
         assert results[2].success is True
 
     def test_execute_multiple_tools_continues_after_failure(self):
-        """Test that execution continues even after a tool fails."""
-
         class CounterTool(BaseTool):
             name = "counter"
             description = "Counts calls"
@@ -376,12 +334,11 @@ class TestToolExecutorEdgeCases:
         tools = [CounterTool()]
         executor = ToolExecutor(tools)
 
-        # Reset counter
         CounterTool.call_count = 0
 
         tool_calls = [
             {"name": "counter", "arguments": {}},
-            {"name": "nonexistent", "arguments": {}},  # This will fail
+            {"name": "nonexistent", "arguments": {}},
             {"name": "counter", "arguments": {}},
         ]
 
@@ -389,13 +346,11 @@ class TestToolExecutorEdgeCases:
 
         assert len(results) == 3
         assert results[0].success is True
-        assert results[1].success is False  # nonexistent tool
+        assert results[1].success is False
         assert results[2].success is True
-        assert CounterTool.call_count == 2  # Only successful calls counted
+        assert CounterTool.call_count == 2
 
     def test_get_available_tool_names_after_initialization(self):
-        """Test that tool names are correctly listed."""
-
         class Tool1(BaseTool):
             name = "tool_one"
             description = "First tool"
@@ -420,8 +375,6 @@ class TestToolExecutorEdgeCases:
         assert "tool_two" in names
 
     def test_executor_with_duplicate_tool_names(self):
-        """Test executor behavior with tools having duplicate names."""
-
         class Tool1(BaseTool):
             name = "duplicate"
             description = "First duplicate"
@@ -439,15 +392,12 @@ class TestToolExecutorEdgeCases:
         tools = [Tool1(), Tool2()]
         executor = ToolExecutor(tools)
 
-        # Last tool with same name should override
         result = executor.execute_tool("duplicate")
 
         assert result.success is True
         assert result.result == "second"
 
     def test_execute_tool_with_unicode_arguments(self):
-        """Test tool execution with unicode characters."""
-
         class UnicodeTool(BaseTool):
             name = "unicode"
             description = "Handles unicode"
@@ -465,7 +415,6 @@ class TestToolExecutorEdgeCases:
         assert "🌍" in result.result
 
     def test_tool_execution_result_to_dict_with_none_values(self):
-        """Test ToolExecutionResult.to_dict with None values."""
         result = ToolExecutionResult(
             tool_name="test",
             success=False,
