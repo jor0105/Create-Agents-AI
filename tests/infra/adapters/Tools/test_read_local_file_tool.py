@@ -12,7 +12,6 @@ try:
     DEPENDENCIES_AVAILABLE = True
 except (ImportError, RuntimeError):
     DEPENDENCIES_AVAILABLE = False
-    ReadLocalFileTool = None
 
 
 @pytest.mark.skipif(
