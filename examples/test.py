@@ -1,5 +1,6 @@
 import logging
 
+from examples.toolfilterparquet import DREQueryTool
 from examples.websearchtool import WebSearchTool
 from src import AIAgent
 from src.infra.config.logging_config import LoggingConfig
@@ -9,21 +10,23 @@ LoggingConfig.configure(level=logging.ERROR)
 
 # Inicializar as ferramentas
 web_search_tool = WebSearchTool()
+dre_query_tool = DREQueryTool()
 
-tools = ["readlocalfile", "currentdate"]
+tools = [web_search_tool, dre_query_tool]
 
 config = {
-    "temperature": 0.7,
+    "temperature": 0.5,
     # "max_tokens": 300,
+    "think": True,
 }
 
 
 agent = AIAgent(
-    provider="openai",
-    model="gpt-5-mini",
+    provider="ollama",
+    model="gpt-oss:120b-cloud",
     name="Agente AI",
     instructions="Você é um assistente inteligente que ajuda os usuários a responder perguntas e realizar tarefas.",
-    # config=config,
+    config=config,
     tools=tools,
 )
 
@@ -46,13 +49,14 @@ arquivos = [
     "/home/jordan/Downloads/Agravo de Petição - versão 5.docx",
 ]
 
-caminho = "/home/jordan/Downloads/Agravo de Petição - versão 5.docx"
+caminho = "/home/jordan/Downloads/Databases/dados_bolsa_br/Docs_Cvm/DFP/2024/dfp_cia_aberta_DRE_con_2024.parquet"
 
-for caminho in arquivos:
-    user_message = f"me diga algo sobre esse documento {caminho}. Utilize a tool readlocalfile com max token acima de 100000 na tool e depois me diga que diga é hoje e horas no brasil."
-    response = agent.chat(user_message)
-    print("\n" + "-" * 100)
-    print("\n" + "-" * 100)
-    print(f"ARQUIVO: {caminho}")
-    print(f"\nResposta do agente: {response}")
-    print("\n" + "-" * 100)
+# for caminho in arquivos:
+
+user_message = "pesquise qual é o código cvm da empresa banco do brasil s.a na internet e depois utilize ele para pegar os dados dessa empresa pela tool DREQueryTool. Ao finalizar, faça uma análise completa sobre o DRE da empresa."
+response = agent.chat(user_message)
+print("\n" + "-" * 100)
+print("\n" + "-" * 100)
+print(f"ARQUIVO: {caminho}")
+print(f"\nResposta do agente: {response}")
+print("\n" + "-" * 100)
