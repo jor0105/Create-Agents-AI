@@ -613,3 +613,333 @@ class TestAgentComposer:
 
         assert hasattr(agent, "config")
         assert isinstance(agent.config, dict)
+
+    def test_create_agent_with_tools_none(self):
+        agent = AgentComposer.create_agent(
+            provider="openai",
+            model="gpt-5-nano",
+            name="Test",
+            instructions="Test",
+            tools=None,
+        )
+
+        assert agent.tools is None
+
+    def test_create_agent_with_tools_empty_list(self):
+        agent = AgentComposer.create_agent(
+            provider="openai",
+            model="gpt-5-nano",
+            name="Test",
+            instructions="Test",
+            tools=[],
+        )
+
+        assert agent.tools == []
+
+    def test_create_agent_with_single_tool(self):
+        from src.domain import BaseTool
+
+        class TestTool(BaseTool):
+            name = "test_tool"
+            description = "A test tool"
+
+            def execute(self, **kwargs):
+                return "result"
+
+        tool = TestTool()
+        agent = AgentComposer.create_agent(
+            provider="openai",
+            model="gpt-5-nano",
+            name="Test",
+            instructions="Test",
+            tools=[tool],
+        )
+
+        assert len(agent.tools) == 1
+        assert agent.tools[0] is tool
+
+    def test_create_agent_with_multiple_tools(self):
+        from src.domain import BaseTool
+
+        class Tool1(BaseTool):
+            name = "tool1"
+            description = "First tool"
+
+            def execute(self, **kwargs):
+                return "result1"
+
+        class Tool2(BaseTool):
+            name = "tool2"
+            description = "Second tool"
+
+            def execute(self, **kwargs):
+                return "result2"
+
+        tools = [Tool1(), Tool2()]
+        agent = AgentComposer.create_agent(
+            provider="openai",
+            model="gpt-5-nano",
+            name="Test",
+            instructions="Test",
+            tools=tools,
+        )
+
+        assert len(agent.tools) == 2
+        assert all(isinstance(t, BaseTool) for t in agent.tools)
+
+    def test_create_agent_with_string_tool_name(self):
+        from src.infra import AvailableTools
+
+        available = AvailableTools.get_available_tools()
+        if available:
+            tool_name = list(available.keys())[0]
+            agent = AgentComposer.create_agent(
+                provider="openai",
+                model="gpt-5-nano",
+                name="Test",
+                instructions="Test",
+                tools=[tool_name],
+            )
+
+            assert agent.tools is not None
+        else:
+            pytest.skip("No available tools to test")
+
+    def test_create_agent_with_mixed_tool_types(self):
+        from src.domain import BaseTool
+        from src.infra import AvailableTools
+
+        class TestTool(BaseTool):
+            name = "test_tool"
+            description = "A test tool"
+
+            def execute(self, **kwargs):
+                return "result"
+
+        tool = TestTool()
+        available = AvailableTools.get_available_tools()
+        if available:
+            tool_name = list(available.keys())[0]
+            agent = AgentComposer.create_agent(
+                provider="openai",
+                model="gpt-5-nano",
+                name="Test",
+                instructions="Test",
+                tools=[tool, tool_name],
+            )
+
+            assert agent.tools is not None
+        else:
+            agent = AgentComposer.create_agent(
+                provider="openai",
+                model="gpt-5-nano",
+                name="Test",
+                instructions="Test",
+                tools=[tool],
+            )
+            assert len(agent.tools) == 1
+
+    def test_create_agent_with_invalid_tool_raises_error(self):
+        from src.domain.exceptions import InvalidBaseToolException
+
+        with pytest.raises(InvalidBaseToolException):
+            AgentComposer.create_agent(
+                provider="openai",
+                model="gpt-5-nano",
+                name="Test",
+                instructions="Test",
+                tools=[123],
+            )
+
+    def test_create_agent_with_tool_missing_name_raises_error(self):
+        from src.domain.exceptions import InvalidBaseToolException
+
+        class InvalidTool:
+            description = "A tool"
+
+            def execute(self, **kwargs):
+                return "result"
+
+        with pytest.raises(InvalidBaseToolException):
+            AgentComposer.create_agent(
+                provider="openai",
+                model="gpt-5-nano",
+                name="Test",
+                instructions="Test",
+                tools=[InvalidTool()],
+            )
+
+    def test_create_agent_with_tool_missing_description_raises_error(self):
+        from src.domain.exceptions import InvalidBaseToolException
+
+        class InvalidTool:
+            name = "invalid"
+
+            def execute(self, **kwargs):
+                return "result"
+
+        with pytest.raises(InvalidBaseToolException):
+            AgentComposer.create_agent(
+                provider="openai",
+                model="gpt-5-nano",
+                name="Test",
+                instructions="Test",
+                tools=[InvalidTool()],
+            )
+
+    def test_create_agent_with_tool_missing_execute_raises_error(self):
+        from src.domain.exceptions import InvalidBaseToolException
+
+        class InvalidTool:
+            name = "invalid"
+            description = "A tool"
+
+        with pytest.raises(InvalidBaseToolException):
+            AgentComposer.create_agent(
+                provider="openai",
+                model="gpt-5-nano",
+                name="Test",
+                instructions="Test",
+                tools=[InvalidTool()],
+            )
+
+    def test_create_agent_with_tool_non_string_name_raises_error(self):
+        from src.domain.exceptions import InvalidBaseToolException
+
+        class InvalidTool:
+            name = 123
+            description = "A tool"
+
+            def execute(self, **kwargs):
+                return "result"
+
+        with pytest.raises(InvalidBaseToolException):
+            AgentComposer.create_agent(
+                provider="openai",
+                model="gpt-5-nano",
+                name="Test",
+                instructions="Test",
+                tools=[InvalidTool()],
+            )
+
+    def test_create_agent_with_tool_non_string_description_raises_error(self):
+        from src.domain.exceptions import InvalidBaseToolException
+
+        class InvalidTool:
+            name = "invalid"
+            description = 123
+
+            def execute(self, **kwargs):
+                return "result"
+
+        with pytest.raises(InvalidBaseToolException):
+            AgentComposer.create_agent(
+                provider="openai",
+                model="gpt-5-nano",
+                name="Test",
+                instructions="Test",
+                tools=[InvalidTool()],
+            )
+
+    def test_create_agent_with_tool_non_callable_execute_raises_error(self):
+        from src.domain.exceptions import InvalidBaseToolException
+
+        class InvalidTool:
+            name = "invalid"
+            description = "A tool"
+            execute = "not callable"
+
+        with pytest.raises(InvalidBaseToolException):
+            AgentComposer.create_agent(
+                provider="openai",
+                model="gpt-5-nano",
+                name="Test",
+                instructions="Test",
+                tools=[InvalidTool()],
+            )
+
+    def test_create_agent_tools_preserved_with_all_params(self):
+        from src.domain import BaseTool
+
+        class TestTool(BaseTool):
+            name = "test_tool"
+            description = "A test tool"
+
+            def execute(self, **kwargs):
+                return "result"
+
+        tool = TestTool()
+        config = {"temperature": 0.7}
+        agent = AgentComposer.create_agent(
+            provider="openai",
+            model="gpt-5-nano",
+            name="Test Agent",
+            instructions="Be helpful",
+            tools=[tool],
+            config=config,
+            history_max_size=15,
+        )
+
+        assert len(agent.tools) == 1
+        assert agent.config == config
+        assert agent.history.max_size == 15
+
+    def test_create_agent_with_invalid_string_tool_name_raises_error(self):
+        from src.domain.exceptions import InvalidBaseToolException
+
+        with pytest.raises(InvalidBaseToolException):
+            AgentComposer.create_agent(
+                provider="openai",
+                model="gpt-5-nano",
+                name="Test",
+                instructions="Test",
+                tools=["invalid_tool_name_that_doesnt_exist"],
+            )
+
+    def test_create_agent_with_valid_builtin_tool_names(self):
+        from src.infra import AvailableTools
+
+        available = AvailableTools.get_available_tools()
+        if available:
+            tool_name = list(available.keys())[0]
+            agent = AgentComposer.create_agent(
+                provider="openai",
+                model="gpt-5-nano",
+                name="Test",
+                instructions="Test",
+                tools=[tool_name],
+            )
+
+            assert agent.tools is not None
+            assert len(agent.tools) > 0
+        else:
+            pytest.skip("No available tools to test")
+
+    def test_create_agent_tools_are_independent_between_agents(self):
+        from src.domain import BaseTool
+
+        class TestTool(BaseTool):
+            name = "test_tool"
+            description = "A test tool"
+
+            def execute(self, **kwargs):
+                return "result"
+
+        tool = TestTool()
+        agent1 = AgentComposer.create_agent(
+            provider="openai",
+            model="gpt-5-nano",
+            name="Agent1",
+            instructions="Test",
+            tools=[tool],
+        )
+
+        agent2 = AgentComposer.create_agent(
+            provider="openai",
+            model="gpt-5-nano",
+            name="Agent2",
+            instructions="Test",
+            tools=[tool],
+        )
+
+        assert agent1.tools is not agent2.tools

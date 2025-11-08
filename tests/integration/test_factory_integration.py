@@ -71,6 +71,7 @@ class TestChatAdapterFactoryIntegration:
             model="gpt-5-mini",
             instructions="Be helpful",
             config={},
+            tools=None,
             history=[],
             user_ask="Hello",
         )
@@ -83,6 +84,7 @@ class TestChatAdapterFactoryIntegration:
         mock_response = Mock()
         mock_message = Mock()
         mock_message.content = "Ollama response"
+        mock_message.tool_calls = None  # No tool calls
         mock_response.message = mock_message
         mock_ollama_chat.return_value = mock_response
 
@@ -92,6 +94,7 @@ class TestChatAdapterFactoryIntegration:
             model="gemma3:4b",
             instructions="Be helpful",
             config={},
+            tools=None,
             history=[],
             user_ask="Hello",
         )
@@ -187,6 +190,7 @@ class TestChatAdapterFactoryIntegration:
             model="gpt-5-nano",
             instructions="System prompt",
             config={},
+            tools=None,
             history=history,
             user_ask="New question",
         )
@@ -202,6 +206,7 @@ class TestChatAdapterFactoryIntegration:
         mock_response = Mock()
         mock_message = Mock()
         mock_message.content = "Local response"
+        mock_message.tool_calls = None  # No tool calls
         mock_response.message = mock_message
         mock_ollama_chat.return_value = mock_response
 
@@ -215,6 +220,7 @@ class TestChatAdapterFactoryIntegration:
                 model=model,
                 instructions="Test",
                 config={},
+                tools=None,
                 history=[],
                 user_ask="Test",
             )

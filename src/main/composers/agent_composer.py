@@ -46,14 +46,15 @@ class AgentComposer:
         AgentComposer.__logger.info(
             f"Composing agent creation - Provider: {provider}, Model: {model}, Name: {name}"
         )
-        AgentComposer.__logger.debug(
-            f"Agent parameters - Tools: {len(tools) if tools else 0}, "
-            f"History max size: {history_max_size}, "
-            f"Config keys: {list(config.keys()) if config else []}"
-        )
 
         if config is None:
             config = {}
+
+        AgentComposer.__logger.debug(
+            f"Agent parameters - Tools: {len(tools) if tools else 0}, "
+            f"History max size: {history_max_size}, "
+            f"Config keys: {list(config.keys()) if isinstance(config, dict) else 'invalid'}"
+        )
 
         input_dto = CreateAgentInputDTO(
             provider=provider,

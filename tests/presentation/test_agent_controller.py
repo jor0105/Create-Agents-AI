@@ -1052,3 +1052,216 @@ class TestAIAgentEdgeCases:
 
             agent = controller._AIAgent__agent
             assert agent.provider.lower() == "openai"
+
+    def test_initialization_with_tools_none(self):
+        controller = AIAgent(
+            provider="openai",
+            model="gpt-5",
+            name="Test",
+            instructions="Test",
+            tools=None,
+        )
+
+        agent = controller._AIAgent__agent
+        assert agent.tools is None
+
+    def test_initialization_with_tools_empty_list(self):
+        controller = AIAgent(
+            provider="openai",
+            model="gpt-5",
+            name="Test",
+            instructions="Test",
+            tools=[],
+        )
+
+        agent = controller._AIAgent__agent
+        assert agent.tools == []
+
+    def test_initialization_with_single_tool(self):
+        from src.domain import BaseTool
+
+        class TestTool(BaseTool):
+            name = "test_tool"
+            description = "A test tool"
+
+            def execute(self, **kwargs):
+                return "result"
+
+        tool = TestTool()
+        controller = AIAgent(
+            provider="openai",
+            model="gpt-5",
+            name="Test",
+            instructions="Test",
+            tools=[tool],
+        )
+
+        agent = controller._AIAgent__agent
+        assert len(agent.tools) == 1
+        assert agent.tools[0] is tool
+
+    def test_initialization_with_multiple_tools(self):
+        from src.domain import BaseTool
+
+        class Tool1(BaseTool):
+            name = "tool1"
+            description = "First tool"
+
+            def execute(self, **kwargs):
+                return "result1"
+
+        class Tool2(BaseTool):
+            name = "tool2"
+            description = "Second tool"
+
+            def execute(self, **kwargs):
+                return "result2"
+
+        tools = [Tool1(), Tool2()]
+        controller = AIAgent(
+            provider="openai",
+            model="gpt-5",
+            name="Test",
+            instructions="Test",
+            tools=tools,
+        )
+
+        agent = controller._AIAgent__agent
+        assert len(agent.tools) == 2
+
+    def test_initialization_with_string_tool_name(self):
+        from src.infra import AvailableTools
+
+        available = AvailableTools.get_available_tools()
+        if available:
+            tool_name = list(available.keys())[0]
+            controller = AIAgent(
+                provider="openai",
+                model="gpt-5",
+                name="Test",
+                instructions="Test",
+                tools=[tool_name],
+            )
+
+            agent = controller._AIAgent__agent
+            assert agent.tools is not None
+        else:
+            pytest.skip("No available tools to test")
+
+    def test_initialization_with_mixed_tool_types(self):
+        from src.domain import BaseTool
+        from src.infra import AvailableTools
+
+        class TestTool(BaseTool):
+            name = "test_tool"
+            description = "A test tool"
+
+            def execute(self, **kwargs):
+                return "result"
+
+        tool = TestTool()
+        available = AvailableTools.get_available_tools()
+        if available:
+            tool_name = list(available.keys())[0]
+            controller = AIAgent(
+                provider="openai",
+                model="gpt-5",
+                name="Test",
+                instructions="Test",
+                tools=[tool, tool_name],
+            )
+
+            agent = controller._AIAgent__agent
+            assert agent.tools is not None
+        else:
+            controller = AIAgent(
+                provider="openai",
+                model="gpt-5",
+                name="Test",
+                instructions="Test",
+                tools=[tool],
+            )
+            agent = controller._AIAgent__agent
+            assert len(agent.tools) == 1
+
+    def test_get_configs_includes_tools(self):
+        from src.domain import BaseTool
+
+        class TestTool(BaseTool):
+            name = "test_tool"
+            description = "A test tool"
+
+            def execute(self, **kwargs):
+                return "result"
+
+        tool = TestTool()
+        controller = AIAgent(
+            provider="openai",
+            model="gpt-5",
+            name="Test",
+            instructions="Test",
+            tools=[tool],
+        )
+
+        config = controller.get_configs()
+
+        assert "tools" in config
+
+    def test_initialization_tools_preserved_through_chat(self):
+        from unittest.mock import Mock, patch
+
+        from src.domain import BaseTool
+
+        class TestTool(BaseTool):
+            name = "test_tool"
+            description = "A test tool"
+
+            def execute(self, **kwargs):
+                return "result"
+
+        tool = TestTool()
+
+        with patch(
+            "src.presentation.agent_controller.AgentComposer.create_chat_use_case"
+        ) as mock_create_chat:
+            mock_use_case = Mock()
+            mock_output = Mock()
+            mock_output.response = "Response"
+            mock_use_case.execute.return_value = mock_output
+            mock_create_chat.return_value = mock_use_case
+
+            controller = AIAgent(
+                provider="openai",
+                model="gpt-5",
+                name="Test",
+                instructions="Test",
+                tools=[tool],
+            )
+
+            controller.chat("Hello")
+
+            agent = controller._AIAgent__agent
+            assert len(agent.tools) == 1
+
+    def test_initialization_with_invalid_tool_type_raises_error(self):
+        with pytest.raises(Exception):
+            AIAgent(
+                provider="openai",
+                model="gpt-5",
+                name="Test",
+                instructions="Test",
+                tools=[123],
+            )
+
+    def test_initialization_with_tool_missing_attributes_raises_error(self):
+        class InvalidTool:
+            pass
+
+        with pytest.raises(Exception):
+            AIAgent(
+                provider="openai",
+                model="gpt-5",
+                name="Test",
+                instructions="Test",
+                tools=[InvalidTool()],
+            )
