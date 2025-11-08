@@ -67,11 +67,15 @@ class OpenAIChatAdapter(ChatRepository):
                 "reasoning": "think",
                 "max_output_tokens": "max_tokens",
             }
+
             for api_key, config_key in param_to_change.items():
                 if config_key in config_copy:
-                    chat_kwargs[api_key] = config_copy.pop(config_key)
+                    config_copy[api_key] = config_copy.pop(config_key)
             for key, config_data in config_copy.items():
-                chat_kwargs[key] = config_data
+                if "reasoning" == key:
+                    chat_kwargs["reasoning"] = {"effort": config_data}
+                else:
+                    chat_kwargs[key] = config_data
 
         response_api = self.__client.responses.create(**chat_kwargs)
 

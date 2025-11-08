@@ -377,7 +377,10 @@ class TestAIAgentClearHistory:
 
     def test_clear_history_can_be_called_multiple_times(self):
         controller = AIAgent(
-            provider="openai", model="gpt-5-nano", name="Test", instructions="Test"
+            provider="openai",
+            model="gpt-5-nano",
+            name="Test",
+            instructions="Test",
         )
 
         agent = controller._AIAgent__agent

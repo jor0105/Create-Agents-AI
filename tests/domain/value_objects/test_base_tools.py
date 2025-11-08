@@ -6,6 +6,8 @@ from src.domain.value_objects.base_tools import BaseTool
 
 
 class ConcreteTestTool(BaseTool):
+    """Concrete test tool for testing purposes."""
+
     name = "test_tool"
     description = "A tool for testing purposes"
     parameters = {
@@ -20,6 +22,7 @@ class ConcreteTestTool(BaseTool):
     }
 
     def execute(self, input: str) -> str:
+        """Execute the test tool with the given input."""
         return f"Executed with: {input}"
 
 

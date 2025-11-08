@@ -1,8 +1,3 @@
-"""
-Teste unitário para verificar o formato de tool calling do Ollama.
-Valida que as tools estão sendo formatadas corretamente.
-"""
-
 from src.domain.value_objects.base_tools import BaseTool
 from src.infra.adapters.Ollama.ollama_tool_schema_formatter import (
     OllamaToolSchemaFormatter,
@@ -10,8 +5,6 @@ from src.infra.adapters.Ollama.ollama_tool_schema_formatter import (
 
 
 class MockTool(BaseTool):
-    """Tool de teste."""
-
     name = "mock_tool"
     description = "A mock tool for testing"
     parameters = {
@@ -25,7 +18,6 @@ class MockTool(BaseTool):
 
 
 def test_format_single_tool():
-    """Testa formatação de uma única tool."""
     tool = MockTool()
     formatted = OllamaToolSchemaFormatter.format_tools_for_ollama([tool])
 
@@ -37,8 +29,6 @@ def test_format_single_tool():
 
 
 def test_format_multiple_tools():
-    """Testa formatação de múltiplas tools."""
-
     class Tool1(BaseTool):
         name = "tool1"
         description = "First tool"
@@ -64,13 +54,11 @@ def test_format_multiple_tools():
 
 
 def test_format_empty_tools_list():
-    """Testa formatação de lista vazia."""
     formatted = OllamaToolSchemaFormatter.format_tools_for_ollama([])
     assert formatted == []
 
 
 def test_tool_schema_structure():
-    """Testa que a estrutura do schema está correta para Ollama."""
     tool = MockTool()
     formatted = OllamaToolSchemaFormatter.format_tools_for_ollama([tool])
 
@@ -93,7 +81,6 @@ def test_tool_schema_structure():
 
 
 def test_tool_parameters_preserved():
-    """Testa que os parâmetros da tool são preservados corretamente."""
     tool = MockTool()
     formatted = OllamaToolSchemaFormatter.format_tools_for_ollama([tool])
 
@@ -103,42 +90,3 @@ def test_tool_parameters_preserved():
     assert params["properties"]["param1"]["type"] == "string"
     assert "required" in params
     assert "param1" in params["required"]
-
-
-if __name__ == "__main__":
-    # Executar testes manualmente
-    print("Executando testes de formatação de tools do Ollama...\n")
-
-    try:
-        test_format_single_tool()
-        print("✅ test_format_single_tool - PASSOU")
-
-        test_format_multiple_tools()
-        print("✅ test_format_multiple_tools - PASSOU")
-
-        test_format_empty_tools_list()
-        print("✅ test_format_empty_tools_list - PASSOU")
-
-        test_tool_schema_structure()
-        print("✅ test_tool_schema_structure - PASSOU")
-
-        test_tool_parameters_preserved()
-        print("✅ test_tool_parameters_preserved - PASSOU")
-
-        print("\n" + "=" * 60)
-        print("TODOS OS TESTES PASSARAM! ✨")
-        print("=" * 60)
-        print("\n✅ A formatação de tools do Ollama está correta!")
-        print("✅ Estrutura compatível com a API nativa da Ollama")
-        print("✅ Similar ao formato do OpenAI")
-
-    except AssertionError as e:
-        print(f"\n❌ FALHA: {e}")
-        import traceback
-
-        traceback.print_exc()
-    except Exception as e:
-        print(f"\n❌ ERRO: {e}")
-        import traceback
-
-        traceback.print_exc()
