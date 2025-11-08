@@ -1,105 +1,145 @@
 # 🏗️ Arquitetura
 
-## Estrutura de Camadas
+Documentação da arquitetura do sistema seguindo **Clean Architecture** e **SOLID principles**.
+
+---
+
+## 📐 Estrutura de Camadas
 
 ```
 ┌─────────────────────────────────────┐
-│        PRESENTATION                 │
-│     (AIAgent Controller)            │
+│        PRESENTATION                 │  AIAgent Controller
+│     (Interface do Usuário)          │
 └──────────────┬──────────────────────┘
                │
 ┌──────────────▼──────────────────────┐
-│        APPLICATION                  │
-│    (Use Cases, DTOs)                │
+│        APPLICATION                  │  Use Cases & DTOs
+│    (Lógica da Aplicação)            │
 └──────────────┬──────────────────────┘
                │
 ┌──────────────▼──────────────────────┐
-│          DOMAIN                     │
-│  (Entities, Value Objects)          │
+│          DOMAIN                     │  Entities, Rules
+│    (Regras de Negócio)              │
 └──────────────▲──────────────────────┘
                │
 ┌──────────────┴──────────────────────┐
-│      INFRASTRUCTURE                 │
-│  (Adapters, Config, Factory)        │
+│      INFRASTRUCTURE                 │  Adapters, Config
+│    (Detalhes Técnicos)              │
 └─────────────────────────────────────┘
 ```
 
-## Camadas
+---
 
-### Domain (Domínio)
+## 🎯 Camadas
 
-**Localização**: `src/domain/`
+### 1. Domain (Domínio)
 
-Contém as regras de negócio puras:
+**Localização:** `src/domain/`
 
-- **Agent**: Entidade principal
-- **Message**: Value Object para mensagens
-- **History**: Value Object para histórico
-- **Exceções**: Erros de domínio
+**Responsabilidade:** Regras de negócio puras, independentes de tecnologia.
 
-**Características**:
+**Componentes:**
 
-- Zero dependências externas
-- Lógica de negócio pura
-- Totalmente testável
+- **Entities:** `Agent` (entidade principal)
+- **Value Objects:** `Message`, `History`, `MessageRole`
+- **Base Classes:** `BaseTool` (para ferramentas)
+- **Exceptions:** Erros de domínio
 
-### Application (Aplicação)
+**Características:**
 
-**Localização**: `src/application/`
+- ✅ Zero dependências externas
+- ✅ Lógica de negócio pura
+- ✅ 100% testável
 
-Orquestra os casos de uso:
+---
 
-- **Use Cases**: CreateAgent, ChatWithAgent, GetAgentConfig
-- **DTOs**: Transferência de dados entre camadas
-- **Interfaces**: Contratos (ex: ChatRepository)
+### 2. Application (Aplicação)
 
-**Características**:
+**Localização:** `src/application/`
 
-- Coordena entidades
-- Define interfaces para infraestrutura
-- Independente de frameworks
+**Responsabilidade:** Orquestrar casos de uso do sistema.
 
-### Infrastructure (Infraestrutura)
+**Componentes:**
 
-**Localização**: `src/infra/`
+- **Use Cases:**
+  - `CreateAgentUseCase` - Criar agente
+  - `ChatWithAgentUseCase` - Conversar com agente
+  - `GetAgentConfigUseCase` - Obter configurações
+- **DTOs:** Transferência de dados entre camadas
+- **Interfaces:** `ChatRepository` (contrato para adapters)
 
-Implementa detalhes técnicos:
+**Características:**
 
-- **Adapters**: OpenAI, Ollama
-- **Factory**: Criação de adapters
-- **Config**: Gerenciamento de ambiente
+- ✅ Coordena entidades do domínio
+- ✅ Define interfaces para infraestrutura
+- ✅ Independente de frameworks
 
-**Características**:
+---
 
-- Implementa interfaces da Application
-- Substituível sem afetar regras de negócio
+### 3. Infrastructure (Infraestrutura)
 
-### Presentation (Apresentação)
+**Localização:** `src/infra/`
 
-**Localização**: `src/presentation/`
+**Responsabilidade:** Implementar detalhes técnicos e integrações externas.
 
-Interface com o usuário:
+**Componentes:**
 
-- **AIAgent**: Controller principal (fachada simplificada)
+- **Adapters:**
+  - `OpenAIChatAdapter` - Integração com OpenAI
+  - `OllamaChatAdapter` - Integração com Ollama
+- **Tools:**
+  - `CurrentDateTool` - Ferramenta de data/hora
+  - `ReadLocalFileTool` - Leitura de arquivos
+- **Factory:** `ChatAdapterFactory` - Criação de adapters
+- **Config:** `EnvironmentConfig`, `LoggingConfig`, `MetricsCollector`
 
-**Características**:
+**Características:**
 
-- Facilita o uso do sistema
-- Pode ser substituída (CLI, API, GUI)
+- ✅ Implementa interfaces da Application
+- ✅ Substituível sem afetar negócio
+- ✅ Contém detalhes de bibliotecas externas
 
-## Princípios SOLID
+---
+
+### 4. Presentation (Apresentação)
+
+**Localização:** `src/presentation/`
+
+**Responsabilidade:** Interface pública com o usuário.
+
+**Componentes:**
+
+- **AIAgent:** Controller principal (fachada simplificada)
+
+**Características:**
+
+- ✅ API intuitiva e fácil de usar
+- ✅ Esconde complexidade interna
+- ✅ Pode ser substituída (CLI, API REST, GUI)
+
+---
+
+## 🎨 Princípios SOLID
 
 ### Single Responsibility (SRP)
 
 Cada classe tem uma única responsabilidade:
 
-- `Agent`: Representa um agente
-- `History`: Gerencia histórico
-- `ChatWithAgentUseCase`: Orquestra conversa
+```python
+Agent          # Representa um agente
+History        # Gerencia histórico
+ChatWithAgentUseCase  # Orquestra conversa
+```
 
 ### Open/Closed (OCP)
 
-Aberto para extensão, fechado para modificação. Novos adapters podem ser adicionados criando novas classes que implementam `ChatRepository`.
+Aberto para extensão, fechado para modificação:
+
+```python
+# Adicionar novo provider sem modificar código existente
+class ClaudeAdapter(ChatRepository):
+    def chat(self, ...): pass
+```
 
 ### Liskov Substitution (LSP)
 
@@ -114,7 +154,7 @@ adapter: ChatRepository = OllamaChatAdapter()
 
 ### Interface Segregation (ISP)
 
-Interfaces específicas:
+Interfaces específicas e focadas:
 
 ```python
 class ChatRepository(ABC):
@@ -125,91 +165,110 @@ class ChatRepository(ABC):
 
 ### Dependency Inversion (DIP)
 
-Depende de abstrações:
+Depende de abstrações, não de implementações:
 
 ```python
 class ChatWithAgentUseCase:
-    def __init__(self, chat_repository: ChatRepository):  # ← Interface
+    def __init__(self, chat_repository: ChatRepository):  # Interface
         self.__chat_repository = chat_repository
 ```
 
-## Padrões de Design
+---
 
-### Value Object
+## 🔧 Padrões de Design
 
-```python
-@dataclass(frozen=True)
-class Message:
-    role: MessageRole
-    content: str
-```
-
-### Repository
+### Repository Pattern
 
 ```python
 class ChatRepository(ABC):
     @abstractmethod
     def chat(self, ...) -> str:
         pass
+
+class OpenAIChatAdapter(ChatRepository):
+    def chat(self, ...): # Implementação
 ```
 
-### Factory
+### Factory Pattern
 
 ```python
 class ChatAdapterFactory:
     @staticmethod
-    def create(model: str, local_ai: Optional[str] = None) -> ChatRepository:
-        # Se local_ai especificado, usa Ollama
-        # Se modelo contém 'gpt', usa OpenAI
-        # Caso contrário, usa Ollama
+    def create(model: str, local_ai: Optional[str] = None):
+        if local_ai == "ollama":
+            return OllamaChatAdapter(model)
+        elif "gpt" in model.lower():
+            return OpenAIChatAdapter(model)
+        else:
+            return OllamaChatAdapter(model)
 ```
 
-### Singleton
+### Facade Pattern
 
 ```python
-class EnvironmentConfig:
-    _instance = None
-    # Carrega .env apenas uma vez
+# AIAgent é uma fachada simplificada
+class AIAgent:
+    def __init__(self, provider, model, ...):
+        # Esconde complexidade da criação
+        self.__agent = AgentComposer.create_agent(...)
+        self.__chat_use_case = AgentComposer.create_chat_use_case(...)
 ```
 
-## Fluxo de Dados
+### Value Object Pattern
+
+```python
+@dataclass(frozen=True)  # Imutável
+class Message:
+    role: MessageRole
+    content: str
+```
+
+---
+
+## 🔄 Fluxo de Dados
 
 ```
 User → AIAgent.chat()
     → ChatWithAgentUseCase.execute()
         → ChatRepository.chat()
-            → OpenAIChatAdapter/OllamaChatAdapter
-                → OpenAI API / Ollama
+            → OpenAIChatAdapter / OllamaChatAdapter
+                → API Externa (OpenAI / Ollama)
             ← Response
         ← ChatOutputDTO
-    ← response string
+    ← response: str
 ```
 
-## Benefícios
+---
 
-### Testabilidade
+## 💡 Benefícios da Arquitetura
+
+### 🧪 Testabilidade
 
 ```python
-# Fácil mockar dependências
+# Mock fácil de dependências
 mock_repo = Mock(spec=ChatRepository)
 use_case = ChatWithAgentUseCase(mock_repo)
 ```
 
-### Flexibilidade
+### 🔄 Flexibilidade
 
 ```python
 # Trocar provider sem mudar código
-factory.create(model="llama2", local_ai="ollama")
+agent = AIAgent(provider="ollama", model="llama2")
 ```
 
-### Manutenibilidade
+### 📈 Escalabilidade
+
+- Adicionar novos providers facilmente
+- Extensível via interfaces
+- Preparado para crescimento
+
+### 🛡️ Manutenibilidade
 
 - Código organizado em camadas
 - Responsabilidades claras
-- Fácil localizar bugs
+- Fácil localizar e corrigir bugs
 
-### Escalabilidade
+---
 
-- Adicionar providers facilmente
-- Extensível via interfaces
-- Preparado para crescimento
+**Versão:** 0.1.0 | **Atualização:** Novembro 2025

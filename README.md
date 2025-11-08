@@ -65,7 +65,7 @@ poetry install -E all
 ```python
 from src.presentation import AIAgent
 
-agent = AIAgent(model="gpt-4", name="Meu Assistente", instructions="Você é um assistente útil")
+agent = AIAgent(provider="openai", model="gpt-4", name="Meu Assistente", instructions="Você é um assistente útil")
 
 response = agent.chat("Olá! Como você está?")
 
@@ -108,7 +108,7 @@ agent.chat("Primeira mensagem")
 agent.chat("Segunda mensagem")
 
 # Personalizar tamanho do histórico
-agent = AIAgent(..., history_max_size=20)
+agent = AIAgent(provider="openai", model="gpt-4", history_max_size=20)
 
 # Limpar quando necessário
 agent.clear_history()
@@ -123,9 +123,10 @@ config = {
 }
 
 agent = AIAgent(
+    provider="openai",
     model="gpt-4",
     name="Assistente",
-    instructions="Seja conciso"
+    instructions="Seja conciso",
     config=config,
 )
 ```
@@ -196,6 +197,7 @@ print(response)
 ```python
 # Um para análise
 analyzer = AIAgent(
+    provider="openai",
     model="gpt-4",
     instructions="Você analisa código e fornece feedback crítico",
     config={"temperature": 0.5}
@@ -203,6 +205,7 @@ analyzer = AIAgent(
 
 # Outro para documentação
 documentor = AIAgent(
+    provider="openai",
     model="gpt-4",
     instructions="Você escreve documentação clara e profissional",
     config={"temperature": 0.3}
@@ -254,11 +257,12 @@ OLLAMA_API_URL=http://localhost:11434
 
 ```python
 AIAgent(
-    provider: str,              # "openai" ou "ollama"
-    model: str,                 # Nome do modelo
+    provider: str,              # "openai" ou "ollama" (obrigatório)
+    model: str,                 # Nome do modelo (obrigatório)
     name: str = None,           # Nome do agente (opcional)
     instructions: str = None,   # Instruções do sistema (opcional)
-    config: dict = None,        # Configuração do modelo
+    config: dict = None,        # Configuração do modelo (opcional)
+    tools: list = None,         # Lista de ferramentas (opcional)
     history_max_size: int = 10  # Tamanho máximo do histórico
 )
 ```

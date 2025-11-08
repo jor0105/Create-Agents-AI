@@ -1,57 +1,241 @@
-# AI Agent Creator
+````markdown
+# 🤖 AI Agent Creator
 
-Sistema modular e profissional para criação de agentes de IA com suporte a múltiplos provedores.
+> Framework Python enterprise para criar agentes de IA inteligentes com arquitetura limpa, múltiplos provedores e ferramentas extensíveis.
 
+[![Python](https://img.shields.io/badge/Python-3.12+-blue.svg)](https://www.python.org/downloads/)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
+[![Clean Architecture](https://img.shields.io/badge/Architecture-Clean-brightgreen.svg)](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html)
+
+---
+
+## 🎯 O que este sistema oferece?
+
+**AI Agent Creator** é um framework Python que permite criar agentes conversacionais inteligentes de forma profissional:
+
+✅ **Múltiplos provedores**: OpenAI e Ollama (local) com fácil integração
+✅ **Ferramentas extensíveis**: CurrentDateTool e ReadLocalFileTool (PDF, Excel, CSV)
+✅ **Histórico automático**: Conversas contextualizadas sem esforço
+✅ **Métricas integradas**: Monitore performance em JSON ou Prometheus
+✅ **Arquitetura limpa**: Código testável, manutenível e escalável seguindo SOLID
+
+---
 
 ## 🚀 Quick Start
 
+### Instalação
+
+```bash
+# Clone o repositório
+git clone https://github.com/jor0105/AI_Agent.git
+cd AI_Agent
+
+# Instalação básica
+poetry install
+
+# OU com suporte a leitura de arquivos (PDF, Excel, CSV, Parquet)
+poetry install -E file-tools
+
+# Configure suas credenciais
+cp .env.example .env
+# Edite .env e adicione: OPENAI_API_KEY=sk-proj-sua-chave
+```
+
+### Primeiro Agente em 3 Linhas
+
 ```python
-from src import AIAgent
+from src.presentation import AIAgent
 
-# Criar agente
-agent = AIAgent(
-    model="gpt-4",
-    name="Assistente",
-    instructions="Você é um assistente útil."
-)
+agent = AIAgent(provider="openai", model="gpt-4",
+                instructions="Você é um assistente útil")
 
-# Conversar
 response = agent.chat("Olá!")
 print(response)
 ```
 
-## 📦 Instalação
+---
 
-```bash
-# Clonar repositório
-git clone https://github.com/jor0105/AI_Agent.git
-cd AI_Agent
+## ✨ Funcionalidades Principais
 
-# Instalar dependências
-pip install -r requirements.txt
+### 🤝 Múltiplos Provedores
 
-# Configurar API key
-echo "OPENAI_API_KEY=sua-chave" > .env
+```python
+# OpenAI (GPT-4, GPT-3.5-turbo, GPT-4o)
+agent_openai = AIAgent(provider="openai", model="gpt-4")
+
+# Ollama (llama2, mistral, codellama - 100% local e privado)
+agent_local = AIAgent(provider="ollama", model="llama2")
 ```
+
+### 🔧 Ferramentas Integradas
+
+Adicione capacidades aos seus agentes com ferramentas prontas:
+
+```python
+agent = AIAgent(
+    provider="openai",
+    model="gpt-4",
+    tools=["current_date", "readlocalfile"]  # Ferramentas disponíveis
+)
+
+# O agente usa automaticamente as ferramentas quando necessário
+agent.chat("Que dia é hoje?")  # Usa CurrentDateTool
+agent.chat("Leia o arquivo report.pdf")  # Usa ReadLocalFileTool
+```
+
+**Ferramentas Disponíveis:**
+
+- `current_date` - Data/hora em qualquer timezone
+- `readlocalfile` - Lê PDF, Excel, CSV, Parquet, JSON, YAML, TXT (requer `poetry install -E file-tools`)
+
+### 💬 Histórico Contextual
+
+```python
+agent.chat("Olá!")
+agent.chat("Qual é a capital do Brasil?") # Mantém contexto
+agent.chat("E a população?")              # Usa contexto anterior
+
+# Ver histórico
+config = agent.get_configs()
+print(f"Histórico: {len(config['history'])} mensagens")
+
+# Limpar quando necessário
+agent.clear_history()
+```
+
+### 📊 Métricas e Monitoramento
+
+```python
+# Coletar métricas
+metrics = agent.get_metrics()
+
+# Exportar em diferentes formatos
+agent.export_metrics_json("metrics.json")
+agent.export_metrics_prometheus("metrics.prom")
+```
+
+### ⚙️ Configurações Personalizadas
+
+```python
+agent = AIAgent(
+    provider="openai",
+    model="gpt-4",
+    instructions="Seja conciso e técnico",
+    config={
+        "temperature": 0.7,      # Criatividade (0-1)
+        "max_tokens": 2000,      # Limite de resposta
+    },
+    history_max_size=20         # Tamanho do histórico
+)
+```
+
+---
 
 ## 📚 Documentação
 
-- [Instalação](guia/instalacao.md) - Configure seu ambiente
-- [Uso Básico](guia/uso-basico.md) - Aprenda a usar
-- [Exemplos](guia/exemplos.md) - Casos de uso práticos
-- [Arquitetura](arquitetura.md) - Entenda a estrutura
-- [API](api.md) - Referência completa
+### Para Usuários
 
-## 🏗️ Arquitetura
+- **[Instalação](guia/instalacao.md)** - Configure seu ambiente passo a passo
+- **[Uso Básico](guia/uso-basico.md)** - Aprenda os fundamentos
+- **[Exemplos Práticos](guia/exemplos.md)** - Casos de uso reais
+- **[Ferramentas](tools.md)** - Guia completo das tools disponíveis
+- **[API Reference](api.md)** - Documentação completa da API
 
-O projeto segue **Clean Architecture** com separação clara de responsabilidades:
+### Para Desenvolvedores
+
+- **[Arquitetura](arquitetura.md)** - Clean Architecture e padrões de design
+- **[CI/CD](ci-cd.md)** - Workflows e quality checks
+- **[Logging - Guia Iniciantes](logs/logging_guia_iniciantes.md)** - Sistema de logs
+- **[Logging - Visual Guide](logs/logging_visual_guide.md)** - Logs na prática
+
+---
+
+## 🏗️ Por Que Usar Este Framework?
+
+### Para Empresas
+
+- ✅ **Privacidade**: Opção de modelos 100% locais com Ollama
+- ✅ **Segurança**: Sanitização automática de dados sensíveis nos logs
+- ✅ **Monitoramento**: Métricas em tempo real para produção
+- ✅ **Escalabilidade**: Arquitetura preparada para crescimento
+
+### Para Desenvolvedores
+
+- ✅ **Clean Architecture**: Código limpo, testável e manutenível
+- ✅ **SOLID**: Fácil de estender com novos provedores e ferramentas
+- ✅ **Type hints**: Suporte completo para IDEs
+- ✅ **CI/CD**: Quality checks automáticos com GitHub Actions
+
+---
+
+## 📊 Arquitetura
+
+O projeto segue **Clean Architecture** e **SOLID principles**:
 
 ```
-Presentation → Application → Domain ← Infrastructure
+┌─────────────────────────────────────┐
+│        PRESENTATION                 │  ← AIAgent (interface simples)
+│     (Controllers/UI)                │
+└──────────────┬──────────────────────┘
+               │
+┌──────────────▼──────────────────────┐
+│        APPLICATION                  │  ← Use Cases & DTOs
+│    (Business Logic)                 │
+└──────────────┬──────────────────────┘
+               │
+┌──────────────▼──────────────────────┐
+│          DOMAIN                     │  ← Entities & Rules
+│    (Core Business)                  │
+└──────────────▲──────────────────────┘
+               │
+┌──────────────┴──────────────────────┐
+│      INFRASTRUCTURE                 │  ← Adapters (OpenAI, Ollama)
+│  (External Services)                │
+└─────────────────────────────────────┘
 ```
 
-Saiba mais em [Arquitetura](arquitetura.md).
+**Benefícios**: Testável, Flexível, Escalável e Manutenível
+
+[Saiba mais sobre a arquitetura →](arquitetura.md)
+
+---
+
+## 🤝 Contribuindo
+
+Quer adicionar um novo provedor ou criar uma ferramenta?
+
+1. Fork o repositório
+2. Crie uma branch: `git checkout -b feature/nova-feature`
+3. Implemente seguindo os padrões existentes
+4. Teste: `poetry run pytest --cov=src`
+5. Envie um Pull Request
+
+---
+
+## 📞 Suporte
+
+- 📧 **Email**: estraliotojordan@gmail.com
+- 🐛 **Bugs**: [GitHub Issues](https://github.com/jor0105/AI_Agent/issues)
+- 💬 **Discussões**: [GitHub Discussions](https://github.com/jor0105/AI_Agent/discussions)
+
+---
 
 ## 📄 Licença
 
-MIT License - veja [LICENSE](https://github.com/jor0105/AI_Agent/blob/develop/LICENSE)
+MIT - Use livremente em seus projetos.
+
+---
+
+## 👨‍💻 Autor
+
+**Jordan Estralioto**
+
+- GitHub: [@jor0105](https://github.com/jor0105)
+- Email: estraliotojordan@gmail.com
+
+---
+
+**Versão:** 0.1.0
+**Última atualização:** Novembro 2025
+**Status:** 🚀 Em desenvolvimento ativo
+````

@@ -1,41 +1,57 @@
-# 🛠️ Ferramentas (Tools) do AI Agent
+# 🛠️ Ferramentas (Tools)
 
-Este documento descreve as ferramentas disponíveis para seus agentes de IA e como instalá-las.
+Este guia explica as ferramentas disponíveis para seus agentes de IA e como usá-las.
+
+---
 
 ## 📦 Visão Geral
 
-As ferramentas são **funcionalidades adicionais** que seus agentes podem usar para executar tarefas específicas. Para manter a biblioteca leve e performática, algumas ferramentas pesadas são **opcionais** e só são carregadas quando necessário.
+Ferramentas são **capacidades adicionais** que seus agentes podem usar para executar tarefas específicas. Para manter o sistema leve, algumas ferramentas com dependências pesadas são **opcionais**.
+
+---
 
 ## 🎯 Ferramentas Disponíveis
 
-### ✅ Ferramentas Básicas (Sempre Disponíveis)
+### ✅ CurrentDateTool (Sempre Disponível)
 
-Estas ferramentas são leves e vêm instaladas por padrão:
+Obtém data e hora atuais em qualquer timezone.
 
-#### 1. **CurrentDateTool**
+**Dependências:** Nenhuma (biblioteca padrão Python)
 
-- **Descrição**: Obtém a data e hora atuais
-- **Dependências**: Nenhuma (biblioteca padrão Python)
-- **Uso**:
+**Uso:**
 
 ```python
-from src.infra.adapters.Tools import CurrentDateTool
+from src.presentation import AIAgent
 
-tool = CurrentDateTool()
-result = tool.execute()
-print(result)  # "2025-11-07 14:30:00"
+agent = AIAgent(
+    provider="openai",
+    model="gpt-4",
+    tools=["current_date"]
+)
+
+response = agent.chat("Que dia é hoje?")
+print(response)
 ```
 
-### 🔧 Ferramentas Opcionais (Requer Instalação Extra)
+**Ações suportadas:**
 
-Estas ferramentas possuem dependências pesadas e precisam ser instaladas separadamente:
+- `date` - Data (YYYY-MM-DD)
+- `time` - Hora (HH:MM:SS)
+- `datetime` - Data e hora completos
+- `timestamp` - Unix timestamp
+- `date_with_weekday` - Data com dia da semana
 
-#### 2. **ReadLocalFileTool**
+---
 
-- **Descrição**: Lê arquivos locais com suporte a múltiplos formatos
-- **Formatos Suportados**: TXT, MD, CSV, Excel (XLS/XLSX), PDF, Parquet, JSON, YAML, e mais
-- **Dependências**: `tiktoken`, `pymupdf`, `pandas`, `openpyxl`, `pyarrow`, `chardet`
-- **Instalação**:
+### 🔧 ReadLocalFileTool (Opcional)
+
+Lê arquivos locais em múltiplos formatos.
+
+**Formatos:** TXT, MD, CSV, Excel (XLS/XLSX), PDF, Parquet, JSON, YAML
+
+**Dependências:** `tiktoken`, `unstructured`, `pandas`, `openpyxl`, `pyarrow`, `chardet`
+
+**Instalação:**
 
 ```bash
 # Com pip
@@ -45,224 +61,218 @@ pip install ai-agent[file-tools]
 poetry install -E file-tools
 ```
 
-- **Uso**:
-
-```python
-from src.infra.adapters.Tools import ReadLocalFileTool
-
-# Tentará importar - falhará se dependências não instaladas
-try:
-    tool = ReadLocalFileTool()
-    content = tool.execute(path="/caminho/para/arquivo.pdf", max_tokens=30000)
-    print(content)
-except ImportError as e:
-    print("ReadLocalFileTool não disponível. Instale com: pip install ai-agent[file-tools]")
-```
-
-- **Funcionalidades**:
-  - ✅ Validação de tamanho de arquivo (max 100MB)
-  - ✅ Validação de limite de tokens
-  - ✅ Detecção automática de encoding
-  - ✅ Suporte a múltiplos formatos
-  - ✅ Tratamento robusto de erros
-
-## 🚀 Como Usar Ferramentas com Agentes
-
-### Exemplo 1: Agente com Ferramenta de Data
+**Uso:**
 
 ```python
 from src.presentation import AIAgent
 
-# Criar agente (ferramenta CurrentDateTool é registrada automaticamente)
 agent = AIAgent(
+    provider="openai",
     model="gpt-4",
-    name="Assistente Temporal",
-    instructions="Você pode verificar a data/hora atual quando necessário"
+    tools=["readlocalfile"]
 )
 
-# O agente pode usar a ferramenta automaticamente
-response = agent.chat("Que dia é hoje?")
-print(response)  # O agente usará CurrentDateTool internamente
+response = agent.chat("Leia o arquivo report.pdf e resuma")
+print(response)
 ```
 
-### Exemplo 2: Agente com Ferramenta de Leitura de Arquivos
+**Limites:**
+
+- Tamanho máximo: 100MB
+- Tokens máximos: 30.000
+
+**Funcionalidades:**
+
+- ✅ Validação de tamanho
+- ✅ Detecção automática de encoding
+- ✅ Suporte a múltiplos formatos
+- ✅ Tratamento robusto de erros
+
+---
+
+## 🚀 Uso com Agentes
+
+### Exemplo 1: Ferramenta de Data
 
 ```python
-from src.presentation import AIAgent
+agent = AIAgent(
+    provider="openai",
+    model="gpt-4",
+    instructions="Você pode verificar data/hora quando necessário",
+    tools=["current_date"]
+)
 
+# O agente usa a ferramenta automaticamente
+response = agent.chat("Que dia da semana é hoje?")
+```
+
+### Exemplo 2: Leitura de Arquivos
+
+```python
 # Certifique-se que instalou: poetry install -E file-tools
 
 agent = AIAgent(
+    provider="openai",
     model="gpt-4",
-    name="Leitor de Documentos",
-    instructions="Você pode ler arquivos locais para ajudar o usuário"
+    instructions="Você pode ler arquivos locais",
+    tools=["readlocalfile"]
 )
 
-# O agente pode usar ReadLocalFileTool automaticamente
-response = agent.chat("Resuma o arquivo /home/user/documento.pdf")
-print(response)  # O agente lerá o PDF e criará um resumo
+response = agent.chat("Resuma o documento relatorio.pdf")
 ```
+
+### Exemplo 3: Múltiplas Ferramentas
+
+```python
+agent = AIAgent(
+    provider="openai",
+    model="gpt-4",
+    tools=["current_date", "readlocalfile"]
+)
+
+# O agente escolhe qual ferramenta usar
+agent.chat("Que dia é hoje?")  # Usa current_date
+agent.chat("Leia notas.txt")   # Usa readlocalfile
+```
+
+---
 
 ## 📋 Checklist de Instalação
 
 ### Instalação Básica ✅
 
-- [x] OpenAI / Ollama adapters
+```bash
+poetry install
+```
+
+Inclui:
+
 - [x] CurrentDateTool
 - [x] Gerenciamento de histórico
-- [x] Métricas e performance
+- [x] Métricas de performance
+- [x] OpenAI e Ollama adapters
 
-### Instalação Completa com File Tools 📁
+### Instalação com File Tools 📁
 
 ```bash
 poetry install -E file-tools
 ```
 
+Inclui:
+
 - [x] Tudo da instalação básica
 - [x] ReadLocalFileTool
 - [x] Suporte para PDF, Excel, CSV, Parquet
-- [x] Análise de documentos com tokens
 
-## 🔍 Verificando Ferramentas Disponíveis
+---
+
+## 🔍 Verificar Ferramentas Disponíveis
 
 ```python
 from src.infra.config.available_tools import AvailableTools
 
-# Obter todas as ferramentas disponíveis
+# Obter todas as ferramentas
 tools = AvailableTools.get_available_tools()
 
 print("Ferramentas disponíveis:")
 for name, tool in tools.items():
     print(f"  - {name}: {tool.description[:50]}...")
 
-# Verificar se uma ferramenta específica está disponível
+# Verificar ferramenta específica
 if "readlocalfile" in tools:
-    print("✅ ReadLocalFileTool está disponível!")
+    print("✅ ReadLocalFileTool disponível!")
 else:
-    print("⚠️ ReadLocalFileTool não instalada. Use: poetry install -E file-tools")
+    print("⚠️ Instale com: poetry install -E file-tools")
 ```
 
-## 🛡️ Tratamento de Erros
-
-A biblioteca trata graciosamente quando dependências opcionais não estão instaladas:
-
-```python
-from src.infra.config.available_tools import AvailableTools
-
-tools = AvailableTools.get_available_tools()
-
-# Se file-tools não estiver instalado:
-# - CurrentDateTool estará disponível
-# - ReadLocalFileTool será silenciosamente ignorada
-# - Um warning será logado
-
-# Sem crashes! Sem erros fatais!
-```
+---
 
 ## ⚡ Performance
 
 ### Impacto no Tempo de Importação
 
-**Sem lazy loading (antigo)**:
+**Com lazy loading (atual):**
 
 ```python
-import src.infra.adapters  # ~2-3 segundos (carrega pandas, tiktoken, etc)
-```
-
-**Com lazy loading (novo)**:
-
-```python
-import src.infra.adapters  # ~0.1 segundos (só carrega o necessário)
-from src.infra.adapters import ReadLocalFileTool  # ~2 segundos (só quando usado)
+import src.infra.adapters  # ~0.1s (só carrega o necessário)
+from src.infra.adapters import ReadLocalFileTool  # ~2s (quando usado)
 ```
 
 ### Uso de Memória
 
 | Instalação     | Memória Base | Com ReadLocalFileTool |
 | -------------- | ------------ | --------------------- |
-| Básica         | ~50MB        | N/A (não instalada)   |
+| Básica         | ~50MB        | N/A                   |
 | Com file-tools | ~50MB        | ~200MB (quando usada) |
 
-## 🎨 Criando Suas Próprias Ferramentas
+---
 
-### Ferramenta Simples (Sem Dependências Pesadas)
+## 🎨 Criar Suas Próprias Ferramentas
+
+### Ferramenta Simples
 
 ```python
 from src.domain import BaseTool
 
-class MySimpleTool(BaseTool):
-    name = "my_tool"
-    description = "Uma ferramenta simples sem dependências pesadas"
+class CalculatorTool(BaseTool):
+    name = "calculator"
+    description = "Realiza cálculos matemáticos"
     parameters = {
         "type": "object",
         "properties": {
-            "input": {"type": "string", "description": "Entrada da ferramenta"}
+            "expression": {"type": "string", "description": "Expressão matemática"}
         },
-        "required": ["input"]
+        "required": ["expression"]
     }
 
-    def execute(self, input: str) -> str:
-        return f"Processado: {input}"
+    def execute(self, expression: str) -> str:
+        return str(eval(expression))
 ```
 
-### Ferramenta com Dependências Pesadas (Opcional)
+### Ferramenta com Dependências Opcionais
 
 ```python
-# my_heavy_tool.py
 from src.domain import BaseTool
 
-# Lazy import das dependências pesadas
+# Lazy import
 try:
     import numpy as np
-    import tensorflow as tf
     DEPENDENCIES_AVAILABLE = True
 except ImportError as e:
     DEPENDENCIES_AVAILABLE = False
     IMPORT_ERROR = e
 
-class MyHeavyTool(BaseTool):
-    name = "my_heavy_tool"
-    description = "Ferramenta com dependências pesadas (ML)"
+class MLTool(BaseTool):
+    name = "ml_tool"
+    description = "Ferramenta com ML"
 
     def __init__(self):
         if not DEPENDENCIES_AVAILABLE:
             raise RuntimeError(
-                "MyHeavyTool requires: pip install ai-agent[ml-tools]\n"
+                f"MLTool requires: pip install ai-agent[ml-tools]\n"
                 f"Error: {IMPORT_ERROR}"
             )
-        # Inicializar recursos pesados aqui
 
     def execute(self, data: str) -> str:
-        # Sua lógica com numpy/tensorflow
+        # Sua lógica aqui
         pass
 ```
 
-Depois adicione aos extras no `pyproject.toml`:
-
-```toml
-[tool.poetry.extras]
-ml-tools = ["numpy", "tensorflow"]
-```
-
-## 📚 Referências
-
-- [Documentação de Instalação](./guia/instalacao.md)
-- [Exemplos de Uso](./guia/exemplos.md)
-- [API Completa](./api.md)
+---
 
 ## 🤔 FAQ
 
 **P: Por que algumas ferramentas são opcionais?**
-R: Para manter a biblioteca leve. Se você não precisa ler PDFs/Excel, não precisa instalar pandas, pymupdf, etc. Isso resulta em instalações mais rápidas e menor uso de memória.
+R: Para manter o sistema leve. Se você não precisa ler PDFs/Excel, não precisa instalar pandas, unstructured, etc.
 
 **P: Como sei quais ferramentas estão disponíveis?**
-R: Use `AvailableTools.get_available_tools()` para listar todas as ferramentas carregadas.
+R: Use `AvailableTools.get_available_tools()` para listar.
 
 **P: O que acontece se eu tentar usar uma ferramenta não instalada?**
-R: Você receberá um erro claro informando qual extra instalar: `pip install ai-agent[file-tools]`
+R: Você receberá erro claro: `pip install ai-agent[file-tools]`
 
-**P: Posso criar minhas próprias ferramentas opcionais?**
-R: Sim! Siga o padrão de lazy loading e adicione seus extras no `pyproject.toml`.
+**P: Posso criar minhas próprias ferramentas?**
+R: Sim! Siga o padrão de lazy loading e estenda `BaseTool`.
 
 ---
 
