@@ -9,11 +9,26 @@ class TestMessageRole:
         assert MessageRole.USER.value == "user"
         assert MessageRole.ASSISTANT.value == "assistant"
         assert MessageRole.SYSTEM.value == "system"
+        assert MessageRole.TOOL.value == "tool"
 
     def test_message_role_string_representation(self):
         assert str(MessageRole.USER) == "user"
         assert str(MessageRole.ASSISTANT) == "assistant"
         assert str(MessageRole.SYSTEM) == "system"
+        assert str(MessageRole.TOOL) == "tool"
+
+    def test_all_message_roles_exist(self):
+        """Test that all expected message roles are defined."""
+        expected_roles = {"USER", "ASSISTANT", "SYSTEM", "TOOL"}
+        actual_roles = {role.name for role in MessageRole}
+
+        assert actual_roles == expected_roles
+
+    def test_message_role_values_are_lowercase(self):
+        """Test that all role values are lowercase strings."""
+        for role in MessageRole:
+            assert role.value == role.value.lower()
+            assert isinstance(role.value, str)
 
 
 @pytest.mark.unit
@@ -41,6 +56,13 @@ class TestMessage:
 
         assert message.role == MessageRole.SYSTEM
         assert message.content == "System instruction"
+
+    def test_create_tool_message(self):
+        """Test creating a tool message."""
+        message = Message(role=MessageRole.TOOL, content="Tool execution result")
+
+        assert message.role == MessageRole.TOOL
+        assert message.content == "Tool execution result"
 
     def test_message_is_immutable(self):
         message = Message(role=MessageRole.USER, content="Test")
@@ -77,7 +99,7 @@ class TestMessage:
         assert message.content == "Hello"
 
     def test_from_dict_all_roles(self):
-        roles = ["user", "assistant", "system"]
+        roles = ["user", "assistant", "system", "tool"]
 
         for role in roles:
             data = {"role": role, "content": "Test"}
@@ -190,10 +212,90 @@ class TestMessage:
         assert msg1 != msg2
 
     def test_message_from_dict_all_valid_roles(self):
-        roles = ["user", "assistant", "system"]
+        roles = ["user", "assistant", "system", "tool"]
 
         for role_str in roles:
             data = {"role": role_str, "content": "Test content"}
             message = Message.from_dict(data)
             assert message.role.value == role_str
             assert message.content == "Test content"
+
+
+@pytest.mark.unit
+class TestToolMessages:
+    """Test suite specifically for TOOL role messages."""
+
+    def test_create_tool_message_with_json_content(self):
+        """Test tool message with JSON-formatted result."""
+        json_content = '{"status": "success", "result": 42}'
+        message = Message(role=MessageRole.TOOL, content=json_content)
+
+        assert message.role == MessageRole.TOOL
+        assert message.content == json_content
+        assert "{" in message.content
+
+    def test_create_tool_message_with_error(self):
+        """Test tool message with error information."""
+        error_content = "Error: Tool execution failed"
+        message = Message(role=MessageRole.TOOL, content=error_content)
+
+        assert message.role == MessageRole.TOOL
+        assert "Error" in message.content
+
+    def test_tool_message_to_dict(self):
+        """Test converting tool message to dict."""
+        message = Message(role=MessageRole.TOOL, content="Tool result")
+
+        result = message.to_dict()
+
+        assert result["role"] == "tool"
+        assert result["content"] == "Tool result"
+
+    def test_tool_message_from_dict(self):
+        """Test creating tool message from dict."""
+        data = {"role": "tool", "content": "Execution successful"}
+        message = Message.from_dict(data)
+
+        assert message.role == MessageRole.TOOL
+        assert message.content == "Execution successful"
+
+    def test_tool_message_is_immutable(self):
+        """Test that tool messages are immutable."""
+        message = Message(role=MessageRole.TOOL, content="Result")
+
+        with pytest.raises(AttributeError):
+            message.content = "New result"
+
+    def test_tool_message_equality(self):
+        """Test equality of tool messages."""
+        msg1 = Message(role=MessageRole.TOOL, content="Same")
+        msg2 = Message(role=MessageRole.TOOL, content="Same")
+        msg3 = Message(role=MessageRole.TOOL, content="Different")
+
+        assert msg1 == msg2
+        assert msg1 != msg3
+
+    def test_tool_message_different_from_user_message(self):
+        """Test that tool and user messages are different."""
+        tool_msg = Message(role=MessageRole.TOOL, content="Content")
+        user_msg = Message(role=MessageRole.USER, content="Content")
+
+        assert tool_msg != user_msg
+        assert tool_msg.role != user_msg.role
+
+    def test_tool_message_with_long_content(self):
+        """Test tool message with very long content."""
+        long_content = "A" * 10000
+        message = Message(role=MessageRole.TOOL, content=long_content)
+
+        assert len(message.content) == 10000
+        assert message.role == MessageRole.TOOL
+
+    def test_tool_message_with_special_characters(self):
+        """Test tool message with special characters."""
+        special = "Result: 你好 🎉 @#$%"
+        message = Message(role=MessageRole.TOOL, content=special)
+
+        assert "你好" in message.content
+        assert "🎉" in message.content
+        assert message.role == MessageRole.TOOL

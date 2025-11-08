@@ -54,7 +54,7 @@ class TestChatWithAgentUseCase:
         mock_chat_repository.chat.assert_called_once_with(
             model="phi4-mini:latest",
             instructions="Instructions",
-            config={},
+            config=None,
             user_ask="Test message",
             history=[],
             tools=None,

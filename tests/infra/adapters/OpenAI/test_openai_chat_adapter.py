@@ -61,6 +61,7 @@ class TestOpenAIChatAdapter:
             model=IA_OPENAI_TEST_1,
             instructions="Be helpful",
             config={},
+            tools=None,
             user_ask="Hello",
             history=[],
         )
@@ -94,6 +95,7 @@ class TestOpenAIChatAdapter:
             model=IA_OPENAI_TEST_2,
             instructions="System instruction",
             config={},
+            tools=None,
             user_ask="User question",
             history=[{"role": "user", "content": "Previous message"}],
         )
@@ -130,6 +132,7 @@ class TestOpenAIChatAdapter:
             model=IA_OPENAI_TEST_1,
             instructions="Instructions",
             config={},
+            tools=None,
             user_ask="Question",
             history=[],
         )
@@ -170,6 +173,7 @@ class TestOpenAIChatAdapter:
             model=IA_OPENAI_TEST_2,
             instructions="Instructions",
             config={},
+            tools=None,
             user_ask="New question",
             history=history,
         )
@@ -203,6 +207,7 @@ class TestOpenAIChatAdapter:
             model=IA_OPENAI_TEST_1,
             instructions="Test",
             config={},
+            tools=None,
             user_ask="Test",
             history=[],
         )
@@ -234,6 +239,7 @@ class TestOpenAIChatAdapter:
                 model=IA_OPENAI_TEST_2,
                 instructions="Test",
                 config={},
+                tools=None,
                 user_ask="Test",
                 history=[],
             )
@@ -262,6 +268,7 @@ class TestOpenAIChatAdapter:
                 model=IA_OPENAI_TEST_1,
                 instructions="Test",
                 config={},
+                tools=None,
                 user_ask="Test",
                 history=[],
             )
@@ -296,6 +303,7 @@ class TestOpenAIChatAdapter:
                 model=IA_OPENAI_TEST_2,
                 instructions="Test",
                 config={},
+                tools=None,
                 user_ask="Test",
                 history=[],
             )
@@ -320,6 +328,7 @@ class TestOpenAIChatAdapter:
                 model=IA_OPENAI_TEST_1,
                 instructions="Test",
                 config={},
+                tools=None,
                 user_ask="Test",
                 history=[],
             )
@@ -344,6 +353,7 @@ class TestOpenAIChatAdapter:
                 model=IA_OPENAI_TEST_2,
                 instructions="Test",
                 config={},
+                tools=None,
                 user_ask="Test",
                 history=[],
             )
@@ -368,6 +378,7 @@ class TestOpenAIChatAdapter:
                 model=IA_OPENAI_TEST_1,
                 instructions="Test",
                 config={},
+                tools=None,
                 user_ask="Test",
                 history=[],
             )
@@ -391,6 +402,7 @@ class TestOpenAIChatAdapter:
                 model=IA_OPENAI_TEST_2,
                 instructions="Test",
                 config={},
+                tools=None,
                 user_ask="Test",
                 history=[],
             )
@@ -416,6 +428,7 @@ class TestOpenAIChatAdapter:
                 model=IA_OPENAI_TEST_1,
                 instructions="Test",
                 config={},
+                tools=None,
                 user_ask="Test",
                 history=[],
             )
@@ -446,6 +459,7 @@ class TestOpenAIChatAdapter:
             model=IA_OPENAI_TEST_1,
             instructions="Test 你好",
             config={},
+            tools=None,
             user_ask="Question 🎉",
             history=[],
         )
@@ -477,6 +491,7 @@ class TestOpenAIChatAdapter:
             model=IA_OPENAI_TEST_2,
             instructions="Multi\nline\ninstructions",
             config={},
+            tools=None,
             user_ask="Multi\nline\nquestion",
             history=[],
         )
@@ -513,9 +528,12 @@ class TestOpenAIChatAdapter:
         mock_client = Mock()
         mock_response = MagicMock()
         mock_response.output_text = "Success response"
-        mock_response.usage.total_tokens = 150
-        mock_response.usage.input_tokens = 75
-        mock_response.usage.output_tokens = 75
+        # Configure usage with proper attributes
+        mock_usage = MagicMock()
+        mock_usage.total_tokens = 150
+        mock_usage.prompt_tokens = 75
+        mock_usage.completion_tokens = 75
+        mock_response.usage = mock_usage
         mock_response.choices = [MagicMock()]
         mock_response.choices[0].message.tool_calls = None  # No tool calls
         mock_client.responses.create.return_value = mock_response
@@ -527,6 +545,7 @@ class TestOpenAIChatAdapter:
             model=IA_OPENAI_TEST_1,
             instructions="Test",
             config={},
+            tools=None,
             user_ask="Test",
             history=[],
         )
@@ -558,6 +577,7 @@ class TestOpenAIChatAdapter:
                 model=IA_OPENAI_TEST_2,
                 instructions="Test",
                 config={},
+                tools=None,
                 user_ask="Test",
                 history=[],
             )
@@ -595,6 +615,7 @@ class TestOpenAIChatAdapter:
             model=IA_OPENAI_TEST_1,
             instructions="Test",
             config={},
+            tools=None,
             user_ask="Test 1",
             history=[],
         )
@@ -603,6 +624,7 @@ class TestOpenAIChatAdapter:
             model=IA_OPENAI_TEST_2,
             instructions="Test",
             config={},
+            tools=None,
             user_ask="Test 2",
             history=[],
         )
@@ -657,6 +679,7 @@ class TestOpenAIChatAdapter:
             model=IA_OPENAI_TEST_1,
             instructions="Test",
             config={},
+            tools=None,
             user_ask="New question",
             history=history,
         )
@@ -695,6 +718,7 @@ class TestOpenAIChatAdapter:
             model=IA_OPENAI_TEST_2,
             instructions="Test",
             config={},
+            tools=None,
             user_ask="Final question",
             history=history,
         )
@@ -730,6 +754,7 @@ class TestOpenAIChatAdapter:
             model=IA_OPENAI_TEST_1,
             instructions="Test",
             config=config,
+            tools=None,
             history=[],
             user_ask="Test",
         )
@@ -748,6 +773,8 @@ class TestOpenAIChatAdapter:
         mock_client = Mock()
         mock_response = MagicMock()
         mock_response.output_text = ""
+        mock_response.choices = [MagicMock()]
+        mock_response.choices[0].message.tool_calls = None
         mock_client.responses.create.return_value = mock_response
         mock_get_client.return_value = mock_client
 
@@ -758,6 +785,7 @@ class TestOpenAIChatAdapter:
                 model=IA_OPENAI_TEST_1,
                 instructions="Test",
                 config={},
+                tools=None,
                 user_ask="Test",
                 history=[],
             )
@@ -779,12 +807,10 @@ class TestOpenAIChatAdapter:
         mock_client = Mock()
         mock_response = MagicMock()
         mock_response.output_text = "Response"
-        mock_response.usage = MagicMock()
+        # Configure usage to raise AttributeError when accessed
+        mock_response.usage = None
         mock_response.choices = [MagicMock()]
         mock_response.choices[0].message.tool_calls = None  # No tool calls
-        del mock_response.usage.total_tokens
-        del mock_response.usage.input_tokens
-        del mock_response.usage.output_tokens
         mock_client.responses.create.return_value = mock_response
         mock_get_client.return_value = mock_client
 
@@ -794,6 +820,7 @@ class TestOpenAIChatAdapter:
             model=IA_OPENAI_TEST_2,
             instructions="Test",
             config={},
+            tools=None,
             user_ask="Test",
             history=[],
         )
@@ -849,6 +876,7 @@ class TestOpenAIChatAdapter:
             model=IA_OPENAI_TEST_1,
             instructions="Test",
             config={},
+            tools=None,
             user_ask="Test",
             history=[],
         )
@@ -881,6 +909,7 @@ class TestOpenAIChatAdapter:
             model=IA_OPENAI_TEST_1,
             instructions="Test",
             config={},
+            tools=None,
             user_ask="Test 1",
             history=[],
         )
@@ -891,6 +920,7 @@ class TestOpenAIChatAdapter:
                 model=IA_OPENAI_TEST_2,
                 instructions="Test",
                 config={},
+                tools=None,
                 user_ask="Test 2",
                 history=[],
             )
@@ -903,6 +933,7 @@ class TestOpenAIChatAdapter:
             model=IA_OPENAI_TEST_1,
             instructions="Test",
             config={},
+            tools=None,
             user_ask="Test 3",
             history=[],
         )
@@ -940,6 +971,7 @@ class TestOpenAIChatAdapter:
             model=IA_OPENAI_TEST_2,
             instructions="Test",
             config={},
+            tools=None,
             user_ask="Test",
             history=[],
         )
@@ -971,6 +1003,7 @@ class TestOpenAIChatAdapter:
             model=IA_OPENAI_TEST_1,
             instructions="Test",
             config={"temperature": 0.7},
+            tools=None,
             user_ask="Test",
             history=[],
         )
@@ -1003,6 +1036,7 @@ class TestOpenAIChatAdapter:
             model=IA_OPENAI_TEST_2,
             instructions="Test",
             config={"max_tokens": 500},
+            tools=None,
             user_ask="Test",
             history=[],
         )
@@ -1035,6 +1069,7 @@ class TestOpenAIChatAdapter:
             model=IA_OPENAI_TEST_1,
             instructions="Test",
             config={"top_p": 0.9},
+            tools=None,
             user_ask="Test",
             history=[],
         )
@@ -1073,6 +1108,7 @@ class TestOpenAIChatAdapter:
             model=IA_OPENAI_TEST_2,
             instructions="Test",
             config=config,
+            tools=None,
             user_ask="Test",
             history=[],
         )
@@ -1108,6 +1144,7 @@ class TestOpenAIChatAdapter:
             model=IA_OPENAI_TEST_1,
             instructions="Test",
             config={},
+            tools=None,
             user_ask="Test",
             history=[],
         )
@@ -1149,6 +1186,7 @@ class TestOpenAIChatAdapter:
                 model=IA_OPENAI_TEST_1,
                 instructions="Test",
                 config={},
+                tools=None,
                 user_ask="Test",
                 history=[],
             )
@@ -1185,6 +1223,7 @@ class TestOpenAIChatAdapter:
                 model=IA_OPENAI_TEST_1,
                 instructions="Test",
                 config={},
+                tools=None,
                 user_ask="Test",
                 history=[],
             )
@@ -1215,6 +1254,7 @@ class TestOpenAIChatAdapter:
                     model=IA_OPENAI_TEST_1,
                     instructions="Test",
                     config={},
+                    tools=None,
                     user_ask="Test",
                     history=[],
                 )
@@ -1249,6 +1289,7 @@ class TestOpenAIChatAdapter:
             model=IA_OPENAI_TEST_1,
             instructions=None,
             config={},
+            tools=None,
             user_ask="Test",
             history=[],
         )
@@ -1285,6 +1326,7 @@ class TestOpenAIChatAdapter:
             model=IA_OPENAI_TEST_1,
             instructions="   \n\t  ",
             config={},
+            tools=None,
             user_ask="Test",
             history=[],
         )
@@ -1344,6 +1386,7 @@ class TestOpenAIChatAdapter:
             model=IA_OPENAI_TEST_1,
             instructions="Test",
             config={},
+            tools=None,
             user_ask="Test",
             history=[],
         )

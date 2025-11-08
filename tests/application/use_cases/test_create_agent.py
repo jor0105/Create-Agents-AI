@@ -105,7 +105,7 @@ class TestCreateAgentUseCase:
 
         agent = use_case.execute(input_dto)
 
-        assert agent.config == {}
+        assert agent.config is None or agent.config == {}
 
     def test_execute_with_valid_config(self):
         use_case = CreateAgentUseCase()

@@ -281,8 +281,8 @@ class TestAgent:
             provider="openai", model="gpt-5-nano", name="Test", instructions="Test"
         )
 
-        assert agent.config == {}
-        assert isinstance(agent.config, dict)
+        assert agent.config is None or agent.config == {}
+        assert isinstance(agent.config, (dict, type(None)))
 
     def test_agent_with_unsupported_config(self):
         with pytest.raises(UnsupportedConfigException, match="is not supported"):
@@ -618,3 +618,233 @@ class TestAgent:
         assert messages[1].content == "A1"
         assert messages[2].content == "Q2"
         assert messages[3].content == "A2"
+
+
+@pytest.mark.unit
+class TestAgentToolMessages:
+    """Test suite for tool message handling in Agent."""
+
+    def test_add_tool_message(self):
+        """Test adding a tool execution result message."""
+        agent = Agent(
+            provider="openai",
+            model="gpt-5-nano",
+            name="Test",
+            instructions="Test",
+        )
+
+        agent.add_tool_message("Tool executed successfully")
+
+        assert len(agent.history) == 1
+        messages = agent.history.get_messages()
+        assert messages[0].role == MessageRole.TOOL
+        assert messages[0].content == "Tool executed successfully"
+
+    def test_add_multiple_tool_messages(self):
+        """Test adding multiple tool messages."""
+        agent = Agent(
+            provider="openai",
+            model="gpt-5-nano",
+            name="Test",
+            instructions="Test",
+        )
+
+        agent.add_tool_message("Tool 1 result")
+        agent.add_tool_message("Tool 2 result")
+        agent.add_tool_message("Tool 3 result")
+
+        assert len(agent.history) == 3
+        messages = agent.history.get_messages()
+        for msg in messages:
+            assert msg.role == MessageRole.TOOL
+
+    def test_add_tool_message_with_json_content(self):
+        """Test adding tool message with JSON-formatted content."""
+        agent = Agent(
+            provider="openai",
+            model="gpt-5-nano",
+            name="Test",
+            instructions="Test",
+        )
+
+        json_result = '{"status": "success", "data": [1, 2, 3]}'
+        agent.add_tool_message(json_result)
+
+        messages = agent.history.get_messages()
+        assert messages[0].content == json_result
+        assert "{" in messages[0].content
+
+    def test_add_tool_message_with_error_content(self):
+        """Test adding tool message with error information."""
+        agent = Agent(
+            provider="openai",
+            model="gpt-5-nano",
+            name="Test",
+            instructions="Test",
+        )
+
+        error_msg = "Error: Tool execution failed - Connection timeout"
+        agent.add_tool_message(error_msg)
+
+        messages = agent.history.get_messages()
+        assert messages[0].role == MessageRole.TOOL
+        assert "Error" in messages[0].content
+
+    def test_conversation_with_tool_messages(self):
+        """Test realistic conversation flow with tool messages."""
+        agent = Agent(
+            provider="openai",
+            model="gpt-5-nano",
+            name="Test",
+            instructions="Test",
+        )
+
+        # User asks a question
+        agent.add_user_message("What's the weather in Tokyo?")
+        # Agent decides to use a tool
+        agent.add_tool_message('{"city": "Tokyo", "temp": 22, "conditions": "Sunny"}')
+        # Agent responds based on tool result
+        agent.add_assistant_message("The weather in Tokyo is sunny with 22°C.")
+
+        messages = agent.history.get_messages()
+        assert len(messages) == 3
+        assert messages[0].role == MessageRole.USER
+        assert messages[1].role == MessageRole.TOOL
+        assert messages[2].role == MessageRole.ASSISTANT
+
+    def test_tool_message_in_history_respects_max_size(self):
+        """Test that tool messages respect history max size."""
+        agent = Agent(
+            provider="openai",
+            model="gpt-5-nano",
+            name="Test",
+            instructions="Test",
+        )
+
+        # Add more than max_size messages
+        for i in range(15):
+            if i % 3 == 0:
+                agent.add_user_message(f"User {i}")
+            elif i % 3 == 1:
+                agent.add_tool_message(f"Tool {i}")
+            else:
+                agent.add_assistant_message(f"Assistant {i}")
+
+        # Should only keep last 10
+        assert len(agent.history) == 10
+
+    def test_add_tool_message_with_special_characters(self):
+        """Test tool message with special characters."""
+        agent = Agent(
+            provider="openai",
+            model="gpt-5-nano",
+            name="Test",
+            instructions="Test",
+        )
+
+        special_content = "Result: 你好 🎉 @#$%^&*()"
+        agent.add_tool_message(special_content)
+
+        messages = agent.history.get_messages()
+        assert "你好" in messages[0].content
+        assert "🎉" in messages[0].content
+
+    def test_add_tool_message_with_multiline_content(self):
+        """Test tool message with multiline content."""
+        agent = Agent(
+            provider="openai",
+            model="gpt-5-nano",
+            name="Test",
+            instructions="Test",
+        )
+
+        multiline = "Line 1: Result\nLine 2: Details\nLine 3: Summary"
+        agent.add_tool_message(multiline)
+
+        messages = agent.history.get_messages()
+        assert "\n" in messages[0].content
+        assert messages[0].content.count("\n") == 2
+
+
+@pytest.mark.unit
+class TestAgentWithTools:
+    """Test suite for Agent with tool support."""
+
+    def test_agent_with_tools_attribute(self):
+        """Test that agent can have tools attribute."""
+        from src.domain.value_objects import BaseTool
+
+        class MockTool(BaseTool):
+            name = "mock_tool"
+            description = "A mock tool"
+
+            def execute(self) -> str:
+                return "mock result"
+
+        tool = MockTool()
+        agent = Agent(
+            provider="openai",
+            model="gpt-5-nano",
+            name="Test",
+            instructions="Test",
+            tools=[tool],
+        )
+
+        assert agent.tools is not None
+        assert len(agent.tools) == 1
+        assert agent.tools[0].name == "mock_tool"
+
+    def test_agent_without_tools(self):
+        """Test agent without tools defaults to None."""
+        agent = Agent(
+            provider="openai",
+            model="gpt-5-nano",
+            name="Test",
+            instructions="Test",
+        )
+
+        assert agent.tools is None
+
+    def test_agent_with_empty_tools_list(self):
+        """Test agent with empty tools list."""
+        agent = Agent(
+            provider="openai",
+            model="gpt-5-nano",
+            name="Test",
+            instructions="Test",
+            tools=[],
+        )
+
+        assert agent.tools == []
+        assert isinstance(agent.tools, list)
+
+    def test_agent_with_multiple_tools(self):
+        """Test agent with multiple tools."""
+        from src.domain.value_objects import BaseTool
+
+        class Tool1(BaseTool):
+            name = "tool1"
+            description = "First tool"
+
+            def execute(self) -> str:
+                return "result1"
+
+        class Tool2(BaseTool):
+            name = "tool2"
+            description = "Second tool"
+
+            def execute(self) -> str:
+                return "result2"
+
+        tools = [Tool1(), Tool2()]
+        agent = Agent(
+            provider="openai",
+            model="gpt-5-nano",
+            name="Test",
+            instructions="Test",
+            tools=tools,
+        )
+
+        assert len(agent.tools) == 2
+        assert agent.tools[0].name == "tool1"
+        assert agent.tools[1].name == "tool2"

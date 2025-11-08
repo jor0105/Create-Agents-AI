@@ -196,13 +196,17 @@ class TestLoggingConfig:
         assert len(handlers) > 0
         assert isinstance(handlers[0].formatter, JSONFormatter)
 
-    def test_configure_only_once(self):
+    def test_configure_can_reconfigure(self):
         LoggingConfig.configure(level=logging.DEBUG)
-        initial_level = LoggingConfig._log_level
+        first_level = LoggingConfig._log_level
+        assert first_level == logging.DEBUG
 
         LoggingConfig.configure(level=logging.ERROR)
+        second_level = LoggingConfig._log_level
 
-        assert LoggingConfig._log_level == initial_level
+        # After source code changes, configure can now be called multiple times
+        # Each call reconfigures the logging system
+        assert second_level == logging.ERROR
 
     def test_get_logger_returns_logger(self):
         logger = LoggingConfig.get_logger("test.module")
@@ -607,12 +611,16 @@ class TestLoggingIntegration:
 
         assert first_handlers_count == second_handlers_count
 
-    def test_multiple_configure_calls_idempotent(self):
+    def test_multiple_configure_calls_reconfigure(self):
+        """Test that calling configure multiple times reconfigures the system."""
         LoggingConfig.configure(level=logging.WARNING)
         handlers_after_first = len(LoggingConfig._handlers)
 
         LoggingConfig.configure(level=logging.ERROR)
         handlers_after_second = len(LoggingConfig._handlers)
 
+        # After code changes, configure can now be called multiple times
+        # Handlers are reset and recreated, so count should remain consistent
         assert handlers_after_first == handlers_after_second
-        assert LoggingConfig._log_level == logging.WARNING
+        # And the level should be the latest configured
+        assert LoggingConfig._log_level == logging.ERROR
