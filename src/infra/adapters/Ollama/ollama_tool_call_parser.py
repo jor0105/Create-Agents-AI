@@ -27,8 +27,9 @@ Or JSON format:
 
 import json
 import re
-import xml.etree.ElementTree as ET
 from typing import Any, Dict, List, Optional
+
+import defusedxml.ElementTree as ET
 
 from src.infra.config.logging_config import LoggingConfig
 

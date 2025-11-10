@@ -11,6 +11,7 @@ python = "^3.12"
 openai = "^2.7.1"
 python-dotenv = "^1.1.1"
 ollama = "^0.6.0"
+defusedxml = "^0.7.1"
 
 # Optional dependencies for file reading tools
 tiktoken = {version = "^0.8.0", optional = true}
