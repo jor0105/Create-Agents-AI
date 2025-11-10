@@ -52,31 +52,6 @@ poetry run pytest --cov=src --cov-fail-under=70
 
 ---
 
-### 2. Documentation Build
-
-**Arquivo:** `.github/workflows/docs.yml`
-
-**Executa:** Manualmente via workflow_dispatch
-
-**Ações:**
-
-- Instala dependências
-- Build documentação com MkDocs
-- Valida links
-- Upload como artifact
-
-**Build local:**
-
-```bash
-# Servir docs
-poetry run mkdocs serve
-
-# Build produção
-poetry run mkdocs build
-```
-
----
-
 ## Configuração Local
 
 ### Pre-commit Hooks
