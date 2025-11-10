@@ -1,3 +1,4 @@
+import importlib.util
 import tempfile
 from pathlib import Path
 from unittest.mock import Mock, patch
@@ -33,6 +34,9 @@ try:
     DEPENDENCIES_AVAILABLE = True
 except ImportError:
     DEPENDENCIES_AVAILABLE = False
+
+# Check if tiktoken is specifically available
+TIKTOKEN_AVAILABLE = importlib.util.find_spec("tiktoken") is not None
 
 
 @pytest.mark.unit
@@ -91,9 +95,7 @@ class TestConstants:
         assert "latin-1" in COMMON_ENCODINGS
 
 
-@pytest.mark.skipif(
-    not DEPENDENCIES_AVAILABLE, reason="Optional dependencies not available"
-)
+@pytest.mark.skipif(not TIKTOKEN_AVAILABLE, reason="tiktoken not available")
 @pytest.mark.unit
 class TestInitializeTiktoken:
     def test_initialize_tiktoken_returns_encoding(self):
@@ -114,9 +116,7 @@ class TestInitializeTiktoken:
         assert encoding is not None
 
 
-@pytest.mark.skipif(
-    not DEPENDENCIES_AVAILABLE, reason="Optional dependencies not available"
-)
+@pytest.mark.skipif(not TIKTOKEN_AVAILABLE, reason="tiktoken not available")
 @pytest.mark.unit
 class TestCountTokens:
     def test_count_tokens_simple_text(self):
