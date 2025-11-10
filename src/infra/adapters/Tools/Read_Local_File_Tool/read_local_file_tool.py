@@ -32,14 +32,10 @@ class ReadLocalFileTool(BaseTool):
     """
 
     name = "read_local_file"
-    description = """
-    Use this tool to read local files from the system.
-
+    description = """Use this tool to read local files from the system.
     Supports text files (txt, md, py, etc.), CSV, Excel, PDF and Parquet formats.
     The tool validates file size in tokens to prevent overload.
-
-    Input must include the absolute or relative file path and optionally
-    the maximum number of tokens allowed (default: 30000).
+    Input must include the absolute or relative file path and optionally the maximum number of tokens allowed (default: 30000).
     """
     parameters: Dict[str, Any] = {
         "type": "object",

@@ -530,7 +530,7 @@ class TestOllamaChatAdapterToolsIntegration:
         from src.infra.config.available_tools import AvailableTools
 
         adapter = OllamaChatAdapter()
-        tools = list(AvailableTools.get_available_tools().values())
+        tools = list(AvailableTools.get_all_tool_instances().values())
 
         response = adapter.chat(
             model=IA_OLLAMA_TEST_1,
@@ -551,7 +551,7 @@ class TestOllamaChatAdapterToolsIntegration:
         from src.infra.config.available_tools import AvailableTools
 
         adapter = OllamaChatAdapter()
-        tools = list(AvailableTools.get_available_tools().values())
+        tools = list(AvailableTools.get_all_tool_instances().values())
 
         response = adapter.chat(
             model=IA_OLLAMA_TEST_1,
@@ -572,7 +572,7 @@ class TestOllamaChatAdapterToolsIntegration:
         from src.infra.config.available_tools import AvailableTools
 
         adapter = OllamaChatAdapter()
-        tools = list(AvailableTools.get_available_tools().values())
+        tools = list(AvailableTools.get_all_tool_instances().values())
 
         response1 = adapter.chat(
             model=IA_OLLAMA_TEST_1,
@@ -606,7 +606,7 @@ class TestOllamaChatAdapterToolsIntegration:
         from src.infra.config.available_tools import AvailableTools
 
         adapter = OllamaChatAdapter()
-        tools = list(AvailableTools.get_available_tools().values())
+        tools = list(AvailableTools.get_all_tool_instances().values())
 
         timezones = ["UTC", "America/Sao_Paulo"]
 
@@ -632,7 +632,7 @@ class TestOllamaChatAdapterToolsIntegration:
         from src.infra.config.available_tools import AvailableTools
 
         adapter = OllamaChatAdapter()
-        tools = list(AvailableTools.get_available_tools().values())
+        tools = list(AvailableTools.get_all_tool_instances().values())
 
         tool_names = [t.name for t in tools]
         if "read_local_file" not in tool_names:
@@ -663,7 +663,7 @@ class TestOllamaChatAdapterToolsIntegration:
         from src.infra.config.available_tools import AvailableTools
 
         adapter = OllamaChatAdapter()
-        tools = list(AvailableTools.get_available_tools().values())
+        tools = list(AvailableTools.get_all_tool_instances().values())
 
         tool_names = [t.name for t in tools]
         if "read_local_file" not in tool_names:
@@ -692,7 +692,7 @@ class TestOllamaChatAdapterToolsIntegration:
         from src.infra.config.available_tools import AvailableTools
 
         adapter = OllamaChatAdapter()
-        tools = list(AvailableTools.get_available_tools().values())
+        tools = list(AvailableTools.get_all_tool_instances().values())
 
         config = {
             "temperature": 0.7,
@@ -723,7 +723,7 @@ class TestOllamaChatAdapterToolsIntegration:
         from src.infra.config.available_tools import AvailableTools
 
         adapter = OllamaChatAdapter()
-        tools = list(AvailableTools.get_available_tools().values())
+        tools = list(AvailableTools.get_all_tool_instances().values())
 
         response1 = adapter.chat(
             model=IA_OLLAMA_TEST_1,
@@ -759,7 +759,7 @@ class TestOllamaChatAdapterToolsIntegration:
         from src.infra.config.available_tools import AvailableTools
 
         adapter = OllamaChatAdapter()
-        tools = list(AvailableTools.get_available_tools().values())
+        tools = list(AvailableTools.get_all_tool_instances().values())
 
         config = {
             "think": True,
@@ -785,7 +785,7 @@ class TestOllamaChatAdapterToolsIntegration:
         from src.infra.config.available_tools import AvailableTools
 
         adapter = OllamaChatAdapter()
-        tools = list(AvailableTools.get_available_tools().values())
+        tools = list(AvailableTools.get_all_tool_instances().values())
 
         config = {
             "top_k": 50,
@@ -811,7 +811,7 @@ class TestOllamaChatAdapterToolsIntegration:
         from src.infra.config.available_tools import AvailableTools
 
         adapter = OllamaChatAdapter()
-        tools = list(AvailableTools.get_available_tools().values())
+        tools = list(AvailableTools.get_all_tool_instances().values())
 
         config = {
             "temperature": 0.6,

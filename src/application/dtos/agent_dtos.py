@@ -60,9 +60,9 @@ class CreateAgentInputDTO:
             validated_tools: List[BaseTool] = []
             for tool in self.tools:
                 if isinstance(tool, str):
-                    available_tools = AvailableTools.get_available_tools()
-                    if tool.lower() in available_tools:
-                        validated_tools.append(available_tools[tool.lower()])
+                    available_tool = AvailableTools.get_tool_instance(tool.lower())
+                    if available_tool:
+                        validated_tools.append(available_tool)
                     else:
                         raise InvalidBaseToolException(tool)
                 elif isinstance(tool, BaseTool):
@@ -102,13 +102,17 @@ class AgentConfigOutputDTO:
     history_max_size: int = 10
 
     def to_dict(self) -> Dict[str, Any]:
+        tool_names = None
+        if self.tools:
+            tool_names = [tool.name for tool in self.tools]
+
         return {
             "provider": self.provider,
             "model": self.model,
             "name": self.name,
             "instructions": self.instructions,
             "config": self.config,
-            "tools": self.tools,
+            "tools": tool_names,
             "history": self.history,
             "history_max_size": self.history_max_size,
         }

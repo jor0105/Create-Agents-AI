@@ -4,8 +4,9 @@ from src.application import (
     ChatWithAgentUseCase,
     CreateAgentInputDTO,
     CreateAgentUseCase,
-    GetAgentAvailableToolsUseCase,
     GetAgentConfigUseCase,
+    GetAllAvailableToolsUseCase,
+    GetSystemAvailableToolsUseCase,
 )
 from src.domain import Agent, BaseTool
 from src.infra import ChatAdapterFactory
@@ -110,12 +111,27 @@ class AgentComposer:
         return GetAgentConfigUseCase()
 
     @staticmethod
-    def create_get_available_tools_use_case() -> GetAgentAvailableToolsUseCase:
+    def create_get_all_available_tools_use_case() -> GetAllAvailableToolsUseCase:
         """
-        Creates the GetAgentAvailableToolsUseCase.
+        Creates the GetAllAvailableToolsUseCase.
+
+        This use case returns both system tools and agent tools.
 
         Returns:
-            A configured GetAgentAvailableToolsUseCase.
+            A configured GetAllAvailableToolsUseCase.
         """
-        AgentComposer.__logger.debug("Composing get available tools use case")
-        return GetAgentAvailableToolsUseCase()
+        AgentComposer.__logger.debug("Composing get all available tools use case")
+        return GetAllAvailableToolsUseCase()
+
+    @staticmethod
+    def create_get_system_available_tools_use_case() -> GetSystemAvailableToolsUseCase:
+        """
+        Creates the GetSystemAvailableToolsUseCase.
+
+        This use case returns only system tools provided by the framework.
+
+        Returns:
+            A configured GetSystemAvailableToolsUseCase.
+        """
+        AgentComposer.__logger.debug("Composing get system available tools use case")
+        return GetSystemAvailableToolsUseCase()

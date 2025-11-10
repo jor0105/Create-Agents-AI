@@ -1,18 +1,22 @@
 import logging
+from typing import Sequence, Union
 
 from examples.toolfilterparquet import DREQueryTool
 from examples.websearchtool import WebSearchTool
 from src import AIAgent
+from src.domain import BaseTool
 from src.infra.config.logging_config import LoggingConfig
 
 LoggingConfig.configure(level=logging.ERROR)
 
 
 # Inicializar as ferramentas
-web_search_tool = WebSearchTool()
-dre_query_tool = DREQueryTool()
-
-tools = [web_search_tool, dre_query_tool]
+tools: Sequence[Union[str, BaseTool]] = [
+    WebSearchTool(),
+    DREQueryTool(),
+    "readlocalfile",
+    "currentdate",
+]
 
 config = {
     "temperature": 0.5,
@@ -23,7 +27,7 @@ config = {
 
 agent = AIAgent(
     provider="ollama",
-    model="gpt-oss:120b-cloud",
+    model="granite4:latest",
     name="Agente AI",
     instructions="Você é um assistente inteligente que ajuda os usuários a responder perguntas e realizar tarefas.",
     config=config,

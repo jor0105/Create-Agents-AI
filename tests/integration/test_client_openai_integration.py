@@ -1100,7 +1100,7 @@ class TestOpenAIChatAdapterToolsIntegration:
         from src.infra.config.available_tools import AvailableTools
 
         adapter = OpenAIChatAdapter()
-        tools = list(AvailableTools.get_available_tools().values())
+        tools = list(AvailableTools.get_all_available_tools().values())
 
         response = adapter.chat(
             model=IA_OPENAI_TEST_1,
@@ -1120,7 +1120,7 @@ class TestOpenAIChatAdapterToolsIntegration:
         from src.infra.config.available_tools import AvailableTools
 
         adapter = OpenAIChatAdapter()
-        tools = list(AvailableTools.get_available_tools().values())
+        tools = list(AvailableTools.get_all_available_tools().values())
 
         response = adapter.chat(
             model=IA_OPENAI_TEST_1,
@@ -1140,7 +1140,7 @@ class TestOpenAIChatAdapterToolsIntegration:
         from src.infra.config.available_tools import AvailableTools
 
         adapter = OpenAIChatAdapter()
-        tools = list(AvailableTools.get_available_tools().values())
+        tools = list(AvailableTools.get_all_available_tools().values())
 
         response = adapter.chat(
             model=IA_OPENAI_TEST_2,
@@ -1160,7 +1160,7 @@ class TestOpenAIChatAdapterToolsIntegration:
         from src.infra.config.available_tools import AvailableTools
 
         adapter = OpenAIChatAdapter()
-        tools = list(AvailableTools.get_available_tools().values())
+        tools = list(AvailableTools.get_all_available_tools().values())
 
         response = adapter.chat(
             model=IA_OPENAI_TEST_1,
@@ -1180,7 +1180,7 @@ class TestOpenAIChatAdapterToolsIntegration:
         from src.infra.config.available_tools import AvailableTools
 
         adapter = OpenAIChatAdapter()
-        tools = list(AvailableTools.get_available_tools().values())
+        tools = list(AvailableTools.get_all_available_tools().values())
 
         response = adapter.chat(
             model=IA_OPENAI_TEST_1,
@@ -1200,7 +1200,7 @@ class TestOpenAIChatAdapterToolsIntegration:
         from src.infra.config.available_tools import AvailableTools
 
         adapter = OpenAIChatAdapter()
-        tools = list(AvailableTools.get_available_tools().values())
+        tools = list(AvailableTools.get_all_available_tools().values())
 
         timezones = ["UTC", "America/New_York", "Europe/London", "Asia/Tokyo"]
 
@@ -1225,7 +1225,7 @@ class TestOpenAIChatAdapterToolsIntegration:
         from src.infra.config.available_tools import AvailableTools
 
         adapter = OpenAIChatAdapter()
-        tools = list(AvailableTools.get_available_tools().values())
+        tools = list(AvailableTools.get_all_available_tools().values())
 
         tool_names = [t.name for t in tools]
         if "read_local_file" not in tool_names:
@@ -1255,7 +1255,7 @@ class TestOpenAIChatAdapterToolsIntegration:
         from src.infra.config.available_tools import AvailableTools
 
         adapter = OpenAIChatAdapter()
-        tools = list(AvailableTools.get_available_tools().values())
+        tools = list(AvailableTools.get_all_available_tools().values())
 
         tool_names = [t.name for t in tools]
         if "read_local_file" not in tool_names:
@@ -1283,7 +1283,7 @@ class TestOpenAIChatAdapterToolsIntegration:
         from src.infra.config.available_tools import AvailableTools
 
         adapter = OpenAIChatAdapter()
-        tools = list(AvailableTools.get_available_tools().values())
+        tools = list(AvailableTools.get_all_available_tools().values())
 
         config = {
             "temperature": 0.7,
@@ -1313,7 +1313,7 @@ class TestOpenAIChatAdapterToolsIntegration:
         from src.infra.config.available_tools import AvailableTools
 
         adapter = OpenAIChatAdapter()
-        tools = list(AvailableTools.get_available_tools().values())
+        tools = list(AvailableTools.get_all_available_tools().values())
 
         response1 = adapter.chat(
             model=IA_OPENAI_TEST_1,
@@ -1348,7 +1348,7 @@ class TestOpenAIChatAdapterToolsIntegration:
         from src.infra.config.available_tools import AvailableTools
 
         adapter = OpenAIChatAdapter()
-        tools = list(AvailableTools.get_available_tools().values())
+        tools = list(AvailableTools.get_all_available_tools().values())
 
         response = adapter.chat(
             model=IA_OPENAI_TEST_1,
@@ -1368,7 +1368,7 @@ class TestOpenAIChatAdapterToolsIntegration:
         from src.infra.config.available_tools import AvailableTools
 
         adapter = OpenAIChatAdapter()
-        tools = list(AvailableTools.get_available_tools().values())
+        tools = list(AvailableTools.get_all_available_tools().values())
 
         config = {
             "temperature": 0.5,
@@ -1393,7 +1393,7 @@ class TestOpenAIChatAdapterToolsIntegration:
         from src.infra.config.available_tools import AvailableTools
 
         adapter = OpenAIChatAdapter()
-        tools = list(AvailableTools.get_available_tools().values())
+        tools = list(AvailableTools.get_all_available_tools().values())
 
         config = {
             "temperature": 0.7,
@@ -1418,7 +1418,7 @@ class TestOpenAIChatAdapterToolsIntegration:
         from src.infra.config.available_tools import AvailableTools
 
         adapter = OpenAIChatAdapter()
-        tools = list(AvailableTools.get_available_tools().values())
+        tools = list(AvailableTools.get_all_available_tools().values())
 
         config = {
             "temperature": 0.6,

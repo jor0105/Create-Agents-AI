@@ -3,8 +3,9 @@ from .interfaces import ChatRepository
 from .use_cases import (
     ChatWithAgentUseCase,
     CreateAgentUseCase,
-    GetAgentAvailableToolsUseCase,
     GetAgentConfigUseCase,
+    GetAllAvailableToolsUseCase,
+    GetSystemAvailableToolsUseCase,
 )
 
 __all__ = [
@@ -12,7 +13,8 @@ __all__ = [
     "CreateAgentUseCase",
     "ChatWithAgentUseCase",
     "GetAgentConfigUseCase",
-    "GetAgentAvailableToolsUseCase",
+    "GetAllAvailableToolsUseCase",
+    "GetSystemAvailableToolsUseCase",
     # dtos
     "CreateAgentInputDTO",
     "AgentConfigOutputDTO",

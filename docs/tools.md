@@ -26,7 +26,7 @@ from src.presentation import AIAgent
 agent = AIAgent(
     provider="openai",
     model="gpt-4",
-    tools=["current_date"]
+    tools=["currentdate"]
 )
 
 response = agent.chat("Que dia é hoje?")
@@ -99,7 +99,7 @@ agent = AIAgent(
     provider="openai",
     model="gpt-4",
     instructions="Você pode verificar data/hora quando necessário",
-    tools=["current_date"]
+    tools=["currentdate"]
 )
 
 # O agente usa a ferramenta automaticamente
@@ -127,11 +127,11 @@ response = agent.chat("Resuma o documento relatorio.pdf")
 agent = AIAgent(
     provider="openai",
     model="gpt-4",
-    tools=["current_date", "readlocalfile"]
+    tools=["currentdate", "readlocalfile"]
 )
 
 # O agente escolhe qual ferramenta usar
-agent.chat("Que dia é hoje?")  # Usa current_date
+agent.chat("Que dia é hoje?")  # Usa currentdate
 agent.chat("Leia notas.txt")   # Usa readlocalfile
 ```
 
@@ -168,26 +168,119 @@ Inclui:
 
 ## 🔍 Verificar Ferramentas Disponíveis
 
+### Verificar Ferramentas do Agente
+
+Use `get_all_available_tools()` para ver todas as ferramentas disponíveis para um agente específico (inclui ferramentas do sistema + ferramentas customizadas adicionadas ao agente):
+
 ```python
 from src.presentation import AIAgent
+from src.domain import BaseTool
+
+class CustomTool(BaseTool):
+    name = "custom_tool"
+    description = "Minha ferramenta customizada"
+
+    def execute(self, **kwargs) -> str:
+        return "Resultado"
 
 agent = AIAgent(
     provider="openai",
-    model="gpt-4"
+    model="gpt-4",
+    tools=["currentdate", CustomTool()]  # Ferramenta do sistema + customizada
 )
 
-# Obter todas as ferramentas disponíveis
-tools = agent.get_available_tools()
+# Obter todas as ferramentas deste agente
+tools = agent.get_all_available_tools()
 
-print("Ferramentas disponíveis:")
-for name, tool in tools.items():
-    print(f"  - {name}: {tool.description[:50]}...")
+print("Ferramentas disponíveis neste agente:")
+for name, description in tools.items():
+    print(f"  - {name}: {description[:50]}...")
 
-# Verificar ferramenta específica
-if "readlocalfile" in tools:
+# Exemplo de saída:
+# - currentdate: Get the current date and/or time...
+# - readlocalfile: Use this tool to read local files...
+# - custom_tool: Minha ferramenta customizada
+```
+
+### Verificar Apenas Ferramentas do Sistema
+
+Use `get_system_available_tools()` para ver apenas as ferramentas built-in disponíveis globalmente (não inclui ferramentas customizadas):
+
+```python
+from src.presentation import AIAgent
+
+agent = AIAgent(provider="openai", model="gpt-4")
+
+# Obter apenas ferramentas do sistema
+system_tools = agent.get_system_available_tools()
+
+print("Ferramentas do sistema disponíveis:")
+for name, description in system_tools.items():
+    print(f"  - {name}: {description[:50]}...")
+
+# Verificar se uma ferramenta específica está disponível
+if "readlocalfile" in system_tools:
     print("✅ ReadLocalFileTool disponível!")
 else:
     print("⚠️ Instale com: poetry install -E file-tools")
+```
+
+### Diferença Entre os Métodos
+
+| Método                         | Retorna                                         | Quando Usar                                                 |
+| ------------------------------ | ----------------------------------------------- | ----------------------------------------------------------- |
+| `get_all_available_tools()`    | Ferramentas do sistema + customizadas do agente | Para ver todas as ferramentas que o agente pode usar        |
+| `get_system_available_tools()` | Apenas ferramentas do sistema (built-in)        | Para verificar quais ferramentas opcionais estão instaladas |
+
+### Exemplo Prático
+
+```python
+from src.presentation import AIAgent
+from src.domain import BaseTool
+
+# Ferramenta customizada
+class WeatherTool(BaseTool):
+    name = "weather"
+    description = "Consulta previsão do tempo"
+
+    def execute(self, city: str) -> str:
+        return f"Previsão para {city}: Ensolarado"
+
+# Agente sem ferramentas customizadas
+agent1 = AIAgent(provider="openai", model="gpt-4")
+print("Agente 1:", agent1.get_all_available_tools().keys())
+# Saída: dict_keys(['currentdate', 'readlocalfile'])
+
+# Agente com ferramentas customizadas
+agent2 = AIAgent(
+    provider="openai",
+    model="gpt-4",
+    tools=["currentdate", WeatherTool()]
+)
+print("Agente 2:", agent2.get_all_available_tools().keys())
+# Saída: dict_keys(['currentdate', 'readlocalfile', 'weather'])
+
+# Ferramentas do sistema (sempre igual para todos os agentes)
+print("Sistema:", agent1.get_system_available_tools().keys())
+# Saída: dict_keys(['currentdate', 'readlocalfile'])
+```
+
+### Evitando Duplicatas
+
+O sistema automaticamente evita duplicatas de ferramentas. Se você adicionar uma ferramenta do sistema à lista de tools do agente, ela aparecerá apenas uma vez:
+
+```python
+# Ferramenta do sistema adicionada explicitamente
+agent = AIAgent(
+    provider="openai",
+    model="gpt-4",
+    tools=["currentdate"]  # Adiciona explicitamente uma ferramenta do sistema
+)
+
+# Não haverá duplicatas
+tools = agent.get_all_available_tools()
+# 'currentdate' aparece apenas UMA vez
+print(list(tools.keys()))  # ['currentdate', 'readlocalfile']
 ```
 
 ---
@@ -262,7 +355,7 @@ class MLTool(BaseTool):
 R: Para manter o sistema leve. Se você não precisa ler PDFs/Excel, não precisa instalar pandas, unstructured, etc.
 
 **P: Como sei quais ferramentas estão disponíveis?**
-R: Use `agent.get_available_tools()` para listar.
+R: Use `agent.get_all_available_tools()` para listar.
 
 **P: O que acontece se eu tentar usar uma ferramenta não instalada?**
 R: Você receberá erro claro: `pip install ai-agent[file-tools]`

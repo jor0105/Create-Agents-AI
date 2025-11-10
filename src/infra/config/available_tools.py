@@ -10,37 +10,171 @@ class AvailableTools:
     This class maintains a catalog of tool instances that can be used
     by agents. Tools are registered with string keys for easy lookup.
 
+    Tools are separated into two categories:
+    - System Tools: Built-in tools provided by the AI Agent framework
+    - Agent Tools: Tools added to specific agents by users
+
     Heavy tools (like ReadLocalFileTool) are loaded lazily to improve
     import performance and avoid loading unnecessary dependencies.
     """
 
-    __AVAILABLE_TOOLS: Dict[str, BaseTool] = {
+    # System tools: built-in tools provided by the framework
+    __SYSTEM_TOOLS: Dict[str, BaseTool] = {
         "currentdate": CurrentDateTool(),
     }
 
-    # Cache for lazily loaded tools
-    __LAZY_TOOLS: Dict[str, Optional[BaseTool]] = {}
+    # Agent tools: tools added by users to specific agents
+    __AGENT_TOOLS: Dict[str, BaseTool] = {}
+
+    # Cache for lazily loaded system tools
+    __LAZY_SYSTEM_TOOLS: Dict[str, Optional[BaseTool]] = {}
 
     @classmethod
-    def get_available_tools(cls) -> Dict[str, BaseTool]:
-        """Return a dict of available tool instances.
+    def get_system_tools(cls) -> Dict[str, str]:
+        """Return a dict of system tool descriptions.
 
-        This method will attempt to load lazy tools (like ReadLocalFileTool)
-        if they haven't been loaded yet. If optional dependencies are missing,
-        those tools will be silently skipped.
+        System tools are built-in tools provided by the framework.
+
+        Returns:
+            Dict[str, str]: A dictionary mapping system tool names to descriptions.
+        """
+        # Try to load lazy system tools on first access
+        if "readlocalfile" not in cls.__LAZY_SYSTEM_TOOLS:
+            cls.__try_load_read_local_file_tool()
+
+        # Get all system tool instances
+        all_system_tool_instances = cls.__get_all_system_tool_instances()
+
+        # Convert to name: description mapping
+        return {
+            tool_name: tool.description
+            for tool_name, tool in all_system_tool_instances.items()
+        }
+
+    @classmethod
+    def get_system_tool_names(cls) -> set:
+        """Return a set of system tool names (registry keys).
+
+        This returns the keys used to register system tools, which may differ
+        from the tool's internal 'name' attribute.
+
+        Returns:
+            set: A set of system tool names as registered in the system.
+        """
+        # Try to load lazy system tools on first access
+        if "readlocalfile" not in cls.__LAZY_SYSTEM_TOOLS:
+            cls.__try_load_read_local_file_tool()
+
+        # Get all system tool names (keys in the dictionaries)
+        system_tool_names = set(cls.__SYSTEM_TOOLS.keys())
+        system_tool_names.update(
+            k for k, v in cls.__LAZY_SYSTEM_TOOLS.items() if v is not None
+        )
+
+        return system_tool_names
+
+    @classmethod
+    def get_agent_tools(cls) -> Dict[str, str]:
+        """Return a dict of agent tool descriptions.
+
+        Agent tools are tools added by users to specific agents.
+
+        Returns:
+            Dict[str, str]: A dictionary mapping agent tool names to descriptions.
+        """
+        # Convert to name: description mapping
+        return {
+            tool_name: tool.description for tool_name, tool in cls.__AGENT_TOOLS.items()
+        }
+
+    @classmethod
+    def get_all_available_tools(cls) -> Dict[str, str]:
+        """Return a dict of ALL available tool descriptions (system + agent).
+
+        This method returns a user-friendly dictionary mapping tool names
+        to their descriptions. This includes both system tools and agent tools.
+
+        Returns:
+            Dict[str, str]: A dictionary mapping tool names to descriptions.
+        """
+        all_tools = {}
+        all_tools.update(cls.get_system_tools())
+        all_tools.update(cls.get_agent_tools())
+        return all_tools
+
+    @classmethod
+    def __get_all_system_tool_instances(cls) -> Dict[str, BaseTool]:
+        """Return a dict of all available system tool instances (internal method).
+
+        This internal method returns the actual system tool objects, which are needed
+        for execution by the domain layer.
+
+        Returns:
+            A dict of supported system tool instances.
+        """
+        # Try to load lazy system tools on first access
+        if "readlocalfile" not in cls.__LAZY_SYSTEM_TOOLS:
+            cls.__try_load_read_local_file_tool()
+
+        # Combine eager and lazy system tools
+        all_system_tools = cls.__SYSTEM_TOOLS.copy()
+        all_system_tools.update(
+            {k: v for k, v in cls.__LAZY_SYSTEM_TOOLS.items() if v is not None}
+        )
+
+        return all_system_tools
+
+    @classmethod
+    def __get_all_tool_instances(cls) -> Dict[str, BaseTool]:
+        """Return a dict of all available tool instances (internal method).
+
+        This internal method returns the actual tool objects, which are needed
+        for execution by the domain layer. Includes both system and agent tools.
 
         Returns:
             A dict of supported tool instances.
         """
         # Try to load lazy tools on first access
-        if "readlocalfile" not in cls.__LAZY_TOOLS:
+        if "readlocalfile" not in cls.__LAZY_SYSTEM_TOOLS:
             cls.__try_load_read_local_file_tool()
 
-        # Combine eager and lazy tools
-        all_tools = cls.__AVAILABLE_TOOLS.copy()
-        all_tools.update({k: v for k, v in cls.__LAZY_TOOLS.items() if v is not None})
+        # Combine eager and lazy tools (both system and agent)
+        all_tools = cls.__SYSTEM_TOOLS.copy()
+        all_tools.update(
+            {k: v for k, v in cls.__LAZY_SYSTEM_TOOLS.items() if v is not None}
+        )
+        all_tools.update(cls.__AGENT_TOOLS)
 
         return all_tools
+
+    @classmethod
+    def get_tool_instance(cls, tool_name: str) -> Optional[BaseTool]:
+        """Get a specific tool instance by name.
+
+        This method is used internally to retrieve actual tool objects
+        for execution. It's needed by the application layer when validating
+        and using tools.
+
+        Args:
+            tool_name: The name of the tool to retrieve (case-insensitive).
+
+        Returns:
+            The BaseTool instance if found, None otherwise.
+        """
+        all_tools = cls.__get_all_tool_instances()
+        return all_tools.get(tool_name.lower())
+
+    @classmethod
+    def get_all_tool_instances(cls) -> Dict[str, BaseTool]:
+        """Get all available tool instances.
+
+        This method returns the actual tool objects for use by the domain layer.
+        It's primarily used internally for tool execution.
+
+        Returns:
+            A dict of all available tool instances.
+        """
+        return cls.__get_all_tool_instances()
 
     @classmethod
     def __try_load_read_local_file_tool(cls) -> None:
@@ -54,7 +188,7 @@ class AvailableTools:
             from src.infra.config.logging_config import LoggingConfig
 
             logger = LoggingConfig.get_logger(__name__)
-            cls.__LAZY_TOOLS["readlocalfile"] = ReadLocalFileTool()
+            cls.__LAZY_SYSTEM_TOOLS["readlocalfile"] = ReadLocalFileTool()
             logger.debug("ReadLocalFileTool loaded successfully")
         except ImportError as e:
             from src.infra.config.logging_config import LoggingConfig
@@ -65,10 +199,10 @@ class AvailableTools:
                 f"Install with: pip install ai-agent[file-tools]\n"
                 f"Error: {e}"
             )
-            cls.__LAZY_TOOLS["readlocalfile"] = None
+            cls.__LAZY_SYSTEM_TOOLS["readlocalfile"] = None
         except Exception as e:
             from src.infra.config.logging_config import LoggingConfig
 
             logger = LoggingConfig.get_logger(__name__)
             logger.error(f"Failed to load ReadLocalFileTool: {e}")
-            cls.__LAZY_TOOLS["readlocalfile"] = None
+            cls.__LAZY_SYSTEM_TOOLS["readlocalfile"] = None

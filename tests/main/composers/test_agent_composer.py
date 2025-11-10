@@ -690,7 +690,7 @@ class TestAgentComposer:
     def test_create_agent_with_string_tool_name(self):
         from src.infra import AvailableTools
 
-        available = AvailableTools.get_available_tools()
+        available = AvailableTools.get_all_available_tools()
         if available:
             tool_name = list(available.keys())[0]
             agent = AgentComposer.create_agent(
@@ -717,7 +717,7 @@ class TestAgentComposer:
                 return "result"
 
         tool = TestTool()
-        available = AvailableTools.get_available_tools()
+        available = AvailableTools.get_all_available_tools()
         if available:
             tool_name = list(available.keys())[0]
             agent = AgentComposer.create_agent(
@@ -899,7 +899,7 @@ class TestAgentComposer:
     def test_create_agent_with_valid_builtin_tool_names(self):
         from src.infra import AvailableTools
 
-        available = AvailableTools.get_available_tools()
+        available = AvailableTools.get_all_available_tools()
         if available:
             tool_name = list(available.keys())[0]
             agent = AgentComposer.create_agent(

@@ -111,15 +111,70 @@ agent = AIAgent(
 
 ## 🛠️ Ferramentas
 
+### Usar Ferramentas Disponíveis
+
 ```python
+# Adicionar ferramentas ao agente
 agent = AIAgent(
     provider="openai",
     model="gpt-4",
-    tools=["current_date"]
+    tools=["currentdate"]  # Ferramentas do sistema
 )
 
 # Agente usa automaticamente
 response = agent.chat("Que dia é hoje?")
+```
+
+### Verificar Ferramentas Disponíveis
+
+```python
+# Ver todas as ferramentas do agente (sistema + customizadas)
+all_tools = agent.get_all_available_tools()
+print("Ferramentas do agente:")
+for name, description in all_tools.items():
+    print(f"  • {name}: {description[:50]}...")
+
+# Ver apenas ferramentas do sistema (built-in)
+system_tools = agent.get_system_available_tools()
+print("\nFerramentas do sistema:")
+for name, description in system_tools.items():
+    print(f"  • {name}")
+
+# Verificar se ferramenta opcional está instalada
+if "readlocalfile" in system_tools:
+    print("✅ ReadLocalFileTool disponível")
+else:
+    print("⚠️  Instale com: poetry install -E file-tools")
+```
+
+### Criar Ferramentas Customizadas
+
+```python
+from src.domain import BaseTool
+
+class CalculatorTool(BaseTool):
+    name = "calculator"
+    description = "Realiza cálculos matemáticos"
+
+    def execute(self, expression: str) -> str:
+        try:
+            result = eval(expression)
+            return f"Resultado: {result}"
+        except Exception as e:
+            return f"Erro: {e}"
+
+# Usar ferramenta customizada
+agent = AIAgent(
+    provider="openai",
+    model="gpt-4",
+    tools=["currentdate", CalculatorTool()]  # Sistema + customizada
+)
+
+# Ver todas as ferramentas (incluindo a customizada)
+tools = agent.get_all_available_tools()
+print(f"Total de ferramentas: {len(tools)}")
+# Saída: Total de ferramentas: 3
+# (currentdate, readlocalfile, calculator)
 ```
 
 ---

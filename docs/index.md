@@ -75,18 +75,51 @@ Adicione capacidades aos seus agentes com ferramentas prontas:
 agent = AIAgent(
     provider="openai",
     model="gpt-4",
-    tools=["current_date", "readlocalfile"]  # Ferramentas disponíveis
+    tools=["currentdate", "readlocalfile"]  # Ferramentas disponíveis
 )
 
 # O agente usa automaticamente as ferramentas quando necessário
 agent.chat("Que dia é hoje?")  # Usa CurrentDateTool
 agent.chat("Leia o arquivo report.pdf")  # Usa ReadLocalFileTool
+
+# Verificar ferramentas disponíveis
+all_tools = agent.get_all_available_tools()
+print(f"Total de ferramentas: {len(all_tools)}")
+
+# Ver apenas ferramentas do sistema
+system_tools = agent.get_system_available_tools()
+for name in system_tools.keys():
+    print(f"  • {name}")
 ```
 
 **Ferramentas Disponíveis:**
 
-- `current_date` - Data/hora em qualquer timezone
+- `currentdate` - Data/hora em qualquer timezone (sempre disponível)
 - `readlocalfile` - Lê PDF, Excel, CSV, Parquet, JSON, YAML, TXT (requer `poetry install -E file-tools`)
+
+**Criar ferramentas customizadas:**
+
+```python
+from src.domain import BaseTool
+
+class MyTool(BaseTool):
+    name = "my_tool"
+    description = "Minha ferramenta personalizada"
+
+    def execute(self, **kwargs) -> str:
+        return "Resultado"
+
+# Usar ferramenta customizada
+agent = AIAgent(
+    provider="openai",
+    model="gpt-4",
+    tools=["currentdate", MyTool()]  # Sistema + customizada
+)
+
+# Ver todas (sistema + customizadas)
+print(agent.get_all_available_tools().keys())
+# Saída: dict_keys(['currentdate', 'readlocalfile', 'my_tool'])
+```
 
 ### 💬 Histórico Contextual
 

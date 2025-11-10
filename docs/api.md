@@ -24,15 +24,15 @@ AIAgent(
 
 **Parâmetros:**
 
-| Parâmetro          | Tipo   | Descrição                                                 | Obrigatório |
-| ------------------ | ------ | --------------------------------------------------------- | ----------- |
-| `provider`         | `str`  | Provider de IA: `"openai"` ou `"ollama"`                  | ✅ Sim      |
-| `model`            | `str`  | Nome do modelo (ex: `"gpt-4.1-mini"`, `"llama2"`)                | ✅ Sim      |
-| `name`             | `str`  | Nome do agente                                            | ❌ Não      |
-| `instructions`     | `str`  | Instruções/personalidade do agente                        | ❌ Não      |
-| `config`           | `dict` | Configurações do modelo (temperature, max_tokens, etc)    | ❌ Não      |
-| `tools`            | `list` | Lista de ferramentas: `["current_date", "readlocalfile"]` | ❌ Não      |
-| `history_max_size` | `int`  | Tamanho máximo do histórico (padrão: 10)                  | ❌ Não      |
+| Parâmetro          | Tipo   | Descrição                                                | Obrigatório |
+| ------------------ | ------ | -------------------------------------------------------- | ----------- |
+| `provider`         | `str`  | Provider de IA: `"openai"` ou `"ollama"`                 | ✅ Sim      |
+| `model`            | `str`  | Nome do modelo (ex: `"gpt-4.1-mini"`, `"llama2"`)        | ✅ Sim      |
+| `name`             | `str`  | Nome do agente                                           | ❌ Não      |
+| `instructions`     | `str`  | Instruções/personalidade do agente                       | ❌ Não      |
+| `config`           | `dict` | Configurações do modelo (temperature, max_tokens, etc)   | ❌ Não      |
+| `tools`            | `list` | Lista de ferramentas: `["currentdate", "readlocalfile"]` | ❌ Não      |
+| `history_max_size` | `int`  | Tamanho máximo do histórico (padrão: 10)                 | ❌ Não      |
 
 **Exemplo:**
 
@@ -44,7 +44,7 @@ agent = AIAgent(
     model="gpt-4.1-mini",
     instructions="Você é um assistente técnico",
     config={"temperature": 0.7, "max_tokens": 2000},
-    tools=["current_date"],
+    tools=["currentdate"],
     history_max_size=20
 )
 ```
@@ -121,25 +121,100 @@ print("Histórico limpo!")
 
 ---
 
-#### get_available_tools()
+#### get_all_available_tools()
 
-Retorna todas as ferramentas disponíveis para o agente, incluindo as opcionais instaladas.
+Retorna todas as ferramentas disponíveis para este agente específico (ferramentas do sistema + ferramentas customizadas).
 
 ```python
-def get_available_tools() -> Dict[str, BaseTool]
+def get_all_available_tools() -> Dict[str, str]
 ```
 
-**Retorna:**
+**Retorna:** `dict` mapeando nome da ferramenta para descrição
 
-- `dict` mapeando o nome da ferramenta para a instância (`BaseTool`).
+**Comportamento:**
+
+- Inclui todas as ferramentas do sistema (built-in) disponíveis
+- Inclui ferramentas customizadas adicionadas quando o agente foi criado
+- Remove duplicatas automaticamente (se uma ferramenta do sistema foi explicitamente adicionada)
 
 **Exemplo:**
 
 ```python
-tools = agent.get_available_tools()
-for name, tool in tools.items():
-    print(f"- {name}: {tool.description}")
+from src.domain import BaseTool
+
+# Ferramenta customizada
+class MyTool(BaseTool):
+    name = "my_tool"
+    description = "Minha ferramenta personalizada"
+
+    def execute(self, **kwargs) -> str:
+        return "Resultado"
+
+# Criar agente com ferramentas
+agent = AIAgent(
+    provider="openai",
+    model="gpt-4",
+    tools=["currentdate", MyTool()]
+)
+
+# Listar todas as ferramentas
+tools = agent.get_all_available_tools()
+for name, description in tools.items():
+    print(f"- {name}: {description}")
+
+# Saída:
+# - currentdate: Get the current date and/or time...
+# - readlocalfile: Use this tool to read local files...
+# - my_tool: Minha ferramenta personalizada
 ```
+
+---
+
+#### get_system_available_tools()
+
+Retorna apenas as ferramentas do sistema (built-in) disponíveis globalmente.
+
+```python
+def get_system_available_tools() -> Dict[str, str]
+```
+
+**Retorna:** `dict` mapeando nome da ferramenta do sistema para descrição
+
+**Comportamento:**
+
+- Retorna apenas ferramentas built-in do framework
+- Não inclui ferramentas customizadas do agente
+- Útil para verificar quais ferramentas opcionais estão instaladas
+
+**Exemplo:**
+
+```python
+agent = AIAgent(provider="openai", model="gpt-4")
+
+# Listar apenas ferramentas do sistema
+system_tools = agent.get_system_available_tools()
+
+print("Ferramentas do sistema disponíveis:")
+for name, description in system_tools.items():
+    print(f"- {name}: {description[:50]}...")
+
+# Verificar se ferramenta opcional está disponível
+if "readlocalfile" in system_tools:
+    print("✅ ReadLocalFileTool está instalada")
+else:
+    print("❌ Execute: poetry install -E file-tools")
+
+# Saída:
+# - currentdate: Get the current date and/or time...
+# - readlocalfile: Use this tool to read local files...
+```
+
+**Diferença entre os métodos:**
+
+| Método                         | Inclui Ferramentas do Sistema | Inclui Ferramentas Customizadas | Quando Usar                                            |
+| ------------------------------ | ----------------------------- | ------------------------------- | ------------------------------------------------------ |
+| `get_all_available_tools()`    | ✅ Sim                        | ✅ Sim                          | Ver todas as ferramentas que o agente pode usar        |
+| `get_system_available_tools()` | ✅ Sim                        | ❌ Não                          | Verificar quais ferramentas opcionais estão instaladas |
 
 ---
 
@@ -224,7 +299,7 @@ agent.export_metrics_prometheus("metrics.prom")
 
 Obtém data/hora em qualquer timezone.
 
-**Nome:** `"current_date"`
+**Nome:** `"currentdate"`
 
 **Uso:**
 
@@ -232,7 +307,7 @@ Obtém data/hora em qualquer timezone.
 agent = AIAgent(
     provider="openai",
     model="gpt-4.1-mini",
-    tools=["current_date"]
+    tools=["currentdate"]
 )
 
 response = agent.chat("Que dia é hoje?")
@@ -299,14 +374,13 @@ agent = AIAgent(provider="openai", model="gpt-4.1-mini", config=config)
 
 **Parâmetros suportados:**
 
-| Nome          | Faixa/Tipo             | Descrição                                                       |
-| ------------- | ---------------------- | --------------------------------------------------------------- |
-| `temperature` | 0.0–2.0                | Controla aleatoriedade. 0=determinístico, 2=mais criativo       |
-| `max_tokens`  | >0 (int)               | Limite de tokens na resposta                                    |
-| `top_p`       | 0.0–1.0                | Nucleus sampling                                                |
+| Nome          | Faixa/Tipo             | Descrição                                                                                                 |
+| ------------- | ---------------------- | --------------------------------------------------------------------------------------------------------- |
+| `temperature` | 0.0–2.0                | Controla aleatoriedade. 0=determinístico, 2=mais criativo                                                 |
+| `max_tokens`  | >0 (int)               | Limite de tokens na resposta                                                                              |
+| `top_p`       | 0.0–1.0                | Nucleus sampling                                                                                          |
 | `think`       | bool ou dict[str, str] | Ollama: bool (ativa/desativa), OpenAI: string de opções avançadas ("low", "medium" ou "high" disponíveis) |
-| `top_k`       | >0 (int)               | Número de tokens considerados no sampling              |
-
+| `top_k`       | >0 (int)               | Número de tokens considerados no sampling                                                                 |
 
 ---
 
@@ -323,7 +397,7 @@ response = agent.chat("Olá!")
 agent = AIAgent(
     provider="openai",
     model="gpt-4.1-mini",
-    tools=["current_date", "readlocalfile"]
+    tools=["currentdate", "readlocalfile"]
 )
 
 # Local (Ollama)

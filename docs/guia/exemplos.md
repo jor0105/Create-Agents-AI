@@ -45,7 +45,7 @@ assistente_corporativo = AIAgent(
     Seja objetivo, claro e direto.
     Forneça informações estruturadas.
     """,
-    tools=["current_date"]  # Acesso à data/hora
+    tools=["currentdate"]  # Acesso à data/hora
 )
 
 # Agendar reunião
@@ -209,6 +209,17 @@ print(f"  - Modelo usado: {config['model']}")
 ## 🌍 Agente com Ferramentas Múltiplas
 
 ```python
+from src.domain import BaseTool
+
+# Criar ferramenta customizada
+class WebSearchTool(BaseTool):
+    name = "web_search"
+    description = "Busca informações na internet"
+
+    def execute(self, query: str) -> str:
+        # Implementação da busca
+        return f"Resultados para: {query}"
+
 # Requer: poetry install -E file-tools
 agente_completo = AIAgent(
     provider="openai",
@@ -219,20 +230,39 @@ agente_completo = AIAgent(
     Use as ferramentas disponíveis quando necessário.
     Seja proativo em sugerir o uso de ferramentas.
     """,
-    tools=["current_date", "readlocalfile"]
+    tools=["currentdate", "readlocalfile", WebSearchTool()]
 )
 
-# Usa ferramenta de data
+# Verificar todas as ferramentas disponíveis
+print("🛠️  Ferramentas disponíveis neste agente:")
+all_tools = agente_completo.get_all_available_tools()
+for name, description in all_tools.items():
+    print(f"  • {name}: {description[:50]}...")
+
+# Saída:
+# • currentdate: Get the current date and/or time...
+# • readlocalfile: Use this tool to read local files...
+# • web_search: Busca informações na internet
+
+# Verificar apenas ferramentas do sistema
+print("\n📦 Ferramentas do sistema:")
+system_tools = agente_completo.get_system_available_tools()
+for name in system_tools.keys():
+    print(f"  • {name}")
+
+# Saída:
+# • currentdate
+# • readlocalfile
+
+# Usar ferramentas
 response = agente_completo.chat("Que dia da semana é hoje?")
-print(response)
+print(response)  # Usa currentdate
 
-# Usa ferramenta de leitura de arquivos
-response = agente_completo.chat("Leia o arquivo relatorio.pdf e resuma os principais pontos")
-print(response)
+response = agente_completo.chat("Leia o arquivo relatorio.pdf e resuma")
+print(response)  # Usa readlocalfile
 
-# Combina ferramentas
-response = agente_completo.chat("Adicione a data de hoje no início do arquivo notes.txt")
-print(response)
+response = agente_completo.chat("Busque as últimas notícias sobre IA")
+print(response)  # Usa web_search
 ```
 
 ---
@@ -309,8 +339,16 @@ response = agente_local.chat(f"Analise: {dados_confidenciais}")
 agente_monitored = AIAgent(
     provider="openai",
     model="gpt-4",
-    name="Agente Monitorado"
+    name="Agente Monitorado",
+    tools=["currentdate"]
 )
+
+# Ver ferramentas disponíveis antes de começar
+print("Ferramentas disponíveis:")
+tools = agente_monitored.get_all_available_tools()
+print(f"  Total: {len(tools)} ferramentas")
+for name in tools.keys():
+    print(f"  • {name}")
 
 # Fazer várias chamadas
 for i in range(5):
@@ -319,7 +357,7 @@ for i in range(5):
 # Analisar performance
 metrics = agente_monitored.get_metrics()
 
-print("📊 Análise de Performance:")
+print("\n📊 Análise de Performance:")
 total_time = sum(m.response_time for m in metrics)
 avg_time = total_time / len(metrics)
 total_tokens = sum(m.tokens_used for m in metrics)

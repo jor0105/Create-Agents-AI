@@ -220,6 +220,43 @@ print("Feedback:", feedback)
 print("Documentação:", docs)
 ```
 
+### Exemplo 4: Verificando Ferramentas Disponíveis
+
+```python
+from src.domain import BaseTool
+
+# Criar ferramenta customizada
+class CalculatorTool(BaseTool):
+    name = "calculator"
+    description = "Realiza cálculos matemáticos"
+
+    def execute(self, expression: str) -> str:
+        return str(eval(expression))
+
+# Criar agente com ferramentas
+agent = AIAgent(
+    provider="openai",
+    model="gpt-4",
+    tools=["currentdate", CalculatorTool()]
+)
+
+# Ver todas as ferramentas do agente (sistema + customizadas)
+all_tools = agent.get_all_available_tools()
+print(f"Total de ferramentas: {len(all_tools)}")
+for name, description in all_tools.items():
+    print(f"  • {name}: {description[:50]}...")
+
+# Ver apenas ferramentas do sistema
+system_tools = agent.get_system_available_tools()
+print(f"\nFerramentas do sistema: {list(system_tools.keys())}")
+
+# Verificar se ferramenta opcional está instalada
+if "readlocalfile" in system_tools:
+    print("✅ ReadLocalFileTool disponível")
+else:
+    print("⚠️  Execute: poetry install -E file-tools")
+```
+
 ## 🔧 Configuração
 
 ### Variáveis de Ambiente
@@ -252,16 +289,16 @@ AIAgent(
 
 #### Métodos
 
-| Método                                 | Retorno | Descrição                          |
-| -------------------------------------- | ------- | ---------------------------------- |
-| `chat(message)`                        | `str`   | Enviar mensagem e receber resposta |
-| `get_configs()`                        | `dict`  | Obter configurações e histórico    |
-| `clear_history()`                      | `None`  | Limpar histórico de mensagens      |
-| `get_metrics()`                        | `list`  | Obter métricas de performance      |
-| `export_metrics_json(path=None)`       | `str`   | Exportar métricas em JSON          |
-| `export_metrics_prometheus(path=None)` | `str`   | Exportar métricas em Prometheus    |
-
-
+| Método                                 | Retorno | Descrição                                                      |
+| -------------------------------------- | ------- | -------------------------------------------------------------- |
+| `chat(message)`                        | `str`   | Enviar mensagem e receber resposta                             |
+| `get_configs()`                        | `dict`  | Obter configurações e histórico                                |
+| `clear_history()`                      | `None`  | Limpar histórico de mensagens                                  |
+| `get_all_available_tools()`            | `dict`  | Listar todas as ferramentas do agente (sistema + customizadas) |
+| `get_system_available_tools()`         | `dict`  | Listar apenas ferramentas do sistema                           |
+| `get_metrics()`                        | `list`  | Obter métricas de performance                                  |
+| `export_metrics_json(path=None)`       | `str`   | Exportar métricas em JSON                                      |
+| `export_metrics_prometheus(path=None)` | `str`   | Exportar métricas em Prometheus                                |
 
 ## 📚 Arquitetura (Para Desenvolvedores)
 

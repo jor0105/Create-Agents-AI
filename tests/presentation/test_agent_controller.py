@@ -1135,7 +1135,7 @@ class TestAIAgentEdgeCases:
     def test_initialization_with_string_tool_name(self):
         from src.infra import AvailableTools
 
-        available = AvailableTools.get_available_tools()
+        available = AvailableTools.get_all_available_tools()
         if available:
             tool_name = list(available.keys())[0]
             controller = AIAgent(
@@ -1163,7 +1163,7 @@ class TestAIAgentEdgeCases:
                 return "result"
 
         tool = TestTool()
-        available = AvailableTools.get_available_tools()
+        available = AvailableTools.get_all_available_tools()
         if available:
             tool_name = list(available.keys())[0]
             controller = AIAgent(
@@ -1268,3 +1268,156 @@ class TestAIAgentEdgeCases:
                 instructions="Test",
                 tools=[InvalidTool()],
             )
+
+
+@pytest.mark.unit
+class TestAIAgentGetAllAvailableTools:
+    def test_get_all_available_tools_includes_system_tools(self):
+        controller = AIAgent(
+            provider="openai",
+            model="gpt-5",
+            name="Test",
+            instructions="Test",
+        )
+
+        tools = controller.get_all_available_tools()
+
+        assert isinstance(tools, dict)
+        assert "currentdate" in tools
+
+    def test_get_all_available_tools_includes_agent_tools(self):
+        from src.domain import BaseTool
+
+        class CustomTool(BaseTool):
+            name = "custom_tool"
+            description = "A custom tool for testing"
+
+            def execute(self, **kwargs):
+                return "custom result"
+
+        tool = CustomTool()
+        controller = AIAgent(
+            provider="openai",
+            model="gpt-5",
+            name="Test",
+            instructions="Test",
+            tools=[tool],
+        )
+
+        tools = controller.get_all_available_tools()
+
+        assert isinstance(tools, dict)
+        assert "currentdate" in tools
+        assert "custom_tool" in tools
+        assert tools["custom_tool"] == "A custom tool for testing"
+
+    def test_get_all_available_tools_with_multiple_agent_tools(self):
+        from src.domain import BaseTool
+
+        class Tool1(BaseTool):
+            name = "tool1"
+            description = "First custom tool"
+
+            def execute(self, **kwargs):
+                return "result1"
+
+        class Tool2(BaseTool):
+            name = "tool2"
+            description = "Second custom tool"
+
+            def execute(self, **kwargs):
+                return "result2"
+
+        tools_list = [Tool1(), Tool2()]
+        controller = AIAgent(
+            provider="openai",
+            model="gpt-5",
+            name="Test",
+            instructions="Test",
+            tools=tools_list,
+        )
+
+        tools = controller.get_all_available_tools()
+
+        assert isinstance(tools, dict)
+        assert "currentdate" in tools
+        assert "tool1" in tools
+        assert "tool2" in tools
+        assert tools["tool1"] == "First custom tool"
+        assert tools["tool2"] == "Second custom tool"
+
+    def test_get_all_available_tools_without_agent_tools(self):
+        controller = AIAgent(
+            provider="openai",
+            model="gpt-5",
+            name="Test",
+            instructions="Test",
+            tools=None,
+        )
+
+        tools = controller.get_all_available_tools()
+
+        assert isinstance(tools, dict)
+        assert "currentdate" in tools
+
+    def test_get_all_available_tools_with_empty_tools_list(self):
+        controller = AIAgent(
+            provider="openai",
+            model="gpt-5",
+            name="Test",
+            instructions="Test",
+            tools=[],
+        )
+
+        tools = controller.get_all_available_tools()
+
+        assert isinstance(tools, dict)
+        assert "currentdate" in tools
+
+    def test_get_all_available_tools_case_insensitive(self):
+        from src.domain import BaseTool
+
+        class CustomTool(BaseTool):
+            name = "CustomTool"
+            description = "A tool with mixed case name"
+
+            def execute(self, **kwargs):
+                return "result"
+
+        tool = CustomTool()
+        controller = AIAgent(
+            provider="openai",
+            model="gpt-5",
+            name="Test",
+            instructions="Test",
+            tools=[tool],
+        )
+
+        tools = controller.get_all_available_tools()
+
+        assert "customtool" in tools
+
+    def test_get_all_available_tools_does_not_modify_agent(self):
+        from src.domain import BaseTool
+
+        class TestTool(BaseTool):
+            name = "test_tool"
+            description = "Test"
+
+            def execute(self, **kwargs):
+                return "result"
+
+        tool = TestTool()
+        controller = AIAgent(
+            provider="openai",
+            model="gpt-5",
+            name="Test",
+            instructions="Test",
+            tools=[tool],
+        )
+
+        tools = controller.get_all_available_tools()
+        tools["fake_tool"] = "fake description"
+
+        tools_again = controller.get_all_available_tools()
+        assert "fake_tool" not in tools_again

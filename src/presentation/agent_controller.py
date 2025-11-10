@@ -3,8 +3,9 @@ from typing import Any, Dict, List, Optional, Sequence, Union
 from src.application import (
     ChatInputDTO,
     ChatWithAgentUseCase,
-    GetAgentAvailableToolsUseCase,
     GetAgentConfigUseCase,
+    GetAllAvailableToolsUseCase,
+    GetSystemAvailableToolsUseCase,
 )
 from src.domain import Agent, BaseTool
 from src.infra import ChatMetrics
@@ -62,8 +63,12 @@ class AIAgent:
             AgentComposer.create_get_config_use_case()
         )
 
-        self.__get_available_tools_use_case: GetAgentAvailableToolsUseCase = (
-            AgentComposer.create_get_available_tools_use_case()
+        self.__get_all_available_tools_use_case: GetAllAvailableToolsUseCase = (
+            AgentComposer.create_get_all_available_tools_use_case()
+        )
+
+        self.__get_system_available_tools_use_case: GetSystemAvailableToolsUseCase = (
+            AgentComposer.create_get_system_available_tools_use_case()
         )
 
         self.__logger.info(
@@ -108,18 +113,68 @@ class AIAgent:
         output_dto = self.__get_config_use_case.execute(self.__agent)
         return output_dto.to_dict()
 
-    def get_available_tools(self) -> Dict[str, BaseTool]:
-        """Return a dict of available tool instances.
+    def get_all_available_tools(self) -> Dict[str, str]:
+        """Return a dict of all available tools for THIS agent (system + agent-specific).
 
-        This method will attempt to load lazy tools (like ReadLocalFileTool)
-        if they haven't been loaded yet. If optional dependencies are missing,
-        those tools will be silently skipped.
+        This method returns:
+        1. System tools (built-in tools like CurrentDateTool, ReadLocalFileTool)
+        2. Agent-specific tools (custom tools added when this agent was created)
+
+        Note: System tools are not duplicated. If an agent has a system tool
+        in its tools list, it won't be added twice.
 
         Returns:
-            A dict of supported tool instances.
+            A dict of all tool names and descriptions available for this agent.
         """
-        self.__logger.debug("Retrieving agent available tools")
-        output_dto: Dict[str, BaseTool] = self.__get_available_tools_use_case.execute()
+        from src.infra.config.available_tools import AvailableTools
+
+        self.__logger.debug(
+            "Retrieving all available tools for this agent (system + agent-specific)"
+        )
+
+        # Get system tools
+        all_tools: Dict[str, str] = self.__get_system_available_tools_use_case.execute()
+
+        # Get system tool names (registry keys) and tool instance names
+        system_tool_registry_names = AvailableTools.get_system_tool_names()
+
+        # Also get the internal names of system tools (tool.name attribute)
+        system_tool_instances = AvailableTools.get_all_tool_instances()
+        system_tool_internal_names = {
+            tool.name.lower()
+            for key, tool in system_tool_instances.items()
+            if key in system_tool_registry_names
+        }
+
+        # Combine both sets to catch all variations
+        all_system_tool_names = system_tool_registry_names | system_tool_internal_names
+
+        # Add agent-specific tools (excluding system tools to avoid duplication)
+        if self.__agent.tools:
+            for tool in self.__agent.tools:
+                tool_name_lower = tool.name.lower()
+                # Only add if it's not already a system tool (by either registry name or internal name)
+                if tool_name_lower not in all_system_tool_names:
+                    all_tools[tool_name_lower] = tool.description
+
+        self.__logger.info(
+            f"Retrieved {len(all_tools)} tool(s) for agent '{self.__agent.name}'"
+        )
+        return all_tools
+
+    def get_system_available_tools(self) -> Dict[str, str]:
+        """Return a dict of system tools only.
+
+        System tools are built-in tools provided by the AI Agent framework
+        that are always available and can be added to any agent.
+
+        Returns:
+            A dict of system tool names and descriptions.
+        """
+        self.__logger.debug("Retrieving system available tools")
+        output_dto: Dict[str, str] = (
+            self.__get_system_available_tools_use_case.execute()
+        )
         return output_dto
 
     def clear_history(self) -> None:
