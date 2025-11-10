@@ -45,12 +45,6 @@ Documentação da arquitetura do sistema seguindo **Clean Architecture** e **SOL
 - **Base Classes:** `BaseTool` (para ferramentas)
 - **Exceptions:** Erros de domínio
 
-**Características:**
-
-- ✅ Zero dependências externas
-- ✅ Lógica de negócio pura
-- ✅ 100% testável
-
 ---
 
 ### 2. Application (Aplicação)
@@ -67,12 +61,6 @@ Documentação da arquitetura do sistema seguindo **Clean Architecture** e **SOL
   - `GetAgentConfigUseCase` - Obter configurações
 - **DTOs:** Transferência de dados entre camadas
 - **Interfaces:** `ChatRepository` (contrato para adapters)
-
-**Características:**
-
-- ✅ Coordena entidades do domínio
-- ✅ Define interfaces para infraestrutura
-- ✅ Independente de frameworks
 
 ---
 
@@ -93,12 +81,6 @@ Documentação da arquitetura do sistema seguindo **Clean Architecture** e **SOL
 - **Factory:** `ChatAdapterFactory` - Criação de adapters
 - **Config:** `EnvironmentConfig`, `LoggingConfig`, `MetricsCollector`
 
-**Características:**
-
-- ✅ Implementa interfaces da Application
-- ✅ Substituível sem afetar negócio
-- ✅ Contém detalhes de bibliotecas externas
-
 ---
 
 ### 4. Presentation (Apresentação)
@@ -110,12 +92,6 @@ Documentação da arquitetura do sistema seguindo **Clean Architecture** e **SOL
 **Componentes:**
 
 - **AIAgent:** Controller principal (fachada simplificada)
-
-**Características:**
-
-- ✅ API intuitiva e fácil de usar
-- ✅ Esconde complexidade interna
-- ✅ Pode ser substituída (CLI, API REST, GUI)
 
 ---
 

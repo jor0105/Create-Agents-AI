@@ -79,7 +79,7 @@ print(response)
 **Limites:**
 
 - Tamanho máximo: 100MB
-- Tokens máximos: 30.000
+- Tokens máximos: Depende da AI utilizada
 
 **Funcionalidades:**
 
@@ -169,10 +169,15 @@ Inclui:
 ## 🔍 Verificar Ferramentas Disponíveis
 
 ```python
-from src.infra.config.available_tools import AvailableTools
+from src.presentation import AIAgent
 
-# Obter todas as ferramentas
-tools = AvailableTools.get_available_tools()
+agent = AIAgent(
+    provider="openai",
+    model="gpt-4"
+)
+
+# Obter todas as ferramentas disponíveis
+tools = agent.get_available_tools()
 
 print("Ferramentas disponíveis:")
 for name, tool in tools.items():
@@ -188,15 +193,6 @@ else:
 ---
 
 ## ⚡ Performance
-
-### Impacto no Tempo de Importação
-
-**Com lazy loading (atual):**
-
-```python
-import src.infra.adapters  # ~0.1s (só carrega o necessário)
-from src.infra.adapters import ReadLocalFileTool  # ~2s (quando usado)
-```
 
 ### Uso de Memória
 
@@ -266,7 +262,7 @@ class MLTool(BaseTool):
 R: Para manter o sistema leve. Se você não precisa ler PDFs/Excel, não precisa instalar pandas, unstructured, etc.
 
 **P: Como sei quais ferramentas estão disponíveis?**
-R: Use `AvailableTools.get_available_tools()` para listar.
+R: Use `agent.get_available_tools()` para listar.
 
 **P: O que acontece se eu tentar usar uma ferramenta não instalada?**
 R: Você receberá erro claro: `pip install ai-agent[file-tools]`

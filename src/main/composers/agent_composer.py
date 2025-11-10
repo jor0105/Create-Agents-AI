@@ -4,6 +4,7 @@ from src.application import (
     ChatWithAgentUseCase,
     CreateAgentInputDTO,
     CreateAgentUseCase,
+    GetAgentAvailableToolsUseCase,
     GetAgentConfigUseCase,
 )
 from src.domain import Agent, BaseTool
@@ -107,3 +108,14 @@ class AgentComposer:
         """
         AgentComposer.__logger.debug("Composing get config use case")
         return GetAgentConfigUseCase()
+
+    @staticmethod
+    def create_get_available_tools_use_case() -> GetAgentAvailableToolsUseCase:
+        """
+        Creates the GetAgentAvailableToolsUseCase.
+
+        Returns:
+            A configured GetAgentAvailableToolsUseCase.
+        """
+        AgentComposer.__logger.debug("Composing get available tools use case")
+        return GetAgentAvailableToolsUseCase()

@@ -97,14 +97,6 @@ response = agent.chat("2+2=?")
 print(response)  # Deve responder "4"
 ```
 
-**Modelos:**
-
-- `gpt-4` - Mais poderoso
-- `gpt-4-turbo` - Mais rápido
-- `gpt-4o` - Suporte a visão
-- `gpt-3.5-turbo` - Mais econômico
-
----
 
 ## 🖥️ Configuração Ollama (Opcional)
 

@@ -1,6 +1,11 @@
 from typing import Any, Dict, List, Optional, Sequence, Union
 
-from src.application import ChatInputDTO, ChatWithAgentUseCase, GetAgentConfigUseCase
+from src.application import (
+    ChatInputDTO,
+    ChatWithAgentUseCase,
+    GetAgentAvailableToolsUseCase,
+    GetAgentConfigUseCase,
+)
 from src.domain import Agent, BaseTool
 from src.infra import ChatMetrics
 from src.infra.config.logging_config import LoggingConfig
@@ -57,6 +62,10 @@ class AIAgent:
             AgentComposer.create_get_config_use_case()
         )
 
+        self.__get_available_tools_use_case: GetAgentAvailableToolsUseCase = (
+            AgentComposer.create_get_available_tools_use_case()
+        )
+
         self.__logger.info(
             f"AIAgent controller initialized successfully - Agent: {self.__agent.name}"
         )
@@ -98,6 +107,20 @@ class AIAgent:
         self.__logger.debug("Retrieving agent configurations")
         output_dto = self.__get_config_use_case.execute(self.__agent)
         return output_dto.to_dict()
+
+    def get_available_tools(self) -> Dict[str, BaseTool]:
+        """Return a dict of available tool instances.
+
+        This method will attempt to load lazy tools (like ReadLocalFileTool)
+        if they haven't been loaded yet. If optional dependencies are missing,
+        those tools will be silently skipped.
+
+        Returns:
+            A dict of supported tool instances.
+        """
+        self.__logger.debug("Retrieving agent available tools")
+        output_dto: Dict[str, BaseTool] = self.__get_available_tools_use_case.execute()
+        return output_dto
 
     def clear_history(self) -> None:
         """Clears the agent's history."""

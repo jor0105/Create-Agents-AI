@@ -1,6 +1,6 @@
 # 🤖 AI Agent Creator
 
-Um sistema modular e profissional para criar agentes de IA com suporte a múltiplos provedores (OpenAI, Ollama).
+Um sistema modular e profissional para criar agentes de IA com suporte a múltiplos provedores (OpenAI, Ollama, Gemini e mais) e ferramentas.
 
 ## ⚡ Quick Start
 
@@ -84,7 +84,7 @@ print(response)
 ```python
 # Criar agente
 agent = AIAgent(
-    provider="openai",      # ou "ollama"
+    provider="openai",
     model="gpt-4",
     name="Assistente Smart",
     instructions="Você é um especialista em Python"
@@ -234,23 +234,6 @@ OPENAI_API_KEY=sk-xxx...
 OLLAMA_API_URL=http://localhost:11434
 ```
 
-### Modelos disponíveis
-
-**OpenAI:**
-
-- `gpt-4` (mais poderoso)
-- `gpt-4-turbo` (mais rápido)
-- `gpt-4o` (visão incluída)
-- `gpt-3.5-turbo` (mais econômico)
-
-**Ollama (local):**
-
-- `llama2`
-- `mistral`
-- `neural-chat`
-- `starling-lm`
-- E muitos mais...
-
 ## 📊 API Referência
 
 ### AIAgent
@@ -278,18 +261,7 @@ AIAgent(
 | `export_metrics_json(path=None)`       | `str`   | Exportar métricas em JSON          |
 | `export_metrics_prometheus(path=None)` | `str`   | Exportar métricas em Prometheus    |
 
-## 🚀 Performance
 
-### Tempos de resposta
-
-- OpenAI: 1-5 segundos (depende da rede)
-- Ollama: 2-30 segundos (depende do modelo e hardware)
-
-### Limite de tokens
-
-- GPT-4: até 8.000 tokens por mensagem
-- GPT-3.5: até 4.000 tokens por mensagem
-- Modelos locais: variam por modelo
 
 ## 📚 Arquitetura (Para Desenvolvedores)
 

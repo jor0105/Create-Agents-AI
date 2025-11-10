@@ -27,7 +27,7 @@ AIAgent(
 | Parâmetro          | Tipo   | Descrição                                                 | Obrigatório |
 | ------------------ | ------ | --------------------------------------------------------- | ----------- |
 | `provider`         | `str`  | Provider de IA: `"openai"` ou `"ollama"`                  | ✅ Sim      |
-| `model`            | `str`  | Nome do modelo (ex: `"gpt-4"`, `"llama2"`)                | ✅ Sim      |
+| `model`            | `str`  | Nome do modelo (ex: `"gpt-4.1-mini"`, `"llama2"`)                | ✅ Sim      |
 | `name`             | `str`  | Nome do agente                                            | ❌ Não      |
 | `instructions`     | `str`  | Instruções/personalidade do agente                        | ❌ Não      |
 | `config`           | `dict` | Configurações do modelo (temperature, max_tokens, etc)    | ❌ Não      |
@@ -41,7 +41,7 @@ from src.presentation import AIAgent
 
 agent = AIAgent(
     provider="openai",
-    model="gpt-4",
+    model="gpt-4.1-mini",
     instructions="Você é um assistente técnico",
     config={"temperature": 0.7, "max_tokens": 2000},
     tools=["current_date"],
@@ -117,6 +117,28 @@ def clear_history() -> None
 ```python
 agent.clear_history()
 print("Histórico limpo!")
+```
+
+---
+
+#### get_available_tools()
+
+Retorna todas as ferramentas disponíveis para o agente, incluindo as opcionais instaladas.
+
+```python
+def get_available_tools() -> Dict[str, BaseTool]
+```
+
+**Retorna:**
+
+- `dict` mapeando o nome da ferramenta para a instância (`BaseTool`).
+
+**Exemplo:**
+
+```python
+tools = agent.get_available_tools()
+for name, tool in tools.items():
+    print(f"- {name}: {tool.description}")
 ```
 
 ---
@@ -209,7 +231,7 @@ Obtém data/hora em qualquer timezone.
 ```python
 agent = AIAgent(
     provider="openai",
-    model="gpt-4",
+    model="gpt-4.1-mini",
     tools=["current_date"]
 )
 
@@ -245,7 +267,7 @@ Lê arquivos locais em múltiplos formatos.
 ```python
 agent = AIAgent(
     provider="openai",
-    model="gpt-4",
+    model="gpt-4.1-mini",
     tools=["readlocalfile"]
 )
 
@@ -255,35 +277,36 @@ response = agent.chat("Leia o arquivo report.pdf")
 **Limites:**
 
 - Tamanho máximo: 100MB
-- Tokens máximos: 30.000
+- Tokens máximos: Depende da AI utilizada
 
 ---
 
 ## 📊 Configurações do Modelo
 
-Parâmetros para controlar o comportamento do modelo (OpenAI):
+Parâmetros para controlar o comportamento do modelo (OpenAI/Ollama):
 
 ```python
 config = {
-    "temperature": 0.7,        # 0-1: Criatividade
-    "max_tokens": 2000,        # Limite de tokens
-    "top_p": 0.9,              # 0-1: Nucleus sampling
-    "frequency_penalty": 0,    # 0-2: Reduz repetição
-    "presence_penalty": 0,     # 0-2: Encoraja novos tópicos
+    "temperature": 0.7,   # 0.0–2.0: Criatividade
+    "max_tokens": 2000,   # >0: Limite de tokens
+    "top_p": 0.9,         # 0.0–1.0: Nucleus sampling
+    "think": True,        # Ollama: bool / OpenAI: dict[str, str]
+    "top_k": 40,          # >0: (Ollama)
 }
 
-agent = AIAgent(provider="openai", model="gpt-4", config=config)
+agent = AIAgent(provider="openai", model="gpt-4.1-mini", config=config)
 ```
 
-**Parâmetros:**
+**Parâmetros suportados:**
 
-| Nome                | Faixa | Descrição                                            |
-| ------------------- | ----- | ---------------------------------------------------- |
-| `temperature`       | 0-1   | Controla aleatoriedade. 0=determinístico, 1=criativo |
-| `max_tokens`        | 1-∞   | Limite de tokens na resposta                         |
-| `top_p`             | 0-1   | Nucleus sampling                                     |
-| `frequency_penalty` | 0-2   | Penalidade por repetição                             |
-| `presence_penalty`  | 0-2   | Encoraja novos tópicos                               |
+| Nome          | Faixa/Tipo             | Descrição                                                       |
+| ------------- | ---------------------- | --------------------------------------------------------------- |
+| `temperature` | 0.0–2.0                | Controla aleatoriedade. 0=determinístico, 2=mais criativo       |
+| `max_tokens`  | >0 (int)               | Limite de tokens na resposta                                    |
+| `top_p`       | 0.0–1.0                | Nucleus sampling                                                |
+| `think`       | bool ou dict[str, str] | Ollama: bool (ativa/desativa), OpenAI: string de opções avançadas ("low", "medium" ou "high" disponíveis) |
+| `top_k`       | >0 (int)               | Número de tokens considerados no sampling              |
+
 
 ---
 
@@ -293,13 +316,13 @@ agent = AIAgent(provider="openai", model="gpt-4", config=config)
 from src.presentation import AIAgent
 
 # Básico
-agent = AIAgent(provider="openai", model="gpt-4")
+agent = AIAgent(provider="openai", model="gpt-4.1-mini")
 response = agent.chat("Olá!")
 
 # Com ferramentas
 agent = AIAgent(
     provider="openai",
-    model="gpt-4",
+    model="gpt-4.1-mini",
     tools=["current_date", "readlocalfile"]
 )
 
@@ -309,7 +332,7 @@ agent = AIAgent(provider="ollama", model="llama2")
 # Personalizado
 agent = AIAgent(
     provider="openai",
-    model="gpt-4",
+    model="gpt-4.1-mini",
     instructions="Seja técnico",
     config={"temperature": 0.3},
     history_max_size=50
