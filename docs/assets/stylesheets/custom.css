@@ -1,359 +1,297 @@
 /* ============================================================================
-   ROOT & GLOBAL SETTINGS
+   Fluid Layout & Typography for MkDocs Material
+   ----------------------------------------------------------------------------
+   Keeps the documentation fluid across breakpoints while staying easy to tweak.
    ============================================================================ */
 
 :root {
-  font-size: 16px;
+  /* Spacing scale */
+  --space-3xs: clamp(0.25rem, 0.45vw, 0.45rem);
+  --space-2xs: clamp(0.4rem, 0.65vw, 0.6rem);
+  --space-xs: clamp(0.6rem, 0.85vw, 0.85rem);
+  --space-sm: clamp(0.8rem, 1.05vw, 1.1rem);
+  --space-md: clamp(1.05rem, 1.4vw, 1.45rem);
+  --space-lg: clamp(1.35rem, 1.9vw, 1.85rem);
+  --space-xl: clamp(1.75rem, 2.4vw, 2.35rem);
+  --space-2xl: clamp(2.15rem, 3vw, 2.9rem);
 
-  /* Spacing variables */
-  --spacing-xs: 0.5rem;
-  --spacing-sm: 0.75rem;
-  --spacing-base: 1rem;
-  --spacing-lg: 1.25rem;
-  --spacing-xl: 1.5rem;
+  /* Radii */
+  --radius-sm: 0.25rem;
+  --radius-md: 0.4rem;
+
+  /* Typography scale driven by clamp() for fluid sizing */
+  --font-body: clamp(0.88rem, 0.18vw + 0.81rem, 0.94rem);
+  --font-small: clamp(0.77rem, 0.16vw + 0.69rem, 0.88rem);
+  --font-code: clamp(0.74rem, 0.13vw + 0.66rem, 0.85rem);
+  --font-h1: clamp(1.65rem, 1.1vw + 1.32rem, 2.35rem);
+  --font-h2: clamp(1.4rem, 0.85vw + 1.15rem, 1.95rem);
+  --font-h3: clamp(1.15rem, 0.7vw + 0.92rem, 1.55rem);
+  --font-h4: clamp(0.95rem, 0.5vw + 0.82rem, 1.2rem);
+
+  /* Layout */
+  --content-width: min(88vw, 68rem);
+  --content-padding: clamp(1.15rem, 2.85vw, 3rem);
+  --table-border: 1px solid rgba(0, 0, 0, 0.08);
+  --table-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.04);
 }
 
 body {
-  font-size: 100%;
+  font-size: var(--font-body);
   line-height: 1.65;
-  letter-spacing: 0.2px;
+  letter-spacing: 0.015em;
 }
 
-/* ============================================================================
-   TYPOGRAPHY: Headings & Text Scaling
-   ============================================================================ */
+.md-content {
+  padding-inline: var(--content-padding);
+}
 
-/* Use clamp() for fluid typography that scales with viewport */
+.md-content__inner {
+  max-width: var(--content-width);
+  margin-inline: auto;
+  width: 100%;
+}
+
+.md-typeset {
+  line-height: 1.7;
+}
+
 .md-typeset h1 {
-  font-size: clamp(1.75rem, 5vw, 2.5rem);
-  line-height: 1.3;
-  margin: 1.5rem 0 1rem 0;
+  font-size: var(--font-h1);
+  line-height: 1.28;
+  margin-block: var(--space-2xl) var(--space-lg);
 }
 
 .md-typeset h2 {
-  font-size: clamp(1.5rem, 4vw, 2rem);
-  line-height: 1.35;
-  margin: 1.5rem 0 0.875rem 0;
+  font-size: var(--font-h2);
+  line-height: 1.32;
+  margin-block: var(--space-xl) var(--space-sm);
+  padding-bottom: var(--space-2xs);
   border-bottom: 1px solid rgba(0, 0, 0, 0.08);
-  padding-bottom: 0.5rem;
 }
 
 .md-typeset h3 {
-  font-size: clamp(1.25rem, 3.5vw, 1.65rem);
-  line-height: 1.4;
-  margin: 1.25rem 0 0.75rem 0;
+  font-size: var(--font-h3);
+  line-height: 1.35;
+  margin-block: var(--space-lg) var(--space-xs);
 }
 
 .md-typeset h4 {
-  font-size: clamp(1.1rem, 2.5vw, 1.35rem);
-  margin: 1rem 0 0.625rem 0;
+  font-size: var(--font-h4);
+  margin-block: var(--space-md) var(--space-2xs);
 }
 
 .md-typeset h5,
 .md-typeset h6 {
-  font-size: 1rem;
-  margin: 0.75rem 0 0.5rem 0;
+  font-size: var(--font-small);
+  margin-block: var(--space-md) var(--space-3xs);
 }
 
-/* Paragraphs & body text */
-.md-typeset p {
-  font-size: 1rem;
-  line-height: 1.7;
-  margin: 0 0 1rem 0;
-}
-
+.md-typeset p,
 .md-typeset li {
-  font-size: 1rem;
-  line-height: 1.7;
-  margin-bottom: 0.5rem;
+  font-size: var(--font-body);
+  line-height: 1.72;
 }
 
-/* Code inline */
+.md-typeset p {
+  margin-block: 0 var(--space-sm);
+}
+
+.md-typeset ul,
+.md-typeset ol {
+  margin-block: var(--space-sm);
+  padding-inline-start: clamp(1.2rem, 3vw, 2.25rem);
+}
+
 .md-typeset code {
-  font-size: 0.9rem;
-  padding: 0.2rem 0.4rem;
-  border-radius: 3px;
+  font-size: var(--font-code);
+  padding: 0.2rem 0.45rem;
+  border-radius: var(--radius-sm);
 }
 
-/* Code blocks */
 .md-typeset pre {
-  font-size: clamp(0.8rem, 1.5vw, 0.95rem);
-  line-height: 1.55;
-  padding: var(--spacing-base);
-  margin: var(--spacing-lg) 0;
-  border-radius: 4px;
+  font-size: var(--font-code);
+  line-height: 1.6;
+  padding: var(--space-sm);
+  margin-block: var(--space-lg);
+  border-radius: var(--radius-md);
   overflow-x: auto;
 }
 
-/* Lists with better spacing */
-.md-typeset ol,
-.md-typeset ul {
-  margin: 1rem 0;
-  padding-left: 2rem;
-}
-
-.md-typeset ol li,
-.md-typeset ul li {
-  margin-bottom: 0.5rem;
-}
-
-/* ============================================================================
-   CONTENT AREA: Improved Padding & Readability
-   ============================================================================ */
-
-.md-content {
-  padding: var(--spacing-xl) 5%;
-  line-height: 1.7;
-}
-
-.md-content__inner {
-  max-width: 100%;
-}
-
-/* Better table styling */
 .md-typeset table {
   width: 100%;
+  margin-block: var(--space-lg);
   border-collapse: collapse;
-  margin: 1rem 0;
-  font-size: 0.95rem;
+  box-shadow: var(--table-shadow);
+  font-size: clamp(0.9rem, 0.2vw + 0.82rem, 1rem);
 }
 
 .md-typeset table th,
 .md-typeset table td {
-  padding: 0.75rem;
-  border: 1px solid rgba(0, 0, 0, 0.08);
+  padding: var(--space-2xs) var(--space-xs);
+  border: var(--table-border);
   text-align: left;
 }
 
 .md-typeset table th {
-  background-color: rgba(0, 0, 0, 0.03);
+  background-color: rgba(0, 0, 0, 0.04);
   font-weight: 600;
 }
-
-/* ============================================================================
-   MEDIA: Images & Embedded Content
-   ============================================================================ */
 
 .md-typeset img,
 .md-typeset video,
 .md-typeset iframe {
   max-width: 100%;
   height: auto;
+  margin-block: var(--space-lg);
+  border-radius: var(--radius-md);
   display: block;
-  margin: var(--spacing-lg) auto;
-  border-radius: 4px;
 }
 
-/* ============================================================================
-   NAVIGATION: Menu Refinements (Non-intrusive)
-   ============================================================================ */
-
 .md-nav {
-  font-size: clamp(0.85rem, 2vw, 0.95rem);
+  font-size: clamp(0.88rem, 0.22vw + 0.8rem, 0.97rem);
 }
 
 .md-nav__link,
 .md-nav__title {
-  padding: 0.5rem 1rem;
-  margin: 0.15rem 0;
-  border-radius: 3px;
+  padding: var(--space-3xs) var(--space-sm);
+  border-radius: var(--radius-sm);
   transition: background-color 0.15s ease, color 0.15s ease;
 }
 
 .md-nav__link:hover {
-  background-color: rgba(63, 81, 181, 0.08);
+  background-color: rgba(63, 81, 181, 0.12);
   color: var(--md-color-primary);
 }
 
 .md-nav__link--active {
   color: var(--md-color-primary);
-  font-weight: 500;
+  font-weight: 600;
 }
 
-/* Sidebar text sizing */
 .md-sidebar__inner {
-  padding: var(--spacing-sm) 0;
+  padding-block: var(--space-xs);
 }
 
-/* ============================================================================
-   RESPONSIVE BREAKPOINTS: Tablet & Mobile Refinements
-   ============================================================================ */
+.md-typeset blockquote {
+  margin-block: var(--space-lg);
+  padding-inline: var(--space-sm);
+  border-left: 3px solid var(--md-color-primary);
+  color: rgba(0, 0, 0, 0.7);
+  font-style: italic;
+}
 
-/* Tablets (768px to 1023px) */
-@media (min-width: 768px) and (max-width: 1023px) {
+.md-typeset .admonition,
+.md-typeset .note,
+.md-typeset details {
+  margin-block: var(--space-md);
+  padding: var(--space-sm);
+  border-radius: var(--radius-md);
+}
+
+.md-nav__link:focus,
+.md-typeset a:focus {
+  outline: 2px solid var(--md-color-primary);
+  outline-offset: 2px;
+}
+
+/* -------------------------------------------------------------------------- */
+/*  Responsive refinements                                                    */
+/* -------------------------------------------------------------------------- */
+
+@media (min-width: 1200px) {
   :root {
-    font-size: 15px;
+    /* Constrain for readability on very wide screens */
+    --content-width: min(74rem, 78vw);
   }
+}
 
-  .md-content {
-    padding: var(--spacing-lg) 4%;
-  }
-
-  .md-typeset h1 {
-    font-size: clamp(1.6rem, 4.5vw, 2.2rem);
-  }
-  .md-typeset h2 {
-    font-size: clamp(1.35rem, 3.5vw, 1.75rem);
-  }
-  .md-typeset h3 {
-    font-size: clamp(1.1rem, 3vw, 1.5rem);
+@media (max-width: 1024px) {
+  :root {
+    --content-width: min(92vw, 60rem);
   }
 
   .md-nav {
-    font-size: 0.9rem;
+    font-size: clamp(0.86rem, 0.25vw + 0.76rem, 0.94rem);
   }
 }
 
-/* Phones (480px to 767px) */
-@media (max-width: 767px) {
+@media (max-width: 768px) {
   :root {
-    font-size: 15px;
+    --content-padding: clamp(1rem, 4vw, 2.25rem);
+    --font-body: clamp(0.92rem, 0.32vw + 0.84rem, 0.96rem);
   }
 
-  .md-content {
-    padding: var(--spacing-lg) 5%;
-  }
-
-  .md-typeset h1 {
-    font-size: 1.5rem;
-    margin: 1.25rem 0 0.875rem 0;
-  }
-  .md-typeset h2 {
-    font-size: 1.3rem;
-    margin: 1.15rem 0 0.75rem 0;
-  }
-  .md-typeset h3 {
-    font-size: 1.1rem;
-    margin: 1rem 0 0.65rem 0;
-  }
-  .md-typeset h4 {
-    font-size: 1rem;
-    margin: 0.85rem 0 0.55rem 0;
-  }
-
-  .md-typeset p {
-    font-size: 0.95rem;
-  }
-  .md-typeset li {
-    font-size: 0.95rem;
-  }
-  .md-typeset code {
-    font-size: 0.85rem;
-  }
   .md-typeset pre {
-    font-size: 0.8rem;
-    padding: var(--spacing-sm);
+    padding: var(--space-xs);
   }
 
-  .md-nav {
-    font-size: 0.9rem;
+  .md-sidebar--secondary {
+    display: none;
   }
 
-  /* Touch-friendly link sizes */
   .md-nav__link,
   .md-nav__title {
-    padding: 0.55rem 0.8rem;
     min-height: 44px;
     display: flex;
     align-items: center;
   }
-
-  /* Sidebar adjustment for mobile */
-  .md-sidebar--secondary {
-    display: none;
-  }
 }
 
-/* Small Phones (< 480px) */
-@media (max-width: 479px) {
+@media (max-width: 540px) {
   :root {
-    font-size: 14px;
-  }
-
-  .md-content {
-    padding: 1rem 4%;
+    --content-width: 96vw;
+    --content-padding: clamp(0.9rem, 5vw, 1.6rem);
+    --font-body: clamp(0.88rem, 0.4vw + 0.78rem, 0.94rem);
   }
 
   .md-typeset h1 {
-    font-size: 1.35rem;
-    margin: 1rem 0 0.75rem 0;
-  }
-  .md-typeset h2 {
-    font-size: 1.1rem;
-    margin: 0.95rem 0 0.65rem 0;
-  }
-  .md-typeset h3 {
-    font-size: 0.95rem;
-    margin: 0.85rem 0 0.55rem 0;
-  }
-  .md-typeset h4 {
-    font-size: 0.9rem;
-  }
-
-  .md-typeset p {
-    font-size: 0.9rem;
-    line-height: 1.6;
-  }
-  .md-typeset li {
-    font-size: 0.9rem;
-  }
-  .md-typeset code {
-    font-size: 0.8rem;
-  }
-  .md-typeset pre {
-    font-size: 0.75rem;
-    padding: 0.5rem;
+    margin-block: var(--space-xl) var(--space-sm);
   }
 
   .md-nav {
-    font-size: 0.85rem;
-  }
-
-  .md-nav__link,
-  .md-nav__title {
-    padding: 0.5rem 0.7rem;
-    min-height: 42px;
+    font-size: clamp(0.8rem, 0.3vw + 0.7rem, 0.9rem);
   }
 
   .md-typeset table {
-    font-size: 0.85rem;
-  }
-  .md-typeset table th,
-  .md-typeset table td {
-    padding: 0.5rem;
+    font-size: clamp(0.82rem, 0.28vw + 0.72rem, 0.92rem);
   }
 }
 
-/* ============================================================================
-   ACCESSIBILITY & UX ENHANCEMENTS
-   ============================================================================ */
-
-/* Better focus indicators */
-.md-nav__link:focus,
-.md-typeset a:focus {
-  outline: 2px solid var(--md-color-primary);
-  outline-offset: 1px;
+/* Wide mode toggle (user preference) */
+body.wide-mode .md-content__inner {
+  max-width: min(88rem, 92vw);
+}
+body.wide-mode .md-sidebar--primary {
+  width: 15rem;
+}
+body.wide-mode .md-sidebar--secondary {
+  display: block;
 }
 
-/* Admonition improvements */
-.md-typeset .admonition,
-.md-typeset .note,
-.md-typeset details {
-  margin: 1rem 0;
-  padding: var(--spacing-base);
-  border-radius: 3px;
+/* Improve code block contrast and spacing */
+.md-typeset pre code {
+  background: transparent;
+}
+.md-typeset pre {
+  background: var(--md-code-bg-color, #1e1e21);
+  color: #eee;
+}
+.md-typeset pre:hover {
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08), 0 2px 6px rgba(0, 0, 0, 0.25);
 }
 
-/* Blockquote improvements */
-.md-typeset blockquote {
-  padding: 0 1rem;
-  border-left: 3px solid var(--md-color-primary);
-  color: rgba(0, 0, 0, 0.7);
-  font-style: italic;
-  margin: 1rem 0;
+/* Task list checkbox alignment */
+.task-list-item {
+  list-style: none;
+}
+.task-list-item input {
+  margin-right: 0.35rem;
 }
 
-/* Respect motion preferences */
+/* -------------------------------------------------------------------------- */
+/*  Quality of life                                                           */
+/* -------------------------------------------------------------------------- */
+
 @media (prefers-reduced-motion: reduce) {
   * {
     animation-duration: 0.01ms !important;
@@ -362,7 +300,6 @@ body {
   }
 }
 
-/* Print styles */
 @media print {
   .md-header,
   .md-navigation,

@@ -97,7 +97,6 @@ response = agent.chat("2+2=?")
 print(response)  # Deve responder "4"
 ```
 
-
 ## 🖥️ Configuração Ollama (Opcional)
 
 Ollama permite executar modelos **localmente** (privacidade total, sem custos).
@@ -134,7 +133,7 @@ ollama pull gemma  # 2GB
 ollama list
 ```
 
-### 3. Usar no Código
+### 3. Usar no código
 
 ```python
 agent = AIAgent(provider="ollama", model="llama2")

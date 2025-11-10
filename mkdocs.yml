@@ -35,35 +35,76 @@ theme:
     text: Roboto
     code: Roboto Mono
   features:
+    - content.code.annotate
+    - content.code.copy
+    - content.tabs.link
+    - header.autohide
     - navigation.instant
+    - navigation.instant.progress
+    - navigation.sections
+    - navigation.tabs
+    - navigation.top
+    - navigation.tracking
+    - search.highlight
+    - search.share
+    - search.suggest
+    - toc.follow
     - toc.integrate
   navigation_depth: 4
+  icon:
+    repo: fontawesome/brands/github
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/jor0105/AI_Agent
+      name: Código-fonte
+    - icon: material/email
+      link: mailto:contato@exemplo.com
+      name: Contato
 
 extra_css:
   - https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap
   - assets/stylesheets/custom.css
 
+extra_javascript:
+  - assets/javascripts/wide-toggle.js
+
+plugins:
+  - search:
+      lang: pt
+
 # Extensions
 markdown_extensions:
-  - admonition
-  - footnotes
-  - meta
-  - toc:
-      permalink: true
-      permalink_title: Link para esta seção
-      toc_depth: 3
-  - tables
-  - def_list
-  - attr_list
   - abbr
-  - smarty
+  - admonition
+  - attr_list
   - codehilite:
       guess_lang: false
       linenums: true
       use_pygments: true
-  - sane_lists
+  - def_list
   - fenced_code
+  - footnotes
+  - meta
   - nl2br
+  - sane_lists
+  - smarty
+  - tables
+  - toc:
+      permalink: true
+      permalink_title: Link para esta seção
+      toc_depth: 3
+  - pymdownx.superfences
+  - pymdownx.inlinehilite
+  - pymdownx.highlight
+  - pymdownx.snippets
+  - pymdownx.details
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.magiclink
 
 # Navigation
 nav:
