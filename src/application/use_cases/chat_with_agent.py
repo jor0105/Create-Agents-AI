@@ -1,14 +1,13 @@
 from typing import List
 
 from src.application.dtos import ChatInputDTO, ChatOutputDTO
-from src.application.interfaces.chat_repository import ChatRepository
+from src.application.interfaces import ChatRepository
 from src.domain import Agent, ChatException
 from src.infra import ChatMetrics, LoggingConfig
+from src.utils import TextSanitizer
 
 
 class ChatWithAgentUseCase:
-    """Use Case for chatting with an agent."""
-
     def __init__(self, chat_repository: ChatRepository):
         """
         Initializes the Use Case with its dependencies.
@@ -46,21 +45,26 @@ class ChatWithAgentUseCase:
                 model=agent.model,
                 instructions=agent.instructions,
                 config=agent.config,
+                tools=agent.tools,
                 history=agent.history.to_dict_list(),
                 user_ask=input_dto.message,
             )
 
-            if not response:
+            final_response = TextSanitizer.format_markdown_for_terminal(response)
+
+            if not final_response:
                 self.__logger.error("Empty response received from repository")
                 raise ChatException("Empty response received from repository")
 
-            output_dto = ChatOutputDTO(response=response)
+            output_dto = ChatOutputDTO(response=final_response)
 
             agent.add_user_message(input_dto.message)
-            agent.add_assistant_message(response)
+            agent.add_assistant_message(final_response)
 
             self.__logger.info("Chat executed successfully")
-            self.__logger.debug("Response (first 100 chars): %s...", response[:100])
+            self.__logger.debug(
+                "Response (first 100 chars): %s...", final_response[:100]
+            )
 
             return output_dto
 

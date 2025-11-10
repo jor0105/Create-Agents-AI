@@ -21,7 +21,7 @@ class TestChatAdapterFactoryIntegration:
         mock_client = Mock()
         mock_get_client.return_value = mock_client
 
-        gpt_models = ["gpt-5", "gpt-5-mini", "gpt-5-nano", "GPT-5-NANO"]
+        gpt_models = ["gpt-4.1-mini", "gpt-5-mini", "gpt-5-nano", "GPT-5-NANO"]
 
         for model in gpt_models:
             adapter = ChatAdapterFactory.create(provider="openai", model=model)
@@ -31,7 +31,7 @@ class TestChatAdapterFactoryIntegration:
     def test_factory_creates_ollama_adapter_for_non_gpt_models(self):
         non_gpt_models = [
             "gemma3:4b",
-            "phi4-mini:latest",
+            "granite4:latest",
             "llama2",
             "mistral",
             "claude",
@@ -71,6 +71,7 @@ class TestChatAdapterFactoryIntegration:
             model="gpt-5-mini",
             instructions="Be helpful",
             config={},
+            tools=None,
             history=[],
             user_ask="Hello",
         )
@@ -83,6 +84,7 @@ class TestChatAdapterFactoryIntegration:
         mock_response = Mock()
         mock_message = Mock()
         mock_message.content = "Ollama response"
+        mock_message.tool_calls = None
         mock_response.message = mock_message
         mock_ollama_chat.return_value = mock_response
 
@@ -92,6 +94,7 @@ class TestChatAdapterFactoryIntegration:
             model="gemma3:4b",
             instructions="Be helpful",
             config={},
+            tools=None,
             history=[],
             user_ask="Hello",
         )
@@ -187,6 +190,7 @@ class TestChatAdapterFactoryIntegration:
             model="gpt-5-nano",
             instructions="System prompt",
             config={},
+            tools=None,
             history=history,
             user_ask="New question",
         )
@@ -202,6 +206,7 @@ class TestChatAdapterFactoryIntegration:
         mock_response = Mock()
         mock_message = Mock()
         mock_message.content = "Local response"
+        mock_message.tool_calls = None
         mock_response.message = mock_message
         mock_ollama_chat.return_value = mock_response
 
@@ -215,6 +220,7 @@ class TestChatAdapterFactoryIntegration:
                 model=model,
                 instructions="Test",
                 config={},
+                tools=None,
                 history=[],
                 user_ask="Test",
             )

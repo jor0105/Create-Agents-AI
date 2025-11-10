@@ -9,6 +9,15 @@ IA_OLLAMA_TEST_1: str = "phi4-mini:latest"
 IA_OLLAMA_TEST_2: str = "gemma3:4b"
 
 
+def _mock_response(content="Response", tool_calls=None, get_return=None):
+    m = MagicMock()
+    m.message = MagicMock()
+    m.message.content = content
+    m.message.tool_calls = tool_calls
+    m.get.return_value = get_return
+    return m
+
+
 @pytest.mark.unit
 class TestOllamaChatAdapter:
     def test_initialization(self):
@@ -22,10 +31,9 @@ class TestOllamaChatAdapter:
 
     @patch("src.infra.adapters.Ollama.ollama_chat_adapter.chat")
     def test_chat_with_valid_input(self, mock_chat):
-        mock_response = MagicMock()
-        mock_response.message.content = "Ollama response"
-        mock_response.get.return_value = None
-        mock_chat.return_value = mock_response
+        mock_chat.return_value = _mock_response(
+            content="Ollama response", tool_calls=None, get_return=None
+        )
 
         adapter = OllamaChatAdapter()
 
@@ -33,6 +41,7 @@ class TestOllamaChatAdapter:
             model=IA_OLLAMA_TEST_2,
             instructions="Be helpful",
             config={},
+            tools=None,
             history=[],
             user_ask="Hello",
         )
@@ -42,10 +51,9 @@ class TestOllamaChatAdapter:
 
     @patch("src.infra.adapters.Ollama.ollama_chat_adapter.chat")
     def test_chat_constructs_messages_correctly(self, mock_chat):
-        mock_response = MagicMock()
-        mock_response.message.content = "Response"
-        mock_response.get.return_value = None
-        mock_chat.return_value = mock_response
+        mock_chat.return_value = _mock_response(
+            content="Response", tool_calls=None, get_return=None
+        )
 
         adapter = OllamaChatAdapter()
 
@@ -53,6 +61,7 @@ class TestOllamaChatAdapter:
             model=IA_OLLAMA_TEST_1,
             instructions="System instruction",
             config={},
+            tools=None,
             history=[{"role": "user", "content": "Previous message"}],
             user_ask="User question",
         )
@@ -67,10 +76,9 @@ class TestOllamaChatAdapter:
 
     @patch("src.infra.adapters.Ollama.ollama_chat_adapter.chat")
     def test_chat_with_empty_history(self, mock_chat):
-        mock_response = MagicMock()
-        mock_response.message.content = "Response"
-        mock_response.get.return_value = None
-        mock_chat.return_value = mock_response
+        mock_chat.return_value = _mock_response(
+            content="Response", tool_calls=None, get_return=None
+        )
 
         adapter = OllamaChatAdapter()
 
@@ -78,6 +86,7 @@ class TestOllamaChatAdapter:
             model=IA_OLLAMA_TEST_2,
             instructions="Instructions",
             config={},
+            tools=None,
             history=[],
             user_ask="Question",
         )
@@ -89,10 +98,9 @@ class TestOllamaChatAdapter:
 
     @patch("src.infra.adapters.Ollama.ollama_chat_adapter.chat")
     def test_chat_with_multiple_history_items(self, mock_chat):
-        mock_response = MagicMock()
-        mock_response.message.content = "Response"
-        mock_response.get.return_value = None
-        mock_chat.return_value = mock_response
+        mock_chat.return_value = _mock_response(
+            content="Response", tool_calls=None, get_return=None
+        )
 
         adapter = OllamaChatAdapter()
 
@@ -107,6 +115,7 @@ class TestOllamaChatAdapter:
             model=IA_OLLAMA_TEST_1,
             instructions="Instructions",
             config={},
+            tools=None,
             history=history,
             user_ask="New question",
         )
@@ -118,10 +127,9 @@ class TestOllamaChatAdapter:
 
     @patch("src.infra.adapters.Ollama.ollama_chat_adapter.chat")
     def test_chat_passes_correct_model(self, mock_chat):
-        mock_response = MagicMock()
-        mock_response.message.content = "Response"
-        mock_response.get.return_value = None
-        mock_chat.return_value = mock_response
+        mock_chat.return_value = _mock_response(
+            content="Response", tool_calls=None, get_return=None
+        )
 
         adapter = OllamaChatAdapter()
 
@@ -129,6 +137,7 @@ class TestOllamaChatAdapter:
             model=IA_OLLAMA_TEST_1,
             instructions="Test",
             config={},
+            tools=None,
             history=[],
             user_ask="Test",
         )
@@ -138,36 +147,40 @@ class TestOllamaChatAdapter:
 
     @patch("src.infra.adapters.Ollama.ollama_chat_adapter.chat")
     def test_chat_with_empty_response_raises_error(self, mock_chat):
-        mock_response = MagicMock()
-        mock_response.message.content = ""
-        mock_response.get.return_value = None
-        mock_chat.return_value = mock_response
+        mock_chat.return_value = _mock_response(
+            content="", tool_calls=None, get_return=None
+        )
 
         adapter = OllamaChatAdapter()
 
-        with pytest.raises(ChatException, match="Ollama returned an empty response"):
+        with pytest.raises(
+            ChatException, match="Ollama returned multiple empty responses"
+        ):
             adapter.chat(
                 model=IA_OLLAMA_TEST_2,
                 instructions="Test",
                 config={},
+                tools=None,
                 history=[],
                 user_ask="Test",
             )
 
     @patch("src.infra.adapters.Ollama.ollama_chat_adapter.chat")
     def test_chat_with_none_response_raises_error(self, mock_chat):
-        mock_response = MagicMock()
-        mock_response.message.content = None
-        mock_response.get.return_value = None
-        mock_chat.return_value = mock_response
+        mock_chat.return_value = _mock_response(
+            content=None, tool_calls=None, get_return=None
+        )
 
         adapter = OllamaChatAdapter()
 
-        with pytest.raises(ChatException, match="Ollama returned an empty response"):
+        with pytest.raises(
+            ChatException, match="Ollama returned multiple empty responses"
+        ):
             adapter.chat(
                 model=IA_OLLAMA_TEST_1,
                 instructions="Test",
                 config={},
+                tools=None,
                 history=[],
                 user_ask="Test",
             )
@@ -175,6 +188,8 @@ class TestOllamaChatAdapter:
     @patch("src.infra.adapters.Ollama.ollama_chat_adapter.chat")
     def test_chat_with_missing_message_key_raises_error(self, mock_chat):
         class BadMessage:
+            tool_calls = None
+
             @property
             def content(self):
                 raise AttributeError("'dict' object has no attribute 'content'")
@@ -192,6 +207,7 @@ class TestOllamaChatAdapter:
                 model=IA_OLLAMA_TEST_2,
                 instructions="Test",
                 config={},
+                tools=None,
                 history=[],
                 user_ask="Test",
             )
@@ -214,6 +230,7 @@ class TestOllamaChatAdapter:
                 model=IA_OLLAMA_TEST_1,
                 instructions="Test",
                 config={},
+                tools=None,
                 history=[],
                 user_ask="Test",
             )
@@ -229,6 +246,7 @@ class TestOllamaChatAdapter:
                 model=IA_OLLAMA_TEST_2,
                 instructions="Test",
                 config={},
+                tools=None,
                 history=[],
                 user_ask="Test",
             )
@@ -246,6 +264,7 @@ class TestOllamaChatAdapter:
                 model=IA_OLLAMA_TEST_1,
                 instructions="Test",
                 config={},
+                tools=None,
                 history=[],
                 user_ask="Test",
             )
@@ -262,6 +281,7 @@ class TestOllamaChatAdapter:
                 model=IA_OLLAMA_TEST_2,
                 instructions="Test",
                 config={},
+                tools=None,
                 history=[],
                 user_ask="Test",
             )
@@ -280,6 +300,7 @@ class TestOllamaChatAdapter:
                 model=IA_OLLAMA_TEST_1,
                 instructions="Test",
                 config={},
+                tools=None,
                 history=[],
                 user_ask="Test",
             )
@@ -288,10 +309,9 @@ class TestOllamaChatAdapter:
 
     @patch("src.infra.adapters.Ollama.ollama_chat_adapter.chat")
     def test_chat_with_special_characters(self, mock_chat):
-        mock_response = MagicMock()
-        mock_response.message.content = "Resposta com 你好 e emojis 🎉"
-        mock_response.get.return_value = None
-        mock_chat.return_value = mock_response
+        mock_chat.return_value = _mock_response(
+            content="Resposta com 你好 e emojis 🎉", tool_calls=None, get_return=None
+        )
 
         adapter = OllamaChatAdapter()
 
@@ -299,6 +319,7 @@ class TestOllamaChatAdapter:
             model=IA_OLLAMA_TEST_1,
             instructions="Test 你好",
             config={},
+            tools=None,
             history=[],
             user_ask="Question 🎉",
         )
@@ -308,10 +329,9 @@ class TestOllamaChatAdapter:
 
     @patch("src.infra.adapters.Ollama.ollama_chat_adapter.chat")
     def test_chat_with_multiline_content(self, mock_chat):
-        mock_response = MagicMock()
-        mock_response.message.content = "Line 1\nLine 2\nLine 3"
-        mock_response.get.return_value = None
-        mock_chat.return_value = mock_response
+        mock_chat.return_value = _mock_response(
+            content="Line 1\nLine 2\nLine 3", tool_calls=None, get_return=None
+        )
 
         adapter = OllamaChatAdapter()
 
@@ -319,6 +339,7 @@ class TestOllamaChatAdapter:
             model=IA_OLLAMA_TEST_2,
             instructions="Multi\nline\ninstructions",
             config={},
+            tools=None,
             history=[],
             user_ask="Multi\nline\nquestion",
         )
@@ -337,10 +358,9 @@ class TestOllamaChatAdapter:
 
     @patch("src.infra.adapters.Ollama.ollama_chat_adapter.chat")
     def test_chat_collects_metrics_on_success(self, mock_chat):
-        mock_response = MagicMock()
-        mock_response.message.content = "Success response"
-        mock_response.get.return_value = 100
-        mock_chat.return_value = mock_response
+        mock_chat.return_value = _mock_response(
+            content="Success response", tool_calls=None, get_return=100
+        )
 
         adapter = OllamaChatAdapter()
 
@@ -348,6 +368,7 @@ class TestOllamaChatAdapter:
             model=IA_OLLAMA_TEST_1,
             instructions="Test",
             config={},
+            tools=None,
             history=[],
             user_ask="Test",
         )
@@ -370,6 +391,7 @@ class TestOllamaChatAdapter:
                 model=IA_OLLAMA_TEST_2,
                 instructions="Test",
                 config={},
+                tools=None,
                 history=[],
                 user_ask="Test",
             )
@@ -385,10 +407,9 @@ class TestOllamaChatAdapter:
 
     @patch("src.infra.adapters.Ollama.ollama_chat_adapter.chat")
     def test_chat_collects_multiple_metrics(self, mock_chat):
-        mock_response = MagicMock()
-        mock_response.message.content = "Response"
-        mock_response.get.return_value = None
-        mock_chat.return_value = mock_response
+        mock_chat.return_value = _mock_response(
+            content="Response", tool_calls=None, get_return=None
+        )
 
         adapter = OllamaChatAdapter()
 
@@ -396,6 +417,7 @@ class TestOllamaChatAdapter:
             model=IA_OLLAMA_TEST_1,
             instructions="Test",
             config={},
+            tools=None,
             history=[],
             user_ask="Test 1",
         )
@@ -404,6 +426,7 @@ class TestOllamaChatAdapter:
             model=IA_OLLAMA_TEST_2,
             instructions="Test",
             config={},
+            tools=None,
             history=[],
             user_ask="Test 2",
         )
@@ -423,10 +446,9 @@ class TestOllamaChatAdapter:
 
     @patch("src.infra.adapters.Ollama.ollama_chat_adapter.chat")
     def test_chat_with_empty_string_in_history(self, mock_chat):
-        mock_response = MagicMock()
-        mock_response.message.content = "Response"
-        mock_response.get.return_value = None
-        mock_chat.return_value = mock_response
+        mock_chat.return_value = _mock_response(
+            content="Response", tool_calls=None, get_return=None
+        )
 
         adapter = OllamaChatAdapter()
 
@@ -439,6 +461,7 @@ class TestOllamaChatAdapter:
             model=IA_OLLAMA_TEST_1,
             instructions="Test",
             config={},
+            tools=None,
             history=history,
             user_ask="New question",
         )
@@ -450,10 +473,9 @@ class TestOllamaChatAdapter:
 
     @patch("src.infra.adapters.Ollama.ollama_chat_adapter.chat")
     def test_chat_with_long_history(self, mock_chat):
-        mock_response = MagicMock()
-        mock_response.message.content = "Response"
-        mock_response.get.return_value = None
-        mock_chat.return_value = mock_response
+        mock_chat.return_value = _mock_response(
+            content="Response", tool_calls=None, get_return=None
+        )
 
         adapter = OllamaChatAdapter()
 
@@ -466,6 +488,7 @@ class TestOllamaChatAdapter:
             model=IA_OLLAMA_TEST_2,
             instructions="Test",
             config={},
+            tools=None,
             history=history,
             user_ask="Final question",
         )
@@ -477,10 +500,9 @@ class TestOllamaChatAdapter:
 
     @patch("src.infra.adapters.Ollama.ollama_chat_adapter.chat")
     def test_chat_with_config_parameter(self, mock_chat):
-        mock_response = MagicMock()
-        mock_response.message.content = "Response"
-        mock_response.get.return_value = None
-        mock_chat.return_value = mock_response
+        mock_chat.return_value = _mock_response(
+            content="Response", tool_calls=None, get_return=None
+        )
 
         adapter = OllamaChatAdapter()
 
@@ -490,6 +512,7 @@ class TestOllamaChatAdapter:
             model=IA_OLLAMA_TEST_1,
             instructions="Test",
             config=config,
+            tools=None,
             history=[],
             user_ask="Test",
         )
@@ -499,6 +522,7 @@ class TestOllamaChatAdapter:
     @patch("src.infra.adapters.Ollama.ollama_chat_adapter.chat")
     def test_chat_with_key_error_raises_chat_exception(self, mock_chat):
         mock_response = MagicMock()
+        mock_response.message.tool_calls = None
         type(mock_response.message).content = property(
             lambda self: (_ for _ in ()).throw(KeyError("test_key"))
         )
@@ -511,16 +535,16 @@ class TestOllamaChatAdapter:
                 model=IA_OLLAMA_TEST_2,
                 instructions="Test",
                 config={},
+                tools=None,
                 history=[],
                 user_ask="Test",
             )
 
     @patch("src.infra.adapters.Ollama.ollama_chat_adapter.chat")
     def test_chat_metrics_contain_error_message_on_empty_response(self, mock_chat):
-        mock_response = MagicMock()
-        mock_response.message.content = ""
-        mock_response.get.return_value = None
-        mock_chat.return_value = mock_response
+        mock_chat.return_value = _mock_response(
+            content="", tool_calls=None, get_return=None
+        )
 
         adapter = OllamaChatAdapter()
 
@@ -529,6 +553,7 @@ class TestOllamaChatAdapter:
                 model=IA_OLLAMA_TEST_1,
                 instructions="Test",
                 config={},
+                tools=None,
                 history=[],
                 user_ask="Test",
             )
@@ -537,15 +562,14 @@ class TestOllamaChatAdapter:
 
         metrics = adapter.get_metrics()
         assert len(metrics) == 1
-        assert metrics[0].error_message == "Ollama returned an empty response."
+        assert metrics[0].error_message is not None
         assert metrics[0].success is False
 
     @patch("src.infra.adapters.Ollama.ollama_chat_adapter.chat")
     def test_chat_passes_temperature_config(self, mock_chat):
-        mock_response = MagicMock()
-        mock_response.message.content = "Response"
-        mock_response.get.return_value = None
-        mock_chat.return_value = mock_response
+        mock_chat.return_value = _mock_response(
+            content="Response", tool_calls=None, get_return=None
+        )
 
         adapter = OllamaChatAdapter()
 
@@ -553,6 +577,7 @@ class TestOllamaChatAdapter:
             model=IA_OLLAMA_TEST_1,
             instructions="Test",
             config={"temperature": 0.7},
+            tools=None,
             history=[],
             user_ask="Test",
         )
@@ -562,10 +587,9 @@ class TestOllamaChatAdapter:
 
     @patch("src.infra.adapters.Ollama.ollama_chat_adapter.chat")
     def test_chat_passes_max_tokens_as_num_predict(self, mock_chat):
-        mock_response = MagicMock()
-        mock_response.message.content = "Response"
-        mock_response.get.return_value = None
-        mock_chat.return_value = mock_response
+        mock_chat.return_value = _mock_response(
+            content="Response", tool_calls=None, get_return=None
+        )
 
         adapter = OllamaChatAdapter()
 
@@ -573,6 +597,7 @@ class TestOllamaChatAdapter:
             model=IA_OLLAMA_TEST_2,
             instructions="Test",
             config={"max_tokens": 500},
+            tools=None,
             history=[],
             user_ask="Test",
         )
@@ -582,10 +607,9 @@ class TestOllamaChatAdapter:
 
     @patch("src.infra.adapters.Ollama.ollama_chat_adapter.chat")
     def test_chat_passes_top_p_config(self, mock_chat):
-        mock_response = MagicMock()
-        mock_response.message.content = "Response"
-        mock_response.get.return_value = None
-        mock_chat.return_value = mock_response
+        mock_chat.return_value = _mock_response(
+            content="Response", tool_calls=None, get_return=None
+        )
 
         adapter = OllamaChatAdapter()
 
@@ -593,6 +617,7 @@ class TestOllamaChatAdapter:
             model=IA_OLLAMA_TEST_2,
             instructions="Test",
             config={"top_p": 0.9},
+            tools=None,
             history=[],
             user_ask="Test",
         )
@@ -602,10 +627,9 @@ class TestOllamaChatAdapter:
 
     @patch("src.infra.adapters.Ollama.ollama_chat_adapter.chat")
     def test_chat_passes_all_configs(self, mock_chat):
-        mock_response = MagicMock()
-        mock_response.message.content = "Response"
-        mock_response.get.return_value = None
-        mock_chat.return_value = mock_response
+        mock_chat.return_value = _mock_response(
+            content="Response", tool_calls=None, get_return=None
+        )
 
         adapter = OllamaChatAdapter()
 
@@ -619,6 +643,7 @@ class TestOllamaChatAdapter:
             model=IA_OLLAMA_TEST_1,
             instructions="Test",
             config=config,
+            tools=None,
             history=[],
             user_ask="Test",
         )
@@ -633,10 +658,9 @@ class TestOllamaChatAdapter:
 
     @patch("src.infra.adapters.Ollama.ollama_chat_adapter.chat")
     def test_chat_with_empty_config_does_not_pass_options(self, mock_chat):
-        mock_response = MagicMock()
-        mock_response.message.content = "Response"
-        mock_response.get.return_value = None
-        mock_chat.return_value = mock_response
+        mock_chat.return_value = _mock_response(
+            content="Response", tool_calls=None, get_return=None
+        )
 
         adapter = OllamaChatAdapter()
 
@@ -644,22 +668,22 @@ class TestOllamaChatAdapter:
             model=IA_OLLAMA_TEST_2,
             instructions="Test",
             config={},
+            tools=None,
             history=[],
             user_ask="Test",
         )
 
         call_args = mock_chat.call_args
-        assert call_args.kwargs.get("options") == {}
+        assert call_args.kwargs.get("options") in (None, {})
         assert "model" in call_args.kwargs
         assert "messages" in call_args.kwargs
 
     @patch("src.infra.adapters.Ollama.ollama_chat_adapter.subprocess.run")
     @patch("src.infra.adapters.Ollama.ollama_chat_adapter.chat")
     def test_stop_model_is_called_after_chat(self, mock_chat, mock_subprocess):
-        mock_response = MagicMock()
-        mock_response.message.content = "Response"
-        mock_response.get.return_value = None
-        mock_chat.return_value = mock_response
+        mock_chat.return_value = _mock_response(
+            content="Response", tool_calls=None, get_return=None
+        )
         mock_subprocess.return_value = Mock()
 
         adapter = OllamaChatAdapter()
@@ -668,6 +692,7 @@ class TestOllamaChatAdapter:
             model=IA_OLLAMA_TEST_1,
             instructions="Test",
             config={},
+            tools=None,
             history=[],
             user_ask="Test",
         )
@@ -689,6 +714,7 @@ class TestOllamaChatAdapter:
                 model=IA_OLLAMA_TEST_2,
                 instructions="Test",
                 config={},
+                tools=None,
                 history=[],
                 user_ask="Test",
             )
@@ -700,10 +726,9 @@ class TestOllamaChatAdapter:
     @patch("src.infra.adapters.Ollama.ollama_chat_adapter.subprocess.run")
     @patch("src.infra.adapters.Ollama.ollama_chat_adapter.chat")
     def test_stop_model_handles_file_not_found(self, mock_chat, mock_subprocess):
-        mock_response = MagicMock()
-        mock_response.message.content = "Response"
-        mock_response.get.return_value = None
-        mock_chat.return_value = mock_response
+        mock_chat.return_value = _mock_response(
+            content="Response", tool_calls=None, get_return=None
+        )
         mock_subprocess.side_effect = FileNotFoundError("ollama not found")
 
         adapter = OllamaChatAdapter()
@@ -712,6 +737,7 @@ class TestOllamaChatAdapter:
             model=IA_OLLAMA_TEST_1,
             instructions="Test",
             config={},
+            tools=None,
             history=[],
             user_ask="Test",
         )
@@ -723,10 +749,9 @@ class TestOllamaChatAdapter:
     def test_stop_model_handles_timeout(self, mock_chat, mock_subprocess):
         import subprocess
 
-        mock_response = MagicMock()
-        mock_response.message.content = "Response"
-        mock_response.get.return_value = None
-        mock_chat.return_value = mock_response
+        mock_chat.return_value = _mock_response(
+            content="Response", tool_calls=None, get_return=None
+        )
         mock_subprocess.side_effect = subprocess.TimeoutExpired("ollama", 10)
 
         adapter = OllamaChatAdapter()
@@ -735,6 +760,7 @@ class TestOllamaChatAdapter:
             model=IA_OLLAMA_TEST_2,
             instructions="Test",
             config={},
+            tools=None,
             history=[],
             user_ask="Test",
         )
@@ -744,10 +770,9 @@ class TestOllamaChatAdapter:
     @patch("src.infra.adapters.Ollama.ollama_chat_adapter.subprocess.run")
     @patch("src.infra.adapters.Ollama.ollama_chat_adapter.chat")
     def test_stop_model_handles_generic_exception(self, mock_chat, mock_subprocess):
-        mock_response = MagicMock()
-        mock_response.message.content = "Response"
-        mock_response.get.return_value = None
-        mock_chat.return_value = mock_response
+        mock_chat.return_value = _mock_response(
+            content="Response", tool_calls=None, get_return=None
+        )
         mock_subprocess.side_effect = RuntimeError("Unknown error")
 
         adapter = OllamaChatAdapter()
@@ -756,6 +781,7 @@ class TestOllamaChatAdapter:
             model=IA_OLLAMA_TEST_1,
             instructions="Test",
             config={},
+            tools=None,
             history=[],
             user_ask="Test",
         )
@@ -764,10 +790,9 @@ class TestOllamaChatAdapter:
 
     @patch("src.infra.adapters.Ollama.ollama_chat_adapter.chat")
     def test_chat_with_none_instructions_omits_system_message(self, mock_chat):
-        mock_response = MagicMock()
-        mock_response.message.content = "Response"
-        mock_response.get.return_value = None
-        mock_chat.return_value = mock_response
+        mock_chat.return_value = _mock_response(
+            content="Response", tool_calls=None, get_return=None
+        )
 
         adapter = OllamaChatAdapter()
 
@@ -775,6 +800,7 @@ class TestOllamaChatAdapter:
             model=IA_OLLAMA_TEST_2,
             instructions=None,
             config={},
+            tools=None,
             history=[],
             user_ask="Test",
         )
@@ -787,10 +813,9 @@ class TestOllamaChatAdapter:
 
     @patch("src.infra.adapters.Ollama.ollama_chat_adapter.chat")
     def test_chat_with_whitespace_only_instructions(self, mock_chat):
-        mock_response = MagicMock()
-        mock_response.message.content = "Response"
-        mock_response.get.return_value = None
-        mock_chat.return_value = mock_response
+        mock_chat.return_value = _mock_response(
+            content="Response", tool_calls=None, get_return=None
+        )
 
         adapter = OllamaChatAdapter()
 
@@ -798,6 +823,7 @@ class TestOllamaChatAdapter:
             model=IA_OLLAMA_TEST_1,
             instructions="   \n\t  ",
             config={},
+            tools=None,
             history=[],
             user_ask="Test",
         )

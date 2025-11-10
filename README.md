@@ -1,6 +1,6 @@
 # 🤖 AI Agent Creator
 
-Um sistema modular e profissional para criar agentes de IA com suporte a múltiplos provedores (OpenAI, Ollama).
+Um sistema modular e profissional para criar agentes de IA com suporte a múltiplos provedores (OpenAI, Ollama, Gemini e mais) e ferramentas.
 
 ## ⚡ Quick Start
 
@@ -11,20 +11,61 @@ Um sistema modular e profissional para criar agentes de IA com suporte a múltip
 git clone https://github.com/jor0105/AI_Agent.git
 cd AI_Agent
 
-# Instale as dependências com Poetry
+# Instalação básica (sem ferramentas pesadas)
 poetry install
+
+# OU Instalação completa (inclui ferramentas de leitura de arquivos)
+poetry install -E file-tools
+
+# OU Instalação com todas as funcionalidades
+poetry install -E all
 
 # Configure suas credenciais
 cp .env.example .env
 # Edite .env e adicione sua chave OpenAI
 ```
 
+### 📦 Instalação de Extras Opcionais
+
+Este projeto oferece instalação modular para manter a biblioteca leve:
+
+**Instalação Básica** (apenas funcionalidades essenciais):
+
+```bash
+pip install ai-agent
+# ou
+poetry install
+```
+
+**Com ferramentas de leitura de arquivos** (PDF, Excel, CSV, Parquet):
+
+```bash
+pip install ai-agent[file-tools]
+# ou
+poetry install -E file-tools
+```
+
+**Instalação completa** (todas as funcionalidades):
+
+```bash
+pip install ai-agent[all]
+# ou
+poetry install -E all
+```
+
+#### 📋 Extras Disponíveis
+
+| Extra        | Dependências                                          | Funcionalidades                                                                       |
+| ------------ | ----------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| `file-tools` | tiktoken, pymupdf, pandas, openpyxl, pyarrow, chardet | Ferramenta ReadLocalFileTool para ler arquivos locais (TXT, CSV, Excel, PDF, Parquet) |
+| `all`        | Todas acima                                           | Todas as funcionalidades opcionais                                                    |
+
 ### Uso básico em 3 linhas
 
 ```python
 from src.presentation import AIAgent
 
-agent = AIAgent(model="gpt-4", name="Meu Assistente", instructions="Você é um assistente útil")
+agent = AIAgent(provider="openai", model="gpt-4", name="Meu Assistente", instructions="Você é um assistente útil")
 
 response = agent.chat("Olá! Como você está?")
 
@@ -43,7 +84,7 @@ print(response)
 ```python
 # Criar agente
 agent = AIAgent(
-    provider="openai",      # ou "ollama"
+    provider="openai",
     model="gpt-4",
     name="Assistente Smart",
     instructions="Você é um especialista em Python"
@@ -67,7 +108,7 @@ agent.chat("Primeira mensagem")
 agent.chat("Segunda mensagem")
 
 # Personalizar tamanho do histórico
-agent = AIAgent(..., history_max_size=20)
+agent = AIAgent(provider="openai", model="gpt-4", history_max_size=20)
 
 # Limpar quando necessário
 agent.clear_history()
@@ -82,10 +123,11 @@ config = {
 }
 
 agent = AIAgent(
+    provider="openai",
     model="gpt-4",
-    config=config,
     name="Assistente",
-    instructions="Seja conciso"
+    instructions="Seja conciso",
+    config=config,
 )
 ```
 
@@ -155,6 +197,7 @@ print(response)
 ```python
 # Um para análise
 analyzer = AIAgent(
+    provider="openai",
     model="gpt-4",
     instructions="Você analisa código e fornece feedback crítico",
     config={"temperature": 0.5}
@@ -162,6 +205,7 @@ analyzer = AIAgent(
 
 # Outro para documentação
 documentor = AIAgent(
+    provider="openai",
     model="gpt-4",
     instructions="Você escreve documentação clara e profissional",
     config={"temperature": 0.3}
@@ -174,6 +218,43 @@ docs = documentor.chat(f"Documente este código:\n{code}")
 
 print("Feedback:", feedback)
 print("Documentação:", docs)
+```
+
+### Exemplo 4: Verificando Ferramentas Disponíveis
+
+```python
+from src.domain import BaseTool
+
+# Criar ferramenta customizada
+class CalculatorTool(BaseTool):
+    name = "calculator"
+    description = "Realiza cálculos matemáticos"
+
+    def execute(self, expression: str) -> str:
+        return str(eval(expression))
+
+# Criar agente com ferramentas
+agent = AIAgent(
+    provider="openai",
+    model="gpt-4",
+    tools=["currentdate", CalculatorTool()]
+)
+
+# Ver todas as ferramentas do agente (sistema + customizadas)
+all_tools = agent.get_all_available_tools()
+print(f"Total de ferramentas: {len(all_tools)}")
+for name, description in all_tools.items():
+    print(f"  • {name}: {description[:50]}...")
+
+# Ver apenas ferramentas do sistema
+system_tools = agent.get_system_available_tools()
+print(f"\nFerramentas do sistema: {list(system_tools.keys())}")
+
+# Verificar se ferramenta opcional está instalada
+if "readlocalfile" in system_tools:
+    print("✅ ReadLocalFileTool disponível")
+else:
+    print("⚠️  Execute: poetry install -E file-tools")
 ```
 
 ## 🔧 Configuração
@@ -190,61 +271,34 @@ OPENAI_API_KEY=sk-xxx...
 OLLAMA_API_URL=http://localhost:11434
 ```
 
-### Modelos disponíveis
-
-**OpenAI:**
-
-- `gpt-4` (mais poderoso)
-- `gpt-4-turbo` (mais rápido)
-- `gpt-4o` (visão incluída)
-- `gpt-3.5-turbo` (mais econômico)
-
-**Ollama (local):**
-
-- `llama2`
-- `mistral`
-- `neural-chat`
-- `starling-lm`
-- E muitos mais...
-
 ## 📊 API Referência
 
 ### AIAgent
 
 ```python
 AIAgent(
-    provider: str,              # "openai" ou "ollama"
-    model: str,                 # Nome do modelo
+    provider: str,              # "openai" ou "ollama" (obrigatório)
+    model: str,                 # Nome do modelo (obrigatório)
     name: str = None,           # Nome do agente (opcional)
     instructions: str = None,   # Instruções do sistema (opcional)
-    config: dict = None,        # Configuração do modelo
+    config: dict = None,        # Configuração do modelo (opcional)
+    tools: list = None,         # Lista de ferramentas (opcional)
     history_max_size: int = 10  # Tamanho máximo do histórico
 )
 ```
 
 #### Métodos
 
-| Método                                 | Retorno | Descrição                          |
-| -------------------------------------- | ------- | ---------------------------------- |
-| `chat(message)`                        | `str`   | Enviar mensagem e receber resposta |
-| `get_configs()`                        | `dict`  | Obter configurações e histórico    |
-| `clear_history()`                      | `None`  | Limpar histórico de mensagens      |
-| `get_metrics()`                        | `list`  | Obter métricas de performance      |
-| `export_metrics_json(path=None)`       | `str`   | Exportar métricas em JSON          |
-| `export_metrics_prometheus(path=None)` | `str`   | Exportar métricas em Prometheus    |
-
-## 🚀 Performance
-
-### Tempos de resposta
-
-- OpenAI: 1-5 segundos (depende da rede)
-- Ollama: 2-30 segundos (depende do modelo e hardware)
-
-### Limite de tokens
-
-- GPT-4: até 8.000 tokens por mensagem
-- GPT-3.5: até 4.000 tokens por mensagem
-- Modelos locais: variam por modelo
+| Método                                 | Retorno | Descrição                                                      |
+| -------------------------------------- | ------- | -------------------------------------------------------------- |
+| `chat(message)`                        | `str`   | Enviar mensagem e receber resposta                             |
+| `get_configs()`                        | `dict`  | Obter configurações e histórico                                |
+| `clear_history()`                      | `None`  | Limpar histórico de mensagens                                  |
+| `get_all_available_tools()`            | `dict`  | Listar todas as ferramentas do agente (sistema + customizadas) |
+| `get_system_available_tools()`         | `dict`  | Listar apenas ferramentas do sistema                           |
+| `get_metrics()`                        | `list`  | Obter métricas de performance                                  |
+| `export_metrics_json(path=None)`       | `str`   | Exportar métricas em JSON                                      |
+| `export_metrics_prometheus(path=None)` | `str`   | Exportar métricas em Prometheus                                |
 
 ## 📚 Arquitetura (Para Desenvolvedores)
 

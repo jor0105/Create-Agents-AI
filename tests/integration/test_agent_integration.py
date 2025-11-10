@@ -5,8 +5,8 @@ import pytest
 from src.domain.exceptions import InvalidAgentConfigException
 from src.presentation.agent_controller import AIAgent
 
-IA_OLLAMA_TEST: str = "phi4-mini:latest"
-IA_OPENAI_TEST_1: str = "gpt-5-mini"
+IA_OLLAMA_TEST: str = "granite4:latest"
+IA_OPENAI_TEST_1: str = "gpt-4.1-mini"
 IA_OPENAI_TEST_2: str = "gpt-5-nano"
 
 

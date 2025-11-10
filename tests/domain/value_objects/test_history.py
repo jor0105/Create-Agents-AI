@@ -31,6 +31,23 @@ class TestHistory:
         assert len(history) == 1
         assert history.get_messages()[0] == message
 
+    @pytest.mark.parametrize(
+        "method,expected_role,content",
+        [
+            ("add_user_message", MessageRole.USER, "User message"),
+            ("add_assistant_message", MessageRole.ASSISTANT, "Assistant response"),
+            ("add_system_message", MessageRole.SYSTEM, "System instruction"),
+        ],
+    )
+    def test_add_role_messages_via_helpers(self, method, expected_role, content):
+        history = History()
+        getattr(history, method)(content)
+
+        assert len(history) == 1
+        messages = history.get_messages()
+        assert messages[0].role == expected_role
+        assert messages[0].content == content
+
     def test_add_invalid_type_raises_error(self):
         history = History()
 
@@ -587,7 +604,7 @@ class TestHistoryConcurrency:
         for thread in threads:
             thread.join()
 
-        assert len(errors) == 0, f"Erros encontrados: {errors}"
+        assert len(errors) == 0, f"Errors found: {errors}"
         assert len(history) <= 200
 
         messages = history.get_messages()

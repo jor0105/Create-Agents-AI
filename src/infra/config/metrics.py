@@ -1,10 +1,3 @@
-"""
-Metrics system for monitoring chat usage.
-
-This module provides structures to capture and store
-performance and usage metrics for chat adapters.
-"""
-
 import json
 import threading
 from dataclasses import dataclass, field

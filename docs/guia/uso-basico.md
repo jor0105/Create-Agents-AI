@@ -1,88 +1,200 @@
-# 🎯 Uso Básico
+# 🎯 Guia de Uso Básico
 
-## Criar um Agente
+Aprenda os fundamentos do **AI Agent Creator**.
+
+---
+
+## 🚀 Primeiro Agente
 
 ```python
-from src import AIAgent
+from src.presentation import AIAgent
 
 agent = AIAgent(
-    model="gpt-4",           # Modelo a usar
-    name="Assistente",       # Nome do agente
-    instructions="Você é um assistente útil."  # Comportamento
-)
-```
-
-## Conversar
-
-```python
-# Primeira mensagem
-response = agent.chat("Olá, como você está?")
-print(response)
-
-# O histórico é mantido automaticamente
-response = agent.chat("Qual é a capital do Brasil?")
-print(response)
-
-# Usa contexto anterior
-response = agent.chat("E qual é a população dessa cidade?")
-print(response)
-```
-
-## Obter Configurações
-
-```python
-config = agent.get_configs()
-
-print(f"Nome: {config['name']}")
-print(f"Modelo: {config['model']}")
-print(f"Mensagens no histórico: {len(config['history'])}")
-```
-
-## Personalizar Comportamento
-
-```python
-# Assistente de código
-code_agent = AIAgent(
+    provider="openai",
     model="gpt-4",
-    name="Code Helper",
-    instructions="""
-    Você é um especialista em Python.
-    Forneça código limpo e bem documentado.
-    Explique suas decisões.
-    """
-)
-
-# Tradutor
-translator = AIAgent(
-    model="gpt-3.5-turbo",
-    name="Tradutor",
-    instructions="Você é um tradutor profissional."
+    instructions="Você é um assistente útil"
 )
 ```
 
-## Tratamento de Erros
+---
+
+## 💬 Conversando
+
+### Chat Simples
 
 ```python
-from src.domain.exceptions import ChatException, InvalidAgentConfigException
+response = agent.chat("Olá! Como você está?")
+print(response)
 
-try:
-    agent = AIAgent(model="gpt-4", name="Test", instructions="...")
-    response = agent.chat("Hello!")
-
-except InvalidAgentConfigException as e:
-    print(f"Configuração inválida: {e}")
-
-except ChatException as e:
-    print(f"Erro no chat: {e}")
+# Histórico é mantido automaticamente
+response = agent.chat("Qual é a capital do Brasil?")
+response = agent.chat("E a população?")  # Usa contexto
 ```
 
-## Histórico de Conversas
-
-O histórico mantém automaticamente as últimas **10 mensagens** para otimizar custos e performance.
+### Chat Interativo
 
 ```python
-# Ver histórico
+print("Chatbot iniciado! Digite 'sair' para encerrar.\n")
+
+while True:
+    user_input = input("Você: ")
+
+    if user_input.lower() in ['sair', 'exit']:
+        break
+
+    response = agent.chat(user_input)
+    print(f"Bot: {response}\n")
+```
+
+---
+
+## 📊 Configurações
+
+### Ver Configurações
+
+```python
 config = agent.get_configs()
-for msg in config['history']:
-    print(f"{msg['role']}: {msg['content']}")
+print(f"Modelo: {config['model']}")
+print(f"Histórico: {len(config['history'])} mensagens")
 ```
+
+### Limpar Histórico
+
+```python
+agent.clear_history()
+```
+
+**Quando limpar:**
+
+- Ao mudar de assunto
+- Para economizar tokens
+- Quando histórico ficar longo
+
+---
+
+## ⚙️ Personalizando
+
+```python
+# Formal
+agent_formal = AIAgent(
+    provider="openai",
+    model="gpt-4",
+    instructions="Use linguagem formal e corporativa"
+)
+
+# Técnico
+agent_tecnico = AIAgent(
+    provider="openai",
+    model="gpt-4",
+    instructions="Especialista em Python. Forneça código detalhado"
+)
+```
+
+---
+
+## 🔧 Configurações Avançadas
+
+```python
+agent = AIAgent(
+    provider="openai",
+    model="gpt-4",
+    instructions="Assistente customizado",
+    config={
+        "temperature": 0.7,  # Criatividade
+        "max_tokens": 2000,  # Limite
+    },
+    history_max_size=50
+)
+```
+
+---
+
+## 🛠️ Ferramentas
+
+### Usar Ferramentas Disponíveis
+
+```python
+# Adicionar ferramentas ao agente
+agent = AIAgent(
+    provider="openai",
+    model="gpt-4",
+    tools=["currentdate"]  # Ferramentas do sistema
+)
+
+# Agente usa automaticamente
+response = agent.chat("Que dia é hoje?")
+```
+
+### Verificar Ferramentas Disponíveis
+
+```python
+# Ver todas as ferramentas do agente (sistema + customizadas)
+all_tools = agent.get_all_available_tools()
+print("Ferramentas do agente:")
+for name, description in all_tools.items():
+    print(f"  • {name}: {description[:50]}...")
+
+# Ver apenas ferramentas do sistema (built-in)
+system_tools = agent.get_system_available_tools()
+print("\nFerramentas do sistema:")
+for name, description in system_tools.items():
+    print(f"  • {name}")
+
+# Verificar se ferramenta opcional está instalada
+if "readlocalfile" in system_tools:
+    print("✅ ReadLocalFileTool disponível")
+else:
+    print("⚠️  Instale com: poetry install -E file-tools")
+```
+
+### Criar Ferramentas Customizadas
+
+```python
+from src.domain import BaseTool
+
+class CalculatorTool(BaseTool):
+    name = "calculator"
+    description = "Realiza cálculos matemáticos"
+
+    def execute(self, expression: str) -> str:
+        try:
+            result = eval(expression)
+            return f"Resultado: {result}"
+        except Exception as e:
+            return f"Erro: {e}"
+
+# Usar ferramenta customizada
+agent = AIAgent(
+    provider="openai",
+    model="gpt-4",
+    tools=["currentdate", CalculatorTool()]  # Sistema + customizada
+)
+
+# Ver todas as ferramentas (incluindo a customizada)
+tools = agent.get_all_available_tools()
+print(f"Total de ferramentas: {len(tools)}")
+# Saída: Total de ferramentas: 3
+# (currentdate, readlocalfile, calculator)
+```
+
+---
+
+## 📊 Métricas
+
+```python
+metrics = agent.get_metrics()
+agent.export_metrics_json("metrics.json")
+agent.export_metrics_prometheus("metrics.prom")
+```
+
+---
+
+## 🎯 Próximos Passos
+
+- [Exemplos Práticos](exemplos.md)
+- [Ferramentas](../tools.md)
+- [API Reference](../api.md)
+
+---
+
+**Versão:** 0.1.0 | **Atualização:** Novembro 2025

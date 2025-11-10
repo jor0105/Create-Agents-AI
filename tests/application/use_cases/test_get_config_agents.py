@@ -365,3 +365,247 @@ class TestGetAgentConfigUseCase:
 
         assert output.history_max_size == 25
         assert len(output.history) == 25
+
+    def test_execute_with_tools_none(self):
+        use_case = GetAgentConfigUseCase()
+        agent = Agent(
+            provider="openai",
+            model="gpt-5-nano",
+            name="Test",
+            instructions="Test",
+            tools=None,
+        )
+
+        output = use_case.execute(agent)
+
+        assert output.tools is None
+
+    def test_execute_with_tools_empty_list(self):
+        use_case = GetAgentConfigUseCase()
+        agent = Agent(
+            provider="openai",
+            model="gpt-5-nano",
+            name="Test",
+            instructions="Test",
+            tools=[],
+        )
+
+        output = use_case.execute(agent)
+
+        assert output.tools == []
+        assert isinstance(output.tools, list)
+
+    def test_execute_with_tools_list(self):
+        from src.domain import BaseTool
+
+        class TestTool(BaseTool):
+            name = "test_tool"
+            description = "A test tool"
+
+            def execute(self, **kwargs):
+                return "result"
+
+        use_case = GetAgentConfigUseCase()
+        tool = TestTool()
+        agent = Agent(
+            provider="openai",
+            model="gpt-5-nano",
+            name="Test",
+            instructions="Test",
+            tools=[tool],
+        )
+
+        output = use_case.execute(agent)
+
+        assert output.tools is not None
+        assert len(output.tools) == 1
+        assert output.tools[0] is tool
+
+    def test_execute_with_multiple_tools(self):
+        from src.domain import BaseTool
+
+        class Tool1(BaseTool):
+            name = "tool1"
+            description = "First tool"
+
+            def execute(self, **kwargs):
+                return "result1"
+
+        class Tool2(BaseTool):
+            name = "tool2"
+            description = "Second tool"
+
+            def execute(self, **kwargs):
+                return "result2"
+
+        use_case = GetAgentConfigUseCase()
+        tools = [Tool1(), Tool2()]
+        agent = Agent(
+            provider="openai",
+            model="gpt-5-nano",
+            name="Test",
+            instructions="Test",
+            tools=tools,
+        )
+
+        output = use_case.execute(agent)
+
+        assert len(output.tools) == 2
+        assert all(isinstance(t, BaseTool) for t in output.tools)
+
+    def test_execute_to_dict_includes_tools(self):
+        from src.domain import BaseTool
+
+        class TestTool(BaseTool):
+            name = "test_tool"
+            description = "A test tool"
+
+            def execute(self, **kwargs):
+                return "result"
+
+        use_case = GetAgentConfigUseCase()
+        tool = TestTool()
+        agent = Agent(
+            provider="openai",
+            model="gpt-5-nano",
+            name="Test",
+            instructions="Test",
+            tools=[tool],
+        )
+
+        output = use_case.execute(agent)
+        result = output.to_dict()
+
+        assert "tools" in result
+
+    def test_execute_tools_preserves_reference(self):
+        from src.domain import BaseTool
+
+        class TestTool(BaseTool):
+            name = "test_tool"
+            description = "A test tool"
+
+            def execute(self, **kwargs):
+                return "result"
+
+        use_case = GetAgentConfigUseCase()
+        tool = TestTool()
+        agent = Agent(
+            provider="openai",
+            model="gpt-5-nano",
+            name="Test",
+            instructions="Test",
+            tools=[tool],
+        )
+
+        output = use_case.execute(agent)
+
+        assert output.tools[0] is tool
+
+    def test_execute_with_tools_and_history(self):
+        from src.domain import BaseTool
+
+        class TestTool(BaseTool):
+            name = "test_tool"
+            description = "A test tool"
+
+            def execute(self, **kwargs):
+                return "result"
+
+        use_case = GetAgentConfigUseCase()
+        tool = TestTool()
+        agent = Agent(
+            provider="openai",
+            model="gpt-5-nano",
+            name="Test",
+            instructions="Test",
+            tools=[tool],
+        )
+        agent.add_user_message("Hello")
+        agent.add_assistant_message("Hi")
+
+        output = use_case.execute(agent)
+
+        assert len(output.tools) == 1
+        assert len(output.history) == 2
+
+    def test_execute_with_tools_and_config(self):
+        from src.domain import BaseTool
+
+        class TestTool(BaseTool):
+            name = "test_tool"
+            description = "A test tool"
+
+            def execute(self, **kwargs):
+                return "result"
+
+        use_case = GetAgentConfigUseCase()
+        tool = TestTool()
+        config = {"temperature": 0.7}
+        agent = Agent(
+            provider="openai",
+            model="gpt-5-nano",
+            name="Test",
+            instructions="Test",
+            tools=[tool],
+            config=config,
+        )
+
+        output = use_case.execute(agent)
+
+        assert len(output.tools) == 1
+        assert output.config == config
+
+    def test_execute_to_dict_with_all_fields_including_tools(self):
+        from src.domain import BaseTool
+
+        class TestTool(BaseTool):
+            name = "test_tool"
+            description = "A test tool"
+
+            def execute(self, **kwargs):
+                return "result"
+
+        use_case = GetAgentConfigUseCase()
+        tool = TestTool()
+        config = {"temperature": 0.5}
+        agent = Agent(
+            provider="openai",
+            model="gpt-5-nano",
+            name="Test Agent",
+            instructions="Be helpful",
+            tools=[tool],
+            config=config,
+        )
+        agent.add_user_message("Test message")
+
+        output = use_case.execute(agent)
+        result = output.to_dict()
+
+        assert "name" in result
+        assert "model" in result
+        assert "instructions" in result
+        assert "history" in result
+        assert "provider" in result
+        assert "config" in result
+        assert "tools" in result
+        assert "history_max_size" in result
+
+        from src.domain.value_objects import History
+
+        use_case = GetAgentConfigUseCase()
+        agent = Agent(
+            provider="openai",
+            model="gpt-5-nano",
+            name="Test",
+            instructions="Test",
+            history=History(max_size=25),
+        )
+
+        for i in range(30):
+            agent.add_user_message(f"Message {i}")
+
+        output = use_case.execute(agent)
+
+        assert output.history_max_size == 25
+        assert len(output.history) == 25

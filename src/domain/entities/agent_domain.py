@@ -1,12 +1,17 @@
 from dataclasses import dataclass, field
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 
 from src.domain.exceptions import (
     InvalidConfigTypeException,
     InvalidProviderException,
     UnsupportedConfigException,
 )
-from src.domain.value_objects import History, SupportedConfigs, SupportedProviders
+from src.domain.value_objects import (
+    BaseTool,
+    History,
+    SupportedConfigs,
+    SupportedProviders,
+)
 
 
 @dataclass
@@ -15,64 +20,99 @@ class Agent:
 
     Responsibilities:
     - Maintain the agent's identity and configuration.
-    - Manage the conversation history through the History Value Object.
-    - Ensure the integrity of the agent's data.
+    - Manage conversation history via the `History` value object.
+    - Ensure the integrity of the agent's data via domain validations.
 
-    Business rule validations are performed in `__post_init__`.
-    The logic for history management is delegated to the History Value Object.
+    Business validations are executed in `__post_init__`.
+    History management logic is delegated to the `History` value object.
     """
 
     provider: str
     model: str
     name: Optional[str] = None
     instructions: Optional[str] = None
-    config: Dict[str, Any] = field(default_factory=dict)
+    config: Optional[Dict[str, Any]] = None
+    tools: Optional[List[BaseTool]] = None
     history: History = field(default_factory=History)
+    _logger: Optional[Any] = field(default=None, init=False, repr=False)
 
     def __post_init__(self):
-        """Initializes history if necessary and validates agent configurations.
+        """Initialize history (if needed) and validate agent configuration.
 
         Raises:
-            InvalidProviderException: If the provider is not supported.
-            UnsupportedConfigException: If a configuration is not supported.
-            InvalidConfigTypeException: If a configuration type is invalid.
-            InvalidAgentConfigException: If a configuration value is invalid.
+            InvalidProviderException: if the provider is not supported.
+            UnsupportedConfigException: if a configuration key is unsupported.
+            InvalidConfigTypeException: if a configuration value has an invalid type.
         """
+        # Import here to avoid circular dependency
+        from src.infra.config.logging_config import LoggingConfig
+
+        # Initialize logger
+        object.__setattr__(self, "_logger", LoggingConfig.get_logger(__name__))
+
+        self._logger.debug(
+            f"Initializing Agent - Provider: {self.provider}, Model: {self.model}, Name: {self.name}"
+        )
+
         if not isinstance(self.history, History):
             object.__setattr__(self, "history", History())
 
-        if self.provider.lower() not in SupportedProviders.get_available_providers():
-            raise InvalidProviderException(
-                self.provider, SupportedProviders.get_available_providers()
+        available_providers = SupportedProviders.get_available_providers()
+        if self.provider.lower() not in available_providers:
+            self._logger.error(
+                f"Invalid provider: {self.provider}. Available: {available_providers}"
             )
+            raise InvalidProviderException(self.provider, set(available_providers))
 
-        for key, value in self.config.items():
-            if key not in SupportedConfigs.get_available_configs():
-                raise UnsupportedConfigException(
-                    key, SupportedConfigs.get_available_configs()
-                )
+        self._logger.debug(f"Provider '{self.provider}' validated successfully")
 
-            if not isinstance(value, (int, float, str, bool, list, dict, type(None))):
-                raise InvalidConfigTypeException(key, type(value))
+        if self.config:
+            for key, value in self.config.items():
+                available_configs = SupportedConfigs.get_available_configs()
+                if key not in available_configs:
+                    self._logger.error(
+                        f"Unsupported config key: {key}. Available: {available_configs}"
+                    )
+                    raise UnsupportedConfigException(key, set(available_configs))
 
-            SupportedConfigs.validate_config(key, value)
+                if not isinstance(
+                    value, (int, float, str, bool, list, dict, type(None))
+                ):
+                    self._logger.error(
+                        f"Invalid config type for '{key}': {type(value)}"
+                    )
+                    raise InvalidConfigTypeException(key, type(value))
+
+                SupportedConfigs.validate_config(key, value)
+
+        self._logger.info(
+            f"Agent initialized - Name: {self.name}, Provider: {self.provider}, "
+            f"Model: {self.model}, Tools: {len(self.tools) if self.tools else 0}"
+        )
 
     def add_user_message(self, content: str) -> None:
-        """Adds a user message to the history.
-
-        Args:
-            content: The content of the message.
-        """
+        """Add a user message to history."""
+        if self._logger:
+            self._logger.debug(f"Adding user message - Length: {len(content)} chars")
         self.history.add_user_message(content)
 
     def add_assistant_message(self, content: str) -> None:
-        """Adds an assistant message to the history.
-
-        Args:
-            content: The content of the message.
-        """
+        """Add an assistant message to history."""
+        if self._logger:
+            self._logger.debug(
+                f"Adding assistant message - Length: {len(content)} chars"
+            )
         self.history.add_assistant_message(content)
 
+    def add_tool_message(self, content: str) -> None:
+        """Add a tool message to history."""
+        if self._logger:
+            self._logger.debug(f"Adding tool message - Length: {len(content)} chars")
+        self.history.add_tool_message(content)
+
     def clear_history(self) -> None:
-        """Clears the message history."""
+        """Clear all messages from history."""
+        if self._logger:
+            history_size = len(self.history)
+            self._logger.debug(f"Clearing history - Removing {history_size} message(s)")
         self.history.clear()

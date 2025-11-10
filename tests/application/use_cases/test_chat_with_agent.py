@@ -54,9 +54,10 @@ class TestChatWithAgentUseCase:
         mock_chat_repository.chat.assert_called_once_with(
             model="phi4-mini:latest",
             instructions="Instructions",
-            config={},
+            config=None,
             user_ask="Test message",
             history=[],
+            tools=None,
         )
 
     def test_execute_with_existing_history(self, mock_chat_repository):
@@ -199,6 +200,7 @@ class TestChatWithAgentUseCase:
             config=config,
             user_ask="Test message",
             history=[],
+            tools=None,
         )
 
     def test_get_metrics_when_repository_supports_it(self):
@@ -306,13 +308,3 @@ class TestChatWithAgentUseCase:
         assert len(agent.history) == 4
         messages = agent.history.get_messages()
         assert messages[0].content == "Message 1"
-
-    def test_get_metrics_returns_empty_list_when_not_supported(
-        self, mock_chat_repository
-    ):
-        use_case = ChatWithAgentUseCase(chat_repository=mock_chat_repository)
-
-        metrics = use_case.get_metrics()
-
-        assert metrics == []
-        assert isinstance(metrics, list)

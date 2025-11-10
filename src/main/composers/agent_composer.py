@@ -1,13 +1,16 @@
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Sequence, Union
 
 from src.application import (
     ChatWithAgentUseCase,
     CreateAgentInputDTO,
     CreateAgentUseCase,
     GetAgentConfigUseCase,
+    GetAllAvailableToolsUseCase,
+    GetSystemAvailableToolsUseCase,
 )
-from src.domain import Agent
+from src.domain import Agent, BaseTool
 from src.infra import ChatAdapterFactory
+from src.infra.config.logging_config import LoggingConfig
 
 
 class AgentComposer:
@@ -16,6 +19,8 @@ class AgentComposer:
     dependencies for agent-related use cases.
     """
 
+    __logger = LoggingConfig.get_logger(__name__)
+
     @staticmethod
     def create_agent(
         provider: str,
@@ -23,6 +28,7 @@ class AgentComposer:
         name: Optional[str] = None,
         instructions: Optional[str] = None,
         config: Optional[Dict[str, Any]] = None,
+        tools: Optional[Sequence[Union[str, BaseTool]]] = None,
         history_max_size: int = 10,
     ) -> Agent:
         """
@@ -39,8 +45,18 @@ class AgentComposer:
         Returns:
             A new agent instance.
         """
+        AgentComposer.__logger.info(
+            f"Composing agent creation - Provider: {provider}, Model: {model}, Name: {name}"
+        )
+
         if config is None:
             config = {}
+
+        AgentComposer.__logger.debug(
+            f"Agent parameters - Tools: {len(tools) if tools else 0}, "
+            f"History max size: {history_max_size}, "
+            f"Config keys: {list(config.keys()) if isinstance(config, dict) else 'invalid'}"
+        )
 
         input_dto = CreateAgentInputDTO(
             provider=provider,
@@ -48,12 +64,15 @@ class AgentComposer:
             name=name,
             instructions=instructions,
             config=config,
+            tools=tools,
             history_max_size=history_max_size,
         )
 
         use_case = CreateAgentUseCase()
+        agent = use_case.execute(input_dto)
 
-        return use_case.execute(input_dto)
+        AgentComposer.__logger.info(f"Agent composed successfully - Name: {agent.name}")
+        return agent
 
     @staticmethod
     def create_chat_use_case(
@@ -70,8 +89,15 @@ class AgentComposer:
         Returns:
             A configured ChatWithAgentUseCase.
         """
+        AgentComposer.__logger.debug(
+            f"Composing chat use case - Provider: {provider}, Model: {model}"
+        )
+
         chat_adapter = ChatAdapterFactory.create(provider, model)
-        return ChatWithAgentUseCase(chat_repository=chat_adapter)
+        use_case = ChatWithAgentUseCase(chat_repository=chat_adapter)
+
+        AgentComposer.__logger.debug("Chat use case composed successfully")
+        return use_case
 
     @staticmethod
     def create_get_config_use_case() -> GetAgentConfigUseCase:
@@ -81,4 +107,31 @@ class AgentComposer:
         Returns:
             A configured GetAgentConfigUseCase.
         """
+        AgentComposer.__logger.debug("Composing get config use case")
         return GetAgentConfigUseCase()
+
+    @staticmethod
+    def create_get_all_available_tools_use_case() -> GetAllAvailableToolsUseCase:
+        """
+        Creates the GetAllAvailableToolsUseCase.
+
+        This use case returns both system tools and agent tools.
+
+        Returns:
+            A configured GetAllAvailableToolsUseCase.
+        """
+        AgentComposer.__logger.debug("Composing get all available tools use case")
+        return GetAllAvailableToolsUseCase()
+
+    @staticmethod
+    def create_get_system_available_tools_use_case() -> GetSystemAvailableToolsUseCase:
+        """
+        Creates the GetSystemAvailableToolsUseCase.
+
+        This use case returns only system tools provided by the framework.
+
+        Returns:
+            A configured GetSystemAvailableToolsUseCase.
+        """
+        AgentComposer.__logger.debug("Composing get system available tools use case")
+        return GetSystemAvailableToolsUseCase()

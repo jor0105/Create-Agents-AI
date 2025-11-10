@@ -1,56 +1,53 @@
 # 🔄 CI/CD e Workflows
 
-Este documento descreve os workflows automatizados do projeto e como utilizá-los.
+Workflows automatizados do projeto com GitHub Actions.
 
-## 📋 Workflows Disponíveis
+---
+
+## 📋 Workflows
 
 ### 1. Quality Checks (CI)
 
 **Arquivo:** `.github/workflows/ci.yml`
 
-**Quando executa:**
+**Executa:**
 
-- Push para branches `develop` ou `main`
-- Pull requests para `develop` ou `main`
+- Push/PR para `develop` ou `main`
 - Manualmente via workflow_dispatch
 
-**O que faz:**
+**Checks:**
 
 #### 🔍 Lint & Format
 
-- **Black**: Formatação automática de código (88 caracteres por linha)
-- **Ruff**: Linting rápido e moderno
+- **Black**: Formatação (88 chars/linha)
+- **Ruff**: Linting rápido
 - **isort**: Organização de imports
-- **Pre-commit**: Executa todos os hooks configurados
+- **Pre-commit**: Todos os hooks
 
 #### 🔐 Type Checking & Security
 
-- **mypy**: Verificação de tipos estáticos
-- **bandit**: Análise de segurança do código
+- **mypy**: Verificação de tipos
+- **bandit**: Análise de segurança
 
 #### 🧪 Tests & Coverage
 
-- Testes unitários (exclui testes de integração e lentos)
-- Cobertura de código mínima: **70%**
-- Gera relatório XML de cobertura
+- Testes unitários
+- Cobertura mínima: **70%**
 - Upload para Codecov (opcional)
 
-#### 🐍 Matrix de Python
-
-Testa em múltiplas versões:
+#### 🐍 Matrix Python
 
 - Python 3.12
 - Python 3.13
 - Python 3.14
 
-**Exemplo de uso:**
+**Executar localmente:**
 
 ```bash
-# Executar localmente os mesmos checks do CI
 poetry run pre-commit run --all-files
 poetry run mypy src --ignore-missing-imports
 poetry run bandit -r src -ll -q
-poetry run pytest -m "not integration and not slow" --cov=src --cov-fail-under=70
+poetry run pytest --cov=src --cov-fail-under=70
 ```
 
 ---
@@ -59,115 +56,72 @@ poetry run pytest -m "not integration and not slow" --cov=src --cov-fail-under=7
 
 **Arquivo:** `.github/workflows/docs.yml`
 
-**Quando executa:**
+**Executa:** Manualmente via workflow_dispatch
 
-- Manualmente via workflow_dispatch (aba Actions no GitHub)
+**Ações:**
 
-**O que faz:**
-
-- Instala dependências com Poetry
-- Build da documentação com MkDocs
-- Valida links e estrutura
-- Upload do site gerado como artifact
-
-**Acesso ao artifact:**
-
-1. Vá para a aba **Actions** no GitHub
-2. Clique no workflow "Documentation Build"
-3. Baixe o artifact `documentation-site`
-4. Descompacte e abra `index.html`
+- Instala dependências
+- Build documentação com MkDocs
+- Valida links
+- Upload como artifact
 
 **Build local:**
 
 ```bash
-# Servir docs localmente
+# Servir docs
 poetry run mkdocs serve
 
-# Build para produção
+# Build produção
 poetry run mkdocs build
 ```
 
 ---
 
-## 🚀 Como Usar os Workflows
-
-### Verificar Status
-
-1. Acesse: `https://github.com/jor0105/AI_Agent/actions`
-2. Veja os workflows recentes e seus status
-3. Clique em um workflow para ver detalhes
-
-### Executar Manualmente
-
-#### Documentation Build:
-
-1. Vá para **Actions** → **Documentation Build**
-2. Clique em "Run workflow"
-3. Selecione a branch
-4. Clique em "Run workflow"
-
-### Badges (Opcional)
-
-Adicione ao README.md:
-
-```markdown
-[![Quality Checks](https://github.com/jor0105/AI_Agent/workflows/Quality%20Checks/badge.svg)](https://github.com/jor0105/AI_Agent/actions)
-[![codecov](https://codecov.io/gh/jor0105/AI_Agent/branch/develop/graph/badge.svg)](https://codecov.io/gh/jor0105/AI_Agent)
-```
-
----
-
-## 🔧 Configuração Local
+## Configuração Local
 
 ### Pre-commit Hooks
 
-Os mesmos checks do CI são executados localmente antes de cada commit:
+Executa checks antes de cada commit:
 
 ```bash
-# Instalar hooks
+# Instalar
 poetry run pre-commit install
 
 # Executar manualmente
 poetry run pre-commit run --all-files
 
-# Pular hooks (não recomendado)
+# Pular (não recomendado)
 git commit --no-verify
 ```
 
-### Estrutura dos Hooks
+### Hooks Configurados
 
-| Hook                | Descrição                         | Ferramenta |
-| ------------------- | --------------------------------- | ---------- |
-| trailing-whitespace | Remove espaços em branco no final | pre-commit |
-| end-of-files        | Garante EOF no final dos arquivos | pre-commit |
-| check-yaml          | Valida sintaxe YAML               | pre-commit |
-| check-json          | Valida sintaxe JSON               | pre-commit |
-| check-toml          | Valida sintaxe TOML               | pre-commit |
-| black               | Formatação de código              | Black      |
-| ruff                | Linting moderno                   | Ruff       |
-| ruff-format         | Formatação com Ruff               | Ruff       |
-| isort               | Organização de imports            | isort      |
-| mypy                | Type checking                     | mypy       |
-| pydocstyle          | Validação de docstrings           | pydocstyle |
-| yamllint            | Linting de YAML                   | yamllint   |
+| Hook                | Descrição             |
+| ------------------- | --------------------- |
+| trailing-whitespace | Remove espaços finais |
+| end-of-files        | Garante EOF           |
+| check-yaml          | Valida YAML           |
+| check-json          | Valida JSON           |
+| check-toml          | Valida TOML           |
+| black               | Formatação            |
+| ruff                | Linting               |
+| isort               | Organiza imports      |
+| mypy                | Type checking         |
+| pydocstyle          | Valida docstrings     |
 
 ---
 
-## 📊 Métricas e Cobertura
-
-### Cobertura de Código
-
-**O que é:** Porcentagem de código executada pelos testes.
+## 📊 Cobertura de Código
 
 **Mínimo exigido:** 70%
 
-**Como verificar:**
+**Verificar:**
 
 ```bash
-# Executar testes com cobertura
+# Com cobertura
 poetry run pytest --cov=src --cov-report=term-missing
 
-# Gerar relatório HTML
+# Relatório HTML
 poetry run pytest --cov=src --cov-report=html
 # Abrir: htmlcov/index.html
 ```
@@ -175,149 +129,72 @@ poetry run pytest --cov=src --cov-report=html
 **Exemplo de saída:**
 
 ```
-Name                                    Stmts   Miss  Cover   Missing
----------------------------------------------------------------------
-src/domain/entities/agent_domain.py        45      3    93%   78-80
-src/application/use_cases/chat.py          32      0   100%
-src/infra/adapters/ollama.py               67     10    85%   45-52, 89
----------------------------------------------------------------------
-TOTAL                                     892    125    86%
+Name                          Stmts   Miss  Cover   Missing
+-----------------------------------------------------------
+src/domain/entities/agent.py     45      3    93%   78-80
+src/application/use_cases.py     32      0   100%
+-----------------------------------------------------------
+TOTAL                           892    125    86%
 ```
-
-### Interpretar Relatório
-
-- **Stmts**: Total de linhas de código
-- **Miss**: Linhas não executadas pelos testes
-- **Cover**: Porcentagem de cobertura
-- **Missing**: Números das linhas não cobertas
 
 ---
 
 ## 🐛 Troubleshooting
 
-### CI falhou - O que fazer?
+### CI Falhou - Ações
 
-#### 1. Pre-commit falhou
+#### 1. Pre-commit
 
 ```bash
-# Executar localmente
 poetry run pre-commit run --all-files
-
-# Corrigir automaticamente
 poetry run black src tests
 poetry run isort src tests
 ```
 
-#### 2. Testes falham
+#### 2. Testes
 
 ```bash
-# Executar localmente com verbose
 poetry run pytest -v
-
-# Executar teste específico
-poetry run pytest tests/path/to/test.py::TestClass::test_method
 ```
 
-#### 3. Type checking (mypy) falhou
+#### 3. Type Checking
 
 ```bash
-# Executar localmente
-poetry run mypy src --ignore-missing-imports --pretty
-
-# Adicionar type hints ausentes
-def func(x: int) -> str:
-    return str(x)
+poetry run mypy src --ignore-missing-imports
 ```
 
 #### 4. Cobertura < 70%
 
 ```bash
-# Ver quais linhas não estão cobertas
 poetry run pytest --cov=src --cov-report=term-missing
-
-# Adicionar testes para as linhas faltantes
+# Adicionar testes para linhas não cobertas
 ```
 
-#### 5. Security check (bandit) falhou
+#### 5. Security Check
 
 ```bash
-# Executar localmente
-poetry run bandit -r src -ll -q
-
-# Ver detalhes
 poetry run bandit -r src -ll
-```
-
----
-
-## 📦 Cache de Dependências
-
-Os workflows usam cache para acelerar builds:
-
-**O que é cacheado:**
-
-- Ambiente virtual Python (`.venv`)
-- Dependências do Poetry
-
-**Como limpar cache no GitHub:**
-
-1. Vá para **Settings** → **Actions** → **Caches**
-2. Delete caches antigos
-
-**Key do cache:**
-
-```
-venv-{OS}-{Python-Version}-{poetry.lock-hash}
-```
-
----
-
-## 🔐 Segurança
-
-### Secrets no GitHub
-
-Configure em **Settings** → **Secrets and variables** → **Actions**:
-
-| Secret           | Descrição        | Obrigatório       |
-| ---------------- | ---------------- | ----------------- |
-| `OPENAI_API_KEY` | Chave da OpenAI  | Não (para testes) |
-| `CODECOV_TOKEN`  | Token do Codecov | Não (público)     |
-
-### Permissões dos Workflows
-
-Ambos workflows têm apenas permissão de **leitura**:
-
-```yaml
-permissions:
-  contents: read
 ```
 
 ---
 
 ## 🎯 Boas Práticas
 
-### Antes de Fazer Push
+### Antes de Push
 
 ```bash
-# 1. Executar pre-commit
+# 1. Pre-commit
 poetry run pre-commit run --all-files
 
-# 2. Executar testes
+# 2. Testes
 poetry run pytest
 
-# 3. Verificar cobertura
+# 3. Cobertura
 poetry run pytest --cov=src --cov-fail-under=70
 
 # 4. Type checking
 poetry run mypy src --ignore-missing-imports
 ```
-
-### Ao Criar PR
-
-1. ✅ Todos os checks do CI devem passar
-2. ✅ Adicionar descrição clara do que mudou
-3. ✅ Referenciar issues relacionadas
-4. ✅ Atualizar documentação se necessário
 
 ### Commits
 
@@ -325,30 +202,20 @@ Use **Conventional Commits**:
 
 - `feat:` Nova funcionalidade
 - `fix:` Correção de bug
-- `docs:` Mudança apenas na documentação
-- `style:` Formatação, sem mudança de código
+- `docs:` Mudança na documentação
+- `style:` Formatação
 - `refactor:` Refatoração
-- `test:` Adicionar ou modificar testes
-- `chore:` Manutenção geral
+- `test:` Adicionar/modificar testes
+- `chore:` Manutenção
 
 **Exemplos:**
 
 ```bash
-git commit -m "feat: add support for Claude AI provider"
-git commit -m "fix: handle None response from Ollama API"
-git commit -m "docs: update CI/CD workflow documentation"
+git commit -m "feat: add Claude AI provider"
+git commit -m "fix: handle None response from API"
+git commit -m "docs: update CI/CD guide"
 ```
 
 ---
 
-## 📚 Referências
-
-- [GitHub Actions Documentation](https://docs.github.com/en/actions)
-- [Poetry Documentation](https://python-poetry.org/docs/)
-- [Pre-commit Hooks](https://pre-commit.com/)
-- [pytest Coverage](https://pytest-cov.readthedocs.io/)
-- [Conventional Commits](https://www.conventionalcommits.org/)
-
----
-
-**Última atualização:** Outubro 2025
+**Última atualização:** Novembro 2025

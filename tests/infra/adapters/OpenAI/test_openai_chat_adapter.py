@@ -9,6 +9,26 @@ IA_OPENAI_TEST_1: str = "gpt-5-mini"
 IA_OPENAI_TEST_2: str = "gpt-5-nano"
 
 
+def _make_client_response(
+    mock_get_client, output_text="", usage_attrs: dict | None = None
+):
+    mock_client = Mock()
+    mock_response = MagicMock()
+    mock_response.output_text = output_text
+    if usage_attrs is not None:
+        mock_usage = MagicMock()
+        for k, v in usage_attrs.items():
+            setattr(mock_usage, k, v)
+        mock_response.usage = mock_usage
+    else:
+        mock_response.usage = None
+    mock_response.choices = [MagicMock()]
+    mock_response.choices[0].message.tool_calls = None
+    mock_client.responses.create.return_value = mock_response
+    mock_get_client.return_value = mock_client
+    return mock_client, mock_response
+
+
 @pytest.mark.unit
 class TestOpenAIChatAdapter:
     @patch(
@@ -42,14 +62,11 @@ class TestOpenAIChatAdapter:
     def test_chat_with_valid_input(self, mock_get_client, mock_get_api_key):
         mock_get_api_key.return_value = "test-api-key"
 
-        mock_client = Mock()
-        mock_response = MagicMock()
-        mock_response.output_text = "OpenAI response"
-        mock_response.usage.total_tokens = 100
-        mock_response.usage.input_tokens = 50
-        mock_response.usage.output_tokens = 50
-        mock_client.responses.create.return_value = mock_response
-        mock_get_client.return_value = mock_client
+        mock_client, mock_response = _make_client_response(
+            mock_get_client,
+            output_text="OpenAI response",
+            usage_attrs={"total_tokens": 100, "input_tokens": 50, "output_tokens": 50},
+        )
 
         adapter = OpenAIChatAdapter()
 
@@ -57,6 +74,7 @@ class TestOpenAIChatAdapter:
             model=IA_OPENAI_TEST_1,
             instructions="Be helpful",
             config={},
+            tools=None,
             user_ask="Hello",
             history=[],
         )
@@ -73,14 +91,11 @@ class TestOpenAIChatAdapter:
     ):
         mock_get_api_key.return_value = "test-api-key"
 
-        mock_client = Mock()
-        mock_response = MagicMock()
-        mock_response.output_text = "Response"
-        mock_response.usage.total_tokens = 100
-        mock_response.usage.input_tokens = 50
-        mock_response.usage.output_tokens = 50
-        mock_client.responses.create.return_value = mock_response
-        mock_get_client.return_value = mock_client
+        mock_client, mock_response = _make_client_response(
+            mock_get_client,
+            output_text="Response",
+            usage_attrs={"total_tokens": 100, "input_tokens": 50, "output_tokens": 50},
+        )
 
         adapter = OpenAIChatAdapter()
 
@@ -88,6 +103,7 @@ class TestOpenAIChatAdapter:
             model=IA_OPENAI_TEST_2,
             instructions="System instruction",
             config={},
+            tools=None,
             user_ask="User question",
             history=[{"role": "user", "content": "Previous message"}],
         )
@@ -107,14 +123,11 @@ class TestOpenAIChatAdapter:
     def test_chat_with_empty_history(self, mock_get_client, mock_get_api_key):
         mock_get_api_key.return_value = "test-api-key"
 
-        mock_client = Mock()
-        mock_response = MagicMock()
-        mock_response.output_text = "Response"
-        mock_response.usage.total_tokens = 100
-        mock_response.usage.input_tokens = 50
-        mock_response.usage.output_tokens = 50
-        mock_client.responses.create.return_value = mock_response
-        mock_get_client.return_value = mock_client
+        mock_client, mock_response = _make_client_response(
+            mock_get_client,
+            output_text="Response",
+            usage_attrs={"total_tokens": 100, "input_tokens": 50, "output_tokens": 50},
+        )
 
         adapter = OpenAIChatAdapter()
 
@@ -122,6 +135,7 @@ class TestOpenAIChatAdapter:
             model=IA_OPENAI_TEST_1,
             instructions="Instructions",
             config={},
+            tools=None,
             user_ask="Question",
             history=[],
         )
@@ -138,14 +152,11 @@ class TestOpenAIChatAdapter:
     def test_chat_with_multiple_history_items(self, mock_get_client, mock_get_api_key):
         mock_get_api_key.return_value = "test-api-key"
 
-        mock_client = Mock()
-        mock_response = MagicMock()
-        mock_response.output_text = "Response"
-        mock_response.usage.total_tokens = 100
-        mock_response.usage.input_tokens = 50
-        mock_response.usage.output_tokens = 50
-        mock_client.responses.create.return_value = mock_response
-        mock_get_client.return_value = mock_client
+        mock_client, mock_response = _make_client_response(
+            mock_get_client,
+            output_text="Response",
+            usage_attrs={"total_tokens": 100, "input_tokens": 50, "output_tokens": 50},
+        )
 
         adapter = OpenAIChatAdapter()
 
@@ -160,6 +171,7 @@ class TestOpenAIChatAdapter:
             model=IA_OPENAI_TEST_2,
             instructions="Instructions",
             config={},
+            tools=None,
             user_ask="New question",
             history=history,
         )
@@ -176,14 +188,11 @@ class TestOpenAIChatAdapter:
     def test_chat_passes_correct_model(self, mock_get_client, mock_get_api_key):
         mock_get_api_key.return_value = "test-api-key"
 
-        mock_client = Mock()
-        mock_response = MagicMock()
-        mock_response.output_text = "Response"
-        mock_response.usage.total_tokens = 100
-        mock_response.usage.input_tokens = 50
-        mock_response.usage.output_tokens = 50
-        mock_client.responses.create.return_value = mock_response
-        mock_get_client.return_value = mock_client
+        mock_client, mock_response = _make_client_response(
+            mock_get_client,
+            output_text="Response",
+            usage_attrs={"total_tokens": 100, "input_tokens": 50, "output_tokens": 50},
+        )
 
         adapter = OpenAIChatAdapter()
 
@@ -191,6 +200,7 @@ class TestOpenAIChatAdapter:
             model=IA_OPENAI_TEST_1,
             instructions="Test",
             config={},
+            tools=None,
             user_ask="Test",
             history=[],
         )
@@ -207,11 +217,9 @@ class TestOpenAIChatAdapter:
     ):
         mock_get_api_key.return_value = "test-api-key"
 
-        mock_client = Mock()
-        mock_response = MagicMock()
-        mock_response.output_text = ""
-        mock_client.responses.create.return_value = mock_response
-        mock_get_client.return_value = mock_client
+        mock_client, mock_response = _make_client_response(
+            mock_get_client, output_text="", usage_attrs=None
+        )
 
         adapter = OpenAIChatAdapter()
 
@@ -220,6 +228,7 @@ class TestOpenAIChatAdapter:
                 model=IA_OPENAI_TEST_2,
                 instructions="Test",
                 config={},
+                tools=None,
                 user_ask="Test",
                 history=[],
             )
@@ -233,11 +242,9 @@ class TestOpenAIChatAdapter:
     ):
         mock_get_api_key.return_value = "test-api-key"
 
-        mock_client = Mock()
-        mock_response = MagicMock()
-        mock_response.output_text = None
-        mock_client.responses.create.return_value = mock_response
-        mock_get_client.return_value = mock_client
+        mock_client, mock_response = _make_client_response(
+            mock_get_client, output_text=None, usage_attrs=None
+        )
 
         adapter = OpenAIChatAdapter()
 
@@ -246,6 +253,7 @@ class TestOpenAIChatAdapter:
                 model=IA_OPENAI_TEST_1,
                 instructions="Test",
                 config={},
+                tools=None,
                 user_ask="Test",
                 history=[],
             )
@@ -280,6 +288,7 @@ class TestOpenAIChatAdapter:
                 model=IA_OPENAI_TEST_2,
                 instructions="Test",
                 config={},
+                tools=None,
                 user_ask="Test",
                 history=[],
             )
@@ -304,6 +313,7 @@ class TestOpenAIChatAdapter:
                 model=IA_OPENAI_TEST_1,
                 instructions="Test",
                 config={},
+                tools=None,
                 user_ask="Test",
                 history=[],
             )
@@ -328,6 +338,7 @@ class TestOpenAIChatAdapter:
                 model=IA_OPENAI_TEST_2,
                 instructions="Test",
                 config={},
+                tools=None,
                 user_ask="Test",
                 history=[],
             )
@@ -352,6 +363,7 @@ class TestOpenAIChatAdapter:
                 model=IA_OPENAI_TEST_1,
                 instructions="Test",
                 config={},
+                tools=None,
                 user_ask="Test",
                 history=[],
             )
@@ -375,6 +387,7 @@ class TestOpenAIChatAdapter:
                 model=IA_OPENAI_TEST_2,
                 instructions="Test",
                 config={},
+                tools=None,
                 user_ask="Test",
                 history=[],
             )
@@ -400,6 +413,7 @@ class TestOpenAIChatAdapter:
                 model=IA_OPENAI_TEST_1,
                 instructions="Test",
                 config={},
+                tools=None,
                 user_ask="Test",
                 history=[],
             )
@@ -413,14 +427,11 @@ class TestOpenAIChatAdapter:
     def test_chat_with_special_characters(self, mock_get_client, mock_get_api_key):
         mock_get_api_key.return_value = "test-api-key"
 
-        mock_client = Mock()
-        mock_response = MagicMock()
-        mock_response.output_text = "Resposta com 你好 e emojis 🎉"
-        mock_response.usage.total_tokens = 100
-        mock_response.usage.input_tokens = 50
-        mock_response.usage.output_tokens = 50
-        mock_client.responses.create.return_value = mock_response
-        mock_get_client.return_value = mock_client
+        mock_client, mock_response = _make_client_response(
+            mock_get_client,
+            output_text="Resposta com 你好 e emojis 🎉",
+            usage_attrs={"total_tokens": 100, "input_tokens": 50, "output_tokens": 50},
+        )
 
         adapter = OpenAIChatAdapter()
 
@@ -428,6 +439,7 @@ class TestOpenAIChatAdapter:
             model=IA_OPENAI_TEST_1,
             instructions="Test 你好",
             config={},
+            tools=None,
             user_ask="Question 🎉",
             history=[],
         )
@@ -442,14 +454,11 @@ class TestOpenAIChatAdapter:
     def test_chat_with_multiline_content(self, mock_get_client, mock_get_api_key):
         mock_get_api_key.return_value = "test-api-key"
 
-        mock_client = Mock()
-        mock_response = MagicMock()
-        mock_response.output_text = "Line 1\nLine 2\nLine 3"
-        mock_response.usage.total_tokens = 100
-        mock_response.usage.input_tokens = 50
-        mock_response.usage.output_tokens = 50
-        mock_client.responses.create.return_value = mock_response
-        mock_get_client.return_value = mock_client
+        mock_client, mock_response = _make_client_response(
+            mock_get_client,
+            output_text="Line 1\nLine 2\nLine 3",
+            usage_attrs={"total_tokens": 100, "input_tokens": 50, "output_tokens": 50},
+        )
 
         adapter = OpenAIChatAdapter()
 
@@ -457,6 +466,7 @@ class TestOpenAIChatAdapter:
             model=IA_OPENAI_TEST_2,
             instructions="Multi\nline\ninstructions",
             config={},
+            tools=None,
             user_ask="Multi\nline\nquestion",
             history=[],
         )
@@ -490,14 +500,15 @@ class TestOpenAIChatAdapter:
     def test_chat_collects_metrics_on_success(self, mock_get_client, mock_get_api_key):
         mock_get_api_key.return_value = "test-api-key"
 
-        mock_client = Mock()
-        mock_response = MagicMock()
-        mock_response.output_text = "Success response"
-        mock_response.usage.total_tokens = 150
-        mock_response.usage.input_tokens = 75
-        mock_response.usage.output_tokens = 75
-        mock_client.responses.create.return_value = mock_response
-        mock_get_client.return_value = mock_client
+        mock_client, mock_response = _make_client_response(
+            mock_get_client,
+            output_text="Success response",
+            usage_attrs={
+                "total_tokens": 150,
+                "prompt_tokens": 75,
+                "completion_tokens": 75,
+            },
+        )
 
         adapter = OpenAIChatAdapter()
 
@@ -505,6 +516,7 @@ class TestOpenAIChatAdapter:
             model=IA_OPENAI_TEST_1,
             instructions="Test",
             config={},
+            tools=None,
             user_ask="Test",
             history=[],
         )
@@ -536,6 +548,7 @@ class TestOpenAIChatAdapter:
                 model=IA_OPENAI_TEST_2,
                 instructions="Test",
                 config={},
+                tools=None,
                 user_ask="Test",
                 history=[],
             )
@@ -556,14 +569,11 @@ class TestOpenAIChatAdapter:
     def test_chat_collects_multiple_metrics(self, mock_get_client, mock_get_api_key):
         mock_get_api_key.return_value = "test-api-key"
 
-        mock_client = Mock()
-        mock_response = MagicMock()
-        mock_response.output_text = "Response"
-        mock_response.usage.total_tokens = 100
-        mock_response.usage.input_tokens = 50
-        mock_response.usage.output_tokens = 50
-        mock_client.responses.create.return_value = mock_response
-        mock_get_client.return_value = mock_client
+        mock_client, mock_response = _make_client_response(
+            mock_get_client,
+            output_text="Response",
+            usage_attrs={"total_tokens": 100, "input_tokens": 50, "output_tokens": 50},
+        )
 
         adapter = OpenAIChatAdapter()
 
@@ -571,6 +581,7 @@ class TestOpenAIChatAdapter:
             model=IA_OPENAI_TEST_1,
             instructions="Test",
             config={},
+            tools=None,
             user_ask="Test 1",
             history=[],
         )
@@ -579,6 +590,7 @@ class TestOpenAIChatAdapter:
             model=IA_OPENAI_TEST_2,
             instructions="Test",
             config={},
+            tools=None,
             user_ask="Test 2",
             history=[],
         )
@@ -611,14 +623,11 @@ class TestOpenAIChatAdapter:
     def test_chat_with_empty_string_in_history(self, mock_get_client, mock_get_api_key):
         mock_get_api_key.return_value = "test-api-key"
 
-        mock_client = Mock()
-        mock_response = MagicMock()
-        mock_response.output_text = "Response"
-        mock_response.usage.total_tokens = 100
-        mock_response.usage.input_tokens = 50
-        mock_response.usage.output_tokens = 50
-        mock_client.responses.create.return_value = mock_response
-        mock_get_client.return_value = mock_client
+        mock_client, mock_response = _make_client_response(
+            mock_get_client,
+            output_text="Response",
+            usage_attrs={"total_tokens": 100, "input_tokens": 50, "output_tokens": 50},
+        )
 
         adapter = OpenAIChatAdapter()
 
@@ -631,6 +640,7 @@ class TestOpenAIChatAdapter:
             model=IA_OPENAI_TEST_1,
             instructions="Test",
             config={},
+            tools=None,
             user_ask="New question",
             history=history,
         )
@@ -647,14 +657,11 @@ class TestOpenAIChatAdapter:
     def test_chat_with_long_history(self, mock_get_client, mock_get_api_key):
         mock_get_api_key.return_value = "test-api-key"
 
-        mock_client = Mock()
-        mock_response = MagicMock()
-        mock_response.output_text = "Response"
-        mock_response.usage.total_tokens = 100
-        mock_response.usage.input_tokens = 50
-        mock_response.usage.output_tokens = 50
-        mock_client.responses.create.return_value = mock_response
-        mock_get_client.return_value = mock_client
+        mock_client, mock_response = _make_client_response(
+            mock_get_client,
+            output_text="Response",
+            usage_attrs={"total_tokens": 100, "input_tokens": 50, "output_tokens": 50},
+        )
 
         adapter = OpenAIChatAdapter()
 
@@ -667,6 +674,7 @@ class TestOpenAIChatAdapter:
             model=IA_OPENAI_TEST_2,
             instructions="Test",
             config={},
+            tools=None,
             user_ask="Final question",
             history=history,
         )
@@ -683,14 +691,11 @@ class TestOpenAIChatAdapter:
     def test_chat_with_config_parameter(self, mock_get_client, mock_get_api_key):
         mock_get_api_key.return_value = "test-api-key"
 
-        mock_client = Mock()
-        mock_response = MagicMock()
-        mock_response.output_text = "Response"
-        mock_response.usage.total_tokens = 100
-        mock_response.usage.input_tokens = 50
-        mock_response.usage.output_tokens = 50
-        mock_client.responses.create.return_value = mock_response
-        mock_get_client.return_value = mock_client
+        mock_client, mock_response = _make_client_response(
+            mock_get_client,
+            output_text="Response",
+            usage_attrs={"total_tokens": 100, "input_tokens": 50, "output_tokens": 50},
+        )
 
         adapter = OpenAIChatAdapter()
 
@@ -700,6 +705,7 @@ class TestOpenAIChatAdapter:
             model=IA_OPENAI_TEST_1,
             instructions="Test",
             config=config,
+            tools=None,
             history=[],
             user_ask="Test",
         )
@@ -715,11 +721,9 @@ class TestOpenAIChatAdapter:
     ):
         mock_get_api_key.return_value = "test-api-key"
 
-        mock_client = Mock()
-        mock_response = MagicMock()
-        mock_response.output_text = ""
-        mock_client.responses.create.return_value = mock_response
-        mock_get_client.return_value = mock_client
+        mock_client, mock_response = _make_client_response(
+            mock_get_client, output_text="", usage_attrs=None
+        )
 
         adapter = OpenAIChatAdapter()
 
@@ -728,6 +732,7 @@ class TestOpenAIChatAdapter:
                 model=IA_OPENAI_TEST_1,
                 instructions="Test",
                 config={},
+                tools=None,
                 user_ask="Test",
                 history=[],
             )
@@ -736,7 +741,7 @@ class TestOpenAIChatAdapter:
 
         metrics = adapter.get_metrics()
         assert len(metrics) == 1
-        assert metrics[0].error_message == "OpenAI returned an empty response."
+        assert metrics[0].error_message == "OpenAI chat error"
         assert metrics[0].success is False
 
     @patch(
@@ -746,15 +751,9 @@ class TestOpenAIChatAdapter:
     def test_chat_with_missing_usage_info(self, mock_get_client, mock_get_api_key):
         mock_get_api_key.return_value = "test-api-key"
 
-        mock_client = Mock()
-        mock_response = MagicMock()
-        mock_response.output_text = "Response"
-        mock_response.usage = MagicMock()
-        del mock_response.usage.total_tokens
-        del mock_response.usage.input_tokens
-        del mock_response.usage.output_tokens
-        mock_client.responses.create.return_value = mock_response
-        mock_get_client.return_value = mock_client
+        mock_client, mock_response = _make_client_response(
+            mock_get_client, output_text="Response", usage_attrs=None
+        )
 
         adapter = OpenAIChatAdapter()
 
@@ -762,6 +761,7 @@ class TestOpenAIChatAdapter:
             model=IA_OPENAI_TEST_2,
             instructions="Test",
             config={},
+            tools=None,
             user_ask="Test",
             history=[],
         )
@@ -803,11 +803,9 @@ class TestOpenAIChatAdapter:
     ):
         mock_get_api_key.return_value = "test-api-key"
 
-        mock_client = Mock()
-        mock_response = MagicMock()
-        mock_response.output_text = "   \n\t  "
-        mock_client.responses.create.return_value = mock_response
-        mock_get_client.return_value = mock_client
+        mock_client, mock_response = _make_client_response(
+            mock_get_client, output_text="   \n\t  ", usage_attrs=None
+        )
 
         adapter = OpenAIChatAdapter()
 
@@ -815,6 +813,7 @@ class TestOpenAIChatAdapter:
             model=IA_OPENAI_TEST_1,
             instructions="Test",
             config={},
+            tools=None,
             user_ask="Test",
             history=[],
         )
@@ -830,14 +829,11 @@ class TestOpenAIChatAdapter:
     ):
         mock_get_api_key.return_value = "test-api-key"
 
-        mock_client = Mock()
-        mock_response = MagicMock()
-        mock_response.output_text = "Response"
-        mock_response.usage.total_tokens = 100
-        mock_response.usage.input_tokens = 50
-        mock_response.usage.output_tokens = 50
-        mock_client.responses.create.return_value = mock_response
-        mock_get_client.return_value = mock_client
+        mock_client, mock_response = _make_client_response(
+            mock_get_client,
+            output_text="Response",
+            usage_attrs={"total_tokens": 100, "input_tokens": 50, "output_tokens": 50},
+        )
 
         adapter = OpenAIChatAdapter()
 
@@ -845,6 +841,7 @@ class TestOpenAIChatAdapter:
             model=IA_OPENAI_TEST_1,
             instructions="Test",
             config={},
+            tools=None,
             user_ask="Test 1",
             history=[],
         )
@@ -855,6 +852,7 @@ class TestOpenAIChatAdapter:
                 model=IA_OPENAI_TEST_2,
                 instructions="Test",
                 config={},
+                tools=None,
                 user_ask="Test 2",
                 history=[],
             )
@@ -867,6 +865,7 @@ class TestOpenAIChatAdapter:
             model=IA_OPENAI_TEST_1,
             instructions="Test",
             config={},
+            tools=None,
             user_ask="Test 3",
             history=[],
         )
@@ -884,15 +883,16 @@ class TestOpenAIChatAdapter:
     def test_chat_with_very_long_content(self, mock_get_client, mock_get_api_key):
         mock_get_api_key.return_value = "test-api-key"
 
-        mock_client = Mock()
-        mock_response = MagicMock()
         long_text = "A" * 10000
-        mock_response.output_text = long_text
-        mock_response.usage.total_tokens = 2500
-        mock_response.usage.input_tokens = 500
-        mock_response.usage.output_tokens = 2000
-        mock_client.responses.create.return_value = mock_response
-        mock_get_client.return_value = mock_client
+        mock_client, mock_response = _make_client_response(
+            mock_get_client,
+            output_text=long_text,
+            usage_attrs={
+                "total_tokens": 2500,
+                "input_tokens": 500,
+                "output_tokens": 2000,
+            },
+        )
 
         adapter = OpenAIChatAdapter()
 
@@ -900,6 +900,7 @@ class TestOpenAIChatAdapter:
             model=IA_OPENAI_TEST_2,
             instructions="Test",
             config={},
+            tools=None,
             user_ask="Test",
             history=[],
         )
@@ -914,14 +915,11 @@ class TestOpenAIChatAdapter:
     def test_chat_passes_temperature_config(self, mock_get_client, mock_get_api_key):
         mock_get_api_key.return_value = "test-api-key"
 
-        mock_client = Mock()
-        mock_response = MagicMock()
-        mock_response.output_text = "Response"
-        mock_response.usage.total_tokens = 100
-        mock_response.usage.input_tokens = 50
-        mock_response.usage.output_tokens = 50
-        mock_client.responses.create.return_value = mock_response
-        mock_get_client.return_value = mock_client
+        mock_client, mock_response = _make_client_response(
+            mock_get_client,
+            output_text="Response",
+            usage_attrs={"total_tokens": 100, "input_tokens": 50, "output_tokens": 50},
+        )
 
         adapter = OpenAIChatAdapter()
 
@@ -929,6 +927,7 @@ class TestOpenAIChatAdapter:
             model=IA_OPENAI_TEST_1,
             instructions="Test",
             config={"temperature": 0.7},
+            tools=None,
             user_ask="Test",
             history=[],
         )
@@ -944,14 +943,11 @@ class TestOpenAIChatAdapter:
     def test_chat_passes_max_tokens_config(self, mock_get_client, mock_get_api_key):
         mock_get_api_key.return_value = "test-api-key"
 
-        mock_client = Mock()
-        mock_response = MagicMock()
-        mock_response.output_text = "Response"
-        mock_response.usage.total_tokens = 100
-        mock_response.usage.input_tokens = 50
-        mock_response.usage.output_tokens = 50
-        mock_client.responses.create.return_value = mock_response
-        mock_get_client.return_value = mock_client
+        mock_client, mock_response = _make_client_response(
+            mock_get_client,
+            output_text="Response",
+            usage_attrs={"total_tokens": 100, "input_tokens": 50, "output_tokens": 50},
+        )
 
         adapter = OpenAIChatAdapter()
 
@@ -959,6 +955,7 @@ class TestOpenAIChatAdapter:
             model=IA_OPENAI_TEST_2,
             instructions="Test",
             config={"max_tokens": 500},
+            tools=None,
             user_ask="Test",
             history=[],
         )
@@ -974,14 +971,11 @@ class TestOpenAIChatAdapter:
     def test_chat_passes_top_p_config(self, mock_get_client, mock_get_api_key):
         mock_get_api_key.return_value = "test-api-key"
 
-        mock_client = Mock()
-        mock_response = MagicMock()
-        mock_response.output_text = "Response"
-        mock_response.usage.total_tokens = 100
-        mock_response.usage.input_tokens = 50
-        mock_response.usage.output_tokens = 50
-        mock_client.responses.create.return_value = mock_response
-        mock_get_client.return_value = mock_client
+        mock_client, mock_response = _make_client_response(
+            mock_get_client,
+            output_text="Response",
+            usage_attrs={"total_tokens": 100, "input_tokens": 50, "output_tokens": 50},
+        )
 
         adapter = OpenAIChatAdapter()
 
@@ -989,6 +983,7 @@ class TestOpenAIChatAdapter:
             model=IA_OPENAI_TEST_1,
             instructions="Test",
             config={"top_p": 0.9},
+            tools=None,
             user_ask="Test",
             history=[],
         )
@@ -1004,14 +999,11 @@ class TestOpenAIChatAdapter:
     def test_chat_passes_all_configs(self, mock_get_client, mock_get_api_key):
         mock_get_api_key.return_value = "test-api-key"
 
-        mock_client = Mock()
-        mock_response = MagicMock()
-        mock_response.output_text = "Response"
-        mock_response.usage.total_tokens = 100
-        mock_response.usage.input_tokens = 50
-        mock_response.usage.output_tokens = 50
-        mock_client.responses.create.return_value = mock_response
-        mock_get_client.return_value = mock_client
+        mock_client, mock_response = _make_client_response(
+            mock_get_client,
+            output_text="Response",
+            usage_attrs={"total_tokens": 100, "input_tokens": 50, "output_tokens": 50},
+        )
 
         adapter = OpenAIChatAdapter()
 
@@ -1025,6 +1017,7 @@ class TestOpenAIChatAdapter:
             model=IA_OPENAI_TEST_2,
             instructions="Test",
             config=config,
+            tools=None,
             user_ask="Test",
             history=[],
         )
@@ -1043,14 +1036,11 @@ class TestOpenAIChatAdapter:
     ):
         mock_get_api_key.return_value = "test-api-key"
 
-        mock_client = Mock()
-        mock_response = MagicMock()
-        mock_response.output_text = "Response"
-        mock_response.usage.total_tokens = 100
-        mock_response.usage.input_tokens = 50
-        mock_response.usage.output_tokens = 50
-        mock_client.responses.create.return_value = mock_response
-        mock_get_client.return_value = mock_client
+        mock_client, mock_response = _make_client_response(
+            mock_get_client,
+            output_text="Response",
+            usage_attrs={"total_tokens": 100, "input_tokens": 50, "output_tokens": 50},
+        )
 
         adapter = OpenAIChatAdapter()
 
@@ -1058,6 +1048,7 @@ class TestOpenAIChatAdapter:
             model=IA_OPENAI_TEST_1,
             instructions="Test",
             config={},
+            tools=None,
             user_ask="Test",
             history=[],
         )
@@ -1076,14 +1067,11 @@ class TestOpenAIChatAdapter:
     def test_chat_logs_debug_messages(self, mock_get_client, mock_get_api_key):
         mock_get_api_key.return_value = "test-api-key"
 
-        mock_client = Mock()
-        mock_response = MagicMock()
-        mock_response.output_text = "A" * 200
-        mock_response.usage.total_tokens = 100
-        mock_response.usage.input_tokens = 50
-        mock_response.usage.output_tokens = 50
-        mock_client.responses.create.return_value = mock_response
-        mock_get_client.return_value = mock_client
+        mock_client, mock_response = _make_client_response(
+            mock_get_client,
+            output_text="A" * 200,
+            usage_attrs={"total_tokens": 100, "input_tokens": 50, "output_tokens": 50},
+        )
 
         with patch(
             "src.infra.adapters.OpenAI.openai_chat_adapter.LoggingConfig.get_logger"
@@ -1097,6 +1085,7 @@ class TestOpenAIChatAdapter:
                 model=IA_OPENAI_TEST_1,
                 instructions="Test",
                 config={},
+                tools=None,
                 user_ask="Test",
                 history=[],
             )
@@ -1110,14 +1099,11 @@ class TestOpenAIChatAdapter:
     def test_chat_logs_info_on_success(self, mock_get_client, mock_get_api_key):
         mock_get_api_key.return_value = "test-api-key"
 
-        mock_client = Mock()
-        mock_response = MagicMock()
-        mock_response.output_text = "Response"
-        mock_response.usage.total_tokens = 100
-        mock_response.usage.input_tokens = 50
-        mock_response.usage.output_tokens = 50
-        mock_client.responses.create.return_value = mock_response
-        mock_get_client.return_value = mock_client
+        mock_client, mock_response = _make_client_response(
+            mock_get_client,
+            output_text="Response",
+            usage_attrs={"total_tokens": 100, "input_tokens": 50, "output_tokens": 50},
+        )
 
         with patch(
             "src.infra.adapters.OpenAI.openai_chat_adapter.LoggingConfig.get_logger"
@@ -1131,6 +1117,7 @@ class TestOpenAIChatAdapter:
                 model=IA_OPENAI_TEST_1,
                 instructions="Test",
                 config={},
+                tools=None,
                 user_ask="Test",
                 history=[],
             )
@@ -1161,6 +1148,7 @@ class TestOpenAIChatAdapter:
                     model=IA_OPENAI_TEST_1,
                     instructions="Test",
                     config={},
+                    tools=None,
                     user_ask="Test",
                     history=[],
                 )
@@ -1178,14 +1166,11 @@ class TestOpenAIChatAdapter:
     ):
         mock_get_api_key.return_value = "test-api-key"
 
-        mock_client = Mock()
-        mock_response = MagicMock()
-        mock_response.output_text = "Response"
-        mock_response.usage.total_tokens = 100
-        mock_response.usage.input_tokens = 50
-        mock_response.usage.output_tokens = 50
-        mock_client.responses.create.return_value = mock_response
-        mock_get_client.return_value = mock_client
+        mock_client, mock_response = _make_client_response(
+            mock_get_client,
+            output_text="Response",
+            usage_attrs={"total_tokens": 100, "input_tokens": 50, "output_tokens": 50},
+        )
 
         adapter = OpenAIChatAdapter()
 
@@ -1193,6 +1178,7 @@ class TestOpenAIChatAdapter:
             model=IA_OPENAI_TEST_1,
             instructions=None,
             config={},
+            tools=None,
             user_ask="Test",
             history=[],
         )
@@ -1212,14 +1198,11 @@ class TestOpenAIChatAdapter:
     ):
         mock_get_api_key.return_value = "test-api-key"
 
-        mock_client = Mock()
-        mock_response = MagicMock()
-        mock_response.output_text = "Response"
-        mock_response.usage.total_tokens = 100
-        mock_response.usage.input_tokens = 50
-        mock_response.usage.output_tokens = 50
-        mock_client.responses.create.return_value = mock_response
-        mock_get_client.return_value = mock_client
+        mock_client, mock_response = _make_client_response(
+            mock_get_client,
+            output_text="Response",
+            usage_attrs={"total_tokens": 100, "input_tokens": 50, "output_tokens": 50},
+        )
 
         adapter = OpenAIChatAdapter()
 
@@ -1227,6 +1210,7 @@ class TestOpenAIChatAdapter:
             model=IA_OPENAI_TEST_1,
             instructions="   \n\t  ",
             config={},
+            tools=None,
             user_ask="Test",
             history=[],
         )
@@ -1270,6 +1254,8 @@ class TestOpenAIChatAdapter:
         mock_response.usage.total_tokens = 100
         mock_response.usage.input_tokens = 50
         mock_response.usage.output_tokens = 50
+        mock_response.choices = [MagicMock()]
+        mock_response.choices[0].message.tool_calls = None
 
         mock_client.responses.create.side_effect = [
             Exception("Error 1"),
@@ -1284,6 +1270,7 @@ class TestOpenAIChatAdapter:
             model=IA_OPENAI_TEST_1,
             instructions="Test",
             config={},
+            tools=None,
             user_ask="Test",
             history=[],
         )

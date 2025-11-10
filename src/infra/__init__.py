@@ -1,5 +1,6 @@
-from .adapters import ClientOpenAI, OllamaChatAdapter, OpenAIChatAdapter
+from .adapters import OllamaChatAdapter, OpenAIChatAdapter
 from .config import (
+    AvailableTools,
     ChatMetrics,
     EnvironmentConfig,
     LoggingConfig,
@@ -10,14 +11,17 @@ from .config import (
 from .factories import ChatAdapterFactory
 
 __all__ = [
+    # Configs
     "EnvironmentConfig",
     "LoggingConfig",
     "ChatMetrics",
     "MetricsCollector",
     "retry_with_backoff",
     "SensitiveDataFilter",
+    "AvailableTools",
+    # Adapters
     "OllamaChatAdapter",
     "OpenAIChatAdapter",
-    "ClientOpenAI",
+    # Factories
     "ChatAdapterFactory",
 ]

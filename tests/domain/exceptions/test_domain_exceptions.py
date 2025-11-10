@@ -313,12 +313,150 @@ class TestInvalidConfigTypeException:
 
 
 @pytest.mark.unit
+class TestInvalidBaseToolException:
+    def test_create_with_tool_object(self):
+        from src.domain.exceptions import InvalidBaseToolException
+
+        tool = {"name": "test_tool"}
+        exception = InvalidBaseToolException(tool)
+
+        assert "test_tool" in str(exception) or "Tool" in str(exception)
+        assert "must inherit from BaseTool" in str(exception)
+
+    def test_exception_message_format(self):
+        from src.domain.exceptions import InvalidBaseToolException
+
+        exception = InvalidBaseToolException("invalid_tool")
+
+        assert "invalid_tool" in str(exception)
+        assert "BaseTool" in str(exception)
+        assert "execute" in str(exception)
+
+    def test_is_agent_exception(self):
+        from src.domain.exceptions import InvalidBaseToolException
+
+        exception = InvalidBaseToolException("test")
+
+        assert isinstance(exception, AgentException)
+        assert isinstance(exception, Exception)
+
+    def test_raise_invalid_base_tool_exception(self):
+        from src.domain.exceptions import InvalidBaseToolException
+
+        with pytest.raises(InvalidBaseToolException):
+            raise InvalidBaseToolException("bad_tool")
+
+    def test_with_different_tool_types(self):
+        from src.domain.exceptions import InvalidBaseToolException
+
+        tools = ["string_tool", 123, {"name": "dict"}, None]
+
+        for tool in tools:
+            exception = InvalidBaseToolException(tool)
+            assert isinstance(exception, InvalidBaseToolException)
+            assert "BaseTool" in str(exception)
+
+    def test_exception_mentions_required_attributes(self):
+        from src.domain.exceptions import InvalidBaseToolException
+
+        exception = InvalidBaseToolException("test")
+        message = str(exception)
+
+        assert "name" in message
+        assert "description" in message
+        assert "execute" in message
+
+
+@pytest.mark.unit
+class TestFileReadException:
+    def test_create_with_file_path_and_reason(self):
+        from src.domain.exceptions import FileReadException
+
+        exception = FileReadException("/path/to/file.txt", "file not found")
+
+        assert "/path/to/file.txt" in str(exception)
+        assert "file not found" in str(exception)
+        assert "Failed to read file" in str(exception)
+
+    def test_exception_message_format(self):
+        from src.domain.exceptions import FileReadException
+
+        exception = FileReadException("/data/test.json", "permission denied")
+        expected_parts = ["/data/test.json", "permission denied", "Failed to read"]
+
+        message = str(exception)
+        for part in expected_parts:
+            assert part in message
+
+    def test_is_agent_exception(self):
+        from src.domain.exceptions import FileReadException
+
+        exception = FileReadException("file.txt", "reason")
+
+        assert isinstance(exception, AgentException)
+        assert isinstance(exception, Exception)
+
+    def test_raise_file_read_exception(self):
+        from src.domain.exceptions import FileReadException
+
+        with pytest.raises(FileReadException):
+            raise FileReadException("/path/file.txt", "disk error")
+
+    def test_with_different_file_paths(self):
+        from src.domain.exceptions import FileReadException
+
+        paths = [
+            "/absolute/path/file.txt",
+            "relative/path/file.txt",
+            "C:\\Windows\\file.txt",
+            "file.txt",
+        ]
+
+        for path in paths:
+            exception = FileReadException(path, "error")
+            assert path in str(exception)
+
+    def test_with_different_reasons(self):
+        from src.domain.exceptions import FileReadException
+
+        reasons = [
+            "file not found",
+            "permission denied",
+            "disk error",
+            "encoding error",
+            "file too large",
+        ]
+
+        for reason in reasons:
+            exception = FileReadException("/path/file.txt", reason)
+            assert reason in str(exception)
+
+    def test_catch_as_agent_exception(self):
+        from src.domain.exceptions import FileReadException
+
+        with pytest.raises(AgentException):
+            raise FileReadException("/path/file.txt", "error")
+
+    def test_with_empty_reason(self):
+        from src.domain.exceptions import FileReadException
+
+        exception = FileReadException("/path/file.txt", "")
+
+        assert "/path/file.txt" in str(exception)
+        assert "Failed to read file" in str(exception)
+
+
+@pytest.mark.unit
 class TestNewExceptionHierarchy:
     def test_all_new_agent_exceptions_inherit_from_agent_exception(self):
+        from src.domain.exceptions import FileReadException, InvalidBaseToolException
+
         exceptions = [
             InvalidProviderException("test", {"openai"}),
             UnsupportedConfigException("test", {"temperature"}),
             InvalidConfigTypeException("test", str),
+            InvalidBaseToolException("test"),
+            FileReadException("file.txt", "error"),
         ]
 
         for exc in exceptions:
@@ -326,6 +464,8 @@ class TestNewExceptionHierarchy:
             assert isinstance(exc, Exception)
 
     def test_catch_new_exceptions_as_agent_exception(self):
+        from src.domain.exceptions import FileReadException, InvalidBaseToolException
+
         with pytest.raises(AgentException):
             raise InvalidProviderException("test", {"openai"})
 
@@ -334,6 +474,12 @@ class TestNewExceptionHierarchy:
 
         with pytest.raises(AgentException):
             raise InvalidConfigTypeException("test", str)
+
+        with pytest.raises(AgentException):
+            raise InvalidBaseToolException("test")
+
+        with pytest.raises(AgentException):
+            raise FileReadException("file.txt", "error")
 
         with pytest.raises(ChatException):
             raise AdapterNotFoundException("adapter")

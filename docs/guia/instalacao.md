@@ -1,283 +1,185 @@
-# Guia de Instalação
+# 📦 Guia de Instalação
 
-Este guia irá ajudá-lo a configurar o ambiente de desenvolvimento do AI Agent Creator em sua máquina local.
+Configure o **AI Agent Creator** em sua máquina.
 
 ---
 
-## Pré-requisitos
+## 📋 Pré-requisitos
 
-Antes de começar, certifique-se de ter instalado:
-
-- **Python 3.10+** ([Download](https://www.python.org/downloads/))
-- **pip** (geralmente incluído com Python)
+- **Python 3.12+** ([Download](https://www.python.org/downloads/))
+- **Poetry** (recomendado) ou **pip**
 - **Git** ([Download](https://git-scm.com/downloads))
-- **Ferramenta de ambiente virtual** (venv, recomendado)
 
 ---
 
-## Instalação Passo a Passo
+## ⚡ Instalação Rápida
 
 ### 1. Clonar o Repositório
 
-\`\`\`bash
+```bash
 git clone https://github.com/jor0105/AI_Agent.git
 cd AI_Agent
-\`\`\`
+```
 
-### 2. Criar um Ambiente Virtual
+### 2. Instalar Dependências
 
-Criar um ambiente virtual isola as dependências do projeto da instalação Python do sistema.
+**Com Poetry (recomendado):**
 
-**No Linux/macOS:**
+```bash
+# Instalar Poetry se necessário
+curl -sSL https://install.python-poetry.org | python3 -
 
-\`\`\`bash
-python3 -m venv venv
-source venv/bin/activate
-\`\`\`
-
-**No Windows:**
-
-\`\`\`bash
-python -m venv venv
-venv\Scripts\activate
-\`\`\`
-
-Você deve ver \`(venv)\` no prompt do terminal, indicando que o ambiente virtual está ativo.
-
-### 3. Instalar Dependências
-
-Instale todos os pacotes necessários usando pip:
-
-\`\`\`bash
-pip install --upgrade pip
-pip install -r requirements.txt
-\`\`\`
-
-Alternativamente, se preferir usar Poetry:
-
-\`\`\`bash
-pip install poetry
+# Instalação básica
 poetry install
-\`\`\`
 
-### 4. Configurar Variáveis de Ambiente
+# OU com suporte a arquivos (PDF, Excel, CSV)
+poetry install -E file-tools
 
-Crie um arquivo \`.env\` no diretório raiz do projeto:
+# Ativar ambiente
+poetry shell
+```
 
-\`\`\`bash
-cp .env.example .env  # ou crie o arquivo manualmente
-\`\`\`
+**Com pip:**
 
-Edite o arquivo \`.env\` e adicione suas credenciais de API:
+```bash
+# Criar ambiente virtual
+python3 -m venv .venv
+source .venv/bin/activate  # Linux/macOS
+# .venv\Scripts\activate  # Windows
 
-\`\`\`bash
-# Configuração OpenAI
-OPENAI_API_KEY=sk-proj-sua-chave-api-aqui
+# Instalar
+pip install -e .
+# OU com file-tools
+pip install -e ".[file-tools]"
+```
 
-# Opcional: Adicione outras configurações
-# LOG_LEVEL=INFO
-# MAX_RETRIES=3
-\`\`\`
+### 3. Configurar Variáveis de Ambiente
 
-!!! warning "Aviso de Segurança"
-    Nunca faça commit do seu arquivo \`.env\` para controle de versão. Ele já está no \`.gitignore\` para prevenir commits acidentais.
+```bash
+# Copiar exemplo
+cp .env.example .env
 
-### 5. Verificar Instalação
+# Editar e adicionar sua chave
+# OPENAI_API_KEY=sk-proj-sua-chave
+```
 
-Execute este teste rápido para garantir que tudo está configurado corretamente:
+### 4. Testar Instalação
 
-\`\`\`python
-from src import AIAgent
+```python
+from src.presentation import AIAgent
 
-# Testar funcionalidade básica
-agent = AIAgent(
-    model="gpt-4",
-    name="Agente de Teste",
-    instructions="Você é um assistente útil."
-)
-
+agent = AIAgent(provider="openai", model="gpt-4")
 print("✅ Instalação bem-sucedida!")
-print(f"Agente '{agent.get_configs()['name']}' criado com sucesso")
-\`\`\`
+```
 
 ---
 
-## Configuração Específica por Provedor
+## 🔐 Configuração OpenAI
 
-### Configuração OpenAI
+### 1. Obter API Key
 
-1. Acesse [OpenAI Platform](https://platform.openai.com)
-2. Cadastre-se ou faça login na sua conta
-3. Navegue até a seção **API Keys**
-4. Clique em **Create new secret key**
-5. Copie a chave e adicione ao seu arquivo \`.env\`
+1. Acesse [platform.openai.com](https://platform.openai.com)
+2. Faça login
+3. Vá para **API Keys**
+4. Crie nova chave
 
-**Modelos Suportados:**
+### 2. Configurar .env
 
-- \`gpt-4\`
-- \`gpt-4-turbo\`
-- \`gpt-3.5-turbo\`
-- E outros modelos OpenAI
+```bash
+OPENAI_API_KEY=sk-proj-sua-chave
+```
 
-### Configuração Ollama (Opcional)
+### 3. Testar
 
-Ollama permite executar modelos de IA localmente para privacidade completa e sem custos de API.
+```python
+agent = AIAgent(provider="openai", model="gpt-4")
+response = agent.chat("2+2=?")
+print(response)  # Deve responder "4"
+```
 
-**Instalação:**
+## 🖥️ Configuração Ollama (Opcional)
 
-**No Linux:**
+Ollama permite executar modelos **localmente** (privacidade total, sem custos).
 
-\`\`\`bash
+### 1. Instalar Ollama
+
+**Linux:**
+
+```bash
 curl -fsSL https://ollama.ai/install.sh | sh
-\`\`\`
+```
 
-**No macOS:**
+**macOS:**
 
-\`\`\`bash
+```bash
 brew install ollama
-\`\`\`
+```
 
-**No Windows:**
+**Windows:**
+Download: [ollama.ai/download/windows](https://ollama.ai/download/windows)
 
-Baixe e instale de [ollama.ai](https://ollama.ai)
+### 2. Baixar Modelos
 
-**Baixar Modelos:**
+```bash
+# Recomendado
+ollama pull llama2  # 4GB
 
-\`\`\`bash
-# Baixar um modelo
-ollama pull llama2
+# Outros
+ollama pull mistral  # 4GB
+ollama pull codellama  # 7GB
+ollama pull gemma  # 2GB
 
-# Ou baixar outros modelos
-ollama pull mistral
-ollama pull codellama
-\`\`\`
-
-**Uso:**
-
-\`\`\`python
-from src import AIAgent
-
-agent = AIAgent(
-    model="llama2",
-    name="Assistente Local",
-    instructions="Você é um assistente útil.",
-    local_ai="ollama"  # Usar provedor Ollama
-)
-\`\`\`
-
----
-
-## Dependências de Desenvolvimento
-
-Para desenvolvimento e contribuição, instale dependências adicionais de dev:
-
-\`\`\`bash
-pip install -r requirements-dev.txt
-\`\`\`
-
-Ou com Poetry:
-
-\`\`\`bash
-poetry install --with dev
-\`\`\`
-
-Isso inclui:
-
-- **pytest** - Framework de testes
-- **isort** - Ordenação de imports
-- **pre-commit** - Hooks Git para qualidade de código
-- **mkdocs** - Gerador de documentação
-
-### Configurando Pre-commit Hooks
-
-\`\`\`bash
-pre-commit install
-\`\`\`
-
-Isso verificará automaticamente seu código antes de cada commit.
-
----
-
-## Solução de Problemas
-
-### Problemas Comuns e Soluções
-
-#### Problema: "OPENAI_API_KEY not found"
-
-**Solução:**
-
-- Certifique-se de que o arquivo \`.env\` existe na raiz do projeto
-- Verifique se a chave API está corretamente formatada
-- Verifique se não há espaços extras ou aspas ao redor da chave
-
-#### Problema: "ModuleNotFoundError"
-
-**Solução:**
-
-\`\`\`bash
-# Certifique-se de que o ambiente virtual está ativado
-source venv/bin/activate  # Linux/macOS
-venv\Scripts\activate     # Windows
-
-# Reinstale as dependências
-pip install -r requirements.txt
-\`\`\`
-
-#### Problema: "Permission denied" ao instalar
-
-**Solução:**
-
-\`\`\`bash
-# Não use sudo com ambientes virtuais
-# Em vez disso, certifique-se de que o ambiente virtual está ativado primeiro
-\`\`\`
-
-#### Problema: Falha na conexão com Ollama
-
-**Solução:**
-
-\`\`\`bash
-# Certifique-se de que o serviço Ollama está rodando
-ollama serve
-
-# Teste a conexão
+# Ver modelos
 ollama list
-\`\`\`
+```
+
+### 3. Usar no código
+
+```python
+agent = AIAgent(provider="ollama", model="llama2")
+response = agent.chat("Explique machine learning")
+# 100% local, privado, sem custos
+```
 
 ---
 
-## Próximos Passos
+## 🛡️ Segurança
 
-Agora que você tem tudo instalado:
+⚠️ **Nunca** faça commit do `.env`
 
-1. Leia o [Guia de Início Rápido](uso-basico.md) para aprender o básico
-2. Explore os [Exemplos](exemplos.md) para ver casos de uso do mundo real
-3. Revise a [Arquitetura](../arquitetura.md) para entender o design do sistema
-4. Confira a [Referência da API](../api.md) para documentação detalhada
-
----
-
-## Requisitos do Sistema
-
-### Requisitos Mínimos
-
-- **SO**: Linux, macOS, Windows 10+
-- **RAM**: 4GB (8GB recomendado)
-- **Armazenamento**: 500MB para dependências
-- **Python**: 3.10 ou superior
-
-### Recomendado para Ollama
-
-- **RAM**: 8GB+ (16GB para modelos maiores)
-- **Armazenamento**: 10GB+ para modelos
-- **CPU**: Processador multi-core
+- Já está no `.gitignore`
+- Mantenha suas API keys privadas
+- Rotacione chaves periodicamente
 
 ---
 
-## Obtendo Ajuda
+## 🔧 Solução de Problemas
 
-Se você encontrar algum problema:
+### "OPENAI_API_KEY not found"
 
-- 📧 Email: estraliotojordan@gmail.com
-- 🐛 Reportar bugs: [GitHub Issues](https://github.com/jor0105/AI_Agent/issues)
-- 💬 Discussões: [GitHub Discussions](https://github.com/jor0105/AI_Agent/discussions)
+- Verifique se `.env` existe na raiz
+- Sem espaços ou aspas na chave
+
+### "ModuleNotFoundError"
+
+- Ative o ambiente virtual
+- Reinstale: `poetry install`
+
+### Ollama não conecta
+
+```bash
+ollama serve  # Inicie o servidor
+ollama list   # Verifique modelos
+```
+
+---
+
+## 🎯 Próximos Passos
+
+- [Uso Básico](uso-basico.md)
+- [Exemplos](exemplos.md)
+- [API Reference](../api.md)
+
+---
+
+**Versão:** 0.1.0 | **Atualização:** Novembro 2025

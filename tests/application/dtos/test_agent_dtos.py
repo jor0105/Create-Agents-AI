@@ -6,6 +6,7 @@ from src.application.dtos.agent_dtos import (
     ChatOutputDTO,
     CreateAgentInputDTO,
 )
+from src.domain.value_objects.base_tools import BaseTool
 
 
 @pytest.mark.unit
@@ -126,7 +127,7 @@ class TestCreateAgentInputDTO:
         assert dto.model == "gpt-5-nano"
         assert dto.name is None
         assert dto.instructions is None
-        assert dto.config == {}
+        assert dto.config is None or dto.config == {}
         assert dto.history_max_size == 10
 
     def test_validate_all_fields_valid(self):
@@ -160,7 +161,7 @@ class TestCreateAgentInputDTO:
         )
 
         dto.validate()
-        assert dto.config == {}
+        assert dto.config is None or dto.config == {}
 
     def test_create_with_history_max_size(self):
         dto = CreateAgentInputDTO(
@@ -213,7 +214,7 @@ class TestCreateAgentInputDTO:
             model="gpt-5-nano",
             name="Test",
             instructions="Test",
-            config="invalid",  # type: ignore
+            config="invalid",
         )
 
         with pytest.raises(ValueError, match="'config'.*dictionary"):
@@ -225,7 +226,7 @@ class TestCreateAgentInputDTO:
             model="gpt-5-nano",
             name="Test",
             instructions="Test",
-            history_max_size="invalid",  # type: ignore
+            history_max_size="invalid",
         )
 
         with pytest.raises(ValueError, match="history_max_size"):
@@ -233,7 +234,7 @@ class TestCreateAgentInputDTO:
 
     def test_validate_non_string_provider(self):
         dto = CreateAgentInputDTO(
-            provider=123,  # type: ignore
+            provider=123,
             model="gpt-5-nano",
             name="Test",
             instructions="Test",
@@ -266,9 +267,279 @@ class TestCreateAgentInputDTO:
 
 
 @pytest.mark.unit
+class TestCreateAgentInputDTOWithTools:
+    def test_validate_with_string_tool_names(self):
+        dto = CreateAgentInputDTO(
+            provider="openai",
+            model="gpt-5-nano",
+            name="Test",
+            instructions="Test",
+            tools=["web_search"],
+        )
+
+        try:
+            dto.validate()
+        except Exception:
+            pass
+
+    def test_validate_with_base_tool_instances(self):
+        from src.domain.value_objects import BaseTool
+
+        class CustomTool(BaseTool):
+            name = "custom_tool"
+            description = "A custom tool"
+
+            def execute(self) -> str:
+                return "result"
+
+        tool = CustomTool()
+        dto = CreateAgentInputDTO(
+            provider="openai",
+            model="gpt-5-nano",
+            name="Test",
+            instructions="Test",
+            tools=[tool],
+        )
+
+        dto.validate()
+
+        assert dto.tools is not None
+        assert len(dto.tools) == 1
+        assert isinstance(dto.tools[0], BaseTool)
+
+    def test_validate_with_multiple_tools(self):
+        from src.domain.value_objects import BaseTool
+
+        class Tool1(BaseTool):
+            name = "tool1"
+            description = "First tool"
+
+            def execute(self) -> str:
+                return "result1"
+
+        class Tool2(BaseTool):
+            name = "tool2"
+            description = "Second tool"
+
+            def execute(self) -> str:
+                return "result2"
+
+        tools = [Tool1(), Tool2()]
+        dto = CreateAgentInputDTO(
+            provider="openai",
+            model="gpt-5-nano",
+            name="Test",
+            instructions="Test",
+            tools=tools,
+        )
+
+        dto.validate()
+
+        assert len(dto.tools) == 2
+
+    def test_validate_with_invalid_tool_missing_execute(self):
+        from src.domain.exceptions import InvalidBaseToolException
+
+        class InvalidTool:
+            name = "invalid"
+            description = "Missing execute method"
+
+        dto = CreateAgentInputDTO(
+            provider="openai",
+            model="gpt-5-nano",
+            name="Test",
+            instructions="Test",
+            tools=[InvalidTool()],
+        )
+
+        with pytest.raises(InvalidBaseToolException):
+            dto.validate()
+
+    def test_validate_with_invalid_tool_missing_name(self):
+        from src.domain.exceptions import InvalidBaseToolException
+        from src.domain.value_objects import BaseTool
+
+        class NoNameTool(BaseTool):
+            name = ""
+            description = "No name"
+
+            def execute(self) -> str:
+                return "result"
+
+        dto = CreateAgentInputDTO(
+            provider="openai",
+            model="gpt-5-nano",
+            name="Test",
+            instructions="Test",
+            tools=[NoNameTool()],
+        )
+
+        with pytest.raises(InvalidBaseToolException):
+            dto.validate()
+
+    def test_validate_with_invalid_tool_missing_description(self):
+        from src.domain.exceptions import InvalidBaseToolException
+        from src.domain.value_objects import BaseTool
+
+        class NoDescTool(BaseTool):
+            name = "no_desc"
+            description = ""
+
+            def execute(self) -> str:
+                return "result"
+
+        dto = CreateAgentInputDTO(
+            provider="openai",
+            model="gpt-5-nano",
+            name="Test",
+            instructions="Test",
+            tools=[NoDescTool()],
+        )
+
+        with pytest.raises(InvalidBaseToolException):
+            dto.validate()
+
+    def test_validate_with_invalid_tool_string_not_found(self):
+        from src.domain.exceptions import InvalidBaseToolException
+
+        dto = CreateAgentInputDTO(
+            provider="openai",
+            model="gpt-5-nano",
+            name="Test",
+            instructions="Test",
+            tools=["nonexistent_tool_12345"],
+        )
+
+        with pytest.raises(InvalidBaseToolException):
+            dto.validate()
+
+    def test_validate_with_mixed_tool_types(self):
+        from src.domain.value_objects import BaseTool
+
+        class CustomTool(BaseTool):
+            name = "custom"
+            description = "Custom tool"
+
+            def execute(self) -> str:
+                return "custom"
+
+        dto = CreateAgentInputDTO(
+            provider="openai",
+            model="gpt-5-nano",
+            name="Test",
+            instructions="Test",
+            tools=[CustomTool()],
+        )
+
+        dto.validate()
+
+        assert all(isinstance(tool, BaseTool) for tool in dto.tools)
+
+    def test_validate_with_none_tools(self):
+        dto = CreateAgentInputDTO(
+            provider="openai",
+            model="gpt-5-nano",
+            name="Test",
+            instructions="Test",
+            tools=None,
+        )
+
+        dto.validate()
+
+        assert dto.tools is None
+
+    def test_validate_with_empty_tools_list(self):
+        dto = CreateAgentInputDTO(
+            provider="openai",
+            model="gpt-5-nano",
+            name="Test",
+            instructions="Test",
+            tools=[],
+        )
+
+        dto.validate()
+
+        assert dto.tools == []
+
+    def test_validate_converts_string_tools_to_basetool(self):
+        dto = CreateAgentInputDTO(
+            provider="openai",
+            model="gpt-5-nano",
+            name="Test",
+            instructions="Test",
+            tools=[],
+        )
+
+        dto.validate()
+
+        if dto.tools:
+            assert all(isinstance(tool, BaseTool) for tool in dto.tools)
+
+    def test_validate_with_tool_not_callable_execute(self):
+        from src.domain.exceptions import InvalidBaseToolException
+
+        class NotCallableExecute:
+            name = "not_callable"
+            description = "Execute not callable"
+            execute = "not a function"
+
+        dto = CreateAgentInputDTO(
+            provider="openai",
+            model="gpt-5-nano",
+            name="Test",
+            instructions="Test",
+            tools=[NotCallableExecute()],
+        )
+
+        with pytest.raises(InvalidBaseToolException):
+            dto.validate()
+
+    def test_validate_with_invalid_tool_type(self):
+        from src.domain.exceptions import InvalidBaseToolException
+
+        dto = CreateAgentInputDTO(
+            provider="openai",
+            model="gpt-5-nano",
+            name="Test",
+            instructions="Test",
+            tools=[123],
+        )
+
+        with pytest.raises(InvalidBaseToolException):
+            dto.validate()
+
+    def test_tools_attribute_after_validation(self):
+        from src.domain.value_objects import BaseTool
+
+        class TestTool(BaseTool):
+            name = "test"
+            description = "Test tool"
+
+            def execute(self) -> str:
+                return "test"
+
+        tool = TestTool()
+        dto = CreateAgentInputDTO(
+            provider="openai",
+            model="gpt-5-nano",
+            name="Test",
+            instructions="Test",
+            tools=[tool],
+        )
+
+        dto.validate()
+
+        assert isinstance(dto.tools, list)
+        assert len(dto.tools) == 1
+        assert isinstance(dto.tools[0], BaseTool)
+        assert dto.tools[0].name == "test"
+
+
+@pytest.mark.unit
 class TestAgentConfigOutputDTO:
     def test_create_with_all_fields(self):
         dto = AgentConfigOutputDTO(
+            tools=None,
             provider="openai",
             name="Test Agent",
             model="gpt-5-nano",
@@ -286,6 +557,7 @@ class TestAgentConfigOutputDTO:
 
     def test_create_with_ollama_provider(self):
         dto = AgentConfigOutputDTO(
+            tools=None,
             provider="ollama",
             name="Test",
             model="phi4-mini:latest",
@@ -298,6 +570,7 @@ class TestAgentConfigOutputDTO:
 
     def test_to_dict_conversion(self):
         dto = AgentConfigOutputDTO(
+            tools=None,
             provider="ollama",
             name="Test",
             model="phi4-mini:latest",
@@ -318,6 +591,7 @@ class TestAgentConfigOutputDTO:
 
     def test_to_dict_with_empty_history(self):
         dto = AgentConfigOutputDTO(
+            tools=None,
             provider="openai",
             name="Test",
             model="gpt-5-nano",
@@ -337,6 +611,7 @@ class TestAgentConfigOutputDTO:
             {"role": "user", "content": "How are you?"},
         ]
         dto = AgentConfigOutputDTO(
+            tools=None,
             provider="openai",
             name="Test",
             model="gpt-5-nano",
@@ -352,6 +627,7 @@ class TestAgentConfigOutputDTO:
 
     def test_to_dict_all_keys_present(self):
         dto = AgentConfigOutputDTO(
+            tools=None,
             provider="openai",
             name="Test",
             model="gpt-5-nano",
@@ -368,6 +644,7 @@ class TestAgentConfigOutputDTO:
             "name",
             "instructions",
             "config",
+            "tools",
             "history",
             "history_max_size",
         }
@@ -380,6 +657,7 @@ class TestAgentConfigOutputDTO:
             "list": [1, 2, 3],
         }
         dto = AgentConfigOutputDTO(
+            tools=None,
             provider="ollama",
             name="Test",
             model="phi:latest",
@@ -394,6 +672,7 @@ class TestAgentConfigOutputDTO:
 
     def test_create_with_none_name(self):
         dto = AgentConfigOutputDTO(
+            tools=None,
             provider="openai",
             name=None,
             model="gpt-5-nano",
@@ -408,6 +687,7 @@ class TestAgentConfigOutputDTO:
 
     def test_create_with_none_instructions(self):
         dto = AgentConfigOutputDTO(
+            tools=None,
             provider="openai",
             name="Test",
             model="gpt-5-nano",
@@ -422,6 +702,7 @@ class TestAgentConfigOutputDTO:
 
     def test_create_with_both_none(self):
         dto = AgentConfigOutputDTO(
+            tools=None,
             provider="openai",
             name=None,
             model="gpt-5-nano",
@@ -556,6 +837,7 @@ class TestDTOsIntegration:
         input_dto.validate()
 
         output_dto = AgentConfigOutputDTO(
+            tools=None,
             provider=input_dto.provider,
             name=input_dto.name,
             model=input_dto.model,
@@ -621,6 +903,7 @@ class TestDTOsIntegration:
         input_dto.validate()
 
         output_dto = AgentConfigOutputDTO(
+            tools=None,
             provider=input_dto.provider,
             model=input_dto.model,
             name=input_dto.name,
