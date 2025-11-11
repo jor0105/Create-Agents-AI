@@ -183,6 +183,10 @@ class AvailableTools:
         If the optional dependencies are not installed, logs a warning
         and marks the tool as unavailable.
         """
+        # Only load once - check if already loaded
+        if "readlocalfile" in cls.__LAZY_SYSTEM_TOOLS:
+            return
+
         try:
             from src.infra.adapters.Tools import ReadLocalFileTool
             from src.infra.config.logging_config import LoggingConfig

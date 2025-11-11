@@ -1,5 +1,6 @@
 from collections import deque
 from dataclasses import dataclass, field
+from threading import Lock
 from typing import Deque, Dict, List
 
 from .message import Message, MessageRole
@@ -13,10 +14,13 @@ class History:
 
     It uses a deque with `maxlen` for optimized performance, automatically
     removing old messages without recreating the data structure.
+
+    Thread-safe: Uses a lock to ensure safe concurrent access to messages.
     """
 
     max_size: int = 10
     _messages: Deque[Message] = field(default_factory=deque)
+    _lock: Lock = field(default_factory=Lock, init=False, repr=False)
 
     def __post_init__(self) -> None:
         if not isinstance(self.max_size, int) or self.max_size <= 0:
@@ -24,6 +28,7 @@ class History:
 
         messages = list(self._messages) if self._messages else []
         object.__setattr__(self, "_messages", deque(messages, maxlen=self.max_size))
+        object.__setattr__(self, "_lock", Lock())
 
     def add(self, message: Message) -> None:
         """
@@ -36,7 +41,8 @@ class History:
         if not isinstance(message, Message):
             raise TypeError("Only Message objects can be added.")
 
-        self._messages.append(message)
+        with self._lock:
+            self._messages.append(message)
 
     def add_user_message(self, content: str) -> None:
         """
@@ -80,7 +86,8 @@ class History:
 
     def clear(self) -> None:
         """Clears all messages from the history."""
-        self._messages.clear()
+        with self._lock:
+            self._messages.clear()
 
     def get_messages(self) -> List[Message]:
         """
@@ -89,7 +96,8 @@ class History:
         Returns:
             A list of messages.
         """
-        return list(self._messages)
+        with self._lock:
+            return list(self._messages)
 
     def to_dict_list(self) -> List[Dict[str, str]]:
         """
@@ -98,7 +106,8 @@ class History:
         Returns:
             A list of dictionaries, each with a role and content.
         """
-        return [message.to_dict() for message in self._messages]
+        with self._lock:
+            return [message.to_dict() for message in self._messages]
 
     @classmethod
     def from_dict_list(cls, data: List[Dict[str, str]], max_size: int) -> "History":
@@ -119,7 +128,9 @@ class History:
         return history
 
     def __len__(self) -> int:
-        return len(self._messages)
+        with self._lock:
+            return len(self._messages)
 
     def __bool__(self) -> bool:
-        return bool(self._messages)
+        with self._lock:
+            return bool(self._messages)
