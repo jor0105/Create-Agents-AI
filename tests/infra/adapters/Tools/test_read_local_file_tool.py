@@ -1,18 +1,27 @@
+import importlib
 import tempfile
 from pathlib import Path
 from unittest.mock import patch
 
 import pytest
 
-try:
-    from src.infra.adapters.Tools.Read_Local_File_Tool.read_local_file_tool import (
-        ReadLocalFileTool,
-    )
+ReadLocalFileTool = None
+DEPENDENCIES_AVAILABLE = False
 
-    _test_instance = ReadLocalFileTool()
-    del _test_instance
-    DEPENDENCIES_AVAILABLE = True
-except (ImportError, RuntimeError):
+try:
+    module = importlib.import_module(
+        "src.infra.adapters.Tools.Read_Local_File_Tool.read_local_file_tool"
+    )
+    ReadLocalFileTool = getattr(module, "ReadLocalFileTool")
+    try:
+        _test_instance = ReadLocalFileTool()
+        del _test_instance
+        DEPENDENCIES_AVAILABLE = True
+    except RuntimeError:
+        ReadLocalFileTool = None
+        DEPENDENCIES_AVAILABLE = False
+except ImportError:
+    ReadLocalFileTool = None
     DEPENDENCIES_AVAILABLE = False
 
 
