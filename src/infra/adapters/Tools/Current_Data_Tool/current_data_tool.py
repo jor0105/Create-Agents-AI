@@ -32,7 +32,7 @@ class CurrentDateTool(BaseTool):
     - Otherwise, a string with the requested date/time information (sanitized)
     """
 
-    name = "current_date"
+    name = "currentdate"
     description = "Get the current date and/or time in a specific timezone. Essential for answering 'What time is it?' or 'What day is it?' questions."
     parameters: Dict[str, Any] = {
         "type": "object",

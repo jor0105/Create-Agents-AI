@@ -10,7 +10,7 @@ DEPENDENCIES_AVAILABLE = False
 
 try:
     module = importlib.import_module(
-        "src.infra.adapters.Tools.Read_Local_File_Tool.read_local_file_tool"
+        "src.infra.adapters.Tools.readlocalfile_Tool.readlocalfile_tool"
     )
     ReadLocalFileTool = getattr(module, "ReadLocalFileTool")
     try:
@@ -32,7 +32,7 @@ except ImportError:
 class TestReadLocalFileTool:
     def test_tool_has_correct_name(self):
         tool = ReadLocalFileTool()
-        assert tool.name == "read_local_file"
+        assert tool.name == "readlocalfile"
 
     def test_tool_has_description(self):
         tool = ReadLocalFileTool()
@@ -387,7 +387,7 @@ class TestReadLocalFileTool:
 class TestReadLocalFileToolConstants:
     def test_tool_name_constant(self):
         assert hasattr(ReadLocalFileTool, "name")
-        assert ReadLocalFileTool.name == "read_local_file"
+        assert ReadLocalFileTool.name == "readlocalfile"
 
     def test_description_constant(self):
         assert hasattr(ReadLocalFileTool, "description")

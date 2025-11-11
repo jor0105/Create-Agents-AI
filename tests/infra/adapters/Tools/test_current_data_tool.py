@@ -18,7 +18,7 @@ class TestCurrentDateTool:
 
     def test_tool_has_correct_name(self):
         tool = CurrentDateTool()
-        assert tool.name == "current_date"
+        assert tool.name == "currentdate"
 
     def test_tool_has_description(self):
         tool = CurrentDateTool()

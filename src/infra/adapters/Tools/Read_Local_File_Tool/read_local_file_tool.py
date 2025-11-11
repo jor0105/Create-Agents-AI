@@ -31,7 +31,7 @@ class ReadLocalFileTool(BaseTool):
     Supports formats: txt, csv, excel (xls/xlsx), pdf, parquet, and common text files.
     """
 
-    name = "read_local_file"
+    name = "readlocalfile"
     description = """Use this tool to read local files from the system.
     Supports text files (txt, md, py, etc.), CSV, Excel, PDF and Parquet formats.
     The tool validates file size in tokens to prevent overload.
