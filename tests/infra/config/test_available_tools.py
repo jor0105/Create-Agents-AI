@@ -66,7 +66,17 @@ class TestAvailableTools:
     def test_readlocalfile_included_when_dependencies_available(self):
         import importlib.util
 
-        has_deps = importlib.util.find_spec("src.infra.adapters.Tools") is not None
+        required_deps = [
+            "tiktoken",
+            "unstructured",
+            "pandas",
+            "openpyxl",
+            "pyarrow",
+            "chardet",
+        ]
+        has_deps = all(
+            importlib.util.find_spec(dep) is not None for dep in required_deps
+        )
 
         AvailableTools._AvailableTools__LAZY_SYSTEM_TOOLS.clear()
         tools = AvailableTools.get_all_available_tools()
