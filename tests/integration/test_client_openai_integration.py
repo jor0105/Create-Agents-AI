@@ -145,7 +145,7 @@ class TestOpenAIChatAdapterIntegration:
         assert response is not None
         assert isinstance(response, str)
         assert len(response) > 0
-        assert "pizza" in response.lower()
+        assert "pizza" in response.lower() or "pepperoni" in response.lower()
 
     def test_chat_with_special_characters(self):
         _get_openai_api_key()

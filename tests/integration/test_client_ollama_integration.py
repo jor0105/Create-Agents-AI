@@ -1032,9 +1032,6 @@ class TestOllamaChatAdapterConfigEdgeCases:
         assert len(response) > 0
 
     def test_chat_with_temperature_and_top_p(self):
-        _check_ollama_available()
-        _check_model_available(IA_OLLAMA_TEST_2)
-
         adapter = OllamaChatAdapter()
 
         config = {

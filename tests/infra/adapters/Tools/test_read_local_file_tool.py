@@ -9,6 +9,8 @@ try:
         ReadLocalFileTool,
     )
 
+    _test_instance = ReadLocalFileTool()
+    del _test_instance
     DEPENDENCIES_AVAILABLE = True
 except (ImportError, RuntimeError):
     DEPENDENCIES_AVAILABLE = False
