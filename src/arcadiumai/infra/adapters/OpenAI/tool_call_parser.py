@@ -1,7 +1,7 @@
 import json
 from typing import Any, Dict, List, Optional
 
-from ..infra.config.logging_config import LoggingConfig
+from ...config import LoggingConfig
 
 
 class ToolCallParser:

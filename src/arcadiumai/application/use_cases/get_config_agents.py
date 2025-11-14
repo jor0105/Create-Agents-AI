@@ -1,6 +1,6 @@
-from ..application.dtos import AgentConfigOutputDTO
-from ..domain import Agent
-from ..infra import LoggingConfig
+from ...domain import Agent
+from ...infra import LoggingConfig
+from ..dtos import AgentConfigOutputDTO
 
 
 class GetAgentConfigUseCase:

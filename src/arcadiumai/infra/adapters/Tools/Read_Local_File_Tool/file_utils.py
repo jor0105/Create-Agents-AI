@@ -1,8 +1,8 @@
 from pathlib import Path
 from typing import TYPE_CHECKING, Optional
 
-from ..domain import FileReadException
-from ..infra.config.logging_config import LoggingConfig
+from .....domain import FileReadException
+from ....config import LoggingConfig
 from .constants import (
     COMMON_ENCODINGS,
     DOCUMENT_EXTENSIONS,

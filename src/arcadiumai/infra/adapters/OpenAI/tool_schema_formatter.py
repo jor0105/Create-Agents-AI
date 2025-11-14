@@ -1,7 +1,7 @@
 from typing import Any, Dict, List
 
-from ..domain import BaseTool
-from ..infra.config.logging_config import LoggingConfig
+from ....domain import BaseTool
+from ...config import LoggingConfig
 
 
 class ToolSchemaFormatter:

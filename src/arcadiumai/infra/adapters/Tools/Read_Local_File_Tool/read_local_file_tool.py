@@ -1,8 +1,8 @@
 from pathlib import Path
 from typing import Any, Dict
 
-from ..domain import BaseTool, FileReadException
-from ..infra.config.logging_config import LoggingConfig
+from .....domain import BaseTool, FileReadException
+from ....config import LoggingConfig
 from .constants import MAX_FILE_SIZE_BYTES
 
 try:

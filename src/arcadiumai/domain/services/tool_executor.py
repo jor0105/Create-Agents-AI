@@ -2,7 +2,7 @@ import json
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional
 
-from ..domain.value_objects import BaseTool
+from ..value_objects import BaseTool
 
 
 @dataclass
@@ -72,7 +72,7 @@ class ToolExecutor:
                    If None, no tools will be available.
         """
         # Import here to avoid circular dependency
-        from ..infra import LoggingConfig
+        from ...infra import LoggingConfig
 
         self._tools_map: Dict[str, BaseTool] = {}
         self.__logger = LoggingConfig.get_logger(__name__)

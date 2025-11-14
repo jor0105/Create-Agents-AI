@@ -1,6 +1,6 @@
 from typing import Dict
 
-from ..infra import AvailableTools, LoggingConfig
+from ...infra import AvailableTools, LoggingConfig
 
 
 class GetAllAvailableToolsUseCase:

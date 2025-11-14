@@ -1,6 +1,6 @@
-from ..application.dtos import CreateAgentInputDTO
-from ..domain import Agent, History, InvalidAgentConfigException
-from ..infra import LoggingConfig
+from ...domain import Agent, History, InvalidAgentConfigException
+from ...infra import LoggingConfig
+from ..dtos import CreateAgentInputDTO
 
 
 class CreateAgentUseCase:

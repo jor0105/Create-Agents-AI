@@ -1,17 +1,12 @@
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional
 
-from ..domain.exceptions import (
+from ..exceptions import (
     InvalidConfigTypeException,
     InvalidProviderException,
     UnsupportedConfigException,
 )
-from ..domain.value_objects import (
-    BaseTool,
-    History,
-    SupportedConfigs,
-    SupportedProviders,
-)
+from ..value_objects import BaseTool, History, SupportedConfigs, SupportedProviders
 
 
 @dataclass
@@ -45,7 +40,7 @@ class Agent:
             InvalidConfigTypeException: if a configuration value has an invalid type.
         """
         # Import here to avoid circular dependency
-        from ..infra import LoggingConfig
+        from ...infra import LoggingConfig
 
         # Initialize logger
         object.__setattr__(self, "_logger", LoggingConfig.get_logger(__name__))

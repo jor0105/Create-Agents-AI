@@ -19,7 +19,7 @@ from logging.handlers import RotatingFileHandler
 from pathlib import Path
 from typing import List, Optional
 
-from ..infra.config.sensitive_data_filter import SensitiveDataFilter
+from .sensitive_data_filter import SensitiveDataFilter
 
 
 class ErrorOnlyFilter(logging.Filter):

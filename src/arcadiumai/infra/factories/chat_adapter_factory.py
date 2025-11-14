@@ -1,9 +1,8 @@
 from typing import Dict, Tuple
 
-from ..application import ChatRepository
-from ..infra.adapters.Ollama.ollama_chat_adapter import OllamaChatAdapter
-from ..infra.adapters.OpenAI.openai_chat_adapter import OpenAIChatAdapter
-from ..infra.config.logging_config import LoggingConfig
+from ...application import ChatRepository
+from ..adapters import OllamaChatAdapter, OpenAIChatAdapter
+from ..config import LoggingConfig
 
 
 class ChatAdapterFactory:

@@ -1,6 +1,6 @@
 from typing import Any, Dict, Optional, Sequence, Union
 
-from ..application import (
+from ...application import (
     ChatWithAgentUseCase,
     CreateAgentInputDTO,
     CreateAgentUseCase,
@@ -8,8 +8,8 @@ from ..application import (
     GetAllAvailableToolsUseCase,
     GetSystemAvailableToolsUseCase,
 )
-from ..domain import Agent, BaseTool
-from ..infra import ChatAdapterFactory, LoggingConfig
+from ...domain import Agent, BaseTool
+from ...infra import ChatAdapterFactory, LoggingConfig
 
 
 class AgentComposer:

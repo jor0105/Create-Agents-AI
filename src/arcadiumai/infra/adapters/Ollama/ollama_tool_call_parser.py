@@ -4,7 +4,7 @@ from typing import Any, Dict, List, Optional
 
 import defusedxml.ElementTree as ET
 
-from ..infra.config.logging_config import LoggingConfig
+from ...config import LoggingConfig
 
 
 class OllamaToolCallParser:

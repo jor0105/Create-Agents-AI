@@ -1,15 +1,15 @@
 from typing import Any, Dict, List, Optional, Sequence, Union
 
-from ..application import (
+from ...application import (
     ChatInputDTO,
     ChatWithAgentUseCase,
     GetAgentConfigUseCase,
     GetAllAvailableToolsUseCase,
     GetSystemAvailableToolsUseCase,
 )
-from ..domain import Agent, BaseTool
-from ..infra import ChatMetrics, LoggingConfig
-from ..main import AgentComposer
+from ...domain import Agent, BaseTool
+from ...infra import ChatMetrics, LoggingConfig
+from ...main import AgentComposer
 
 
 class CreateAgent:
@@ -131,7 +131,7 @@ class CreateAgent:
         Returns:
             A dict of all tool names and descriptions available for this agent.
         """
-        from ..infra import AvailableTools
+        from ...infra import AvailableTools
 
         self.__logger.debug(
             "Retrieving all available tools for this agent (system + agent-specific)"
@@ -209,7 +209,7 @@ class CreateAgent:
         Returns:
             A JSON string with the metrics.
         """
-        from ..infra import MetricsCollector
+        from ...infra import MetricsCollector
 
         self.__logger.debug(
             f"Exporting metrics to JSON - Filepath: {filepath or 'None (return string)'}"
@@ -238,7 +238,7 @@ class CreateAgent:
         Returns:
             A string in Prometheus format with the metrics.
         """
-        from ..infra import MetricsCollector
+        from ...infra import MetricsCollector
 
         self.__logger.debug(
             f"Exporting metrics to Prometheus - Filepath: {filepath or 'None (return string)'}"

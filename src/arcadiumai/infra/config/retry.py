@@ -3,7 +3,7 @@ import time
 from functools import wraps
 from typing import Callable, Optional, Tuple, Type
 
-from ..infra.config.logging_config import LoggingConfig
+from .logging_config import LoggingConfig
 
 
 def retry_with_backoff(

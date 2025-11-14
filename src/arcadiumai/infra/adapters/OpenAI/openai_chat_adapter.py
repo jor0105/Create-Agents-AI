@@ -1,15 +1,12 @@
 import time
 from typing import Any, Dict, List, Optional
 
-from ..application import ChatRepository
-from ..domain import BaseTool, ChatException, ToolExecutor
-from ..infra.adapters.OpenAI.client_openai import ClientOpenAI
-from ..infra.adapters.OpenAI.tool_call_parser import ToolCallParser
-from ..infra.adapters.OpenAI.tool_schema_formatter import ToolSchemaFormatter
-from ..infra.config.environment import EnvironmentConfig
-from ..infra.config.logging_config import LoggingConfig
-from ..infra.config.metrics import ChatMetrics
-from ..infra.config.retry import retry_with_backoff
+from ....application import ChatRepository
+from ....domain import BaseTool, ChatException, ToolExecutor
+from ...config import ChatMetrics, EnvironmentConfig, LoggingConfig, retry_with_backoff
+from .client_openai import ClientOpenAI
+from .tool_call_parser import ToolCallParser
+from .tool_schema_formatter import ToolSchemaFormatter
 
 
 class OpenAIChatAdapter(ChatRepository):

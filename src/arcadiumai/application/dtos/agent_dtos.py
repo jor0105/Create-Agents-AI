@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Sequence, Union
 
-from ..domain import BaseTool, InvalidBaseToolException
+from ...domain import BaseTool, InvalidBaseToolException
 
 
 @dataclass
@@ -55,7 +55,7 @@ class CreateAgentInputDTO:
             raise ValueError("The 'config' field must be a dictionary (dict).")
 
         if self.tools:
-            from ..infra import AvailableTools
+            from ...infra import AvailableTools
 
             validated_tools: List[BaseTool] = []
             for tool in self.tools:

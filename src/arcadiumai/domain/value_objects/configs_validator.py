@@ -1,6 +1,6 @@
 from typing import Dict, Optional, Set, Union
 
-from ..domain.exceptions import InvalidAgentConfigException
+from ..exceptions import InvalidAgentConfigException
 
 
 class SupportedConfigs:

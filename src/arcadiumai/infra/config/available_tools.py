@@ -1,7 +1,6 @@
 from typing import Dict, Optional
 
-from ..domain import BaseTool
-from ..infra.adapters.Tools import CurrentDateTool
+from ...domain import BaseTool
 
 
 class AvailableTools:
@@ -19,15 +18,21 @@ class AvailableTools:
     """
 
     # System tools: built-in tools provided by the framework
-    __SYSTEM_TOOLS: Dict[str, BaseTool] = {
-        "currentdate": CurrentDateTool(),
-    }
+    __SYSTEM_TOOLS: Dict[str, BaseTool] = {}
 
     # Agent tools: tools added by users to specific agents
     __AGENT_TOOLS: Dict[str, BaseTool] = {}
 
     # Cache for lazily loaded system tools
     __LAZY_SYSTEM_TOOLS: Dict[str, Optional[BaseTool]] = {}
+
+    @classmethod
+    def _ensure_system_tools_loaded(cls):
+        """Ensure system tools are loaded lazily to avoid circular imports."""
+        if not cls.__SYSTEM_TOOLS:
+            from ..adapters import CurrentDateTool
+
+            cls.__SYSTEM_TOOLS["currentdate"] = CurrentDateTool()
 
     @classmethod
     def get_system_tools(cls) -> Dict[str, str]:
@@ -38,6 +43,8 @@ class AvailableTools:
         Returns:
             Dict[str, str]: A dictionary mapping system tool names to descriptions.
         """
+        cls._ensure_system_tools_loaded()
+
         # Try to load lazy system tools on first access
         if "readlocalfile" not in cls.__LAZY_SYSTEM_TOOLS:
             cls.__try_load_read_local_file_tool()
@@ -61,6 +68,8 @@ class AvailableTools:
         Returns:
             set: A set of system tool names as registered in the system.
         """
+        cls._ensure_system_tools_loaded()
+
         # Try to load lazy system tools on first access
         if "readlocalfile" not in cls.__LAZY_SYSTEM_TOOLS:
             cls.__try_load_read_local_file_tool()
@@ -112,6 +121,8 @@ class AvailableTools:
         Returns:
             A dict of supported system tool instances.
         """
+        cls._ensure_system_tools_loaded()
+
         # Try to load lazy system tools on first access
         if "readlocalfile" not in cls.__LAZY_SYSTEM_TOOLS:
             cls.__try_load_read_local_file_tool()
@@ -134,6 +145,8 @@ class AvailableTools:
         Returns:
             A dict of supported tool instances.
         """
+        cls._ensure_system_tools_loaded()
+
         # Try to load lazy tools on first access
         if "readlocalfile" not in cls.__LAZY_SYSTEM_TOOLS:
             cls.__try_load_read_local_file_tool()
@@ -188,14 +201,14 @@ class AvailableTools:
             return
 
         try:
-            from ..infra.adapters.Tools import ReadLocalFileTool
-            from ..infra.config.logging_config import LoggingConfig
+            from ..adapters import ReadLocalFileTool
+            from .logging_config import LoggingConfig
 
             logger = LoggingConfig.get_logger(__name__)
             cls.__LAZY_SYSTEM_TOOLS["readlocalfile"] = ReadLocalFileTool()
             logger.debug("ReadLocalFileTool loaded successfully")
         except ImportError as e:
-            from ..infra.config.logging_config import LoggingConfig
+            from .logging_config import LoggingConfig
 
             logger = LoggingConfig.get_logger(__name__)
             logger.warning(
@@ -205,7 +218,7 @@ class AvailableTools:
             )
             cls.__LAZY_SYSTEM_TOOLS["readlocalfile"] = None
         except Exception as e:
-            from ..infra.config.logging_config import LoggingConfig
+            from .logging_config import LoggingConfig
 
             logger = LoggingConfig.get_logger(__name__)
             logger.error(f"Failed to load ReadLocalFileTool: {e}")

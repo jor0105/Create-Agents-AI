@@ -1,10 +1,10 @@
 from typing import List
 
-from ..application.dtos import ChatInputDTO, ChatOutputDTO
-from ..application.interfaces import ChatRepository
-from ..domain import Agent, ChatException
-from ..infra import ChatMetrics, LoggingConfig
-from ..utils import TextSanitizer
+from ...domain import Agent, ChatException
+from ...infra import ChatMetrics, LoggingConfig
+from ...utils import TextSanitizer
+from ..dtos import ChatInputDTO, ChatOutputDTO
+from ..interfaces import ChatRepository
 
 
 class ChatWithAgentUseCase:
