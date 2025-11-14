@@ -1,13 +1,24 @@
 [tool.poetry]
-name = "ai-agent"
+name = "arcadiumai"
 version = "0.1.0"
 description = "Enterprise-grade modular system for creating AI agents"
 authors = ["Jordan Estralioto <estraliotojordan@gmail.com>"]
 readme = "README.md"
-packages = [{include = "src"}]
+license = "MIT"
+packages = [{ include = "arcadiumai", from = "src" }]
+classifiers = [
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
+  "Operating System :: OS Independent",
+  "Topic :: Software Development :: Libraries"
+]
+
 
 [tool.poetry.dependencies]
-python = "^3.12"
+python = "^3.11"
 openai = "^2.7.1"
 python-dotenv = "^1.1.1"
 ollama = "^0.6.0"
@@ -35,7 +46,6 @@ pydocstyle = "^6.3.0"
 detect-secrets = "^1.4.0"
 mkdocs = "^1.6.1"
 mkdocs-material = "^9.6.22"
-httpx = "^0.28.1"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
