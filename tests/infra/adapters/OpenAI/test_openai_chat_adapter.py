@@ -2,8 +2,8 @@ from unittest.mock import MagicMock, Mock, patch
 
 import pytest
 
-from src.domain.exceptions import ChatException
-from src.infra.adapters.OpenAI.openai_chat_adapter import OpenAIChatAdapter
+from arcadiumai.domain import ChatException
+from arcadiumai.infra import OpenAIChatAdapter
 
 IA_OPENAI_TEST_1: str = "gpt-5-mini"
 IA_OPENAI_TEST_2: str = "gpt-5-nano"
@@ -32,9 +32,11 @@ def _make_client_response(
 @pytest.mark.unit
 class TestOpenAIChatAdapter:
     @patch(
-        "src.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
+        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
     )
-    @patch("src.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client")
+    @patch(
+        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client"
+    )
     def test_initialization_success(self, mock_get_client, mock_get_api_key):
         mock_get_api_key.return_value = "test-api-key"
         mock_client = Mock()
@@ -47,7 +49,7 @@ class TestOpenAIChatAdapter:
         mock_get_client.assert_called_once_with("test-api-key")
 
     @patch(
-        "src.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
+        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
     )
     def test_initialization_with_missing_api_key_raises_error(self, mock_get_api_key):
         mock_get_api_key.side_effect = EnvironmentError("API key not found")
@@ -56,9 +58,11 @@ class TestOpenAIChatAdapter:
             OpenAIChatAdapter()
 
     @patch(
-        "src.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
+        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
     )
-    @patch("src.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client")
+    @patch(
+        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client"
+    )
     def test_chat_with_valid_input(self, mock_get_client, mock_get_api_key):
         mock_get_api_key.return_value = "test-api-key"
 
@@ -83,9 +87,11 @@ class TestOpenAIChatAdapter:
         mock_client.responses.create.assert_called_once()
 
     @patch(
-        "src.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
+        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
     )
-    @patch("src.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client")
+    @patch(
+        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client"
+    )
     def test_chat_constructs_messages_correctly(
         self, mock_get_client, mock_get_api_key
     ):
@@ -117,9 +123,11 @@ class TestOpenAIChatAdapter:
         assert messages[2] == {"role": "user", "content": "User question"}
 
     @patch(
-        "src.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
+        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
     )
-    @patch("src.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client")
+    @patch(
+        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client"
+    )
     def test_chat_with_empty_history(self, mock_get_client, mock_get_api_key):
         mock_get_api_key.return_value = "test-api-key"
 
@@ -146,9 +154,11 @@ class TestOpenAIChatAdapter:
         assert len(messages) == 2
 
     @patch(
-        "src.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
+        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
     )
-    @patch("src.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client")
+    @patch(
+        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client"
+    )
     def test_chat_with_multiple_history_items(self, mock_get_client, mock_get_api_key):
         mock_get_api_key.return_value = "test-api-key"
 
@@ -182,9 +192,11 @@ class TestOpenAIChatAdapter:
         assert len(messages) == 6
 
     @patch(
-        "src.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
+        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
     )
-    @patch("src.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client")
+    @patch(
+        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client"
+    )
     def test_chat_passes_correct_model(self, mock_get_client, mock_get_api_key):
         mock_get_api_key.return_value = "test-api-key"
 
@@ -209,9 +221,11 @@ class TestOpenAIChatAdapter:
         assert call_args.kwargs["model"] == IA_OPENAI_TEST_1
 
     @patch(
-        "src.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
+        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
     )
-    @patch("src.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client")
+    @patch(
+        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client"
+    )
     def test_chat_with_empty_response_raises_error(
         self, mock_get_client, mock_get_api_key
     ):
@@ -234,9 +248,11 @@ class TestOpenAIChatAdapter:
             )
 
     @patch(
-        "src.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
+        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
     )
-    @patch("src.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client")
+    @patch(
+        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client"
+    )
     def test_chat_with_none_response_raises_error(
         self, mock_get_client, mock_get_api_key
     ):
@@ -259,9 +275,11 @@ class TestOpenAIChatAdapter:
             )
 
     @patch(
-        "src.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
+        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
     )
-    @patch("src.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client")
+    @patch(
+        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client"
+    )
     def test_chat_with_missing_output_text_raises_error(
         self, mock_get_client, mock_get_api_key
     ):
@@ -294,9 +312,11 @@ class TestOpenAIChatAdapter:
             )
 
     @patch(
-        "src.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
+        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
     )
-    @patch("src.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client")
+    @patch(
+        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client"
+    )
     def test_chat_with_attribute_error_raises_chat_exception(
         self, mock_get_client, mock_get_api_key
     ):
@@ -319,9 +339,11 @@ class TestOpenAIChatAdapter:
             )
 
     @patch(
-        "src.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
+        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
     )
-    @patch("src.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client")
+    @patch(
+        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client"
+    )
     def test_chat_with_index_error_raises_chat_exception(
         self, mock_get_client, mock_get_api_key
     ):
@@ -344,9 +366,11 @@ class TestOpenAIChatAdapter:
             )
 
     @patch(
-        "src.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
+        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
     )
-    @patch("src.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client")
+    @patch(
+        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client"
+    )
     def test_chat_with_generic_exception_raises_chat_exception(
         self, mock_get_client, mock_get_api_key
     ):
@@ -369,9 +393,11 @@ class TestOpenAIChatAdapter:
             )
 
     @patch(
-        "src.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
+        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
     )
-    @patch("src.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client")
+    @patch(
+        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client"
+    )
     def test_chat_preserves_original_error(self, mock_get_client, mock_get_api_key):
         mock_get_api_key.return_value = "test-api-key"
 
@@ -395,9 +421,11 @@ class TestOpenAIChatAdapter:
             assert e.original_error is original_error
 
     @patch(
-        "src.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
+        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
     )
-    @patch("src.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client")
+    @patch(
+        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client"
+    )
     def test_chat_propagates_chat_exception(self, mock_get_client, mock_get_api_key):
         mock_get_api_key.return_value = "test-api-key"
 
@@ -421,9 +449,11 @@ class TestOpenAIChatAdapter:
         assert exc_info.value is original_exception
 
     @patch(
-        "src.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
+        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
     )
-    @patch("src.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client")
+    @patch(
+        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client"
+    )
     def test_chat_with_special_characters(self, mock_get_client, mock_get_api_key):
         mock_get_api_key.return_value = "test-api-key"
 
@@ -448,9 +478,11 @@ class TestOpenAIChatAdapter:
         assert "🎉" in response
 
     @patch(
-        "src.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
+        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
     )
-    @patch("src.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client")
+    @patch(
+        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client"
+    )
     def test_chat_with_multiline_content(self, mock_get_client, mock_get_api_key):
         mock_get_api_key.return_value = "test-api-key"
 
@@ -475,13 +507,13 @@ class TestOpenAIChatAdapter:
         assert "Line 1" in response
 
     def test_adapter_implements_chat_repository_interface(self):
-        from src.application.interfaces.chat_repository import ChatRepository
+        from arcadiumai.application.interfaces.chat_repository import ChatRepository
 
         with patch(
-            "src.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
+            "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
         ) as mock_get_api_key:
             with patch(
-                "src.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client"
+                "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client"
             ) as mock_get_client:
                 mock_get_api_key.return_value = "test-api-key"
                 mock_client = Mock()
@@ -494,9 +526,11 @@ class TestOpenAIChatAdapter:
                 assert callable(adapter.chat)
 
     @patch(
-        "src.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
+        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
     )
-    @patch("src.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client")
+    @patch(
+        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client"
+    )
     def test_chat_collects_metrics_on_success(self, mock_get_client, mock_get_api_key):
         mock_get_api_key.return_value = "test-api-key"
 
@@ -531,9 +565,11 @@ class TestOpenAIChatAdapter:
         assert metrics[0].latency_ms > 0
 
     @patch(
-        "src.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
+        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
     )
-    @patch("src.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client")
+    @patch(
+        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client"
+    )
     def test_chat_collects_metrics_on_failure(self, mock_get_client, mock_get_api_key):
         mock_get_api_key.return_value = "test-api-key"
 
@@ -563,9 +599,11 @@ class TestOpenAIChatAdapter:
         assert metrics[0].latency_ms > 0
 
     @patch(
-        "src.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
+        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
     )
-    @patch("src.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client")
+    @patch(
+        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client"
+    )
     def test_chat_collects_multiple_metrics(self, mock_get_client, mock_get_api_key):
         mock_get_api_key.return_value = "test-api-key"
 
@@ -601,9 +639,11 @@ class TestOpenAIChatAdapter:
         assert metrics[1].model == IA_OPENAI_TEST_2
 
     @patch(
-        "src.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
+        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
     )
-    @patch("src.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client")
+    @patch(
+        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client"
+    )
     def test_get_metrics_returns_copy(self, mock_get_client, mock_get_api_key):
         mock_get_api_key.return_value = "test-api-key"
         mock_client = Mock()
@@ -617,9 +657,11 @@ class TestOpenAIChatAdapter:
         assert metrics1 is not metrics2
 
     @patch(
-        "src.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
+        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
     )
-    @patch("src.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client")
+    @patch(
+        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client"
+    )
     def test_chat_with_empty_string_in_history(self, mock_get_client, mock_get_api_key):
         mock_get_api_key.return_value = "test-api-key"
 
@@ -651,9 +693,11 @@ class TestOpenAIChatAdapter:
         assert len(messages) == 4
 
     @patch(
-        "src.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
+        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
     )
-    @patch("src.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client")
+    @patch(
+        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client"
+    )
     def test_chat_with_long_history(self, mock_get_client, mock_get_api_key):
         mock_get_api_key.return_value = "test-api-key"
 
@@ -685,9 +729,11 @@ class TestOpenAIChatAdapter:
         assert len(messages) == 52
 
     @patch(
-        "src.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
+        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
     )
-    @patch("src.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client")
+    @patch(
+        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client"
+    )
     def test_chat_with_config_parameter(self, mock_get_client, mock_get_api_key):
         mock_get_api_key.return_value = "test-api-key"
 
@@ -713,9 +759,11 @@ class TestOpenAIChatAdapter:
         assert response == "Response"
 
     @patch(
-        "src.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
+        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
     )
-    @patch("src.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client")
+    @patch(
+        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client"
+    )
     def test_chat_metrics_contain_error_message_on_empty_response(
         self, mock_get_client, mock_get_api_key
     ):
@@ -745,9 +793,11 @@ class TestOpenAIChatAdapter:
         assert metrics[0].success is False
 
     @patch(
-        "src.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
+        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
     )
-    @patch("src.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client")
+    @patch(
+        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client"
+    )
     def test_chat_with_missing_usage_info(self, mock_get_client, mock_get_api_key):
         mock_get_api_key.return_value = "test-api-key"
 
@@ -774,10 +824,14 @@ class TestOpenAIChatAdapter:
         assert metrics[0].completion_tokens is None
 
     @patch(
-        "src.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
+        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
     )
-    @patch("src.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_env")
-    @patch("src.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client")
+    @patch(
+        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_env"
+    )
+    @patch(
+        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client"
+    )
     def test_initialization_loads_environment_configs(
         self, mock_get_client, mock_get_env, mock_get_api_key
     ):
@@ -795,9 +849,11 @@ class TestOpenAIChatAdapter:
         assert mock_get_env.call_count >= 2
 
     @patch(
-        "src.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
+        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
     )
-    @patch("src.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client")
+    @patch(
+        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client"
+    )
     def test_chat_with_whitespace_only_response_raises_error(
         self, mock_get_client, mock_get_api_key
     ):
@@ -821,9 +877,11 @@ class TestOpenAIChatAdapter:
         assert response == "   \n\t  "
 
     @patch(
-        "src.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
+        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
     )
-    @patch("src.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client")
+    @patch(
+        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client"
+    )
     def test_chat_updates_metrics_list_correctly(
         self, mock_get_client, mock_get_api_key
     ):
@@ -877,9 +935,11 @@ class TestOpenAIChatAdapter:
         assert metrics[2].success is True
 
     @patch(
-        "src.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
+        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
     )
-    @patch("src.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client")
+    @patch(
+        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client"
+    )
     def test_chat_with_very_long_content(self, mock_get_client, mock_get_api_key):
         mock_get_api_key.return_value = "test-api-key"
 
@@ -909,9 +969,11 @@ class TestOpenAIChatAdapter:
         assert response == long_text
 
     @patch(
-        "src.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
+        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
     )
-    @patch("src.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client")
+    @patch(
+        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client"
+    )
     def test_chat_passes_temperature_config(self, mock_get_client, mock_get_api_key):
         mock_get_api_key.return_value = "test-api-key"
 
@@ -937,9 +999,11 @@ class TestOpenAIChatAdapter:
         assert call_args.kwargs["temperature"] == 0.7
 
     @patch(
-        "src.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
+        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
     )
-    @patch("src.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client")
+    @patch(
+        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client"
+    )
     def test_chat_passes_max_tokens_config(self, mock_get_client, mock_get_api_key):
         mock_get_api_key.return_value = "test-api-key"
 
@@ -965,9 +1029,11 @@ class TestOpenAIChatAdapter:
         assert call_args.kwargs["max_output_tokens"] == 500
 
     @patch(
-        "src.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
+        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
     )
-    @patch("src.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client")
+    @patch(
+        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client"
+    )
     def test_chat_passes_top_p_config(self, mock_get_client, mock_get_api_key):
         mock_get_api_key.return_value = "test-api-key"
 
@@ -993,9 +1059,11 @@ class TestOpenAIChatAdapter:
         assert call_args.kwargs["top_p"] == 0.9
 
     @patch(
-        "src.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
+        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
     )
-    @patch("src.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client")
+    @patch(
+        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client"
+    )
     def test_chat_passes_all_configs(self, mock_get_client, mock_get_api_key):
         mock_get_api_key.return_value = "test-api-key"
 
@@ -1028,9 +1096,11 @@ class TestOpenAIChatAdapter:
         assert call_args.kwargs["top_p"] == 0.9
 
     @patch(
-        "src.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
+        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
     )
-    @patch("src.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client")
+    @patch(
+        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client"
+    )
     def test_chat_with_empty_config_does_not_pass_extra_params(
         self, mock_get_client, mock_get_api_key
     ):
@@ -1061,9 +1131,11 @@ class TestOpenAIChatAdapter:
         assert "input" in call_args.kwargs
 
     @patch(
-        "src.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
+        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
     )
-    @patch("src.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client")
+    @patch(
+        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client"
+    )
     def test_chat_logs_debug_messages(self, mock_get_client, mock_get_api_key):
         mock_get_api_key.return_value = "test-api-key"
 
@@ -1074,7 +1146,7 @@ class TestOpenAIChatAdapter:
         )
 
         with patch(
-            "src.infra.adapters.OpenAI.openai_chat_adapter.LoggingConfig.get_logger"
+            "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.LoggingConfig.get_logger"
         ) as mock_logger:
             mock_log = Mock()
             mock_logger.return_value = mock_log
@@ -1093,9 +1165,11 @@ class TestOpenAIChatAdapter:
             assert mock_log.debug.call_count >= 2
 
     @patch(
-        "src.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
+        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
     )
-    @patch("src.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client")
+    @patch(
+        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client"
+    )
     def test_chat_logs_info_on_success(self, mock_get_client, mock_get_api_key):
         mock_get_api_key.return_value = "test-api-key"
 
@@ -1106,7 +1180,7 @@ class TestOpenAIChatAdapter:
         )
 
         with patch(
-            "src.infra.adapters.OpenAI.openai_chat_adapter.LoggingConfig.get_logger"
+            "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.LoggingConfig.get_logger"
         ) as mock_logger:
             mock_log = Mock()
             mock_logger.return_value = mock_log
@@ -1125,9 +1199,11 @@ class TestOpenAIChatAdapter:
             assert mock_log.info.call_count >= 2
 
     @patch(
-        "src.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
+        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
     )
-    @patch("src.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client")
+    @patch(
+        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client"
+    )
     def test_chat_logs_error_on_failure(self, mock_get_client, mock_get_api_key):
         mock_get_api_key.return_value = "test-api-key"
 
@@ -1136,7 +1212,7 @@ class TestOpenAIChatAdapter:
         mock_get_client.return_value = mock_client
 
         with patch(
-            "src.infra.adapters.OpenAI.openai_chat_adapter.LoggingConfig.get_logger"
+            "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.LoggingConfig.get_logger"
         ) as mock_logger:
             mock_log = Mock()
             mock_logger.return_value = mock_log
@@ -1158,9 +1234,11 @@ class TestOpenAIChatAdapter:
             assert mock_log.error.call_count >= 1
 
     @patch(
-        "src.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
+        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
     )
-    @patch("src.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client")
+    @patch(
+        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client"
+    )
     def test_chat_with_none_instructions_omits_system_message(
         self, mock_get_client, mock_get_api_key
     ):
@@ -1190,9 +1268,11 @@ class TestOpenAIChatAdapter:
         assert messages[0] == {"role": "user", "content": "Test"}
 
     @patch(
-        "src.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
+        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
     )
-    @patch("src.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client")
+    @patch(
+        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client"
+    )
     def test_chat_with_whitespace_only_instructions(
         self, mock_get_client, mock_get_api_key
     ):
@@ -1222,10 +1302,14 @@ class TestOpenAIChatAdapter:
         assert messages[0]["role"] == "user"
 
     @patch(
-        "src.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
+        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
     )
-    @patch("src.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_env")
-    @patch("src.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client")
+    @patch(
+        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_env"
+    )
+    @patch(
+        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client"
+    )
     def test_initialization_uses_custom_timeout(
         self, mock_get_client, mock_get_env, mock_get_api_key
     ):
@@ -1242,9 +1326,11 @@ class TestOpenAIChatAdapter:
         assert mock_get_env.call_count >= 2
 
     @patch(
-        "src.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
+        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
     )
-    @patch("src.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client")
+    @patch(
+        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client"
+    )
     def test_retry_decorator_is_applied(self, mock_get_client, mock_get_api_key):
         mock_get_api_key.return_value = "test-api-key"
 

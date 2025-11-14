@@ -1,9 +1,8 @@
 import pytest
 
-from src.application.dtos import CreateAgentInputDTO
-from src.application.use_cases.create_agent import CreateAgentUseCase
-from src.domain.entities.agent_domain import Agent
-from src.domain.exceptions import (
+from arcadiumai.application import CreateAgentInputDTO, CreateAgentUseCase
+from arcadiumai.domain import (
+    Agent,
     InvalidAgentConfigException,
     InvalidConfigTypeException,
     InvalidProviderException,

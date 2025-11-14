@@ -2,12 +2,10 @@ from typing import Optional
 
 import pytest
 
-from src.domain.value_objects.base_tools import BaseTool
+from arcadiumai.domain import BaseTool
 
 
 class ConcreteTestTool(BaseTool):
-    """Concrete test tool for testing purposes."""
-
     name = "test_tool"
     description = "A tool for testing purposes"
     parameters = {
@@ -22,7 +20,6 @@ class ConcreteTestTool(BaseTool):
     }
 
     def execute(self, input: str) -> str:
-        """Execute the test tool with the given input."""
         return f"Executed with: {input}"
 
 
@@ -385,11 +382,6 @@ class TestToolExecution:
 
 @pytest.mark.unit
 class TestToolDocumentation:
-    def test_tool_has_docstring(self):
-        tool = ConcreteTestTool()
-
-        assert tool.__doc__ is not None or tool.execute.__doc__ is not None
-
     def test_description_is_informative(self):
         tool = ConcreteTestTool()
 

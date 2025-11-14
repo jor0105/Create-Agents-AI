@@ -2,50 +2,50 @@ from unittest.mock import Mock, patch
 
 import pytest
 
-from src.domain.exceptions import InvalidAgentConfigException
-from src.presentation.agent_controller import AIAgent
+from arcadiumai.application import CreateAgent
+from arcadiumai.domain import InvalidAgentConfigException
 
 
 @pytest.mark.unit
-class TestAIAgentInitialization:
+class TestCreateAgentInitialization:
     def test_initialization_creates_agent(self):
-        controller = AIAgent(
+        controller = CreateAgent(
             provider="openai",
             model="gpt-5",
             name="Test Agent",
             instructions="Be helpful",
         )
 
-        assert hasattr(controller, "_AIAgent__agent")
+        assert hasattr(controller, "_CreateAgent__agent")
 
     def test_initialization_with_ollama_provider(self):
-        controller = AIAgent(
+        controller = CreateAgent(
             provider="ollama", model="gemma3:4b", name="Test", instructions="Test"
         )
 
-        assert hasattr(controller, "_AIAgent__agent")
+        assert hasattr(controller, "_CreateAgent__agent")
 
     def test_initialization_creates_chat_use_case(self):
-        controller = AIAgent(
+        controller = CreateAgent(
             provider="openai", model="gpt-5-mini", name="Test", instructions="Test"
         )
 
-        assert hasattr(controller, "_AIAgent__chat_use_case")
+        assert hasattr(controller, "_CreateAgent__chat_use_case")
 
     def test_initialization_creates_get_config_use_case(self):
-        controller = AIAgent(
+        controller = CreateAgent(
             provider="openai", model="gpt-5-nano", name="Test", instructions="Test"
         )
 
-        assert hasattr(controller, "_AIAgent__get_config_use_case")
+        assert hasattr(controller, "_CreateAgent__get_config_use_case")
 
     def test_initialization_with_invalid_data_raises_error(self):
         with pytest.raises(InvalidAgentConfigException):
-            AIAgent(provider="openai", model="", name="Test", instructions="Test")
+            CreateAgent(provider="openai", model="", name="Test", instructions="Test")
 
     def test_initialization_with_custom_config(self):
         config = {"temperature": 0.7, "max_tokens": 1000}
-        controller = AIAgent(
+        controller = CreateAgent(
             provider="openai",
             model="gpt-5",
             name="Test",
@@ -53,11 +53,11 @@ class TestAIAgentInitialization:
             config=config,
         )
 
-        agent = controller._AIAgent__agent
+        agent = controller._CreateAgent__agent
         assert agent.config == config
 
     def test_initialization_with_custom_history_max_size(self):
-        controller = AIAgent(
+        controller = CreateAgent(
             provider="openai",
             model="gpt-5",
             name="Test",
@@ -65,23 +65,23 @@ class TestAIAgentInitialization:
             history_max_size=20,
         )
 
-        agent = controller._AIAgent__agent
+        agent = controller._CreateAgent__agent
         assert agent.history.max_size == 20
 
     def test_initialization_with_default_history_max_size(self):
-        controller = AIAgent(
+        controller = CreateAgent(
             provider="openai",
             model="gpt-5",
             name="Test",
             instructions="Test",
         )
 
-        agent = controller._AIAgent__agent
+        agent = controller._CreateAgent__agent
         assert agent.history.max_size == 10
 
     def test_initialization_with_invalid_provider_raises_error(self):
         with pytest.raises(Exception):
-            AIAgent(
+            CreateAgent(
                 provider="invalid_provider",
                 model="gpt-5",
                 name="Test",
@@ -89,46 +89,46 @@ class TestAIAgentInitialization:
             )
 
     def test_initialization_with_none_name(self):
-        controller = AIAgent(
+        controller = CreateAgent(
             provider="openai",
             model="gpt-5",
             name=None,
             instructions="Test",
         )
 
-        agent = controller._AIAgent__agent
+        agent = controller._CreateAgent__agent
         assert agent.name is None
 
     def test_initialization_with_none_instructions(self):
-        controller = AIAgent(
+        controller = CreateAgent(
             provider="openai",
             model="gpt-5",
             name="Test",
             instructions=None,
         )
 
-        agent = controller._AIAgent__agent
+        agent = controller._CreateAgent__agent
         assert agent.instructions is None
 
     def test_initialization_with_both_none(self):
-        controller = AIAgent(
+        controller = CreateAgent(
             provider="openai",
             model="gpt-5",
             name=None,
             instructions=None,
         )
 
-        agent = controller._AIAgent__agent
+        agent = controller._CreateAgent__agent
         assert agent.name is None
         assert agent.instructions is None
 
     def test_initialization_with_only_required_fields(self):
-        controller = AIAgent(
+        controller = CreateAgent(
             provider="openai",
             model="gpt-5",
         )
 
-        agent = controller._AIAgent__agent
+        agent = controller._CreateAgent__agent
         assert agent.provider == "openai"
         assert agent.model == "gpt-5"
         assert agent.name is None
@@ -136,8 +136,8 @@ class TestAIAgentInitialization:
 
 
 @pytest.mark.unit
-class TestAIAgentChat:
-    @patch("src.presentation.agent_controller.AgentComposer.create_chat_use_case")
+class TestCreateAgentChat:
+    @patch("arcadiumai.application.facade.client.AgentComposer.create_chat_use_case")
     def test_chat_returns_response(self, mock_create_chat):
         mock_use_case = Mock()
         mock_output = Mock()
@@ -145,7 +145,7 @@ class TestAIAgentChat:
         mock_use_case.execute.return_value = mock_output
         mock_create_chat.return_value = mock_use_case
 
-        controller = AIAgent(
+        controller = CreateAgent(
             provider="openai", model="gpt-5", name="Test", instructions="Test"
         )
 
@@ -153,7 +153,7 @@ class TestAIAgentChat:
 
         assert response == "AI response"
 
-    @patch("src.presentation.agent_controller.AgentComposer.create_chat_use_case")
+    @patch("arcadiumai.application.facade.client.AgentComposer.create_chat_use_case")
     def test_chat_calls_use_case_with_correct_params(self, mock_create_chat):
         mock_use_case = Mock()
         mock_output = Mock()
@@ -161,7 +161,7 @@ class TestAIAgentChat:
         mock_use_case.execute.return_value = mock_output
         mock_create_chat.return_value = mock_use_case
 
-        controller = AIAgent(
+        controller = CreateAgent(
             provider="openai", model="gpt-5-mini", name="Test", instructions="Test"
         )
 
@@ -171,7 +171,7 @@ class TestAIAgentChat:
         call_args = mock_use_case.execute.call_args
         assert call_args[0][1].message == "Test message"
 
-    @patch("src.presentation.agent_controller.AgentComposer.create_chat_use_case")
+    @patch("arcadiumai.application.facade.client.AgentComposer.create_chat_use_case")
     def test_chat_with_empty_message(self, mock_create_chat):
         mock_use_case = Mock()
         mock_output = Mock()
@@ -179,7 +179,7 @@ class TestAIAgentChat:
         mock_use_case.execute.return_value = mock_output
         mock_create_chat.return_value = mock_use_case
 
-        controller = AIAgent(
+        controller = CreateAgent(
             provider="openai", model="gpt-5", name="Test", instructions="Test"
         )
 
@@ -189,20 +189,20 @@ class TestAIAgentChat:
         call_args = mock_use_case.execute.call_args
         assert call_args[0][1].message == ""
 
-    @patch("src.presentation.agent_controller.AgentComposer.create_chat_use_case")
+    @patch("arcadiumai.application.facade.client.AgentComposer.create_chat_use_case")
     def test_chat_when_use_case_raises_exception(self, mock_create_chat):
         mock_use_case = Mock()
         mock_use_case.execute.side_effect = Exception("API Error")
         mock_create_chat.return_value = mock_use_case
 
-        controller = AIAgent(
+        controller = CreateAgent(
             provider="openai", model="gpt-5", name="Test", instructions="Test"
         )
 
         with pytest.raises(Exception, match="API Error"):
             controller.chat("Hello")
 
-    @patch("src.presentation.agent_controller.AgentComposer.create_chat_use_case")
+    @patch("arcadiumai.application.facade.client.AgentComposer.create_chat_use_case")
     def test_multiple_chat_calls(self, mock_create_chat):
         mock_use_case = Mock()
         mock_output = Mock()
@@ -210,7 +210,7 @@ class TestAIAgentChat:
         mock_use_case.execute.return_value = mock_output
         mock_create_chat.return_value = mock_use_case
 
-        controller = AIAgent(
+        controller = CreateAgent(
             provider="openai", model="gpt-5-nano", name="Test", instructions="Test"
         )
 
@@ -219,7 +219,7 @@ class TestAIAgentChat:
 
         assert mock_use_case.execute.call_count == 2
 
-    @patch("src.presentation.agent_controller.AgentComposer.create_chat_use_case")
+    @patch("arcadiumai.application.facade.client.AgentComposer.create_chat_use_case")
     def test_chat_updates_agent_history(self, mock_create_chat):
         mock_use_case = Mock()
         mock_output = Mock()
@@ -233,19 +233,21 @@ class TestAIAgentChat:
         mock_use_case.execute.side_effect = execute_side_effect
         mock_create_chat.return_value = mock_use_case
 
-        controller = AIAgent(
+        controller = CreateAgent(
             provider="openai", model="gpt-5", name="Test", instructions="Test"
         )
 
         controller.chat("Hello")
 
-        agent = controller._AIAgent__agent
+        agent = controller._CreateAgent__agent
         assert len(agent.history) == 2
 
 
 @pytest.mark.unit
-class TestAIAgentGetConfigs:
-    @patch("src.presentation.agent_controller.AgentComposer.create_get_config_use_case")
+class TestCreateAgentGetConfigs:
+    @patch(
+        "arcadiumai.application.facade.client.AgentComposer.create_get_config_use_case"
+    )
     def test_get_configs_returns_dict(self, mock_create_config):
         mock_use_case = Mock()
         mock_output = Mock()
@@ -259,7 +261,7 @@ class TestAIAgentGetConfigs:
         mock_use_case.execute.return_value = mock_output
         mock_create_config.return_value = mock_use_case
 
-        controller = AIAgent(
+        controller = CreateAgent(
             provider="openai", model="gpt-5-nano", name="Test", instructions="Test"
         )
 
@@ -269,7 +271,9 @@ class TestAIAgentGetConfigs:
         assert "name" in config
         assert "model" in config
 
-    @patch("src.presentation.agent_controller.AgentComposer.create_get_config_use_case")
+    @patch(
+        "arcadiumai.application.facade.client.AgentComposer.create_get_config_use_case"
+    )
     def test_get_configs_calls_use_case(self, mock_create_config):
         mock_use_case = Mock()
         mock_output = Mock()
@@ -277,7 +281,7 @@ class TestAIAgentGetConfigs:
         mock_use_case.execute.return_value = mock_output
         mock_create_config.return_value = mock_use_case
 
-        controller = AIAgent(
+        controller = CreateAgent(
             provider="openai", model="gpt-5-nano", name="Test", instructions="Test"
         )
 
@@ -285,7 +289,9 @@ class TestAIAgentGetConfigs:
 
         assert mock_use_case.execute.called
 
-    @patch("src.presentation.agent_controller.AgentComposer.create_get_config_use_case")
+    @patch(
+        "arcadiumai.application.facade.client.AgentComposer.create_get_config_use_case"
+    )
     def test_get_configs_returns_all_expected_fields(self, mock_create_config):
         mock_use_case = Mock()
         mock_output = Mock()
@@ -302,7 +308,7 @@ class TestAIAgentGetConfigs:
         mock_use_case.execute.return_value = mock_output
         mock_create_config.return_value = mock_use_case
 
-        controller = AIAgent(
+        controller = CreateAgent(
             provider="openai",
             model="gpt-5",
             name="Test Agent",
@@ -313,13 +319,15 @@ class TestAIAgentGetConfigs:
 
         assert config == expected_config
 
-    @patch("src.presentation.agent_controller.AgentComposer.create_get_config_use_case")
+    @patch(
+        "arcadiumai.application.facade.client.AgentComposer.create_get_config_use_case"
+    )
     def test_get_configs_when_use_case_raises_exception(self, mock_create_config):
         mock_use_case = Mock()
         mock_use_case.execute.side_effect = Exception("Config Error")
         mock_create_config.return_value = mock_use_case
 
-        controller = AIAgent(
+        controller = CreateAgent(
             provider="openai", model="gpt-5", name="Test", instructions="Test"
         )
 
@@ -328,9 +336,9 @@ class TestAIAgentGetConfigs:
 
 
 @pytest.mark.unit
-class TestAIAgentClearHistory:
+class TestCreateAgentClearHistory:
     def test_clear_history_method_exists(self):
-        controller = AIAgent(
+        controller = CreateAgent(
             provider="openai", model="gpt-5-mini", name="Test", instructions="Test"
         )
 
@@ -338,11 +346,11 @@ class TestAIAgentClearHistory:
         assert callable(controller.clear_history)
 
     def test_clear_history_clears_agent_history(self):
-        controller = AIAgent(
+        controller = CreateAgent(
             provider="openai", model="gpt-5-mini", name="Test", instructions="Test"
         )
 
-        agent = controller._AIAgent__agent
+        agent = controller._CreateAgent__agent
         agent.add_user_message("Message 1")
         agent.add_assistant_message("Response 1")
         agent.add_user_message("Message 2")
@@ -355,14 +363,14 @@ class TestAIAgentClearHistory:
         assert len(agent.history) == 0
 
     def test_clear_history_preserves_agent_config(self):
-        controller = AIAgent(
+        controller = CreateAgent(
             provider="ollama",
             model="gpt-5-nano",
             name="Test Agent",
             instructions="Be helpful",
         )
 
-        agent = controller._AIAgent__agent
+        agent = controller._CreateAgent__agent
         original_model = agent.model
         original_name = agent.name
         original_instructions = agent.instructions
@@ -376,41 +384,43 @@ class TestAIAgentClearHistory:
         assert agent.provider == original_provider
 
     def test_clear_history_can_be_called_multiple_times(self):
-        controller = AIAgent(
+        controller = CreateAgent(
             provider="openai",
             model="gpt-5-nano",
             name="Test",
             instructions="Test",
         )
 
-        agent = controller._AIAgent__agent
+        agent = controller._CreateAgent__agent
         agent.add_user_message("Message 1")
         agent.add_assistant_message("Response 1")
-        assert len(controller._AIAgent__agent.history) > 0
+        assert len(controller._CreateAgent__agent.history) > 0
 
         controller.clear_history()
-        assert len(controller._AIAgent__agent.history) == 0
+        assert len(controller._CreateAgent__agent.history) == 0
 
         agent.add_user_message("Message 2")
         agent.add_assistant_message("Response 2")
-        assert len(controller._AIAgent__agent.history) > 0
+        assert len(controller._CreateAgent__agent.history) > 0
 
         controller.clear_history()
-        assert len(controller._AIAgent__agent.history) == 0
+        assert len(controller._CreateAgent__agent.history) == 0
 
     def test_clear_history_on_empty_history(self):
-        controller = AIAgent(
+        controller = CreateAgent(
             provider="openai", model="gpt-5-mini", name="Test", instructions="Test"
         )
 
-        assert len(controller._AIAgent__agent.history) == 0
+        assert len(controller._CreateAgent__agent.history) == 0
 
         controller.clear_history()
 
-        assert len(controller._AIAgent__agent.history) == 0
+        assert len(controller._CreateAgent__agent.history) == 0
 
-    @patch("src.presentation.agent_controller.AgentComposer.create_chat_use_case")
-    @patch("src.presentation.agent_controller.AgentComposer.create_get_config_use_case")
+    @patch("arcadiumai.application.facade.client.AgentComposer.create_chat_use_case")
+    @patch(
+        "arcadiumai.application.facade.client.AgentComposer.create_get_config_use_case"
+    )
     def test_get_configs_after_clear_history_shows_empty_history(
         self, mock_create_config, mock_create_chat
     ):
@@ -423,7 +433,7 @@ class TestAIAgentClearHistory:
         mock_config_use_case = Mock()
         mock_create_config.return_value = mock_config_use_case
 
-        controller = AIAgent(
+        controller = CreateAgent(
             provider="openai", model="gpt-5-nano", name="Test", instructions="Test"
         )
 
@@ -439,10 +449,10 @@ class TestAIAgentClearHistory:
 
 
 @pytest.mark.unit
-class TestAIAgentMetrics:
-    @patch("src.presentation.agent_controller.AgentComposer.create_chat_use_case")
+class TestCreateAgentMetrics:
+    @patch("arcadiumai.application.facade.client.AgentComposer.create_chat_use_case")
     def test_get_metrics_returns_list(self, mock_create_chat):
-        from src.infra.config.metrics import ChatMetrics
+        from arcadiumai.infra.config.metrics import ChatMetrics
 
         mock_use_case = Mock()
         mock_use_case.get_metrics.return_value = [
@@ -450,7 +460,7 @@ class TestAIAgentMetrics:
         ]
         mock_create_chat.return_value = mock_use_case
 
-        controller = AIAgent(
+        controller = CreateAgent(
             provider="openai", model="gpt-5-nano", name="Test", instructions="Test"
         )
 
@@ -460,13 +470,13 @@ class TestAIAgentMetrics:
         assert len(metrics) == 1
         assert isinstance(metrics[0], ChatMetrics)
 
-    @patch("src.presentation.agent_controller.AgentComposer.create_chat_use_case")
+    @patch("arcadiumai.application.facade.client.AgentComposer.create_chat_use_case")
     def test_get_metrics_calls_use_case_method(self, mock_create_chat):
         mock_use_case = Mock()
         mock_use_case.get_metrics.return_value = []
         mock_create_chat.return_value = mock_use_case
 
-        controller = AIAgent(
+        controller = CreateAgent(
             provider="openai", model="gpt-5-nano", name="Test", instructions="Test"
         )
 
@@ -474,13 +484,13 @@ class TestAIAgentMetrics:
 
         mock_use_case.get_metrics.assert_called_once()
 
-    @patch("src.presentation.agent_controller.AgentComposer.create_chat_use_case")
+    @patch("arcadiumai.application.facade.client.AgentComposer.create_chat_use_case")
     def test_get_metrics_when_adapter_has_no_metrics(self, mock_create_chat):
         mock_use_case = Mock()
         mock_use_case.get_metrics.return_value = []
         mock_create_chat.return_value = mock_use_case
 
-        controller = AIAgent(
+        controller = CreateAgent(
             provider="openai", model="gpt-5-nano", name="Test", instructions="Test"
         )
 
@@ -488,9 +498,9 @@ class TestAIAgentMetrics:
 
         assert metrics == []
 
-    @patch("src.presentation.agent_controller.AgentComposer.create_chat_use_case")
+    @patch("arcadiumai.application.facade.client.AgentComposer.create_chat_use_case")
     def test_get_metrics_with_multiple_metrics(self, mock_create_chat):
-        from src.infra.config.metrics import ChatMetrics
+        from arcadiumai.infra.config.metrics import ChatMetrics
 
         mock_use_case = Mock()
         mock_use_case.get_metrics.return_value = [
@@ -500,7 +510,7 @@ class TestAIAgentMetrics:
         ]
         mock_create_chat.return_value = mock_use_case
 
-        controller = AIAgent(
+        controller = CreateAgent(
             provider="openai", model="gpt-5-nano", name="Test", instructions="Test"
         )
 
@@ -509,9 +519,9 @@ class TestAIAgentMetrics:
         assert len(metrics) == 3
         assert all(isinstance(m, ChatMetrics) for m in metrics)
 
-    @patch("src.presentation.agent_controller.AgentComposer.create_chat_use_case")
+    @patch("arcadiumai.application.facade.client.AgentComposer.create_chat_use_case")
     def test_export_metrics_json(self, mock_create_chat):
-        from src.infra.config.metrics import ChatMetrics
+        from arcadiumai.infra.config.metrics import ChatMetrics
 
         mock_use_case = Mock()
         mock_use_case.get_metrics.return_value = [
@@ -519,7 +529,7 @@ class TestAIAgentMetrics:
         ]
         mock_create_chat.return_value = mock_use_case
 
-        controller = AIAgent(
+        controller = CreateAgent(
             provider="openai", model="gpt-5-nano", name="Test", instructions="Test"
         )
 
@@ -529,11 +539,11 @@ class TestAIAgentMetrics:
         assert "gpt-5-nano" in json_str
         assert "summary" in json_str
 
-    @patch("src.presentation.agent_controller.AgentComposer.create_chat_use_case")
+    @patch("arcadiumai.application.facade.client.AgentComposer.create_chat_use_case")
     def test_export_metrics_json_to_file(self, mock_create_chat, tmp_path):
         import json
 
-        from src.infra.config.metrics import ChatMetrics
+        from arcadiumai.infra.config.metrics import ChatMetrics
 
         mock_use_case = Mock()
         mock_use_case.get_metrics.return_value = [
@@ -541,7 +551,7 @@ class TestAIAgentMetrics:
         ]
         mock_create_chat.return_value = mock_use_case
 
-        controller = AIAgent(
+        controller = CreateAgent(
             provider="openai", model="gpt-5-nano", name="Test", instructions="Test"
         )
 
@@ -556,9 +566,9 @@ class TestAIAgentMetrics:
         assert "summary" in data
         assert "metrics" in data
 
-    @patch("src.presentation.agent_controller.AgentComposer.create_chat_use_case")
+    @patch("arcadiumai.application.facade.client.AgentComposer.create_chat_use_case")
     def test_export_metrics_prometheus(self, mock_create_chat):
-        from src.infra.config.metrics import ChatMetrics
+        from arcadiumai.infra.config.metrics import ChatMetrics
 
         mock_use_case = Mock()
         mock_use_case.get_metrics.return_value = [
@@ -566,7 +576,7 @@ class TestAIAgentMetrics:
         ]
         mock_create_chat.return_value = mock_use_case
 
-        controller = AIAgent(
+        controller = CreateAgent(
             provider="openai", model="gpt-5-nano", name="Test", instructions="Test"
         )
 
@@ -575,9 +585,9 @@ class TestAIAgentMetrics:
         assert isinstance(prom_text, str)
         assert "chat_requests_total" in prom_text
 
-    @patch("src.presentation.agent_controller.AgentComposer.create_chat_use_case")
+    @patch("arcadiumai.application.facade.client.AgentComposer.create_chat_use_case")
     def test_export_metrics_prometheus_to_file(self, mock_create_chat, tmp_path):
-        from src.infra.config.metrics import ChatMetrics
+        from arcadiumai.infra.config.metrics import ChatMetrics
 
         mock_use_case = Mock()
         mock_use_case.get_metrics.return_value = [
@@ -585,7 +595,7 @@ class TestAIAgentMetrics:
         ]
         mock_create_chat.return_value = mock_use_case
 
-        controller = AIAgent(
+        controller = CreateAgent(
             provider="openai", model="gpt-5-nano", name="Test", instructions="Test"
         )
 
@@ -599,13 +609,13 @@ class TestAIAgentMetrics:
 
         assert "chat_requests_total" in content
 
-    @patch("src.presentation.agent_controller.AgentComposer.create_chat_use_case")
+    @patch("arcadiumai.application.facade.client.AgentComposer.create_chat_use_case")
     def test_export_metrics_json_with_empty_metrics(self, mock_create_chat):
         mock_use_case = Mock()
         mock_use_case.get_metrics.return_value = []
         mock_create_chat.return_value = mock_use_case
 
-        controller = AIAgent(
+        controller = CreateAgent(
             provider="openai", model="gpt-5-nano", name="Test", instructions="Test"
         )
 
@@ -614,13 +624,13 @@ class TestAIAgentMetrics:
         assert isinstance(json_str, str)
         assert "summary" in json_str
 
-    @patch("src.presentation.agent_controller.AgentComposer.create_chat_use_case")
+    @patch("arcadiumai.application.facade.client.AgentComposer.create_chat_use_case")
     def test_export_metrics_prometheus_with_empty_metrics(self, mock_create_chat):
         mock_use_case = Mock()
         mock_use_case.get_metrics.return_value = []
         mock_create_chat.return_value = mock_use_case
 
-        controller = AIAgent(
+        controller = CreateAgent(
             provider="openai", model="gpt-5-nano", name="Test", instructions="Test"
         )
 
@@ -630,8 +640,8 @@ class TestAIAgentMetrics:
 
 
 @pytest.mark.unit
-class TestAIAgentIntegration:
-    @patch("src.presentation.agent_controller.AgentComposer.create_chat_use_case")
+class TestCreateAgentIntegration:
+    @patch("arcadiumai.application.facade.client.AgentComposer.create_chat_use_case")
     def test_chat_and_get_configs_together(self, mock_create_chat):
         mock_use_case = Mock()
         mock_output = Mock()
@@ -639,7 +649,7 @@ class TestAIAgentIntegration:
         mock_use_case.execute.return_value = mock_output
         mock_create_chat.return_value = mock_use_case
 
-        controller = AIAgent(
+        controller = CreateAgent(
             provider="openai", model="gpt-5", name="Test", instructions="Test"
         )
 
@@ -649,7 +659,7 @@ class TestAIAgentIntegration:
         configs = controller.get_configs()
         assert isinstance(configs, dict)
 
-    @patch("src.presentation.agent_controller.AgentComposer.create_chat_use_case")
+    @patch("arcadiumai.application.facade.client.AgentComposer.create_chat_use_case")
     def test_chat_clear_history_chat_again(self, mock_create_chat):
         mock_use_case = Mock()
         mock_output = Mock()
@@ -663,12 +673,12 @@ class TestAIAgentIntegration:
         mock_use_case.execute.side_effect = execute_side_effect
         mock_create_chat.return_value = mock_use_case
 
-        controller = AIAgent(
+        controller = CreateAgent(
             provider="openai", model="gpt-5", name="Test", instructions="Test"
         )
 
         controller.chat("Message 1")
-        agent = controller._AIAgent__agent
+        agent = controller._CreateAgent__agent
         assert len(agent.history) == 2
 
         controller.clear_history()
@@ -677,9 +687,9 @@ class TestAIAgentIntegration:
         controller.chat("Message 2")
         assert len(agent.history) == 2
 
-    @patch("src.presentation.agent_controller.AgentComposer.create_chat_use_case")
+    @patch("arcadiumai.application.facade.client.AgentComposer.create_chat_use_case")
     def test_metrics_accumulate_after_multiple_chats(self, mock_create_chat):
-        from src.infra.config.metrics import ChatMetrics
+        from arcadiumai.infra.config.metrics import ChatMetrics
 
         mock_use_case = Mock()
         mock_output = Mock()
@@ -699,7 +709,7 @@ class TestAIAgentIntegration:
         mock_use_case.execute.side_effect = execute_side_effect
         mock_create_chat.return_value = mock_use_case
 
-        controller = AIAgent(
+        controller = CreateAgent(
             provider="openai", model="gpt-5", name="Test", instructions="Test"
         )
 
@@ -712,47 +722,47 @@ class TestAIAgentIntegration:
 
 
 @pytest.mark.unit
-class TestAIAgentEdgeCases:
+class TestCreateAgentEdgeCases:
     def test_initialization_with_very_long_instructions(self):
         long_instructions = "A" * 10000
-        controller = AIAgent(
+        controller = CreateAgent(
             provider="openai",
             model="gpt-5",
             name="Test",
             instructions=long_instructions,
         )
 
-        agent = controller._AIAgent__agent
+        agent = controller._CreateAgent__agent
         assert agent.instructions == long_instructions
 
     def test_initialization_with_special_characters_in_name(self):
         special_name = "Test-Agent_123!@#$%"
-        controller = AIAgent(
+        controller = CreateAgent(
             provider="openai",
             model="gpt-5",
             name=special_name,
             instructions="Test",
         )
 
-        agent = controller._AIAgent__agent
+        agent = controller._CreateAgent__agent
         assert agent.name == special_name
 
     def test_initialization_with_unicode_characters(self):
         unicode_name = "测试代理 🤖"
         unicode_instructions = "Seja útil e educado 你好"
 
-        controller = AIAgent(
+        controller = CreateAgent(
             provider="openai",
             model="gpt-5",
             name=unicode_name,
             instructions=unicode_instructions,
         )
 
-        agent = controller._AIAgent__agent
+        agent = controller._CreateAgent__agent
         assert agent.name == unicode_name
         assert agent.instructions == unicode_instructions
 
-    @patch("src.presentation.agent_controller.AgentComposer.create_chat_use_case")
+    @patch("arcadiumai.application.facade.client.AgentComposer.create_chat_use_case")
     def test_chat_with_very_long_message(self, mock_create_chat):
         mock_use_case = Mock()
         mock_output = Mock()
@@ -760,7 +770,7 @@ class TestAIAgentEdgeCases:
         mock_use_case.execute.return_value = mock_output
         mock_create_chat.return_value = mock_use_case
 
-        controller = AIAgent(
+        controller = CreateAgent(
             provider="openai", model="gpt-5", name="Test", instructions="Test"
         )
 
@@ -771,7 +781,7 @@ class TestAIAgentEdgeCases:
         call_args = mock_use_case.execute.call_args
         assert call_args[0][1].message == long_message
 
-    @patch("src.presentation.agent_controller.AgentComposer.create_chat_use_case")
+    @patch("arcadiumai.application.facade.client.AgentComposer.create_chat_use_case")
     def test_chat_with_unicode_message(self, mock_create_chat):
         mock_use_case = Mock()
         mock_output = Mock()
@@ -779,7 +789,7 @@ class TestAIAgentEdgeCases:
         mock_use_case.execute.return_value = mock_output
         mock_create_chat.return_value = mock_use_case
 
-        controller = AIAgent(
+        controller = CreateAgent(
             provider="openai", model="gpt-5", name="Test", instructions="Test"
         )
 
@@ -790,7 +800,7 @@ class TestAIAgentEdgeCases:
 
     def test_initialization_with_history_max_size_zero(self):
         with pytest.raises(InvalidAgentConfigException, match="history_max_size"):
-            AIAgent(
+            CreateAgent(
                 provider="openai",
                 model="gpt-5",
                 name="Test",
@@ -800,19 +810,19 @@ class TestAIAgentEdgeCases:
 
     def test_initialization_with_negative_history_max_size(self):
         try:
-            controller = AIAgent(
+            controller = CreateAgent(
                 provider="openai",
                 model="gpt-5",
                 name="Test",
                 instructions="Test",
                 history_max_size=-1,
             )
-            assert hasattr(controller, "_AIAgent__agent")
+            assert hasattr(controller, "_CreateAgent__agent")
         except (ValueError, InvalidAgentConfigException):
             pass
 
     def test_initialization_with_empty_config_dict(self):
-        controller = AIAgent(
+        controller = CreateAgent(
             provider="openai",
             model="gpt-5",
             name="Test",
@@ -820,12 +830,12 @@ class TestAIAgentEdgeCases:
             config={},
         )
 
-        agent = controller._AIAgent__agent
+        agent = controller._CreateAgent__agent
         assert agent.config == {}
 
-    @patch("src.presentation.agent_controller.AgentComposer.create_chat_use_case")
+    @patch("arcadiumai.application.facade.client.AgentComposer.create_chat_use_case")
     def test_export_metrics_to_nonexistent_directory(self, mock_create_chat, tmp_path):
-        from src.infra.config.metrics import ChatMetrics
+        from arcadiumai.infra.config.metrics import ChatMetrics
 
         mock_use_case = Mock()
         mock_use_case.get_metrics.return_value = [
@@ -833,7 +843,7 @@ class TestAIAgentEdgeCases:
         ]
         mock_create_chat.return_value = mock_use_case
 
-        controller = AIAgent(
+        controller = CreateAgent(
             provider="openai", model="gpt-5", name="Test", instructions="Test"
         )
 
@@ -844,7 +854,7 @@ class TestAIAgentEdgeCases:
         except (FileNotFoundError, OSError):
             pass
 
-    @patch("src.presentation.agent_controller.AgentComposer.create_chat_use_case")
+    @patch("arcadiumai.application.facade.client.AgentComposer.create_chat_use_case")
     def test_chat_preserves_message_order(self, mock_create_chat):
         mock_use_case = Mock()
         mock_output = Mock()
@@ -858,7 +868,7 @@ class TestAIAgentEdgeCases:
         mock_use_case.execute.side_effect = execute_side_effect
         mock_create_chat.return_value = mock_use_case
 
-        controller = AIAgent(
+        controller = CreateAgent(
             provider="openai", model="gpt-5", name="Test", instructions="Test"
         )
 
@@ -866,7 +876,7 @@ class TestAIAgentEdgeCases:
         controller.chat("Second message")
         controller.chat("Third message")
 
-        agent = controller._AIAgent__agent
+        agent = controller._CreateAgent__agent
         history = agent.history.get_messages()
 
         assert len(history) == 6
@@ -874,9 +884,9 @@ class TestAIAgentEdgeCases:
         assert history[2].content == "Second message"
         assert history[4].content == "Third message"
 
-    @patch("src.presentation.agent_controller.AgentComposer.create_chat_use_case")
+    @patch("arcadiumai.application.facade.client.AgentComposer.create_chat_use_case")
     def test_get_metrics_does_not_modify_internal_state(self, mock_create_chat):
-        from src.infra.config.metrics import ChatMetrics
+        from arcadiumai.infra.config.metrics import ChatMetrics
 
         mock_use_case = Mock()
 
@@ -886,7 +896,7 @@ class TestAIAgentEdgeCases:
         mock_use_case.get_metrics.side_effect = get_metrics_side_effect
         mock_create_chat.return_value = mock_use_case
 
-        controller = AIAgent(
+        controller = CreateAgent(
             provider="openai", model="gpt-5", name="Test", instructions="Test"
         )
 
@@ -896,7 +906,7 @@ class TestAIAgentEdgeCases:
         assert len(metrics2) == 1
 
     def test_controller_has_all_required_methods(self):
-        controller = AIAgent(
+        controller = CreateAgent(
             provider="openai", model="gpt-5", name="Test", instructions="Test"
         )
 
@@ -915,9 +925,9 @@ class TestAIAgentEdgeCases:
                 getattr(controller, method_name)
             ), f"{method_name} is not callable"
 
-    @patch("src.presentation.agent_controller.AgentComposer.create_chat_use_case")
+    @patch("arcadiumai.application.facade.client.AgentComposer.create_chat_use_case")
     def test_export_metrics_json_without_filepath(self, mock_create_chat):
-        from src.infra.config.metrics import ChatMetrics
+        from arcadiumai.infra.config.metrics import ChatMetrics
 
         mock_use_case = Mock()
         mock_use_case.get_metrics.return_value = [
@@ -925,7 +935,7 @@ class TestAIAgentEdgeCases:
         ]
         mock_create_chat.return_value = mock_use_case
 
-        controller = AIAgent(
+        controller = CreateAgent(
             provider="openai", model="gpt-5", name="Test", instructions="Test"
         )
 
@@ -935,9 +945,9 @@ class TestAIAgentEdgeCases:
         assert len(json_str) > 0
         assert "summary" in json_str
 
-    @patch("src.presentation.agent_controller.AgentComposer.create_chat_use_case")
+    @patch("arcadiumai.application.facade.client.AgentComposer.create_chat_use_case")
     def test_export_metrics_prometheus_without_filepath(self, mock_create_chat):
-        from src.infra.config.metrics import ChatMetrics
+        from arcadiumai.infra.config.metrics import ChatMetrics
 
         mock_use_case = Mock()
         mock_use_case.get_metrics.return_value = [
@@ -945,7 +955,7 @@ class TestAIAgentEdgeCases:
         ]
         mock_create_chat.return_value = mock_use_case
 
-        controller = AIAgent(
+        controller = CreateAgent(
             provider="openai", model="gpt-5", name="Test", instructions="Test"
         )
 
@@ -954,8 +964,10 @@ class TestAIAgentEdgeCases:
         assert isinstance(prom_text, str)
         assert len(prom_text) > 0
 
-    @patch("src.presentation.agent_controller.AgentComposer.create_chat_use_case")
-    @patch("src.presentation.agent_controller.AgentComposer.create_get_config_use_case")
+    @patch("arcadiumai.application.facade.client.AgentComposer.create_chat_use_case")
+    @patch(
+        "arcadiumai.application.facade.client.AgentComposer.create_get_config_use_case"
+    )
     def test_controller_workflow_chat_config_clear_repeat(
         self, mock_create_config, mock_create_chat
     ):
@@ -981,12 +993,12 @@ class TestAIAgentEdgeCases:
         mock_config_use_case.execute.return_value = mock_config_output
         mock_create_config.return_value = mock_config_use_case
 
-        controller = AIAgent(
+        controller = CreateAgent(
             provider="openai", model="gpt-5", name="Test", instructions="Test"
         )
 
         controller.chat("Hello")
-        agent = controller._AIAgent__agent
+        agent = controller._CreateAgent__agent
         assert len(agent.history) == 2
 
         configs = controller.get_configs()
@@ -1002,7 +1014,7 @@ class TestAIAgentEdgeCases:
         assert isinstance(configs2, dict)
 
     def test_initialization_with_all_optional_params_none(self):
-        controller = AIAgent(
+        controller = CreateAgent(
             provider="openai",
             model="gpt-5",
             name=None,
@@ -1010,12 +1022,12 @@ class TestAIAgentEdgeCases:
             config=None,
         )
 
-        agent = controller._AIAgent__agent
+        agent = controller._CreateAgent__agent
         assert agent.name is None
         assert agent.instructions is None
         assert agent.config == {}
 
-    @patch("src.presentation.agent_controller.AgentComposer.create_chat_use_case")
+    @patch("arcadiumai.application.facade.client.AgentComposer.create_chat_use_case")
     def test_multiple_consecutive_clear_history_calls(self, mock_create_chat):
         mock_use_case = Mock()
         mock_output = Mock()
@@ -1029,35 +1041,35 @@ class TestAIAgentEdgeCases:
         mock_use_case.execute.side_effect = execute_side_effect
         mock_create_chat.return_value = mock_use_case
 
-        controller = AIAgent(
+        controller = CreateAgent(
             provider="openai", model="gpt-5", name="Test", instructions="Test"
         )
 
         controller.chat("Message")
-        assert len(controller._AIAgent__agent.history) == 2
+        assert len(controller._CreateAgent__agent.history) == 2
 
         controller.clear_history()
-        assert len(controller._AIAgent__agent.history) == 0
+        assert len(controller._CreateAgent__agent.history) == 0
 
         controller.clear_history()
-        assert len(controller._AIAgent__agent.history) == 0
+        assert len(controller._CreateAgent__agent.history) == 0
 
         controller.clear_history()
-        assert len(controller._AIAgent__agent.history) == 0
+        assert len(controller._CreateAgent__agent.history) == 0
 
     def test_initialization_provider_case_variations(self):
         providers = ["openai", "OPENAI", "OpenAI", "oPeNaI"]
 
         for provider in providers:
-            controller = AIAgent(
+            controller = CreateAgent(
                 provider=provider, model="gpt-5", name="Test", instructions="Test"
             )
 
-            agent = controller._AIAgent__agent
+            agent = controller._CreateAgent__agent
             assert agent.provider.lower() == "openai"
 
     def test_initialization_with_tools_none(self):
-        controller = AIAgent(
+        controller = CreateAgent(
             provider="openai",
             model="gpt-5",
             name="Test",
@@ -1065,11 +1077,11 @@ class TestAIAgentEdgeCases:
             tools=None,
         )
 
-        agent = controller._AIAgent__agent
+        agent = controller._CreateAgent__agent
         assert agent.tools is None
 
     def test_initialization_with_tools_empty_list(self):
-        controller = AIAgent(
+        controller = CreateAgent(
             provider="openai",
             model="gpt-5",
             name="Test",
@@ -1077,11 +1089,11 @@ class TestAIAgentEdgeCases:
             tools=[],
         )
 
-        agent = controller._AIAgent__agent
+        agent = controller._CreateAgent__agent
         assert agent.tools == []
 
     def test_initialization_with_single_tool(self):
-        from src.domain import BaseTool
+        from arcadiumai.domain import BaseTool
 
         class TestTool(BaseTool):
             name = "test_tool"
@@ -1091,7 +1103,7 @@ class TestAIAgentEdgeCases:
                 return "result"
 
         tool = TestTool()
-        controller = AIAgent(
+        controller = CreateAgent(
             provider="openai",
             model="gpt-5",
             name="Test",
@@ -1099,12 +1111,12 @@ class TestAIAgentEdgeCases:
             tools=[tool],
         )
 
-        agent = controller._AIAgent__agent
+        agent = controller._CreateAgent__agent
         assert len(agent.tools) == 1
         assert agent.tools[0] is tool
 
     def test_initialization_with_multiple_tools(self):
-        from src.domain import BaseTool
+        from arcadiumai.domain import BaseTool
 
         class Tool1(BaseTool):
             name = "tool1"
@@ -1121,7 +1133,7 @@ class TestAIAgentEdgeCases:
                 return "result2"
 
         tools = [Tool1(), Tool2()]
-        controller = AIAgent(
+        controller = CreateAgent(
             provider="openai",
             model="gpt-5",
             name="Test",
@@ -1129,16 +1141,16 @@ class TestAIAgentEdgeCases:
             tools=tools,
         )
 
-        agent = controller._AIAgent__agent
+        agent = controller._CreateAgent__agent
         assert len(agent.tools) == 2
 
     def test_initialization_with_string_tool_name(self):
-        from src.infra import AvailableTools
+        from arcadiumai.infra import AvailableTools
 
         available = AvailableTools.get_all_available_tools()
         if available:
             tool_name = list(available.keys())[0]
-            controller = AIAgent(
+            controller = CreateAgent(
                 provider="openai",
                 model="gpt-5",
                 name="Test",
@@ -1146,14 +1158,14 @@ class TestAIAgentEdgeCases:
                 tools=[tool_name],
             )
 
-            agent = controller._AIAgent__agent
+            agent = controller._CreateAgent__agent
             assert agent.tools is not None
         else:
             pytest.skip("No available tools to test")
 
     def test_initialization_with_mixed_tool_types(self):
-        from src.domain import BaseTool
-        from src.infra import AvailableTools
+        from arcadiumai.domain import BaseTool
+        from arcadiumai.infra import AvailableTools
 
         class TestTool(BaseTool):
             name = "test_tool"
@@ -1166,7 +1178,7 @@ class TestAIAgentEdgeCases:
         available = AvailableTools.get_all_available_tools()
         if available:
             tool_name = list(available.keys())[0]
-            controller = AIAgent(
+            controller = CreateAgent(
                 provider="openai",
                 model="gpt-5",
                 name="Test",
@@ -1174,21 +1186,21 @@ class TestAIAgentEdgeCases:
                 tools=[tool, tool_name],
             )
 
-            agent = controller._AIAgent__agent
+            agent = controller._CreateAgent__agent
             assert agent.tools is not None
         else:
-            controller = AIAgent(
+            controller = CreateAgent(
                 provider="openai",
                 model="gpt-5",
                 name="Test",
                 instructions="Test",
                 tools=[tool],
             )
-            agent = controller._AIAgent__agent
+            agent = controller._CreateAgent__agent
             assert len(agent.tools) == 1
 
     def test_get_configs_includes_tools(self):
-        from src.domain import BaseTool
+        from arcadiumai.domain import BaseTool
 
         class TestTool(BaseTool):
             name = "test_tool"
@@ -1198,7 +1210,7 @@ class TestAIAgentEdgeCases:
                 return "result"
 
         tool = TestTool()
-        controller = AIAgent(
+        controller = CreateAgent(
             provider="openai",
             model="gpt-5",
             name="Test",
@@ -1213,7 +1225,7 @@ class TestAIAgentEdgeCases:
     def test_initialization_tools_preserved_through_chat(self):
         from unittest.mock import Mock, patch
 
-        from src.domain import BaseTool
+        from arcadiumai.domain import BaseTool
 
         class TestTool(BaseTool):
             name = "test_tool"
@@ -1225,7 +1237,7 @@ class TestAIAgentEdgeCases:
         tool = TestTool()
 
         with patch(
-            "src.presentation.agent_controller.AgentComposer.create_chat_use_case"
+            "arcadiumai.application.facade.client.AgentComposer.create_chat_use_case"
         ) as mock_create_chat:
             mock_use_case = Mock()
             mock_output = Mock()
@@ -1233,7 +1245,7 @@ class TestAIAgentEdgeCases:
             mock_use_case.execute.return_value = mock_output
             mock_create_chat.return_value = mock_use_case
 
-            controller = AIAgent(
+            controller = CreateAgent(
                 provider="openai",
                 model="gpt-5",
                 name="Test",
@@ -1243,12 +1255,12 @@ class TestAIAgentEdgeCases:
 
             controller.chat("Hello")
 
-            agent = controller._AIAgent__agent
+            agent = controller._CreateAgent__agent
             assert len(agent.tools) == 1
 
     def test_initialization_with_invalid_tool_type_raises_error(self):
         with pytest.raises(Exception):
-            AIAgent(
+            CreateAgent(
                 provider="openai",
                 model="gpt-5",
                 name="Test",
@@ -1261,7 +1273,7 @@ class TestAIAgentEdgeCases:
             pass
 
         with pytest.raises(Exception):
-            AIAgent(
+            CreateAgent(
                 provider="openai",
                 model="gpt-5",
                 name="Test",
@@ -1271,9 +1283,9 @@ class TestAIAgentEdgeCases:
 
 
 @pytest.mark.unit
-class TestAIAgentGetAllAvailableTools:
+class TestCreateAgentGetAllAvailableTools:
     def test_get_all_available_tools_includes_system_tools(self):
-        controller = AIAgent(
+        controller = CreateAgent(
             provider="openai",
             model="gpt-5",
             name="Test",
@@ -1286,7 +1298,7 @@ class TestAIAgentGetAllAvailableTools:
         assert "currentdate" in tools
 
     def test_get_all_available_tools_includes_agent_tools(self):
-        from src.domain import BaseTool
+        from arcadiumai.domain import BaseTool
 
         class CustomTool(BaseTool):
             name = "custom_tool"
@@ -1296,7 +1308,7 @@ class TestAIAgentGetAllAvailableTools:
                 return "custom result"
 
         tool = CustomTool()
-        controller = AIAgent(
+        controller = CreateAgent(
             provider="openai",
             model="gpt-5",
             name="Test",
@@ -1312,7 +1324,7 @@ class TestAIAgentGetAllAvailableTools:
         assert tools["custom_tool"] == "A custom tool for testing"
 
     def test_get_all_available_tools_with_multiple_agent_tools(self):
-        from src.domain import BaseTool
+        from arcadiumai.domain import BaseTool
 
         class Tool1(BaseTool):
             name = "tool1"
@@ -1329,7 +1341,7 @@ class TestAIAgentGetAllAvailableTools:
                 return "result2"
 
         tools_list = [Tool1(), Tool2()]
-        controller = AIAgent(
+        controller = CreateAgent(
             provider="openai",
             model="gpt-5",
             name="Test",
@@ -1347,7 +1359,7 @@ class TestAIAgentGetAllAvailableTools:
         assert tools["tool2"] == "Second custom tool"
 
     def test_get_all_available_tools_without_agent_tools(self):
-        controller = AIAgent(
+        controller = CreateAgent(
             provider="openai",
             model="gpt-5",
             name="Test",
@@ -1361,7 +1373,7 @@ class TestAIAgentGetAllAvailableTools:
         assert "currentdate" in tools
 
     def test_get_all_available_tools_with_empty_tools_list(self):
-        controller = AIAgent(
+        controller = CreateAgent(
             provider="openai",
             model="gpt-5",
             name="Test",
@@ -1375,7 +1387,7 @@ class TestAIAgentGetAllAvailableTools:
         assert "currentdate" in tools
 
     def test_get_all_available_tools_case_insensitive(self):
-        from src.domain import BaseTool
+        from arcadiumai.domain import BaseTool
 
         class CustomTool(BaseTool):
             name = "CustomTool"
@@ -1385,7 +1397,7 @@ class TestAIAgentGetAllAvailableTools:
                 return "result"
 
         tool = CustomTool()
-        controller = AIAgent(
+        controller = CreateAgent(
             provider="openai",
             model="gpt-5",
             name="Test",
@@ -1398,7 +1410,7 @@ class TestAIAgentGetAllAvailableTools:
         assert "customtool" in tools
 
     def test_get_all_available_tools_does_not_modify_agent(self):
-        from src.domain import BaseTool
+        from arcadiumai.domain import BaseTool
 
         class TestTool(BaseTool):
             name = "test_tool"
@@ -1408,7 +1420,7 @@ class TestAIAgentGetAllAvailableTools:
                 return "result"
 
         tool = TestTool()
-        controller = AIAgent(
+        controller = CreateAgent(
             provider="openai",
             model="gpt-5",
             name="Test",

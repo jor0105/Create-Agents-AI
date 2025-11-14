@@ -2,17 +2,18 @@ import os
 
 import pytest
 
-from src.domain.exceptions import InvalidAgentConfigException
-from src.presentation.agent_controller import AIAgent
+from arcadiumai.application import CreateAgent
+from arcadiumai.domain import InvalidAgentConfigException
 
-IA_OLLAMA_TEST: str = "granite4:latest"
+IA_OLLAMA_TEST_1: str = "granite4:latest"
+IA_OLLAMA_TEST_2: str = "gpt-oss:120b-cloud"
 IA_OPENAI_TEST_1: str = "gpt-4.1-mini"
 IA_OPENAI_TEST_2: str = "gpt-5-nano"
 
 
 def _get_openai_api_key():
-    from src.infra.adapters.OpenAI.client_openai import ClientOpenAI
-    from src.infra.config.environment import EnvironmentConfig
+    from arcadiumai.infra.adapters.OpenAI.client_openai import ClientOpenAI
+    from arcadiumai.infra.config.environment import EnvironmentConfig
 
     if os.getenv("CI"):
         pytest.skip("Skipping real API integration test on CI (set CI=0 to run)")
@@ -56,10 +57,10 @@ def _check_ollama_model_available(model: str):
 
 
 @pytest.mark.integration
-class TestAIAgentInitializationErrors:
+class TestCreateAgentInitializationErrors:
     def test_initialization_with_empty_model_raises_error(self):
         with pytest.raises(InvalidAgentConfigException):
-            AIAgent(
+            CreateAgent(
                 provider="openai",
                 model="",
                 name="Test Agent",
@@ -68,7 +69,7 @@ class TestAIAgentInitializationErrors:
 
     def test_initialization_with_empty_name_raises_error(self):
         with pytest.raises(InvalidAgentConfigException):
-            AIAgent(
+            CreateAgent(
                 provider="openai",
                 model="gpt-5-mini",
                 name="",
@@ -77,7 +78,7 @@ class TestAIAgentInitializationErrors:
 
     def test_initialization_with_empty_instructions_raises_error(self):
         with pytest.raises(InvalidAgentConfigException):
-            AIAgent(
+            CreateAgent(
                 provider="openai",
                 model="gpt-5-mini",
                 name="Test Agent",
@@ -85,7 +86,7 @@ class TestAIAgentInitializationErrors:
             )
 
     def test_initialization_with_none_name(self):
-        agent = AIAgent(
+        agent = CreateAgent(
             provider="openai",
             model="gpt-5-mini",
             name=None,
@@ -95,7 +96,7 @@ class TestAIAgentInitializationErrors:
         assert configs["name"] is None
 
     def test_initialization_with_none_instructions(self):
-        agent = AIAgent(
+        agent = CreateAgent(
             provider="openai",
             model="gpt-5-mini",
             name="Test Agent",
@@ -105,7 +106,7 @@ class TestAIAgentInitializationErrors:
         assert configs["instructions"] is None
 
     def test_initialization_with_both_none(self):
-        agent = AIAgent(
+        agent = CreateAgent(
             provider="openai",
             model="gpt-5-mini",
             name=None,
@@ -116,7 +117,7 @@ class TestAIAgentInitializationErrors:
         assert configs["instructions"] is None
 
     def test_initialization_with_only_required_fields(self):
-        agent = AIAgent(
+        agent = CreateAgent(
             provider="openai",
             model="gpt-5-mini",
         )
@@ -128,7 +129,7 @@ class TestAIAgentInitializationErrors:
 
     def test_initialization_with_invalid_provider_raises_error(self):
         with pytest.raises(Exception):
-            AIAgent(
+            CreateAgent(
                 provider="invalid_provider_xyz",
                 model="gpt-5-mini",
                 name="Test Agent",
@@ -137,7 +138,7 @@ class TestAIAgentInitializationErrors:
 
     def test_initialization_with_zero_history_max_size_raises_error(self):
         with pytest.raises(InvalidAgentConfigException, match="history_max_size"):
-            AIAgent(
+            CreateAgent(
                 provider="openai",
                 model="gpt-5-mini",
                 name="Test Agent",
@@ -147,7 +148,7 @@ class TestAIAgentInitializationErrors:
 
     def test_initialization_with_negative_history_max_size_raises_error(self):
         with pytest.raises(InvalidAgentConfigException, match="history_max_size"):
-            AIAgent(
+            CreateAgent(
                 provider="openai",
                 model="gpt-5-mini",
                 name="Test Agent",
@@ -157,11 +158,11 @@ class TestAIAgentInitializationErrors:
 
 
 @pytest.mark.integration
-class TestAIAgentInitializationSuccessOpenAI:
+class TestCreateAgentInitializationSuccessOpenAI:
     def test_initialization_with_openai_gpt4_mini(self):
         _get_openai_api_key()
 
-        agent = AIAgent(
+        agent = CreateAgent(
             provider="openai",
             model=IA_OPENAI_TEST_1,
             name="Test Agent OpenAI",
@@ -177,7 +178,7 @@ class TestAIAgentInitializationSuccessOpenAI:
     def test_initialization_with_openai_gpt4_nano(self):
         _get_openai_api_key()
 
-        agent = AIAgent(
+        agent = CreateAgent(
             provider="openai",
             model=IA_OPENAI_TEST_2,
             name="Test Agent Nano",
@@ -194,7 +195,7 @@ class TestAIAgentInitializationSuccessOpenAI:
 
         custom_config = {"temperature": 0.7, "max_tokens": 500, "top_p": 0.9}
 
-        agent = AIAgent(
+        agent = CreateAgent(
             provider="openai",
             model=IA_OPENAI_TEST_1,
             name="Custom Config Agent",
@@ -208,7 +209,7 @@ class TestAIAgentInitializationSuccessOpenAI:
     def test_initialization_with_custom_history_size_openai(self):
         _get_openai_api_key()
 
-        agent = AIAgent(
+        agent = CreateAgent(
             provider="openai",
             model=IA_OPENAI_TEST_1,
             name="Large History Agent",
@@ -221,14 +222,14 @@ class TestAIAgentInitializationSuccessOpenAI:
 
 
 @pytest.mark.integration
-class TestAIAgentInitializationSuccessOllama:
+class TestCreateAgentInitializationSuccessOllama:
     def test_initialization_with_ollama_phi4(self):
         _check_ollama_available()
-        _check_ollama_model_available(IA_OLLAMA_TEST)
+        _check_ollama_model_available(IA_OLLAMA_TEST_1)
 
-        agent = AIAgent(
+        agent = CreateAgent(
             provider="ollama",
-            model=IA_OLLAMA_TEST,
+            model=IA_OLLAMA_TEST_1,
             name="Test Agent Ollama",
             instructions="You are a helpful assistant",
         )
@@ -236,20 +237,20 @@ class TestAIAgentInitializationSuccessOllama:
         assert agent is not None
         configs = agent.get_configs()
         assert configs["provider"] == "ollama"
-        assert configs["model"] == IA_OLLAMA_TEST
+        assert configs["model"] == IA_OLLAMA_TEST_1
         assert configs["name"] == "Test Agent Ollama"
 
     def test_initialization_with_custom_config_ollama(self):
         _check_ollama_available()
-        _check_ollama_model_available(IA_OLLAMA_TEST)
+        _check_ollama_model_available(IA_OLLAMA_TEST_1)
 
         custom_config = {
             "temperature": 0.5,
         }
 
-        agent = AIAgent(
+        agent = CreateAgent(
             provider="ollama",
-            model=IA_OLLAMA_TEST,
+            model=IA_OLLAMA_TEST_1,
             name="Custom Config Ollama",
             instructions="Be precise",
             config=custom_config,
@@ -260,11 +261,11 @@ class TestAIAgentInitializationSuccessOllama:
 
     def test_initialization_with_custom_history_size_ollama(self):
         _check_ollama_available()
-        _check_ollama_model_available(IA_OLLAMA_TEST)
+        _check_ollama_model_available(IA_OLLAMA_TEST_1)
 
-        agent = AIAgent(
+        agent = CreateAgent(
             provider="ollama",
-            model=IA_OLLAMA_TEST,
+            model=IA_OLLAMA_TEST_1,
             name="Small History Agent",
             instructions="Keep context",
             history_max_size=5,
@@ -275,11 +276,11 @@ class TestAIAgentInitializationSuccessOllama:
 
 
 @pytest.mark.integration
-class TestAIAgentChatOpenAI:
+class TestCreateAgentChatOpenAI:
     def test_simple_chat_with_openai(self):
         _get_openai_api_key()
 
-        agent = AIAgent(
+        agent = CreateAgent(
             provider="openai",
             model=IA_OPENAI_TEST_1,
             name="Chat Agent",
@@ -296,7 +297,7 @@ class TestAIAgentChatOpenAI:
     def test_multiple_chats_with_history_openai(self):
         _get_openai_api_key()
 
-        agent = AIAgent(
+        agent = CreateAgent(
             provider="openai",
             model=IA_OPENAI_TEST_1,
             name="History Agent",
@@ -313,7 +314,7 @@ class TestAIAgentChatOpenAI:
     def test_chat_with_empty_message_openai(self):
         _get_openai_api_key()
 
-        agent = AIAgent(
+        agent = CreateAgent(
             provider="openai",
             model=IA_OPENAI_TEST_1,
             name="Empty Test Agent",
@@ -329,7 +330,7 @@ class TestAIAgentChatOpenAI:
     def test_chat_with_long_message_openai(self):
         _get_openai_api_key()
 
-        agent = AIAgent(
+        agent = CreateAgent(
             provider="openai",
             model=IA_OPENAI_TEST_1,
             name="Long Message Agent",
@@ -346,7 +347,7 @@ class TestAIAgentChatOpenAI:
     def test_chat_with_unicode_openai(self):
         _get_openai_api_key()
 
-        agent = AIAgent(
+        agent = CreateAgent(
             provider="openai",
             model=IA_OPENAI_TEST_1,
             name="Unicode Agent",
@@ -361,14 +362,14 @@ class TestAIAgentChatOpenAI:
 
 
 @pytest.mark.integration
-class TestAIAgentChatOllama:
+class TestCreateAgentChatOllama:
     def test_simple_chat_with_ollama(self):
         _check_ollama_available()
-        _check_ollama_model_available(IA_OLLAMA_TEST)
+        _check_ollama_model_available(IA_OLLAMA_TEST_2)
 
-        agent = AIAgent(
+        agent = CreateAgent(
             provider="ollama",
-            model=IA_OLLAMA_TEST,
+            model=IA_OLLAMA_TEST_2,
             name="Chat Ollama Agent",
             instructions="You are a helpful assistant. Answer briefly.",
         )
@@ -381,11 +382,11 @@ class TestAIAgentChatOllama:
 
     def test_multiple_chats_with_history_ollama(self):
         _check_ollama_available()
-        _check_ollama_model_available(IA_OLLAMA_TEST)
+        _check_ollama_model_available(IA_OLLAMA_TEST_1)
 
-        agent = AIAgent(
+        agent = CreateAgent(
             provider="ollama",
-            model=IA_OLLAMA_TEST,
+            model=IA_OLLAMA_TEST_1,
             name="History Ollama Agent",
             instructions="You are a helpful assistant. Always remember and recall information from previous messages when asked.",
         )
@@ -399,11 +400,11 @@ class TestAIAgentChatOllama:
 
     def test_chat_with_unicode_ollama(self):
         _check_ollama_available()
-        _check_ollama_model_available(IA_OLLAMA_TEST)
+        _check_ollama_model_available(IA_OLLAMA_TEST_1)
 
-        agent = AIAgent(
+        agent = CreateAgent(
             provider="ollama",
-            model=IA_OLLAMA_TEST,
+            model=IA_OLLAMA_TEST_1,
             name="Unicode Ollama Agent",
             instructions="You are a multilingual assistant.",
         )
@@ -416,11 +417,11 @@ class TestAIAgentChatOllama:
 
 
 @pytest.mark.integration
-class TestAIAgentHistory:
+class TestCreateAgentHistory:
     def test_clear_history_openai(self):
         _get_openai_api_key()
 
-        agent = AIAgent(
+        agent = CreateAgent(
             provider="openai",
             model=IA_OPENAI_TEST_1,
             name="Clear History Agent",
@@ -439,11 +440,11 @@ class TestAIAgentHistory:
 
     def test_clear_history_ollama(self):
         _check_ollama_available()
-        _check_ollama_model_available(IA_OLLAMA_TEST)
+        _check_ollama_model_available(IA_OLLAMA_TEST_1)
 
-        agent = AIAgent(
+        agent = CreateAgent(
             provider="ollama",
-            model=IA_OLLAMA_TEST,
+            model=IA_OLLAMA_TEST_1,
             name="Clear History Ollama",
             instructions="Remember context.",
         )
@@ -461,7 +462,7 @@ class TestAIAgentHistory:
     def test_history_max_size_enforcement_openai(self):
         _get_openai_api_key()
 
-        agent = AIAgent(
+        agent = CreateAgent(
             provider="openai",
             model=IA_OPENAI_TEST_1,
             name="Small History Agent",
@@ -478,11 +479,11 @@ class TestAIAgentHistory:
 
 
 @pytest.mark.integration
-class TestAIAgentMetrics:
+class TestCreateAgentMetrics:
     def test_get_metrics_after_chat_openai(self):
         _get_openai_api_key()
 
-        agent = AIAgent(
+        agent = CreateAgent(
             provider="openai",
             model=IA_OPENAI_TEST_1,
             name="Metrics Agent",
@@ -505,7 +506,7 @@ class TestAIAgentMetrics:
     def test_get_metrics_after_multiple_chats_openai(self):
         _get_openai_api_key()
 
-        agent = AIAgent(
+        agent = CreateAgent(
             provider="openai",
             model=IA_OPENAI_TEST_1,
             name="Multi Metrics Agent",
@@ -523,7 +524,7 @@ class TestAIAgentMetrics:
     def test_export_metrics_json_openai(self):
         _get_openai_api_key()
 
-        agent = AIAgent(
+        agent = CreateAgent(
             provider="openai",
             model=IA_OPENAI_TEST_1,
             name="JSON Metrics Agent",
@@ -542,7 +543,7 @@ class TestAIAgentMetrics:
     def test_export_metrics_prometheus_openai(self):
         _get_openai_api_key()
 
-        agent = AIAgent(
+        agent = CreateAgent(
             provider="openai",
             model=IA_OPENAI_TEST_1,
             name="Prom Metrics Agent",
@@ -559,11 +560,11 @@ class TestAIAgentMetrics:
 
     def test_get_metrics_after_chat_ollama(self):
         _check_ollama_available()
-        _check_ollama_model_available(IA_OLLAMA_TEST)
+        _check_ollama_model_available(IA_OLLAMA_TEST_1)
 
-        agent = AIAgent(
+        agent = CreateAgent(
             provider="ollama",
-            model=IA_OLLAMA_TEST,
+            model=IA_OLLAMA_TEST_1,
             name="Metrics Ollama Agent",
             instructions="Answer briefly.",
         )
@@ -578,11 +579,11 @@ class TestAIAgentMetrics:
 
 
 @pytest.mark.integration
-class TestAIAgentGetConfigs:
+class TestCreateAgentGetConfigs:
     def test_get_configs_returns_all_fields_openai(self):
         _get_openai_api_key()
 
-        agent = AIAgent(
+        agent = CreateAgent(
             provider="openai",
             model=IA_OPENAI_TEST_1,
             name="Config Test Agent",
@@ -608,11 +609,11 @@ class TestAIAgentGetConfigs:
 
     def test_get_configs_returns_all_fields_ollama(self):
         _check_ollama_available()
-        _check_ollama_model_available(IA_OLLAMA_TEST)
+        _check_ollama_model_available(IA_OLLAMA_TEST_2)
 
-        agent = AIAgent(
+        agent = CreateAgent(
             provider="ollama",
-            model=IA_OLLAMA_TEST,
+            model=IA_OLLAMA_TEST_2,
             name="Config Ollama Agent",
             instructions="Test ollama",
             config={"temperature": 0.5},
@@ -622,18 +623,18 @@ class TestAIAgentGetConfigs:
         configs = agent.get_configs()
 
         assert configs["provider"] == "ollama"
-        assert configs["model"] == IA_OLLAMA_TEST
+        assert configs["model"] == IA_OLLAMA_TEST_2
         assert configs["history_max_size"] == 20
 
 
 @pytest.mark.integration
-class TestAIAgentEdgeCases:
+class TestCreateAgentEdgeCases:
     def test_agent_with_very_long_instructions_openai(self):
         _get_openai_api_key()
 
         long_instructions = "You are a helpful assistant. " * 100
 
-        agent = AIAgent(
+        agent = CreateAgent(
             provider="openai",
             model=IA_OPENAI_TEST_1,
             name="Long Instructions Agent",
@@ -648,7 +649,7 @@ class TestAIAgentEdgeCases:
     def test_agent_with_special_characters_in_name(self):
         _get_openai_api_key()
 
-        agent = AIAgent(
+        agent = CreateAgent(
             provider="openai",
             model=IA_OPENAI_TEST_1,
             name="Agent-Test_123!@#",
@@ -661,7 +662,7 @@ class TestAIAgentEdgeCases:
     def test_chat_after_clear_history_openai(self):
         _get_openai_api_key()
 
-        agent = AIAgent(
+        agent = CreateAgent(
             provider="openai",
             model=IA_OPENAI_TEST_1,
             name="Clear and Chat Agent",
@@ -679,14 +680,14 @@ class TestAIAgentEdgeCases:
     def test_multiple_agents_same_model_independent(self):
         _get_openai_api_key()
 
-        agent1 = AIAgent(
+        agent1 = CreateAgent(
             provider="openai",
             model=IA_OPENAI_TEST_1,
             name="Agent 1",
             instructions="You are agent 1",
         )
 
-        agent2 = AIAgent(
+        agent2 = CreateAgent(
             provider="openai",
             model=IA_OPENAI_TEST_1,
             name="Agent 2",
@@ -701,7 +702,7 @@ class TestAIAgentEdgeCases:
     def test_agent_with_minimal_config(self):
         _get_openai_api_key()
 
-        agent = AIAgent(
+        agent = CreateAgent(
             provider="openai",
             model=IA_OPENAI_TEST_2,
             name="Minimal Agent",

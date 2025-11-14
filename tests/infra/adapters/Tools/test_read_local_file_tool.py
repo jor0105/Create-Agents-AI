@@ -10,7 +10,7 @@ DEPENDENCIES_AVAILABLE = False
 
 try:
     module = importlib.import_module(
-        "src.infra.adapters.Tools.readlocalfile_Tool.readlocalfile_tool"
+        "arcadiumai.infra.adapters.Tools.readlocalfile_Tool.readlocalfile_tool"
     )
     ReadLocalFileTool = getattr(module, "ReadLocalFileTool")
     try:

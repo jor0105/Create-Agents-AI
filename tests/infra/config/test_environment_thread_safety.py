@@ -4,7 +4,7 @@ import threading
 
 import pytest
 
-from src.infra.config.environment import EnvironmentConfig
+from arcadiumai.infra import EnvironmentConfig
 
 
 @pytest.mark.unit

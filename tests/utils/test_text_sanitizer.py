@@ -1,6 +1,6 @@
 import pytest
 
-from src.utils.text_sanitizer import TextSanitizer
+from arcadiumai.utils import TextSanitizer
 
 
 @pytest.mark.unit

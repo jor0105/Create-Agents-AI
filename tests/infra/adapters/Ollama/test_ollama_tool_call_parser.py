@@ -1,6 +1,6 @@
 import pytest
 
-from src.infra.adapters.Ollama.ollama_tool_call_parser import OllamaToolCallParser
+from arcadiumai.infra import OllamaToolCallParser
 
 
 @pytest.mark.unit

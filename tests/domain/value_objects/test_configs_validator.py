@@ -1,7 +1,6 @@
 import pytest
 
-from src.domain.exceptions.domain_exceptions import InvalidAgentConfigException
-from src.domain.value_objects.configs_validator import SupportedConfigs
+from arcadiumai.domain import InvalidAgentConfigException, SupportedConfigs
 
 
 @pytest.mark.unit

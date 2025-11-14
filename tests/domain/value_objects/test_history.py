@@ -1,7 +1,6 @@
 import pytest
 
-from src.domain.value_objects.history import History
-from src.domain.value_objects.message import Message, MessageRole
+from arcadiumai.domain import History, Message, MessageRole
 
 
 @pytest.mark.unit

@@ -1,13 +1,14 @@
 import pytest
 
-from src.domain.entities.agent_domain import Agent
-from src.domain.exceptions.domain_exceptions import (
+from arcadiumai.domain import (
+    Agent,
+    History,
     InvalidAgentConfigException,
     InvalidConfigTypeException,
     InvalidProviderException,
+    MessageRole,
     UnsupportedConfigException,
 )
-from src.domain.value_objects import History, MessageRole
 
 
 @pytest.mark.unit
@@ -680,7 +681,7 @@ class TestAgentToolMessages:
 @pytest.mark.unit
 class TestAgentWithTools:
     def test_agent_with_tools_attribute(self):
-        from src.domain.value_objects import BaseTool
+        from arcadiumai.domain.value_objects import BaseTool
 
         class MockTool(BaseTool):
             name = "mock_tool"
@@ -725,7 +726,7 @@ class TestAgentWithTools:
         assert isinstance(agent.tools, list)
 
     def test_agent_with_multiple_tools(self):
-        from src.domain.value_objects import BaseTool
+        from arcadiumai.domain.value_objects import BaseTool
 
         class Tool1(BaseTool):
             name = "tool1"

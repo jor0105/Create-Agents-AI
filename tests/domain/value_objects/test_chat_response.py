@@ -1,6 +1,6 @@
 import pytest
 
-from src.domain.value_objects.chat_response import ChatResponse, ToolCallInfo
+from arcadiumai.domain import ChatResponse, ToolCallInfo
 
 
 @pytest.mark.unit

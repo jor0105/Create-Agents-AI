@@ -1,7 +1,5 @@
-from src.domain.value_objects.base_tools import BaseTool
-from src.infra.adapters.Ollama.ollama_tool_schema_formatter import (
-    OllamaToolSchemaFormatter,
-)
+from arcadiumai.domain import BaseTool
+from arcadiumai.infra import OllamaToolSchemaFormatter
 
 
 class MockTool(BaseTool):

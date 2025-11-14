@@ -1,6 +1,6 @@
 import pytest
 
-from src.domain.value_objects.providers import SupportedProviders
+from arcadiumai.domain import SupportedProviders
 
 
 @pytest.mark.unit

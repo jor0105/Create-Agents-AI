@@ -1,6 +1,6 @@
 import pytest
 
-from src.domain.value_objects.message import Message, MessageRole
+from arcadiumai.domain import Message, MessageRole
 
 
 @pytest.mark.unit
@@ -11,7 +11,7 @@ class TestMessageRole:
         assert MessageRole.SYSTEM.value == "system"
         assert MessageRole.TOOL.value == "tool"
 
-    def test_message_role_string_representation(self):
+    def test_message_role_string_reapplication(self):
         assert str(MessageRole.USER) == "user"
         assert str(MessageRole.ASSISTANT) == "assistant"
         assert str(MessageRole.SYSTEM) == "system"

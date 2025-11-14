@@ -5,10 +5,10 @@ from unittest.mock import Mock, patch
 
 import pytest
 
-from src.domain import FileReadException
+from arcadiumai.domain import FileReadException
 
 try:
-    from src.infra.adapters.Tools.Read_Local_File_Tool.constants import (
+    from arcadiumai.infra.adapters.Tools.Read_Local_File_Tool.constants import (
         COMMON_ENCODINGS,
         DOCUMENT_EXTENSIONS,
         EXCEL_EXTENSIONS,
@@ -17,7 +17,7 @@ try:
         TIKTOKEN_ENCODING,
         FileType,
     )
-    from src.infra.adapters.Tools.Read_Local_File_Tool.file_utils import (
+    from arcadiumai.infra.adapters.Tools.Read_Local_File_Tool.file_utils import (
         count_tokens,
         detect_encoding,
         determine_file_type,
@@ -336,7 +336,7 @@ class TestReadFileByType:
 @pytest.mark.unit
 class TestLazyImport:
     def test_lazy_import_raises_on_missing_module(self):
-        from src.infra.adapters.Tools.Read_Local_File_Tool.file_utils import (
+        from arcadiumai.infra.adapters.Tools.Read_Local_File_Tool.file_utils import (
             _lazy_import,
         )
 
@@ -346,7 +346,7 @@ class TestLazyImport:
     def test_lazy_import_returns_module(self):
         import os
 
-        from src.infra.adapters.Tools.Read_Local_File_Tool.file_utils import (
+        from arcadiumai.infra.adapters.Tools.Read_Local_File_Tool.file_utils import (
             _lazy_import,
         )
 

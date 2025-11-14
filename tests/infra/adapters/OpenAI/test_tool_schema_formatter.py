@@ -1,7 +1,7 @@
 import pytest
 
-from src.domain.value_objects.base_tools import BaseTool
-from src.infra.adapters.OpenAI.tool_schema_formatter import ToolSchemaFormatter
+from arcadiumai.domain import BaseTool
+from arcadiumai.infra import ToolSchemaFormatter
 
 
 class MockWeatherTool(BaseTool):

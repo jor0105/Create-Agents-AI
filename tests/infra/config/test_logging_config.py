@@ -4,12 +4,12 @@ import os
 import tempfile
 from pathlib import Path
 
-from src.infra.config.logging_config import (
+from arcadiumai.infra import (
     JSONFormatter,
     LoggingConfig,
+    SensitiveDataFilter,
     SensitiveDataFormatter,
 )
-from src.infra.config.sensitive_data_filter import SensitiveDataFilter
 
 
 class TestSensitiveDataFormatter:

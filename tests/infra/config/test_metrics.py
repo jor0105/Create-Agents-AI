@@ -4,7 +4,7 @@ from datetime import datetime
 
 import pytest
 
-from src.infra.config.metrics import ChatMetrics, MetricsCollector
+from arcadiumai.infra import ChatMetrics, MetricsCollector
 
 
 @pytest.mark.unit
@@ -54,7 +54,7 @@ class TestChatMetrics:
         assert result["tokens_used"] == 100
         assert result["success"] is True
 
-    def test_str_representation_success(self):
+    def test_str_reapplication_success(self):
         metrics = ChatMetrics(model="gpt-5-nano", latency_ms=150.5, tokens_used=100)
 
         string = str(metrics)
@@ -63,7 +63,7 @@ class TestChatMetrics:
         assert "150.50ms" in string
         assert "tokens=100" in string
 
-    def test_str_representation_failure(self):
+    def test_str_reapplication_failure(self):
         metrics = ChatMetrics(model="gpt-5-nano", latency_ms=50.0, success=False)
 
         string = str(metrics)

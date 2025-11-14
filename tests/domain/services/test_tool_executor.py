@@ -3,7 +3,7 @@ import time
 
 import pytest
 
-from src.domain import BaseTool, ToolExecutionResult, ToolExecutor
+from arcadiumai.domain import BaseTool, ToolExecutionResult, ToolExecutor
 
 
 class MockCalculatorTool(BaseTool):

@@ -3,7 +3,7 @@ from unittest.mock import Mock, patch
 
 import pytest
 
-from src.infra.config.retry import retry_with_backoff
+from arcadiumai.infra import retry_with_backoff
 
 
 @pytest.mark.unit
@@ -141,7 +141,9 @@ class TestRetryWithBackoff:
     def test_logging_on_retry(self):
         mock_func = Mock(side_effect=[Exception("Error"), "success"])
 
-        with patch("src.infra.config.retry.LoggingConfig.get_logger") as mock_logger:
+        with patch(
+            "arcadiumai.infra.config.retry.LoggingConfig.get_logger"
+        ) as mock_logger:
             mock_log_instance = Mock()
             mock_logger.return_value = mock_log_instance
 
@@ -157,7 +159,9 @@ class TestRetryWithBackoff:
     def test_logging_on_final_failure(self):
         mock_func = Mock(side_effect=Exception("Persistent error"))
 
-        with patch("src.infra.config.retry.LoggingConfig.get_logger") as mock_logger:
+        with patch(
+            "arcadiumai.infra.config.retry.LoggingConfig.get_logger"
+        ) as mock_logger:
             mock_log_instance = Mock()
             mock_logger.return_value = mock_log_instance
 
@@ -414,7 +418,9 @@ class TestRetryWithBackoff:
 
         mock_func = Mock(side_effect=[Exception("Error"), "success"])
 
-        with patch("src.infra.config.retry.LoggingConfig.get_logger") as mock_logger:
+        with patch(
+            "arcadiumai.infra.config.retry.LoggingConfig.get_logger"
+        ) as mock_logger:
             mock_log_instance = Mock()
             mock_logger.return_value = mock_log_instance
 
