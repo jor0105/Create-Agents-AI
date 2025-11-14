@@ -44,9 +44,9 @@ cp .env.example .env
 ### Primeiro Agente em 3 Linhas
 
 ```python
-from src.presentation import AIAgent
+from application import CreateAgent
 
-agent = AIAgent(provider="openai", model="gpt-4",
+agent = CreateAgent(provider="openai", model="gpt-4",
                 instructions="Você é um assistente útil")
 
 response = agent.chat("Olá!")
@@ -61,10 +61,10 @@ print(response)
 
 ```python
 # OpenAI (GPT-4, GPT-3.5-turbo, GPT-4o)
-agent_openai = AIAgent(provider="openai", model="gpt-4")
+agent_openai = CreateAgent(provider="openai", model="gpt-4")
 
 # Ollama (llama2, mistral, codellama - 100% local e privado)
-agent_local = AIAgent(provider="ollama", model="llama2")
+agent_local = CreateAgent(provider="ollama", model="llama2")
 ```
 
 ### 🔧 Ferramentas Integradas
@@ -72,7 +72,7 @@ agent_local = AIAgent(provider="ollama", model="llama2")
 Adicione capacidades aos seus agentes com ferramentas prontas:
 
 ```python
-agent = AIAgent(
+agent = CreateAgent(
     provider="openai",
     model="gpt-4",
     tools=["currentdate", "readlocalfile"]  # Ferramentas disponíveis
@@ -100,7 +100,7 @@ for name in system_tools.keys():
 **Criar ferramentas customizadas:**
 
 ```python
-from src.domain import BaseTool
+from ..domain import BaseTool
 
 class MyTool(BaseTool):
     name = "my_tool"
@@ -110,7 +110,7 @@ class MyTool(BaseTool):
         return "Resultado"
 
 # Usar ferramenta customizada
-agent = AIAgent(
+agent = CreateAgent(
     provider="openai",
     model="gpt-4",
     tools=["currentdate", MyTool()]  # Sistema + customizada
@@ -150,7 +150,7 @@ agent.export_metrics_prometheus("metrics.prom")
 ### ⚙️ Configurações Personalizadas
 
 ```python
-agent = AIAgent(
+agent = CreateAgent(
     provider="openai",
     model="gpt-4",
     instructions="Seja conciso e técnico",
@@ -207,7 +207,7 @@ O projeto segue **Clean Architecture** e **SOLID principles**:
 
 ```
 ┌─────────────────────────────────────┐
-│        PRESENTATION                 │  ← AIAgent (interface simples)
+│        application                 │  ← CreateAgent (interface simples)
 │     (Controllers/UI)                │
 └──────────────┬──────────────────────┘
                │

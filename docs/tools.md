@@ -21,9 +21,9 @@ Obtém data e hora atuais em qualquer timezone.
 **Uso:**
 
 ```python
-from src.presentation import AIAgent
+from application import CreateAgent
 
-agent = AIAgent(
+agent = CreateAgent(
     provider="openai",
     model="gpt-4",
     tools=["currentdate"]
@@ -64,9 +64,9 @@ poetry install -E file-tools
 **Uso:**
 
 ```python
-from src.presentation import AIAgent
+from application import CreateAgent
 
-agent = AIAgent(
+agent = CreateAgent(
     provider="openai",
     model="gpt-4",
     tools=["readlocalfile"]
@@ -95,7 +95,7 @@ print(response)
 ### Exemplo 1: Ferramenta de Data
 
 ```python
-agent = AIAgent(
+agent = CreateAgent(
     provider="openai",
     model="gpt-4",
     instructions="Você pode verificar data/hora quando necessário",
@@ -111,7 +111,7 @@ response = agent.chat("Que dia da semana é hoje?")
 ```python
 # Certifique-se que instalou: poetry install -E file-tools
 
-agent = AIAgent(
+agent = CreateAgent(
     provider="openai",
     model="gpt-4",
     instructions="Você pode ler arquivos locais",
@@ -124,7 +124,7 @@ response = agent.chat("Resuma o documento relatorio.pdf")
 ### Exemplo 3: Múltiplas Ferramentas
 
 ```python
-agent = AIAgent(
+agent = CreateAgent(
     provider="openai",
     model="gpt-4",
     tools=["currentdate", "readlocalfile"]
@@ -173,8 +173,8 @@ Inclui:
 Use `get_all_available_tools()` para ver todas as ferramentas disponíveis para um agente específico (inclui ferramentas do sistema + ferramentas customizadas adicionadas ao agente):
 
 ```python
-from src.presentation import AIAgent
-from src.domain import BaseTool
+from application import CreateAgent
+from ..domain import BaseTool
 
 class CustomTool(BaseTool):
     name = "custom_tool"
@@ -183,7 +183,7 @@ class CustomTool(BaseTool):
     def execute(self, **kwargs) -> str:
         return "Resultado"
 
-agent = AIAgent(
+agent = CreateAgent(
     provider="openai",
     model="gpt-4",
     tools=["currentdate", CustomTool()]  # Ferramenta do sistema + customizada
@@ -207,9 +207,9 @@ for name, description in tools.items():
 Use `get_system_available_tools()` para ver apenas as ferramentas built-in disponíveis globalmente (não inclui ferramentas customizadas):
 
 ```python
-from src.presentation import AIAgent
+from application import CreateAgent
 
-agent = AIAgent(provider="openai", model="gpt-4")
+agent = CreateAgent(provider="openai", model="gpt-4")
 
 # Obter apenas ferramentas do sistema
 system_tools = agent.get_system_available_tools()
@@ -235,8 +235,8 @@ else:
 ### Exemplo Prático
 
 ```python
-from src.presentation import AIAgent
-from src.domain import BaseTool
+from application import CreateAgent
+from ..domain import BaseTool
 
 # Ferramenta customizada
 class WeatherTool(BaseTool):
@@ -247,12 +247,12 @@ class WeatherTool(BaseTool):
         return f"Previsão para {city}: Ensolarado"
 
 # Agente sem ferramentas customizadas
-agent1 = AIAgent(provider="openai", model="gpt-4")
+agent1 = CreateAgent(provider="openai", model="gpt-4")
 print("Agente 1:", agent1.get_all_available_tools().keys())
 # Saída: dict_keys(['currentdate', 'readlocalfile'])
 
 # Agente com ferramentas customizadas
-agent2 = AIAgent(
+agent2 = CreateAgent(
     provider="openai",
     model="gpt-4",
     tools=["currentdate", WeatherTool()]
@@ -271,7 +271,7 @@ O sistema automaticamente evita duplicatas de ferramentas. Se você adicionar um
 
 ```python
 # Ferramenta do sistema adicionada explicitamente
-agent = AIAgent(
+agent = CreateAgent(
     provider="openai",
     model="gpt-4",
     tools=["currentdate"]  # Adiciona explicitamente uma ferramenta do sistema
@@ -301,7 +301,7 @@ print(list(tools.keys()))  # ['currentdate', 'readlocalfile']
 ### Ferramenta Simples
 
 ```python
-from src.domain import BaseTool
+from ..domain import BaseTool
 
 class CalculatorTool(BaseTool):
     name = "calculator"
@@ -321,7 +321,7 @@ class CalculatorTool(BaseTool):
 ### Ferramenta com Dependências Opcionais
 
 ```python
-from src.domain import BaseTool
+from ..domain import BaseTool
 
 # Lazy import
 try:

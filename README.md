@@ -63,9 +63,9 @@ poetry install -E all
 ### Uso básico em 3 linhas
 
 ```python
-from src.presentation import AIAgent
+from application import CreateAgent
 
-agent = AIAgent(provider="openai", model="gpt-4", name="Meu Assistente", instructions="Você é um assistente útil")
+agent = CreateAgent(provider="openai", model="gpt-4", name="Meu Assistente", instructions="Você é um assistente útil")
 
 response = agent.chat("Olá! Como você está?")
 
@@ -83,7 +83,7 @@ print(response)
 
 ```python
 # Criar agente
-agent = AIAgent(
+agent = CreateAgent(
     provider="openai",
     model="gpt-4",
     name="Assistente Smart",
@@ -108,7 +108,7 @@ agent.chat("Primeira mensagem")
 agent.chat("Segunda mensagem")
 
 # Personalizar tamanho do histórico
-agent = AIAgent(provider="openai", model="gpt-4", history_max_size=20)
+agent = CreateAgent(provider="openai", model="gpt-4", history_max_size=20)
 
 # Limpar quando necessário
 agent.clear_history()
@@ -122,7 +122,7 @@ config = {
     "max_tokens": 1000,     # Limite de resposta
 }
 
-agent = AIAgent(
+agent = CreateAgent(
     provider="openai",
     model="gpt-4",
     name="Assistente",
@@ -153,9 +153,9 @@ agent.export_metrics_prometheus("metrics.prom")
 ### Exemplo 1: Assistente de Programação
 
 ```python
-from src.presentation import AIAgent
+from application import CreateAgent
 
-assistant = AIAgent(
+assistant = CreateAgent(
     provider="openai",
     model="gpt-4",
     name="Code Assistant",
@@ -181,7 +181,7 @@ assistant.clear_history()
 # Certifique-se que Ollama está rodando
 # ollama serve
 
-agent = AIAgent(
+agent = CreateAgent(
     provider="ollama",
     model="llama2",
     name="Local Assistant"
@@ -196,7 +196,7 @@ print(response)
 
 ```python
 # Um para análise
-analyzer = AIAgent(
+analyzer = CreateAgent(
     provider="openai",
     model="gpt-4",
     instructions="Você analisa código e fornece feedback crítico",
@@ -204,7 +204,7 @@ analyzer = AIAgent(
 )
 
 # Outro para documentação
-documentor = AIAgent(
+documentor = CreateAgent(
     provider="openai",
     model="gpt-4",
     instructions="Você escreve documentação clara e profissional",
@@ -223,7 +223,7 @@ print("Documentação:", docs)
 ### Exemplo 4: Verificando Ferramentas Disponíveis
 
 ```python
-from src.domain import BaseTool
+from ..domain import BaseTool
 
 # Criar ferramenta customizada
 class CalculatorTool(BaseTool):
@@ -234,7 +234,7 @@ class CalculatorTool(BaseTool):
         return str(eval(expression))
 
 # Criar agente com ferramentas
-agent = AIAgent(
+agent = CreateAgent(
     provider="openai",
     model="gpt-4",
     tools=["currentdate", CalculatorTool()]
@@ -273,10 +273,10 @@ OLLAMA_API_URL=http://localhost:11434
 
 ## 📊 API Referência
 
-### AIAgent
+### CreateAgent
 
 ```python
-AIAgent(
+CreateAgent(
     provider: str,              # "openai" ou "ollama" (obrigatório)
     model: str,                 # Nome do modelo (obrigatório)
     name: str = None,           # Nome do agente (opcional)
@@ -310,7 +310,7 @@ src/
 ├── application/      # Casos de uso (lógica da aplicação)
 ├── infra/           # Detalhes técnicos (APIs, adapters)
 ├── main/            # Composição e injeção de dependências
-└── presentation/    # Interface pública (AIAgent)
+└── application/    # Interface pública (CreateAgent)
 ```
 
 ## 🤝 Contribuindo

@@ -7,9 +7,9 @@ Aprenda os fundamentos do **AI Agent Creator**.
 ## 🚀 Primeiro Agente
 
 ```python
-from src.presentation import AIAgent
+from application import CreateAgent
 
-agent = AIAgent(
+agent = CreateAgent(
     provider="openai",
     model="gpt-4",
     instructions="Você é um assistente útil"
@@ -76,14 +76,14 @@ agent.clear_history()
 
 ```python
 # Formal
-agent_formal = AIAgent(
+agent_formal = CreateAgent(
     provider="openai",
     model="gpt-4",
     instructions="Use linguagem formal e corporativa"
 )
 
 # Técnico
-agent_tecnico = AIAgent(
+agent_tecnico = CreateAgent(
     provider="openai",
     model="gpt-4",
     instructions="Especialista em Python. Forneça código detalhado"
@@ -95,7 +95,7 @@ agent_tecnico = AIAgent(
 ## 🔧 Configurações Avançadas
 
 ```python
-agent = AIAgent(
+agent = CreateAgent(
     provider="openai",
     model="gpt-4",
     instructions="Assistente customizado",
@@ -115,7 +115,7 @@ agent = AIAgent(
 
 ```python
 # Adicionar ferramentas ao agente
-agent = AIAgent(
+agent = CreateAgent(
     provider="openai",
     model="gpt-4",
     tools=["currentdate"]  # Ferramentas do sistema
@@ -150,7 +150,7 @@ else:
 ### Criar Ferramentas Customizadas
 
 ```python
-from src.domain import BaseTool
+from ..domain import BaseTool
 
 class CalculatorTool(BaseTool):
     name = "calculator"
@@ -164,7 +164,7 @@ class CalculatorTool(BaseTool):
             return f"Erro: {e}"
 
 # Usar ferramenta customizada
-agent = AIAgent(
+agent = CreateAgent(
     provider="openai",
     model="gpt-4",
     tools=["currentdate", CalculatorTool()]  # Sistema + customizada

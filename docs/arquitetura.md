@@ -8,7 +8,7 @@ Documentação da arquitetura do sistema seguindo **Clean Architecture** e **SOL
 
 ```
 ┌─────────────────────────────────────┐
-│        PRESENTATION                 │  AIAgent Controller
+│        application                 │  CreateAgent Controller
 │     (Interface do Usuário)          │
 └──────────────┬──────────────────────┘
                │
@@ -83,15 +83,15 @@ Documentação da arquitetura do sistema seguindo **Clean Architecture** e **SOL
 
 ---
 
-### 4. Presentation (Apresentação)
+### 4. application (Apresentação)
 
-**Localização:** `src/presentation/`
+**Localização:** `src/application/`
 
 **Responsabilidade:** Interface pública com o usuário.
 
 **Componentes:**
 
-- **AIAgent:** Controller principal (fachada simplificada)
+- **CreateAgent:** Controller principal (fachada simplificada)
 
 ---
 
@@ -182,8 +182,8 @@ class ChatAdapterFactory:
 ### Facade Pattern
 
 ```python
-# AIAgent é uma fachada simplificada
-class AIAgent:
+# CreateAgent é uma fachada simplificada
+class CreateAgent:
     def __init__(self, provider, model, ...):
         # Esconde complexidade da criação
         self.__agent = AgentComposer.create_agent(...)
@@ -204,7 +204,7 @@ class Message:
 ## 🔄 Fluxo de Dados
 
 ```
-User → AIAgent.chat()
+User → CreateAgent.chat()
     → ChatWithAgentUseCase.execute()
         → ChatRepository.chat()
             → OpenAIChatAdapter / OllamaChatAdapter
@@ -230,7 +230,7 @@ use_case = ChatWithAgentUseCase(mock_repo)
 
 ```python
 # Trocar provider sem mudar código
-agent = AIAgent(provider="ollama", model="llama2")
+agent = CreateAgent(provider="ollama", model="llama2")
 ```
 
 ### 📈 Escalabilidade

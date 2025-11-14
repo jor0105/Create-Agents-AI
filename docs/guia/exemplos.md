@@ -7,9 +7,9 @@ Casos de uso reais do **AI Agent Creator** para inspirar suas aplicações.
 ## 🎓 Assistente Educacional
 
 ```python
-from src.presentation import AIAgent
+from application import CreateAgent
 
-professor = AIAgent(
+professor = CreateAgent(
     provider="openai",
     model="gpt-4",
     name="Professor Virtual",
@@ -35,7 +35,7 @@ print(response)
 ## 💼 Assistente Corporativo
 
 ```python
-assistente_corporativo = AIAgent(
+assistente_corporativo = CreateAgent(
     provider="openai",
     model="gpt-4",
     name="Assistente Executivo",
@@ -62,7 +62,7 @@ print(response)
 ## 👨‍💻 Code Assistant (Assistente de Programação)
 
 ```python
-code_expert = AIAgent(
+code_expert = CreateAgent(
     provider="openai",
     model="gpt-4",
     name="Python Expert",
@@ -97,7 +97,7 @@ print(code_review)
 ## 🌐 Tradutor Profissional
 
 ```python
-tradutor = AIAgent(
+tradutor = CreateAgent(
     provider="openai",
     model="gpt-4",
     name="Tradutor Especializado",
@@ -129,7 +129,7 @@ print(response)
 ## 📊 Analista de Dados
 
 ```python
-analista = AIAgent(
+analista = CreateAgent(
     provider="openai",
     model="gpt-4",
     name="Data Analyst",
@@ -161,7 +161,7 @@ print(response)
 ## 🤖 Chatbot Interativo Completo
 
 ```python
-chatbot = AIAgent(
+chatbot = CreateAgent(
     provider="openai",
     model="gpt-4",
     name="Chatbot Amigável",
@@ -209,7 +209,7 @@ print(f"  - Modelo usado: {config['model']}")
 ## 🌍 Agente com Ferramentas Múltiplas
 
 ```python
-from src.domain import BaseTool
+from ..domain import BaseTool
 
 # Criar ferramenta customizada
 class WebSearchTool(BaseTool):
@@ -221,7 +221,7 @@ class WebSearchTool(BaseTool):
         return f"Resultados para: {query}"
 
 # Requer: poetry install -E file-tools
-agente_completo = AIAgent(
+agente_completo = CreateAgent(
     provider="openai",
     model="gpt-4",
     name="Assistente Completo",
@@ -272,19 +272,19 @@ print(response)  # Usa web_search
 ```python
 # Criar múltiplos agentes especializados
 agentes = {
-    "python": AIAgent(
+    "python": CreateAgent(
         provider="openai",
         model="gpt-4",
         name="Python Expert",
         instructions="Especialista em Python. Forneça código limpo e eficiente."
     ),
-    "sql": AIAgent(
+    "sql": CreateAgent(
         provider="openai",
         model="gpt-4",
         name="SQL Expert",
         instructions="Especialista em SQL. Otimize queries e explique planos de execução."
     ),
-    "devops": AIAgent(
+    "devops": CreateAgent(
         provider="openai",
         model="gpt-4",
         name="DevOps Expert",
@@ -314,7 +314,7 @@ print(f"DevOps Expert: {resposta_devops}\n")
 
 ```python
 # Requer Ollama instalado e rodando
-agente_local = AIAgent(
+agente_local = CreateAgent(
     provider="ollama",
     model="llama2",  # ou mistral, codellama, etc
     name="Assistente Privado",
@@ -336,7 +336,7 @@ response = agente_local.chat(f"Analise: {dados_confidenciais}")
 ## 📈 Monitoramento com Métricas
 
 ```python
-agente_monitored = AIAgent(
+agente_monitored = CreateAgent(
     provider="openai",
     model="gpt-4",
     name="Agente Monitorado",
@@ -381,7 +381,7 @@ print("\n✅ Métricas exportadas!")
 ### Gerenciar Contexto Dinamicamente
 
 ```python
-agente = AIAgent(provider="openai", model="gpt-4", name="Smart")
+agente = CreateAgent(provider="openai", model="gpt-4", name="Smart")
 
 # Conversa longa
 for i in range(20):
@@ -396,7 +396,7 @@ agente.chat("Novo assunto completamente diferente")
 
 ```python
 # Usar modelo mais barato para tarefas simples
-agente_economico = AIAgent(
+agente_economico = CreateAgent(
     provider="openai",
     model="gpt-3.5-turbo",  # Mais barato que GPT-4
     name="Economico",
@@ -404,7 +404,7 @@ agente_economico = AIAgent(
 )
 
 # Usar GPT-4 apenas quando necessário
-agente_premium = AIAgent(
+agente_premium = CreateAgent(
     provider="openai",
     model="gpt-4",
     name="Premium"

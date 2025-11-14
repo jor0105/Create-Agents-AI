@@ -66,9 +66,9 @@ cp .env.example .env
 ### 4. Testar Instalação
 
 ```python
-from src.presentation import AIAgent
+from application import CreateAgent
 
-agent = AIAgent(provider="openai", model="gpt-4")
+agent = CreateAgent(provider="openai", model="gpt-4")
 print("✅ Instalação bem-sucedida!")
 ```
 
@@ -92,7 +92,7 @@ OPENAI_API_KEY=sk-proj-sua-chave
 ### 3. Testar
 
 ```python
-agent = AIAgent(provider="openai", model="gpt-4")
+agent = CreateAgent(provider="openai", model="gpt-4")
 response = agent.chat("2+2=?")
 print(response)  # Deve responder "4"
 ```
@@ -136,7 +136,7 @@ ollama list
 ### 3. Usar no código
 
 ```python
-agent = AIAgent(provider="ollama", model="llama2")
+agent = CreateAgent(provider="ollama", model="llama2")
 response = agent.chat("Explique machine learning")
 # 100% local, privado, sem custos
 ```

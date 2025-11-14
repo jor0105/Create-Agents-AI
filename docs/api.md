@@ -1,17 +1,17 @@
 # 📚 API Reference
 
-Documentação completa da API pública do **AI Agent Creator**.
+Documentação completa da API pública do **Arcadium AI**.
 
 ---
 
-## 🤖 AIAgent
+## 🤖 CreateAgent
 
 O controller principal para interação com agentes de IA.
 
 ### Construtor
 
 ```python
-AIAgent(
+CreateAgent(
     provider: str,
     model: str,
     name: Optional[str] = None,
@@ -37,9 +37,9 @@ AIAgent(
 **Exemplo:**
 
 ```python
-from src.presentation import AIAgent
+from application import CreateAgent
 
-agent = AIAgent(
+agent = CreateAgent(
     provider="openai",
     model="gpt-4.1-mini",
     instructions="Você é um assistente técnico",
@@ -140,7 +140,7 @@ def get_all_available_tools() -> Dict[str, str]
 **Exemplo:**
 
 ```python
-from src.domain import BaseTool
+from ..domain import BaseTool
 
 # Ferramenta customizada
 class MyTool(BaseTool):
@@ -151,7 +151,7 @@ class MyTool(BaseTool):
         return "Resultado"
 
 # Criar agente com ferramentas
-agent = AIAgent(
+agent = CreateAgent(
     provider="openai",
     model="gpt-4",
     tools=["currentdate", MyTool()]
@@ -189,7 +189,7 @@ def get_system_available_tools() -> Dict[str, str]
 **Exemplo:**
 
 ```python
-agent = AIAgent(provider="openai", model="gpt-4")
+agent = CreateAgent(provider="openai", model="gpt-4")
 
 # Listar apenas ferramentas do sistema
 system_tools = agent.get_system_available_tools()
@@ -304,7 +304,7 @@ Obtém data/hora em qualquer timezone.
 **Uso:**
 
 ```python
-agent = AIAgent(
+agent = CreateAgent(
     provider="openai",
     model="gpt-4.1-mini",
     tools=["currentdate"]
@@ -340,7 +340,7 @@ Lê arquivos locais em múltiplos formatos.
 **Uso:**
 
 ```python
-agent = AIAgent(
+agent = CreateAgent(
     provider="openai",
     model="gpt-4.1-mini",
     tools=["readlocalfile"]
@@ -369,7 +369,7 @@ config = {
     "top_k": 40,          # >0: (Ollama)
 }
 
-agent = AIAgent(provider="openai", model="gpt-4.1-mini", config=config)
+agent = CreateAgent(provider="openai", model="gpt-4.1-mini", config=config)
 ```
 
 **Parâmetros suportados:**
@@ -387,24 +387,24 @@ agent = AIAgent(provider="openai", model="gpt-4.1-mini", config=config)
 ## 💡 Exemplos de Uso
 
 ```python
-from src.presentation import AIAgent
+from application import CreateAgent
 
 # Básico
-agent = AIAgent(provider="openai", model="gpt-4.1-mini")
+agent = CreateAgent(provider="openai", model="gpt-4.1-mini")
 response = agent.chat("Olá!")
 
 # Com ferramentas
-agent = AIAgent(
+agent = CreateAgent(
     provider="openai",
     model="gpt-4.1-mini",
     tools=["currentdate", "readlocalfile"]
 )
 
 # Local (Ollama)
-agent = AIAgent(provider="ollama", model="llama2")
+agent = CreateAgent(provider="ollama", model="llama2")
 
 # Personalizado
-agent = AIAgent(
+agent = CreateAgent(
     provider="openai",
     model="gpt-4.1-mini",
     instructions="Seja técnico",
