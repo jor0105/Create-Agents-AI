@@ -1,7 +1,7 @@
 import time
 from typing import Any, Dict, List, Optional
 
-from ....application import ChatRepository
+from ....application.interfaces import ChatRepository
 from ....domain import BaseTool, ChatException, ToolExecutor
 from ...config import ChatMetrics, EnvironmentConfig, LoggingConfig, retry_with_backoff
 from .client_openai import ClientOpenAI

@@ -1,15 +1,15 @@
 from typing import Any, Dict, List, Optional, Sequence, Union
 
-from ...application import (
-    ChatInputDTO,
+from ...domain import Agent, BaseTool
+from ...infra import ChatMetrics, LoggingConfig
+from ...main import AgentComposer
+from ..dtos import ChatInputDTO
+from ..use_cases import (
     ChatWithAgentUseCase,
     GetAgentConfigUseCase,
     GetAllAvailableToolsUseCase,
     GetSystemAvailableToolsUseCase,
 )
-from ...domain import Agent, BaseTool
-from ...infra import ChatMetrics, LoggingConfig
-from ...main import AgentComposer
 
 
 class CreateAgent:

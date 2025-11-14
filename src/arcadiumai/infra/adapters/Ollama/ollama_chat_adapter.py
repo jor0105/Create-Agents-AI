@@ -4,7 +4,7 @@ from typing import Any, Dict, List, Optional
 
 from ollama import ChatResponse, chat
 
-from ....application import ChatRepository
+from ....application.interfaces import ChatRepository
 from ....domain import BaseTool, ChatException, ToolExecutor
 from ...config import ChatMetrics, EnvironmentConfig, LoggingConfig, retry_with_backoff
 from .ollama_tool_schema_formatter import OllamaToolSchemaFormatter

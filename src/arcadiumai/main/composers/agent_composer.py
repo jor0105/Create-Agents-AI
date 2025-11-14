@@ -1,8 +1,8 @@
 from typing import Any, Dict, Optional, Sequence, Union
 
-from ...application import (
+from ...application.dtos import CreateAgentInputDTO
+from ...application.use_cases import (
     ChatWithAgentUseCase,
-    CreateAgentInputDTO,
     CreateAgentUseCase,
     GetAgentConfigUseCase,
     GetAllAvailableToolsUseCase,
