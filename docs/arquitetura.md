@@ -45,6 +45,13 @@ Documentação da arquitetura do sistema seguindo **Clean Architecture** e **SOL
 - **Base Classes:** `BaseTool` (para ferramentas)
 - **Exceptions:** Erros de domínio
 
+**Componentes:**
+
+- **Entities:** `Agent` (entidade principal)
+- **Value Objects:** `Message`, `MessageRole`, `History`, `SupportedConfigs`, `SupportedProviders`, `BaseTool` (ferramentas)
+- **Domain Services:** `ToolExecutor`, `ToolExecutionResult` (execução segura de ferramentas)
+- **Exceptions:** `domain.exceptions` (ex.: `AgentException`, `InvalidAgentConfigException`, `UnsupportedConfigException`)
+
 ---
 
 ### 2. Application (Aplicação)
@@ -55,12 +62,14 @@ Documentação da arquitetura do sistema seguindo **Clean Architecture** e **SOL
 
 **Componentes:**
 
-- **Use Cases:**
-  - `CreateAgentUseCase` - Criar agente
-  - `ChatWithAgentUseCase` - Conversar com agente
-  - `GetAgentConfigUseCase` - Obter configurações
-- **DTOs:** Transferência de dados entre camadas
-- **Interfaces:** `ChatRepository` (contrato para adapters)
+- **Facade / Controller:** `CreateAgent` — fachada simples que cria agentes e expõe métodos como `chat`, `get_configs`, `get_all_available_tools`, `clear_history`, `export_metrics_*`.
+- **Use Cases (application/use_cases):**
+  - `CreateAgentUseCase` — criação e validação de agentes (invocado por `AgentComposer`).
+  - `ChatWithAgentUseCase` — orquestra mensagens entre `Agent` e `ChatRepository` (adapters).
+  - `GetAgentConfigUseCase` — retorna as configurações do agente.
+  - `GetAllAvailableToolsUseCase` / `GetSystemAvailableToolsUseCase` — listagem de tools disponíveis.
+- **DTOs (application/dtos):** Objetos de transferência como `CreateAgentInputDTO`, `ChatInputDTO`, `AgentConfigOutputDTO` usados para comunicação entre controller/use-cases.
+- **Interfaces (application/interfaces):** `ChatRepository` — contrato que os adapters (`OpenAIChatAdapter`, `OllamaChatAdapter`) implementam para manter a camada de aplicação independente das integrações.
 
 ---
 
@@ -80,18 +89,6 @@ Documentação da arquitetura do sistema seguindo **Clean Architecture** e **SOL
   - `ReadLocalFileTool` - Leitura de arquivos
 - **Factory:** `ChatAdapterFactory` - Criação de adapters
 - **Config:** `EnvironmentConfig`, `LoggingConfig`, `MetricsCollector`
-
----
-
-### 4. application (Apresentação)
-
-**Localização:** `src/application/`
-
-**Responsabilidade:** Interface pública com o usuário.
-
-**Componentes:**
-
-- **CreateAgent:** Controller principal (fachada simplificada)
 
 ---
 
@@ -247,4 +244,4 @@ agent = CreateAgent(provider="ollama", model="llama2")
 
 ---
 
-**Versão:** 0.1.0 | **Atualização:** Novembro 2025
+**Versão:** 0.1.0 | **Atualização:** 17/11/2025

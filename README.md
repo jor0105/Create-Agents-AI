@@ -1,6 +1,6 @@
 # 🤖 AI Agent Creator
 
-Um sistema modular e profissional para criar agentes de IA com suporte a múltiplos provedores (OpenAI, Ollama, Gemini e mais) e ferramentas.
+Um sistema modular e profissional para criar agentes de IA com suporte a múltiplos provedores (OpenAI e Ollama) e ferramentas.
 
 ## ⚡ Quick Start
 
@@ -63,7 +63,7 @@ poetry install -E all
 ### Uso básico em 3 linhas
 
 ```python
-from application import CreateAgent
+from arcadiumai import CreateAgent
 
 agent = CreateAgent(provider="openai", model="gpt-4", name="Meu Assistente", instructions="Você é um assistente útil")
 
@@ -153,7 +153,7 @@ agent.export_metrics_prometheus("metrics.prom")
 ### Exemplo 1: Assistente de Programação
 
 ```python
-from application import CreateAgent
+from arcadiumai import CreateAgent
 
 assistant = CreateAgent(
     provider="openai",
@@ -223,12 +223,19 @@ print("Documentação:", docs)
 ### Exemplo 4: Verificando Ferramentas Disponíveis
 
 ```python
-from ..domain import BaseTool
+from arcadiumai import BaseTool
 
 # Criar ferramenta customizada
 class CalculatorTool(BaseTool):
     name = "calculator"
     description = "Realiza cálculos matemáticos"
+    parameters = {
+        "type": "object",
+        "properties": {
+            "expression": {"type": "string", "description": "Expressão matemática"}
+        },
+        "required": ["expression"]
+    }
 
     def execute(self, expression: str) -> str:
         return str(eval(expression))
@@ -267,8 +274,6 @@ Crie um arquivo `.env`:
 # OpenAI
 OPENAI_API_KEY=sk-xxx...
 
-# Ollama (opcional)
-OLLAMA_API_URL=http://localhost:11434
 ```
 
 ## 📊 API Referência
@@ -306,11 +311,12 @@ Este projeto segue **Clean Architecture** e **SOLID Principles**:
 
 ```
 src/
-├── domain/           # Regras de negócio (independente de tecnologia)
-├── application/      # Casos de uso (lógica da aplicação)
-├── infra/           # Detalhes técnicos (APIs, adapters)
-├── main/            # Composição e injeção de dependências
-└── application/    # Interface pública (CreateAgent)
+└─ arcadiumai/                # Pacote principal
+    ├─ domain/                 # Regras de negócio (entidades, services, value_objects, exceptions)
+    ├─ application/            # Casos de uso e DTOs (lógica da aplicação)
+    ├─ infra/                  # Implementações externas (adapters, factories, config)
+    ├─ main/                   # Composição e injeção de dependências (composers)
+    └─ utils/                  # Utilitários (text_sanitizer, helpers)
 ```
 
 ## 🤝 Contribuindo
@@ -391,4 +397,4 @@ MIT - Use livremente em seus projetos!
 ---
 
 **Versão:** 0.1.0
-**Última atualização:** Outubro 2025
+**Última atualização:** 17/11/2025

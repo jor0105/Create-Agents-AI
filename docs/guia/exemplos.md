@@ -7,11 +7,11 @@ Casos de uso reais do **AI Agent Creator** para inspirar suas aplicações.
 ## 🎓 Assistente Educacional
 
 ```python
-from application import CreateAgent
+from arcadiumai import CreateAgent
 
 professor = CreateAgent(
     provider="openai",
-    model="gpt-4",
+    model="gpt-5-nano",
     name="Professor Virtual",
     instructions="""
     Você é um professor paciente e didático.
@@ -37,7 +37,7 @@ print(response)
 ```python
 assistente_corporativo = CreateAgent(
     provider="openai",
-    model="gpt-4",
+    model="gpt-5",
     name="Assistente Executivo",
     instructions="""
     Você é um assistente executivo profissional.
@@ -64,7 +64,7 @@ print(response)
 ```python
 code_expert = CreateAgent(
     provider="openai",
-    model="gpt-4",
+    model="gpt-4.1-mini",
     name="Python Expert",
     instructions="""
     Você é um especialista em Python e boas práticas.
@@ -99,7 +99,7 @@ print(code_review)
 ```python
 tradutor = CreateAgent(
     provider="openai",
-    model="gpt-4",
+    model="gpt-4o",
     name="Tradutor Especializado",
     instructions="""
     Você é um tradutor profissional.
@@ -130,8 +130,8 @@ print(response)
 
 ```python
 analista = CreateAgent(
-    provider="openai",
-    model="gpt-4",
+    provider="ollama",
+    model="granite4:latest",    # Seu modelo ollama instalado
     name="Data Analyst",
     instructions="""
     Você é um analista de dados experiente.
@@ -209,12 +209,22 @@ print(f"  - Modelo usado: {config['model']}")
 ## 🌍 Agente com Ferramentas Múltiplas
 
 ```python
-from ..domain import BaseTool
+from arcadiumai import BaseTool
 
 # Criar ferramenta customizada
 class WebSearchTool(BaseTool):
     name = "web_search"
     description = "Busca informações na internet"
+    parameters = {
+        "type": "object",
+        "properties": {
+            "query": {
+                "type": "string",
+                "description": "Consulta de busca a ser realizada"
+            }
+        },
+        "required": ["query"]
+    }
 
     def execute(self, query: str) -> str:
         # Implementação da busca
@@ -223,7 +233,7 @@ class WebSearchTool(BaseTool):
 # Requer: poetry install -E file-tools
 agente_completo = CreateAgent(
     provider="openai",
-    model="gpt-4",
+    model="gpt-5",
     name="Assistente Completo",
     instructions="""
     Você é um assistente com múltiplas capacidades.
@@ -398,7 +408,7 @@ agente.chat("Novo assunto completamente diferente")
 # Usar modelo mais barato para tarefas simples
 agente_economico = CreateAgent(
     provider="openai",
-    model="gpt-3.5-turbo",  # Mais barato que GPT-4
+    model="gpt-5-nano",  # Mais barato que GPT-5
     name="Economico",
     history_max_size=5  # Menos contexto = menos tokens
 )
@@ -406,13 +416,13 @@ agente_economico = CreateAgent(
 # Usar GPT-4 apenas quando necessário
 agente_premium = CreateAgent(
     provider="openai",
-    model="gpt-4",
+    model="gpt-5",
     name="Premium"
 )
 
 # Rotear baseado em complexidade
 def rotear_agente(pergunta):
-    if len(pergunta) < 50:  # Pergunta simples
+    if len(pergunta) < 300:  # Pergunta simples
         return agente_economico.chat(pergunta)
     else:  # Pergunta complexa
         return agente_premium.chat(pergunta)
@@ -430,4 +440,4 @@ Explore mais recursos:
 
 ---
 
-**Versão:** 0.1.0 | **Atualização:** Novembro 2025
+**Versão:** 0.1.0 | **Atualização:** 17/11/2025

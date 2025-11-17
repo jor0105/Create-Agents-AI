@@ -7,7 +7,7 @@ Aprenda os fundamentos do **AI Agent Creator**.
 ## 🚀 Primeiro Agente
 
 ```python
-from application import CreateAgent
+from arcadiumai import CreateAgent
 
 agent = CreateAgent(
     provider="openai",
@@ -36,14 +36,30 @@ response = agent.chat("E a população?")  # Usa contexto
 ```python
 print("Chatbot iniciado! Digite 'sair' para encerrar.\n")
 
-while True:
-    user_input = input("Você: ")
+try:
+    while True:
+        user_input = input("Você: ").strip()
 
-    if user_input.lower() in ['sair', 'exit']:
-        break
+        if not user_input:
+            # ignora entradas vazias
+            continue
 
-    response = agent.chat(user_input)
-    print(f"Bot: {response}\n")
+        if user_input.lower() in ("sair", "exit", "quit"):
+            print("Encerrando chat. Até logo!")
+            break
+
+        try:
+            response = agent.chat(user_input)
+        except Exception as e:
+            # evita crash se agent.chat falhar; logue ou mostre uma mensagem amigável
+            print(f"Erro ao gerar resposta: {e}")
+            continue
+
+        # Se response não for string, adapte a formatação conforme necessário
+        print(f"Bot: {response}\n")
+
+except KeyboardInterrupt:
+    print("\nChat interrompido pelo usuário. Saindo...")
 ```
 
 ---
@@ -154,14 +170,20 @@ from ..domain import BaseTool
 
 class CalculatorTool(BaseTool):
     name = "calculator"
-    description = "Realiza cálculos matemáticos"
+    description = "Performs mathematical calculations"
+    parameters = {
+        "type": "object",
+        "properties": {
+            "expression": {
+                "type": "string",
+                "description": "Mathematical expression to evaluate"
+            }
+        },
+        "required": ["expression"]
+    }
 
     def execute(self, expression: str) -> str:
-        try:
-            result = eval(expression)
-            return f"Resultado: {result}"
-        except Exception as e:
-            return f"Erro: {e}"
+        return str(eval(expression))
 
 # Usar ferramenta customizada
 agent = CreateAgent(
@@ -197,4 +219,4 @@ agent.export_metrics_prometheus("metrics.prom")
 
 ---
 
-**Versão:** 0.1.0 | **Atualização:** Novembro 2025
+**Versão:** 0.1.0 | **Atualização:** 17/11/2025

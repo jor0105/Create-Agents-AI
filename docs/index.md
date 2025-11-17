@@ -14,7 +14,7 @@
 **AI Agent Creator** é um framework Python que permite criar agentes conversacionais inteligentes de forma profissional:
 
 ✅ **Múltiplos provedores**: OpenAI e Ollama (local) com fácil integração
-✅ **Ferramentas extensíveis**: CurrentDateTool e ReadLocalFileTool (PDF, Excel, CSV)
+✅ **Ferramentas extensíveis**: CurrentDateTool e ReadLocalFileTool (PDF, Excel, CSV e Parquet)
 ✅ **Histórico automático**: Conversas contextualizadas sem esforço
 ✅ **Métricas integradas**: Monitore performance em JSON ou Prometheus
 ✅ **Arquitetura limpa**: Código testável, manutenível e escalável seguindo SOLID
@@ -44,7 +44,7 @@ cp .env.example .env
 ### Primeiro Agente em 3 Linhas
 
 ```python
-from application import CreateAgent
+from arcadiumai import CreateAgent
 
 agent = CreateAgent(provider="openai", model="gpt-4",
                 instructions="Você é um assistente útil")
@@ -95,25 +95,37 @@ for name in system_tools.keys():
 **Ferramentas Disponíveis:**
 
 - `currentdate` - Data/hora em qualquer timezone (sempre disponível)
-- `readlocalfile` - Lê PDF, Excel, CSV, Parquet, JSON, YAML, TXT (requer `poetry install -E file-tools`)
+- `readlocalfile` - Lê PDF, Excel, CSV, Parquet, JSON, YAML, TXT (requer
+`poetry install -E file-tools`)
 
 **Criar ferramentas customizadas:**
 
 ```python
-from ..domain import BaseTool
+from arcadiumai import BaseTool
 
-class MyTool(BaseTool):
-    name = "my_tool"
-    description = "Minha ferramenta personalizada"
+class CalculatorTool(BaseTool):
+    name = "calculator"
+    description = "Performs mathematical calculations"
+    parameters = {
+        "type": "object",
+        "properties": {
+            "expression": {
+                "type": "string",
+                "description": "Mathematical expression to evaluate",
+            }
+        },
+        "required": ["expression"]
+    }
 
-    def execute(self, **kwargs) -> str:
-        return "Resultado"
+    def execute(self, expression: str) -> str:
+        return str(eval(expression))
+
 
 # Usar ferramenta customizada
 agent = CreateAgent(
     provider="openai",
     model="gpt-4",
-    tools=["currentdate", MyTool()]  # Sistema + customizada
+    tools=["currentdate", CalculatorTool()]  # Sistema + customizada
 )
 
 # Ver todas (sistema + customizadas)
@@ -178,9 +190,6 @@ agent = CreateAgent(
 
 - **[Arquitetura](arquitetura.md)** - Clean Architecture e padrões de design
 - **[CI/CD](ci-cd.md)** - Workflows e quality checks
-- **[Logging - Guia Iniciantes](logs/logging_guia_iniciantes.md)** - Sistema de logs
-- **[Logging - Visual Guide](logs/logging_visual_guide.md)** - Logs na prática
-
 ---
 
 ## 🏗️ Por Que Usar Este Framework?
@@ -269,6 +278,6 @@ MIT - Use livremente em seus projetos.
 ---
 
 **Versão:** 0.1.0
-**Última atualização:** Novembro 2025
-**Status:** 🚀 Em desenvolvimento ativo
+**Última atualização:** 17/11/2025
+**Status:** 🚀 Projeto publicado! Aberto para contribuições e sugestões.
 ````

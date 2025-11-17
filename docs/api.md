@@ -37,7 +37,7 @@ CreateAgent(
 **Exemplo:**
 
 ```python
-from application import CreateAgent
+from arcadiumai import CreateAgent
 
 agent = CreateAgent(
     provider="openai",
@@ -140,15 +140,33 @@ def get_all_available_tools() -> Dict[str, str]
 **Exemplo:**
 
 ```python
-from ..domain import BaseTool
+from arcadiumai import BaseTool
 
 # Ferramenta customizada
 class MyTool(BaseTool):
     name = "my_tool"
     description = "Minha ferramenta personalizada"
 
+    parameters = {
+        "type": "object",
+        "properties": {
+            "input": {
+                "type": "string",
+                "description": "Texto de entrada para a ferramenta"
+            },
+            "limit": {
+                "type": "integer",
+                "description": "(Opcional) Limite de itens a retornar"
+            }
+        },
+        "required": ["input"]
+    }
+
     def execute(self, **kwargs) -> str:
-        return "Resultado"
+        # Implementação da ferramenta (exemplo)
+        input_val = kwargs.get("input", "")
+        limit = kwargs.get("limit", None)
+        return f"Resultado para: {input_val}" + (f" (limit={limit})" if limit is not None else "")
 
 # Criar agente com ferramentas
 agent = CreateAgent(
@@ -387,7 +405,7 @@ agent = CreateAgent(provider="openai", model="gpt-4.1-mini", config=config)
 ## 💡 Exemplos de Uso
 
 ```python
-from application import CreateAgent
+from arcadiumai import CreateAgent
 
 # Básico
 agent = CreateAgent(provider="openai", model="gpt-4.1-mini")
@@ -415,4 +433,4 @@ agent = CreateAgent(
 
 ---
 
-**Versão:** 0.1.0 | **Atualização:** Novembro 2025
+**Versão:** 0.1.0 | **Atualização:** 17/11/2025

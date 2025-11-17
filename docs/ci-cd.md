@@ -8,7 +8,7 @@ Workflows automatizados do projeto com GitHub Actions.
 
 ### 1. Quality Checks (CI)
 
-**Arquivo:** `.github/workflows/ci.yml`
+**Arquivo:** `.github/workflows/pipeline.yml`
 
 **Executa:**
 

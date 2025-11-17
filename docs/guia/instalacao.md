@@ -66,7 +66,7 @@ cp .env.example .env
 ### 4. Testar Instalação
 
 ```python
-from application import CreateAgent
+from arcadiumai import CreateAgent
 
 agent = CreateAgent(provider="openai", model="gpt-4")
 print("✅ Instalação bem-sucedida!")
@@ -182,4 +182,4 @@ ollama list   # Verifique modelos
 
 ---
 
-**Versão:** 0.1.0 | **Atualização:** Novembro 2025
+**Versão:** 0.1.0 | **Atualização:** 17/11/2025

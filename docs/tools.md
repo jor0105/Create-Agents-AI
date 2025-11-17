@@ -21,7 +21,7 @@ Obtém data e hora atuais em qualquer timezone.
 **Uso:**
 
 ```python
-from application import CreateAgent
+from arcadiumai import CreateAgent
 
 agent = CreateAgent(
     provider="openai",
@@ -64,7 +64,7 @@ poetry install -E file-tools
 **Uso:**
 
 ```python
-from application import CreateAgent
+from arcadiumai import CreateAgent
 
 agent = CreateAgent(
     provider="openai",
@@ -173,8 +173,7 @@ Inclui:
 Use `get_all_available_tools()` para ver todas as ferramentas disponíveis para um agente específico (inclui ferramentas do sistema + ferramentas customizadas adicionadas ao agente):
 
 ```python
-from application import CreateAgent
-from ..domain import BaseTool
+from arcadiumai import CreateAgent, BaseTool
 
 class CustomTool(BaseTool):
     name = "custom_tool"
@@ -207,7 +206,7 @@ for name, description in tools.items():
 Use `get_system_available_tools()` para ver apenas as ferramentas built-in disponíveis globalmente (não inclui ferramentas customizadas):
 
 ```python
-from application import CreateAgent
+from arcadiumai import CreateAgent
 
 agent = CreateAgent(provider="openai", model="gpt-4")
 
@@ -235,8 +234,7 @@ else:
 ### Exemplo Prático
 
 ```python
-from application import CreateAgent
-from ..domain import BaseTool
+from arcadiumai import CreateAgent, BaseTool
 
 # Ferramenta customizada
 class WeatherTool(BaseTool):
@@ -298,10 +296,10 @@ print(list(tools.keys()))  # ['currentdate', 'readlocalfile']
 
 ## 🎨 Criar Suas Próprias Ferramentas
 
-### Ferramenta Simples
+### Ferramenta Própria
 
 ```python
-from ..domain import BaseTool
+from arcadiumai import BaseTool
 
 class CalculatorTool(BaseTool):
     name = "calculator"
@@ -318,34 +316,6 @@ class CalculatorTool(BaseTool):
         return str(eval(expression))
 ```
 
-### Ferramenta com Dependências Opcionais
-
-```python
-from ..domain import BaseTool
-
-# Lazy import
-try:
-    import numpy as np
-    DEPENDENCIES_AVAILABLE = True
-except ImportError as e:
-    DEPENDENCIES_AVAILABLE = False
-    IMPORT_ERROR = e
-
-class MLTool(BaseTool):
-    name = "ml_tool"
-    description = "Ferramenta com ML"
-
-    def __init__(self):
-        if not DEPENDENCIES_AVAILABLE:
-            raise RuntimeError(
-                f"MLTool requires: pip install ai-agent[ml-tools]\n"
-                f"Error: {IMPORT_ERROR}"
-            )
-
-    def execute(self, data: str) -> str:
-        # Sua lógica aqui
-        pass
-```
 
 ---
 
@@ -361,8 +331,8 @@ R: Use `agent.get_all_available_tools()` para listar.
 R: Você receberá erro claro: `pip install ai-agent[file-tools]`
 
 **P: Posso criar minhas próprias ferramentas?**
-R: Sim! Siga o padrão de lazy loading e estenda `BaseTool`.
+R: Sim! Siga o padrão de ferramentas próprias e estenda `BaseTool`.
 
 ---
 
-**Última atualização:** Novembro 2025
+**Última atualização:** 17/11/2025
