@@ -4,7 +4,7 @@ from unittest.mock import Mock
 
 import pytest
 
-from arcadiumai.infra import ToolCallParser
+from createagents.infra import ToolCallParser
 
 
 class MockOutputItem:

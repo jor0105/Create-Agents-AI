@@ -1,6 +1,6 @@
 import pytest
 
-from arcadiumai.domain import Message, MessageRole
+from createagents.domain import Message, MessageRole
 
 
 @pytest.mark.unit

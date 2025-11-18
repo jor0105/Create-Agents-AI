@@ -8,7 +8,7 @@ Um sistema modular e profissional para criar agentes de IA com suporte a múltip
 
 ```bash
 # Clone o repositório
-git clone https://github.com/jor0105/AI_Agent.git
+git clone https://github.com/jor0105/Creator-Agents-AI.git
 cd AI_Agent
 
 # Instalação básica (sem ferramentas pesadas)
@@ -63,7 +63,7 @@ poetry install -E all
 ### Uso básico em 3 linhas
 
 ```python
-from arcadiumai import CreateAgent
+from createagents import CreateAgent
 
 agent = CreateAgent(provider="openai", model="gpt-4", name="Meu Assistente", instructions="Você é um assistente útil")
 
@@ -153,7 +153,7 @@ agent.export_metrics_prometheus("metrics.prom")
 ### Exemplo 1: Assistente de Programação
 
 ```python
-from arcadiumai import CreateAgent
+from createagents import CreateAgent
 
 assistant = CreateAgent(
     provider="openai",
@@ -223,7 +223,7 @@ print("Documentação:", docs)
 ### Exemplo 4: Verificando Ferramentas Disponíveis
 
 ```python
-from arcadiumai import BaseTool
+from createagents import BaseTool
 
 # Criar ferramenta customizada
 class CalculatorTool(BaseTool):
@@ -311,7 +311,7 @@ Este projeto segue **Clean Architecture** e **SOLID Principles**:
 
 ```
 src/
-└─ arcadiumai/                # Pacote principal
+└─ createagents/                # Pacote principal
     ├─ domain/                 # Regras de negócio (entidades, services, value_objects, exceptions)
     ├─ application/            # Casos de uso e DTOs (lógica da aplicação)
     ├─ infra/                  # Implementações externas (adapters, factories, config)

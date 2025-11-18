@@ -2,9 +2,9 @@ from unittest.mock import Mock
 
 import pytest
 
-from arcadiumai.application.interfaces.chat_repository import ChatRepository
-from arcadiumai.domain.entities.agent_domain import Agent
-from arcadiumai.domain.value_objects import History
+from createagents.application.interfaces.chat_repository import ChatRepository
+from createagents.domain.entities.agent_domain import Agent
+from createagents.domain.value_objects import History
 
 DEFAULT_PROVIDER = "openai"
 DEFAULT_MODEL = "gpt-5-nano"

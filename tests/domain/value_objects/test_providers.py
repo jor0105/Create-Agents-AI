@@ -1,6 +1,6 @@
 import pytest
 
-from arcadiumai.domain import SupportedProviders
+from createagents.domain import SupportedProviders
 
 
 @pytest.mark.unit

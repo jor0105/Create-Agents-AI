@@ -2,8 +2,8 @@ import os
 
 import pytest
 
-from arcadiumai.application import CreateAgent
-from arcadiumai.domain import InvalidAgentConfigException
+from createagents.application import CreateAgent
+from createagents.domain import InvalidAgentConfigException
 
 IA_OLLAMA_TEST_1: str = "granite4:latest"
 IA_OLLAMA_TEST_2: str = "gpt-oss:120b-cloud"
@@ -12,8 +12,8 @@ IA_OPENAI_TEST_2: str = "gpt-5-nano"
 
 
 def _get_openai_api_key():
-    from arcadiumai.infra.adapters.OpenAI.client_openai import ClientOpenAI
-    from arcadiumai.infra.config.environment import EnvironmentConfig
+    from createagents.infra.adapters.OpenAI.client_openai import ClientOpenAI
+    from createagents.infra.config.environment import EnvironmentConfig
 
     if os.getenv("CI"):
         pytest.skip("Skipping real API integration test on CI (set CI=0 to run)")

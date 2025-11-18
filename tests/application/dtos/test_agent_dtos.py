@@ -1,12 +1,12 @@
 import pytest
 
-from arcadiumai.application import (
+from createagents.application import (
     AgentConfigOutputDTO,
     ChatInputDTO,
     ChatOutputDTO,
     CreateAgentInputDTO,
 )
-from arcadiumai.domain import BaseTool
+from createagents.domain import BaseTool
 
 
 @pytest.mark.unit
@@ -283,7 +283,7 @@ class TestCreateAgentInputDTOWithTools:
             pass
 
     def test_validate_with_base_tool_instances(self):
-        from arcadiumai.domain.value_objects import BaseTool
+        from createagents.domain.value_objects import BaseTool
 
         class CustomTool(BaseTool):
             name = "custom_tool"
@@ -308,7 +308,7 @@ class TestCreateAgentInputDTOWithTools:
         assert isinstance(dto.tools[0], BaseTool)
 
     def test_validate_with_multiple_tools(self):
-        from arcadiumai.domain.value_objects import BaseTool
+        from createagents.domain.value_objects import BaseTool
 
         class Tool1(BaseTool):
             name = "tool1"
@@ -338,7 +338,7 @@ class TestCreateAgentInputDTOWithTools:
         assert len(dto.tools) == 2
 
     def test_validate_with_invalid_tool_missing_execute(self):
-        from arcadiumai.domain.exceptions import InvalidBaseToolException
+        from createagents.domain.exceptions import InvalidBaseToolException
 
         class InvalidTool:
             name = "invalid"
@@ -356,8 +356,8 @@ class TestCreateAgentInputDTOWithTools:
             dto.validate()
 
     def test_validate_with_invalid_tool_missing_name(self):
-        from arcadiumai.domain.exceptions import InvalidBaseToolException
-        from arcadiumai.domain.value_objects import BaseTool
+        from createagents.domain.exceptions import InvalidBaseToolException
+        from createagents.domain.value_objects import BaseTool
 
         class NoNameTool(BaseTool):
             name = ""
@@ -378,8 +378,8 @@ class TestCreateAgentInputDTOWithTools:
             dto.validate()
 
     def test_validate_with_invalid_tool_missing_description(self):
-        from arcadiumai.domain.exceptions import InvalidBaseToolException
-        from arcadiumai.domain.value_objects import BaseTool
+        from createagents.domain.exceptions import InvalidBaseToolException
+        from createagents.domain.value_objects import BaseTool
 
         class NoDescTool(BaseTool):
             name = "no_desc"
@@ -400,7 +400,7 @@ class TestCreateAgentInputDTOWithTools:
             dto.validate()
 
     def test_validate_with_invalid_tool_string_not_found(self):
-        from arcadiumai.domain.exceptions import InvalidBaseToolException
+        from createagents.domain.exceptions import InvalidBaseToolException
 
         dto = CreateAgentInputDTO(
             provider="openai",
@@ -414,7 +414,7 @@ class TestCreateAgentInputDTOWithTools:
             dto.validate()
 
     def test_validate_with_mixed_tool_types(self):
-        from arcadiumai.domain.value_objects import BaseTool
+        from createagents.domain.value_objects import BaseTool
 
         class CustomTool(BaseTool):
             name = "custom"
@@ -476,7 +476,7 @@ class TestCreateAgentInputDTOWithTools:
             assert all(isinstance(tool, BaseTool) for tool in dto.tools)
 
     def test_validate_with_tool_not_callable_execute(self):
-        from arcadiumai.domain.exceptions import InvalidBaseToolException
+        from createagents.domain.exceptions import InvalidBaseToolException
 
         class NotCallableExecute:
             name = "not_callable"
@@ -495,7 +495,7 @@ class TestCreateAgentInputDTOWithTools:
             dto.validate()
 
     def test_validate_with_invalid_tool_type(self):
-        from arcadiumai.domain.exceptions import InvalidBaseToolException
+        from createagents.domain.exceptions import InvalidBaseToolException
 
         dto = CreateAgentInputDTO(
             provider="openai",
@@ -509,7 +509,7 @@ class TestCreateAgentInputDTOWithTools:
             dto.validate()
 
     def test_tools_attribute_after_validation(self):
-        from arcadiumai.domain.value_objects import BaseTool
+        from createagents.domain.value_objects import BaseTool
 
         class TestTool(BaseTool):
             name = "test"

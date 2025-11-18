@@ -7,7 +7,7 @@ Casos de uso reais do **AI Agent Creator** para inspirar suas aplicações.
 ## 🎓 Assistente Educacional
 
 ```python
-from arcadiumai import CreateAgent
+from createagents import CreateAgent
 
 professor = CreateAgent(
     provider="openai",
@@ -209,7 +209,7 @@ print(f"  - Modelo usado: {config['model']}")
 ## 🌍 Agente com Ferramentas Múltiplas
 
 ```python
-from arcadiumai import BaseTool
+from createagents import BaseTool
 
 # Criar ferramenta customizada
 class WebSearchTool(BaseTool):

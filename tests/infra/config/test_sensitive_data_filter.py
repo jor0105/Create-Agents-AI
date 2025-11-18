@@ -1,7 +1,7 @@
 import concurrent.futures
 import threading
 
-from arcadiumai.infra import SensitiveDataFilter
+from createagents.infra import SensitiveDataFilter
 
 
 class TestSensitiveDataFilter:

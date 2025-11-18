@@ -1,7 +1,7 @@
 import pytest
 
-from arcadiumai.application import GetAgentConfigUseCase
-from arcadiumai.domain import Agent
+from createagents.application import GetAgentConfigUseCase
+from createagents.domain import Agent
 
 
 @pytest.mark.unit
@@ -282,7 +282,7 @@ class TestGetAgentConfigUseCase:
             assert output.history[i]["content"] == expected_content
 
     def test_execute_returns_correct_history_max_size(self):
-        from arcadiumai.domain.value_objects import History
+        from createagents.domain.value_objects import History
 
         use_case = GetAgentConfigUseCase()
         agent = Agent(
@@ -311,7 +311,7 @@ class TestGetAgentConfigUseCase:
         assert output.history_max_size == 10
 
     def test_execute_to_dict_includes_history_max_size(self):
-        from arcadiumai.domain.value_objects import History
+        from createagents.domain.value_objects import History
 
         use_case = GetAgentConfigUseCase()
         agent = Agent(
@@ -332,7 +332,7 @@ class TestGetAgentConfigUseCase:
         use_case = GetAgentConfigUseCase()
 
         for max_size in [1, 5, 10, 20, 50, 100]:
-            from arcadiumai.domain.value_objects import History
+            from createagents.domain.value_objects import History
 
             agent = Agent(
                 provider="openai",
@@ -347,7 +347,7 @@ class TestGetAgentConfigUseCase:
             assert output.history_max_size == max_size
 
     def test_execute_history_max_size_reflects_agent_state(self):
-        from arcadiumai.domain.value_objects import History
+        from createagents.domain.value_objects import History
 
         use_case = GetAgentConfigUseCase()
         agent = Agent(
@@ -396,7 +396,7 @@ class TestGetAgentConfigUseCase:
         assert isinstance(output.tools, list)
 
     def test_execute_with_tools_list(self):
-        from arcadiumai.domain import BaseTool
+        from createagents.domain import BaseTool
 
         class TestTool(BaseTool):
             name = "test_tool"
@@ -422,7 +422,7 @@ class TestGetAgentConfigUseCase:
         assert output.tools[0] is tool
 
     def test_execute_with_multiple_tools(self):
-        from arcadiumai.domain import BaseTool
+        from createagents.domain import BaseTool
 
         class Tool1(BaseTool):
             name = "tool1"
@@ -454,7 +454,7 @@ class TestGetAgentConfigUseCase:
         assert all(isinstance(t, BaseTool) for t in output.tools)
 
     def test_execute_to_dict_includes_tools(self):
-        from arcadiumai.domain import BaseTool
+        from createagents.domain import BaseTool
 
         class TestTool(BaseTool):
             name = "test_tool"
@@ -479,7 +479,7 @@ class TestGetAgentConfigUseCase:
         assert "tools" in result
 
     def test_execute_tools_preserves_reference(self):
-        from arcadiumai.domain import BaseTool
+        from createagents.domain import BaseTool
 
         class TestTool(BaseTool):
             name = "test_tool"
@@ -503,7 +503,7 @@ class TestGetAgentConfigUseCase:
         assert output.tools[0] is tool
 
     def test_execute_with_tools_and_history(self):
-        from arcadiumai.domain import BaseTool
+        from createagents.domain import BaseTool
 
         class TestTool(BaseTool):
             name = "test_tool"
@@ -530,7 +530,7 @@ class TestGetAgentConfigUseCase:
         assert len(output.history) == 2
 
     def test_execute_with_tools_and_config(self):
-        from arcadiumai.domain import BaseTool
+        from createagents.domain import BaseTool
 
         class TestTool(BaseTool):
             name = "test_tool"
@@ -557,7 +557,7 @@ class TestGetAgentConfigUseCase:
         assert output.config == config
 
     def test_execute_to_dict_with_all_fields_including_tools(self):
-        from arcadiumai.domain import BaseTool
+        from createagents.domain import BaseTool
 
         class TestTool(BaseTool):
             name = "test_tool"
@@ -591,7 +591,7 @@ class TestGetAgentConfigUseCase:
         assert "tools" in result
         assert "history_max_size" in result
 
-        from arcadiumai.domain.value_objects import History
+        from createagents.domain.value_objects import History
 
         use_case = GetAgentConfigUseCase()
         agent = Agent(

@@ -7,7 +7,7 @@ Aprenda os fundamentos do **AI Agent Creator**.
 ## 🚀 Primeiro Agente
 
 ```python
-from arcadiumai import CreateAgent
+from createagents import CreateAgent
 
 agent = CreateAgent(
     provider="openai",

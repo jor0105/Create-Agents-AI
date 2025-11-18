@@ -37,7 +37,7 @@ CreateAgent(
 **Exemplo:**
 
 ```python
-from arcadiumai import CreateAgent
+from createagents import CreateAgent
 
 agent = CreateAgent(
     provider="openai",
@@ -140,7 +140,7 @@ def get_all_available_tools() -> Dict[str, str]
 **Exemplo:**
 
 ```python
-from arcadiumai import BaseTool
+from createagents import BaseTool
 
 # Ferramenta customizada
 class MyTool(BaseTool):
@@ -405,7 +405,7 @@ agent = CreateAgent(provider="openai", model="gpt-4.1-mini", config=config)
 ## 💡 Exemplos de Uso
 
 ```python
-from arcadiumai import CreateAgent
+from createagents import CreateAgent
 
 # Básico
 agent = CreateAgent(provider="openai", model="gpt-4.1-mini")

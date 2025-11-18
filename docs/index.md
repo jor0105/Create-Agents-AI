@@ -27,7 +27,7 @@
 
 ```bash
 # Clone o repositório
-git clone https://github.com/jor0105/AI_Agent.git
+git clone https://github.com/jor0105/Creator-Agents-AI.git
 cd AI_Agent
 
 # Instalação básica
@@ -44,7 +44,7 @@ cp .env.example .env
 ### Primeiro Agente em 3 Linhas
 
 ```python
-from arcadiumai import CreateAgent
+from createagents import CreateAgent
 
 agent = CreateAgent(provider="openai", model="gpt-4",
                 instructions="Você é um assistente útil")
@@ -96,12 +96,12 @@ for name in system_tools.keys():
 
 - `currentdate` - Data/hora em qualquer timezone (sempre disponível)
 - `readlocalfile` - Lê PDF, Excel, CSV, Parquet, JSON, YAML, TXT (requer
-`poetry install -E file-tools`)
+  `poetry install -E file-tools`)
 
 **Criar ferramentas customizadas:**
 
 ```python
-from arcadiumai import BaseTool
+from createagents import BaseTool
 
 class CalculatorTool(BaseTool):
     name = "calculator"
@@ -190,6 +190,7 @@ agent = CreateAgent(
 
 - **[Arquitetura](arquitetura.md)** - Clean Architecture e padrões de design
 - **[CI/CD](ci-cd.md)** - Workflows e quality checks
+
 ---
 
 ## 🏗️ Por Que Usar Este Framework?

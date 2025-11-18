@@ -1,5 +1,5 @@
-from arcadiumai.domain import BaseTool
-from arcadiumai.infra import OllamaToolSchemaFormatter
+from createagents.domain import BaseTool
+from createagents.infra import OllamaToolSchemaFormatter
 
 
 class MockTool(BaseTool):

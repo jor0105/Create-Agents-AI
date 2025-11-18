@@ -1,6 +1,6 @@
 import pytest
 
-from arcadiumai.domain import InvalidAgentConfigException, SupportedConfigs
+from createagents.domain import InvalidAgentConfigException, SupportedConfigs
 
 
 @pytest.mark.unit

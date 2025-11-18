@@ -2,18 +2,18 @@ from unittest.mock import Mock, patch
 
 import pytest
 
-from arcadiumai.infra.adapters.Ollama.ollama_chat_adapter import OllamaChatAdapter
-from arcadiumai.infra.adapters.OpenAI.openai_chat_adapter import OpenAIChatAdapter
-from arcadiumai.infra.factories.chat_adapter_factory import ChatAdapterFactory
+from createagents.infra.adapters.Ollama.ollama_chat_adapter import OllamaChatAdapter
+from createagents.infra.adapters.OpenAI.openai_chat_adapter import OpenAIChatAdapter
+from createagents.infra.factories.chat_adapter_factory import ChatAdapterFactory
 
 
 @pytest.mark.unit
 class TestChatAdapterFactory:
     @patch(
-        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
+        "createagents.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
     )
     @patch(
-        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client"
+        "createagents.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client"
     )
     def test_create_openai_adapter_with_gpt5(self, mock_get_client, mock_get_api_key):
         mock_get_api_key.return_value = "test-api-key"
@@ -25,10 +25,10 @@ class TestChatAdapterFactory:
         assert isinstance(adapter, OpenAIChatAdapter)
 
     @patch(
-        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
+        "createagents.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
     )
     @patch(
-        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client"
+        "createagents.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client"
     )
     def test_create_openai_adapter_with_gpt5_mini(
         self, mock_get_client, mock_get_api_key
@@ -42,10 +42,10 @@ class TestChatAdapterFactory:
         assert isinstance(adapter, OpenAIChatAdapter)
 
     @patch(
-        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
+        "createagents.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
     )
     @patch(
-        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client"
+        "createagents.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client"
     )
     def test_create_openai_adapter_with_uppercase_gpt(
         self, mock_get_client, mock_get_api_key
@@ -73,10 +73,10 @@ class TestChatAdapterFactory:
             ChatAdapterFactory.create(provider="invalid", model="gpt-5")
 
     @patch(
-        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
+        "createagents.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
     )
     @patch(
-        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client"
+        "createagents.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client"
     )
     def test_create_returns_cached_adapter(self, mock_get_client, mock_get_api_key):
         mock_get_api_key.return_value = "test-api-key"
@@ -91,10 +91,10 @@ class TestChatAdapterFactory:
         assert adapter1 is adapter2
 
     @patch(
-        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
+        "createagents.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
     )
     @patch(
-        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client"
+        "createagents.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client"
     )
     def test_create_different_models_are_independent(
         self, mock_get_client, mock_get_api_key
@@ -111,10 +111,10 @@ class TestChatAdapterFactory:
         assert adapter1 is not adapter2
 
     @patch(
-        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
+        "createagents.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
     )
     @patch(
-        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client"
+        "createagents.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client"
     )
     def test_cache_key_is_case_insensitive(self, mock_get_client, mock_get_api_key):
         mock_get_api_key.return_value = "test-api-key"
@@ -129,10 +129,10 @@ class TestChatAdapterFactory:
         assert adapter1 is adapter2
 
     @patch(
-        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
+        "createagents.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
     )
     @patch(
-        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client"
+        "createagents.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client"
     )
     def test_cache_considers_provider(self, mock_get_client, mock_get_api_key):
         mock_get_api_key.return_value = "test-api-key"
@@ -149,10 +149,10 @@ class TestChatAdapterFactory:
         assert isinstance(adapter2, OllamaChatAdapter)
 
     @patch(
-        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
+        "createagents.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
     )
     @patch(
-        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client"
+        "createagents.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client"
     )
     def test_clear_cache_forces_new_instances(self, mock_get_client, mock_get_api_key):
         mock_get_api_key.return_value = "test-api-key"
@@ -168,15 +168,15 @@ class TestChatAdapterFactory:
         assert adapter1 is not adapter2
 
     @patch(
-        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
+        "createagents.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
     )
     @patch(
-        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client"
+        "createagents.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client"
     )
     def test_factory_returns_chat_repository_interface(
         self, mock_get_client, mock_get_api_key
     ):
-        from arcadiumai.application.interfaces.chat_repository import ChatRepository
+        from createagents.application.interfaces.chat_repository import ChatRepository
 
         mock_get_api_key.return_value = "test-api-key"
         mock_client = Mock()
@@ -187,10 +187,10 @@ class TestChatAdapterFactory:
         assert isinstance(adapter, ChatRepository)
 
     @patch(
-        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
+        "createagents.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
     )
     @patch(
-        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client"
+        "createagents.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client"
     )
     def test_create_with_empty_provider_raises_error(
         self, mock_get_client, mock_get_api_key
@@ -203,10 +203,10 @@ class TestChatAdapterFactory:
             ChatAdapterFactory.create(provider="", model="gpt-5")
 
     @patch(
-        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
+        "createagents.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
     )
     @patch(
-        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client"
+        "createagents.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client"
     )
     def test_cache_persists_across_calls(self, mock_get_client, mock_get_api_key):
         mock_get_api_key.return_value = "test-api-key"
@@ -230,10 +230,10 @@ class TestChatAdapterFactory:
         assert isinstance(adapter, OllamaChatAdapter)
 
     @patch(
-        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
+        "createagents.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
     )
     @patch(
-        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client"
+        "createagents.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client"
     )
     def test_cache_key_with_mixed_case(self, mock_get_client, mock_get_api_key):
         mock_get_api_key.return_value = "test-api-key"
@@ -261,10 +261,10 @@ class TestChatAdapterFactory:
             pass
 
     @patch(
-        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
+        "createagents.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
     )
     @patch(
-        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client"
+        "createagents.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client"
     )
     def test_clear_cache_is_effective(self, mock_get_client, mock_get_api_key):
         mock_get_api_key.return_value = "test-api-key"
@@ -283,10 +283,10 @@ class TestChatAdapterFactory:
         assert adapter1 is not adapter2
 
     @patch(
-        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
+        "createagents.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
     )
     @patch(
-        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client"
+        "createagents.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client"
     )
     def test_multiple_models_same_provider(self, mock_get_client, mock_get_api_key):
         mock_get_api_key.return_value = "test-api-key"
@@ -313,10 +313,10 @@ class TestChatAdapterFactory:
 
         for provider_variant in valid_providers:
             with patch(
-                "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
+                "createagents.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
             ) as mock_get_api_key:
                 with patch(
-                    "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client"
+                    "createagents.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client"
                 ) as mock_get_client:
                     mock_get_api_key.return_value = "test-api-key"
                     mock_client = Mock()

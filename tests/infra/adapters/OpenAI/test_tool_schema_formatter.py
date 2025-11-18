@@ -1,7 +1,7 @@
 import pytest
 
-from arcadiumai.domain import BaseTool
-from arcadiumai.infra import ToolSchemaFormatter
+from createagents.domain import BaseTool
+from createagents.infra import ToolSchemaFormatter
 
 
 class MockWeatherTool(BaseTool):

@@ -4,7 +4,7 @@ from datetime import datetime
 
 import pytest
 
-from arcadiumai.infra import ChatMetrics, MetricsCollector
+from createagents.infra import ChatMetrics, MetricsCollector
 
 
 @pytest.mark.unit

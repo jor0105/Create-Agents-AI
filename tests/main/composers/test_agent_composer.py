@@ -2,13 +2,13 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from arcadiumai.application import ChatWithAgentUseCase, GetAgentConfigUseCase
-from arcadiumai.domain import (
+from createagents.application import ChatWithAgentUseCase, GetAgentConfigUseCase
+from createagents.domain import (
     Agent,
     InvalidAgentConfigException,
     InvalidProviderException,
 )
-from arcadiumai.main import AgentComposer
+from createagents.main import AgentComposer
 
 
 @pytest.mark.unit
@@ -103,9 +103,12 @@ class TestAgentComposer:
         assert agent.instructions is None
 
     def test_create_chat_use_case_returns_use_case(self):
-        with patch.dict("os.environ", {"OPENAI_API_KEY": "test-key"}), patch(
-            "arcadiumai.infra.adapters.OpenAI.client_openai.ClientOpenAI.get_client"
-        ) as mock_get_client:
+        with (
+            patch.dict("os.environ", {"OPENAI_API_KEY": "test-key"}),
+            patch(
+                "createagents.infra.adapters.OpenAI.client_openai.ClientOpenAI.get_client"
+            ) as mock_get_client,
+        ):
             mock_client = MagicMock()
             mock_get_client.return_value = mock_client
 
@@ -123,9 +126,12 @@ class TestAgentComposer:
         assert isinstance(use_case, ChatWithAgentUseCase)
 
     def test_create_chat_use_case_injects_correct_adapter(self):
-        with patch.dict("os.environ", {"OPENAI_API_KEY": "test-key"}), patch(
-            "arcadiumai.infra.adapters.OpenAI.client_openai.ClientOpenAI.get_client"
-        ) as mock_get_client:
+        with (
+            patch.dict("os.environ", {"OPENAI_API_KEY": "test-key"}),
+            patch(
+                "createagents.infra.adapters.OpenAI.client_openai.ClientOpenAI.get_client"
+            ) as mock_get_client,
+        ):
             mock_client = MagicMock()
             mock_get_client.return_value = mock_client
 
@@ -160,9 +166,12 @@ class TestAgentComposer:
         assert agent1.name != agent2.name
 
     def test_create_multiple_chat_use_cases_are_independent(self):
-        with patch.dict("os.environ", {"OPENAI_API_KEY": "test-key"}), patch(
-            "arcadiumai.infra.adapters.OpenAI.client_openai.ClientOpenAI.get_client"
-        ) as mock_get_client:
+        with (
+            patch.dict("os.environ", {"OPENAI_API_KEY": "test-key"}),
+            patch(
+                "createagents.infra.adapters.OpenAI.client_openai.ClientOpenAI.get_client"
+            ) as mock_get_client,
+        ):
             mock_client = MagicMock()
             mock_get_client.return_value = mock_client
 
@@ -333,9 +342,12 @@ class TestAgentComposer:
             AgentComposer.create_chat_use_case(provider="", model="some-model")
 
     def test_create_chat_use_case_openai_injects_correct_adapter_type(self):
-        with patch.dict("os.environ", {"OPENAI_API_KEY": "test-key"}), patch(
-            "arcadiumai.infra.adapters.OpenAI.client_openai.ClientOpenAI.get_client"
-        ) as mock_get_client:
+        with (
+            patch.dict("os.environ", {"OPENAI_API_KEY": "test-key"}),
+            patch(
+                "createagents.infra.adapters.OpenAI.client_openai.ClientOpenAI.get_client"
+            ) as mock_get_client,
+        ):
             mock_client = MagicMock()
             mock_get_client.return_value = mock_client
 
@@ -473,9 +485,12 @@ class TestAgentComposer:
         assert agent.config["temperature"] == 0.9
 
     def test_create_chat_use_case_with_different_models_same_provider(self):
-        with patch.dict("os.environ", {"OPENAI_API_KEY": "test-key"}), patch(
-            "arcadiumai.infra.adapters.OpenAI.client_openai.ClientOpenAI.get_client"
-        ) as mock_get_client:
+        with (
+            patch.dict("os.environ", {"OPENAI_API_KEY": "test-key"}),
+            patch(
+                "createagents.infra.adapters.OpenAI.client_openai.ClientOpenAI.get_client"
+            ) as mock_get_client,
+        ):
             mock_client = MagicMock()
             mock_get_client.return_value = mock_client
 
@@ -639,7 +654,7 @@ class TestAgentComposer:
         assert agent.tools == []
 
     def test_create_agent_with_single_tool(self):
-        from arcadiumai.domain import BaseTool
+        from createagents.domain import BaseTool
 
         class TestTool(BaseTool):
             name = "test_tool"
@@ -661,7 +676,7 @@ class TestAgentComposer:
         assert agent.tools[0] is tool
 
     def test_create_agent_with_multiple_tools(self):
-        from arcadiumai.domain import BaseTool
+        from createagents.domain import BaseTool
 
         class Tool1(BaseTool):
             name = "tool1"
@@ -690,7 +705,7 @@ class TestAgentComposer:
         assert all(isinstance(t, BaseTool) for t in agent.tools)
 
     def test_create_agent_with_string_tool_name(self):
-        from arcadiumai.infra import AvailableTools
+        from createagents.infra import AvailableTools
 
         available = AvailableTools.get_all_available_tools()
         if available:
@@ -708,8 +723,8 @@ class TestAgentComposer:
             pytest.skip("No available tools to test")
 
     def test_create_agent_with_mixed_tool_types(self):
-        from arcadiumai.domain import BaseTool
-        from arcadiumai.infra import AvailableTools
+        from createagents.domain import BaseTool
+        from createagents.infra import AvailableTools
 
         class TestTool(BaseTool):
             name = "test_tool"
@@ -742,7 +757,7 @@ class TestAgentComposer:
             assert len(agent.tools) == 1
 
     def test_create_agent_with_invalid_tool_raises_error(self):
-        from arcadiumai.domain.exceptions import InvalidBaseToolException
+        from createagents.domain.exceptions import InvalidBaseToolException
 
         with pytest.raises(InvalidBaseToolException):
             AgentComposer.create_agent(
@@ -754,7 +769,7 @@ class TestAgentComposer:
             )
 
     def test_create_agent_with_tool_missing_name_raises_error(self):
-        from arcadiumai.domain.exceptions import InvalidBaseToolException
+        from createagents.domain.exceptions import InvalidBaseToolException
 
         class InvalidTool:
             description = "A tool"
@@ -772,7 +787,7 @@ class TestAgentComposer:
             )
 
     def test_create_agent_with_tool_missing_description_raises_error(self):
-        from arcadiumai.domain.exceptions import InvalidBaseToolException
+        from createagents.domain.exceptions import InvalidBaseToolException
 
         class InvalidTool:
             name = "invalid"
@@ -790,7 +805,7 @@ class TestAgentComposer:
             )
 
     def test_create_agent_with_tool_missing_execute_raises_error(self):
-        from arcadiumai.domain.exceptions import InvalidBaseToolException
+        from createagents.domain.exceptions import InvalidBaseToolException
 
         class InvalidTool:
             name = "invalid"
@@ -806,7 +821,7 @@ class TestAgentComposer:
             )
 
     def test_create_agent_with_tool_non_string_name_raises_error(self):
-        from arcadiumai.domain.exceptions import InvalidBaseToolException
+        from createagents.domain.exceptions import InvalidBaseToolException
 
         class InvalidTool:
             name = 123
@@ -825,7 +840,7 @@ class TestAgentComposer:
             )
 
     def test_create_agent_with_tool_non_string_description_raises_error(self):
-        from arcadiumai.domain.exceptions import InvalidBaseToolException
+        from createagents.domain.exceptions import InvalidBaseToolException
 
         class InvalidTool:
             name = "invalid"
@@ -844,7 +859,7 @@ class TestAgentComposer:
             )
 
     def test_create_agent_with_tool_non_callable_execute_raises_error(self):
-        from arcadiumai.domain.exceptions import InvalidBaseToolException
+        from createagents.domain.exceptions import InvalidBaseToolException
 
         class InvalidTool:
             name = "invalid"
@@ -861,7 +876,7 @@ class TestAgentComposer:
             )
 
     def test_create_agent_tools_preserved_with_all_params(self):
-        from arcadiumai.domain import BaseTool
+        from createagents.domain import BaseTool
 
         class TestTool(BaseTool):
             name = "test_tool"
@@ -887,7 +902,7 @@ class TestAgentComposer:
         assert agent.history.max_size == 15
 
     def test_create_agent_with_invalid_string_tool_name_raises_error(self):
-        from arcadiumai.domain.exceptions import InvalidBaseToolException
+        from createagents.domain.exceptions import InvalidBaseToolException
 
         with pytest.raises(InvalidBaseToolException):
             AgentComposer.create_agent(
@@ -899,7 +914,7 @@ class TestAgentComposer:
             )
 
     def test_create_agent_with_valid_builtin_tool_names(self):
-        from arcadiumai.infra import AvailableTools
+        from createagents.infra import AvailableTools
 
         available = AvailableTools.get_all_available_tools()
         if available:
@@ -918,7 +933,7 @@ class TestAgentComposer:
             pytest.skip("No available tools to test")
 
     def test_create_agent_tools_are_independent_between_agents(self):
-        from arcadiumai.domain import BaseTool
+        from createagents.domain import BaseTool
 
         class TestTool(BaseTool):
             name = "test_tool"

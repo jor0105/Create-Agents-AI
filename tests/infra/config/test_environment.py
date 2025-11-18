@@ -4,7 +4,7 @@ from unittest.mock import patch
 
 import pytest
 
-from arcadiumai.infra import EnvironmentConfig
+from createagents.infra import EnvironmentConfig
 
 
 @pytest.mark.unit
@@ -195,7 +195,7 @@ class TestEnvironmentConfig:
             assert value1 == value2 == "shared_value"
 
     def test_dotenv_loaded_only_once(self):
-        with patch("arcadiumai.infra.config.environment.load_dotenv") as mock_load:
+        with patch("createagents.infra.config.environment.load_dotenv") as mock_load:
             EnvironmentConfig.reset()
 
             EnvironmentConfig()
@@ -248,7 +248,7 @@ class TestEnvironmentConfig:
             assert "EMPTY_CACHE" not in EnvironmentConfig._cache
 
     def test_reload_reloads_dotenv(self):
-        with patch("arcadiumai.infra.config.environment.load_dotenv") as mock_load:
+        with patch("createagents.infra.config.environment.load_dotenv") as mock_load:
             EnvironmentConfig.reset()
             EnvironmentConfig()
 

@@ -1,5 +1,5 @@
 [project]
-name = "arcadiumai"
+name = "createagents"
 version = "0.1.0"
 description = "Enterprise-grade modular system for creating AI agents"
 readme = "README.md"
@@ -48,16 +48,16 @@ all = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/jor0105/ArcadiumAI"
-Repository = "https://github.com/jor0105/ArcadiumAI"
-Documentation = "https://github.com/jor0105/ArcadiumAI"
-"Bug Tracker" = "https://github.com/jor0105/ArcadiumAI/issues"
+Homepage = "https://github.com/jor0105/Creator-Agents-AI"
+Repository = "https://github.com/jor0105/Creator-Agents-AI"
+Documentation = "https://github.com/jor0105/Creator-Agents-AI"
+"Bug Tracker" = "https://github.com/jor0105/Creator-Agents-AI/issues"
 
 [tool.setuptools.package-data]
-arcadiumai = ["*.txt", "*.md"]
+createagents = ["*.txt", "*.md"]
 
 [tool.poetry]
-packages = [{ include = "arcadiumai", from = "src" }]
+packages = [{ include = "createagents", from = "src" }]
 
 [tool.poetry.group.dev.dependencies]
 pre-commit = "^4.3.0"

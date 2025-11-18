@@ -1,7 +1,7 @@
 import pytest
 
-from arcadiumai.application import ChatInputDTO, ChatWithAgentUseCase
-from arcadiumai.domain import Agent, ChatException
+from createagents.application import ChatInputDTO, ChatWithAgentUseCase
+from createagents.domain import Agent, ChatException
 
 
 @pytest.mark.unit
@@ -287,7 +287,7 @@ class TestChatWithAgentUseCase:
         assert messages[0].content == special_message
 
     def test_execute_respects_history_max_size(self, mock_chat_repository):
-        from arcadiumai.domain.value_objects import History
+        from createagents.domain.value_objects import History
 
         mock_chat_repository.chat.return_value = "Response"
         use_case = ChatWithAgentUseCase(chat_repository=mock_chat_repository)

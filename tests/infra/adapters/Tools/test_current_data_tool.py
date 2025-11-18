@@ -5,8 +5,8 @@ from zoneinfo import ZoneInfo
 
 import pytest
 
-from arcadiumai.infra import CurrentDateTool
-from arcadiumai.infra.adapters.Tools.Current_Data_Tool.current_data_tool import (
+from createagents.infra import CurrentDateTool
+from createagents.infra.adapters.Tools.Current_Data_Tool.current_data_tool import (
     _get_zoneinfo,
 )
 
@@ -177,7 +177,7 @@ class TestCurrentDateTool:
     def test_output_is_sanitized(self):
         tool = CurrentDateTool()
         with patch(
-            "arcadiumai.infra.adapters.Tools.Current_Data_Tool.current_data_tool.TextSanitizer.sanitize"
+            "createagents.infra.adapters.Tools.Current_Data_Tool.current_data_tool.TextSanitizer.sanitize"
         ) as mock_sanitize:
             mock_sanitize.return_value = "sanitized_output"
 
@@ -206,7 +206,7 @@ class TestCurrentDateTool:
         tool = CurrentDateTool()
 
         with patch(
-            "arcadiumai.infra.adapters.Tools.Current_Data_Tool.current_data_tool.datetime"
+            "createagents.infra.adapters.Tools.Current_Data_Tool.current_data_tool.datetime"
         ) as mock_datetime:
             mock_datetime.now.side_effect = RuntimeError("Unexpected error")
 
@@ -394,7 +394,7 @@ class TestCurrentDateTool:
         assert logger is not None
         assert (
             logger.name
-            == "arcadiumai.infra.adapters.Tools.Current_Data_Tool.current_data_tool"
+            == "createagents.infra.adapters.Tools.Current_Data_Tool.current_data_tool"
         )
 
     def test_no_side_effects_between_calls(self):

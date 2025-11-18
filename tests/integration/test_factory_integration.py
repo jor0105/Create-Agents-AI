@@ -2,17 +2,17 @@ from unittest.mock import Mock, patch
 
 import pytest
 
-from arcadiumai.application import ChatRepository
-from arcadiumai.infra import ChatAdapterFactory, OllamaChatAdapter, OpenAIChatAdapter
+from createagents.application import ChatRepository
+from createagents.infra import ChatAdapterFactory, OllamaChatAdapter, OpenAIChatAdapter
 
 
 @pytest.mark.integration
 class TestChatAdapterFactoryIntegration:
     @patch(
-        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
+        "createagents.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
     )
     @patch(
-        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client"
+        "createagents.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client"
     )
     def test_factory_creates_openai_adapter_for_gpt_models(
         self, mock_get_client, mock_get_api_key
@@ -49,12 +49,12 @@ class TestChatAdapterFactoryIntegration:
         assert type(adapter_openai) != type(adapter_ollama)
 
     @patch(
-        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
+        "createagents.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
     )
     @patch(
-        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client"
+        "createagents.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client"
     )
-    @patch("arcadiumai.infra.adapters.Ollama.ollama_chat_adapter.chat")
+    @patch("createagents.infra.adapters.Ollama.ollama_chat_adapter.chat")
     def test_factory_adapter_can_chat_openai(
         self, mock_ollama, mock_get_client, mock_get_api_key
     ):
@@ -81,7 +81,7 @@ class TestChatAdapterFactoryIntegration:
         assert response == "OpenAI response"
         assert mock_client.responses.create.called
 
-    @patch("arcadiumai.infra.adapters.Ollama.ollama_chat_adapter.chat")
+    @patch("createagents.infra.adapters.Ollama.ollama_chat_adapter.chat")
     def test_factory_adapter_can_chat_ollama(self, mock_ollama_chat):
         mock_response = Mock()
         mock_message = Mock()
@@ -105,10 +105,10 @@ class TestChatAdapterFactoryIntegration:
         assert mock_ollama_chat.called
 
     @patch(
-        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
+        "createagents.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
     )
     @patch(
-        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client"
+        "createagents.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client"
     )
     def test_factory_uses_cache_for_same_model(self, mock_get_client, mock_get_api_key):
         mock_get_api_key.return_value = "test-key"
@@ -123,10 +123,10 @@ class TestChatAdapterFactoryIntegration:
         assert adapter1 is adapter2
 
     @patch(
-        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
+        "createagents.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
     )
     @patch(
-        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client"
+        "createagents.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client"
     )
     def test_factory_creates_different_adapters_for_different_models(
         self, mock_get_client, mock_get_api_key
@@ -146,10 +146,10 @@ class TestChatAdapterFactoryIntegration:
 
     def test_factory_case_insensitive_gpt_detection(self):
         with patch(
-            "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
+            "createagents.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
         ) as mock_key:
             with patch(
-                "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client"
+                "createagents.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client"
             ) as mock_client:
                 mock_key.return_value = "test-key"
                 mock_client.return_value = Mock()
@@ -169,12 +169,12 @@ class TestChatAdapterFactoryIntegration:
                     assert isinstance(adapter, OpenAIChatAdapter)
 
     @patch(
-        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
+        "createagents.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
     )
     @patch(
-        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client"
+        "createagents.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client"
     )
-    @patch("arcadiumai.infra.adapters.Ollama.ollama_chat_adapter.chat")
+    @patch("createagents.infra.adapters.Ollama.ollama_chat_adapter.chat")
     def test_factory_adapter_handles_history(
         self, mock_ollama, mock_get_client, mock_get_api_key
     ):
@@ -209,7 +209,7 @@ class TestChatAdapterFactoryIntegration:
         messages = call_args.kwargs["input"]
         assert len(messages) >= 3
 
-    @patch("arcadiumai.infra.adapters.Ollama.ollama_chat_adapter.chat")
+    @patch("createagents.infra.adapters.Ollama.ollama_chat_adapter.chat")
     def test_factory_with_ollama_and_different_models(self, mock_ollama_chat):
         mock_response = Mock()
         mock_message = Mock()
@@ -244,10 +244,10 @@ class TestChatAdapterFactoryIntegration:
         ]
 
         with patch(
-            "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
+            "createagents.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
         ) as mock_key:
             with patch(
-                "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client"
+                "createagents.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client"
             ) as mock_client:
                 mock_key.return_value = "test-key"
                 mock_client.return_value = Mock()
@@ -259,10 +259,10 @@ class TestChatAdapterFactoryIntegration:
                     assert callable(adapter.chat)
 
     @patch(
-        "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
+        "createagents.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
     )
     def test_factory_handles_missing_api_key(self, mock_get_api_key):
-        from arcadiumai.domain.exceptions import ChatException
+        from createagents.domain.exceptions import ChatException
 
         ChatAdapterFactory.clear_cache()
 
@@ -280,10 +280,10 @@ class TestChatAdapterFactoryIntegration:
             ), f"Model {model} with ollama provider should use OllamaChatAdapter"
 
         with patch(
-            "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
+            "createagents.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key"
         ) as mock_key:
             with patch(
-                "arcadiumai.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client"
+                "createagents.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client"
             ) as mock_client:
                 mock_key.return_value = "test-key"
                 mock_client.return_value = Mock()

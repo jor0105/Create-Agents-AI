@@ -2,8 +2,8 @@ from unittest.mock import Mock, patch
 
 import pytest
 
-from arcadiumai.domain import BaseTool
-from arcadiumai.infra import AvailableTools, CurrentDateTool
+from createagents.domain import BaseTool
+from createagents.infra import AvailableTools, CurrentDateTool
 
 
 @pytest.mark.unit

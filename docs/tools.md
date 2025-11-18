@@ -21,7 +21,7 @@ Obtém data e hora atuais em qualquer timezone.
 **Uso:**
 
 ```python
-from arcadiumai import CreateAgent
+from createagents import CreateAgent
 
 agent = CreateAgent(
     provider="openai",
@@ -64,7 +64,7 @@ poetry install -E file-tools
 **Uso:**
 
 ```python
-from arcadiumai import CreateAgent
+from createagents import CreateAgent
 
 agent = CreateAgent(
     provider="openai",
@@ -173,7 +173,7 @@ Inclui:
 Use `get_all_available_tools()` para ver todas as ferramentas disponíveis para um agente específico (inclui ferramentas do sistema + ferramentas customizadas adicionadas ao agente):
 
 ```python
-from arcadiumai import CreateAgent, BaseTool
+from createagents import CreateAgent, BaseTool
 
 class CustomTool(BaseTool):
     name = "custom_tool"
@@ -206,7 +206,7 @@ for name, description in tools.items():
 Use `get_system_available_tools()` para ver apenas as ferramentas built-in disponíveis globalmente (não inclui ferramentas customizadas):
 
 ```python
-from arcadiumai import CreateAgent
+from createagents import CreateAgent
 
 agent = CreateAgent(provider="openai", model="gpt-4")
 
@@ -234,7 +234,7 @@ else:
 ### Exemplo Prático
 
 ```python
-from arcadiumai import CreateAgent, BaseTool
+from createagents import CreateAgent, BaseTool
 
 # Ferramenta customizada
 class WeatherTool(BaseTool):
@@ -299,7 +299,7 @@ print(list(tools.keys()))  # ['currentdate', 'readlocalfile']
 ### Ferramenta Própria
 
 ```python
-from arcadiumai import BaseTool
+from createagents import BaseTool
 
 class CalculatorTool(BaseTool):
     name = "calculator"
@@ -315,7 +315,6 @@ class CalculatorTool(BaseTool):
     def execute(self, expression: str) -> str:
         return str(eval(expression))
 ```
-
 
 ---
 

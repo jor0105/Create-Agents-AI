@@ -1,4 +1,4 @@
-from arcadiumai.application import GetSystemAvailableToolsUseCase
+from createagents.application import GetSystemAvailableToolsUseCase
 
 
 class TestGetSystemAvailableToolsUseCase:

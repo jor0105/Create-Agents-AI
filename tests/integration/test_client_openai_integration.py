@@ -2,16 +2,16 @@ import os
 
 import pytest
 
-from arcadiumai.domain import ChatException
-from arcadiumai.infra import OpenAIChatAdapter
+from createagents.domain import ChatException
+from createagents.infra import OpenAIChatAdapter
 
 IA_OPENAI_TEST_1: str = "gpt-5-nano"  # nao aceita configs, aceita tools e think: low
 IA_OPENAI_TEST_2: str = "gpt-4.1-mini"  # aceita configs e tools e nao aceita think
 
 
 def _get_openai_api_key():
-    from arcadiumai.infra.adapters.OpenAI.client_openai import ClientOpenAI
-    from arcadiumai.infra.config.environment import EnvironmentConfig
+    from createagents.infra.adapters.OpenAI.client_openai import ClientOpenAI
+    from createagents.infra.config.environment import EnvironmentConfig
 
     if os.getenv("CI"):
         pytest.skip("Skipping real API integration test on CI (set CI=0 to run)")
@@ -375,7 +375,7 @@ class TestOpenAIChatAdapterIntegration:
     def test_adapter_implements_chat_repository_interface(self):
         _get_openai_api_key()
 
-        from arcadiumai.application.interfaces.chat_repository import ChatRepository
+        from createagents.application.interfaces.chat_repository import ChatRepository
 
         adapter = OpenAIChatAdapter()
 
@@ -608,7 +608,7 @@ class TestOpenAIChatAdapterIntegration:
 @pytest.mark.integration
 class TestClientOpenAIIntegration:
     def test_get_client_with_real_openai_api(self):
-        from arcadiumai.infra.adapters.OpenAI.client_openai import ClientOpenAI
+        from createagents.infra.adapters.OpenAI.client_openai import ClientOpenAI
 
         api_key = _get_openai_api_key()
         client = ClientOpenAI.get_client(api_key)
@@ -618,7 +618,7 @@ class TestClientOpenAIIntegration:
         assert hasattr(client, "models")
 
     def test_client_has_required_attributes(self):
-        from arcadiumai.infra.adapters.OpenAI.client_openai import ClientOpenAI
+        from createagents.infra.adapters.OpenAI.client_openai import ClientOpenAI
 
         api_key = _get_openai_api_key()
         client = ClientOpenAI.get_client(api_key)
@@ -627,7 +627,7 @@ class TestClientOpenAIIntegration:
         assert hasattr(client, "models")
 
     def test_list_models_with_real_api(self):
-        from arcadiumai.infra.adapters.OpenAI.client_openai import ClientOpenAI
+        from createagents.infra.adapters.OpenAI.client_openai import ClientOpenAI
 
         api_key = _get_openai_api_key()
         client = ClientOpenAI.get_client(api_key)
@@ -641,7 +641,7 @@ class TestClientOpenAIIntegration:
             pytest.fail(f"Real OpenAI API call to list models failed: {exc}")
 
     def test_invalid_api_key_raises_error(self):
-        from arcadiumai.infra.adapters.OpenAI.client_openai import ClientOpenAI
+        from createagents.infra.adapters.OpenAI.client_openai import ClientOpenAI
 
         _get_openai_api_key()
 
@@ -654,7 +654,7 @@ class TestClientOpenAIIntegration:
             client.models.list()
 
     def test_get_client_multiple_times_with_same_key(self):
-        from arcadiumai.infra.adapters.OpenAI.client_openai import ClientOpenAI
+        from createagents.infra.adapters.OpenAI.client_openai import ClientOpenAI
 
         api_key = _get_openai_api_key()
 
@@ -672,7 +672,7 @@ class TestClientOpenAIIntegration:
             pytest.fail(f"Multiple client calls failed: {exc}")
 
     def test_client_api_key_constant(self):
-        from arcadiumai.infra.adapters.OpenAI.client_openai import ClientOpenAI
+        from createagents.infra.adapters.OpenAI.client_openai import ClientOpenAI
 
         assert hasattr(ClientOpenAI, "API_OPENAI_NAME")
         assert ClientOpenAI.API_OPENAI_NAME == "OPENAI_API_KEY"
@@ -687,7 +687,7 @@ class TestClientOpenAIIntegration:
         ],
     )
     def test_get_client_with_invalid_key_formats(self, invalid_key):
-        from arcadiumai.infra.adapters.OpenAI.client_openai import ClientOpenAI
+        from createagents.infra.adapters.OpenAI.client_openai import ClientOpenAI
 
         _get_openai_api_key()
 
@@ -698,7 +698,7 @@ class TestClientOpenAIIntegration:
             client.models.list()
 
     def test_get_client_with_none_uses_env_variable(self):
-        from arcadiumai.infra.adapters.OpenAI.client_openai import ClientOpenAI
+        from createagents.infra.adapters.OpenAI.client_openai import ClientOpenAI
 
         _get_openai_api_key()
 
@@ -1097,7 +1097,7 @@ class TestOpenAIAdapterConfigsReais:
 class TestOpenAIChatAdapterToolsIntegration:
     def test_chat_with_currentdate_tool_get_date(self):
         _get_openai_api_key()
-        from arcadiumai.infra.config.available_tools import AvailableTools
+        from createagents.infra.config.available_tools import AvailableTools
 
         adapter = OpenAIChatAdapter()
         tools = list(AvailableTools.get_all_tool_instances().values())
@@ -1117,7 +1117,7 @@ class TestOpenAIChatAdapterToolsIntegration:
 
     def test_chat_with_currentdate_tool_get_time(self):
         _get_openai_api_key()
-        from arcadiumai.infra.config.available_tools import AvailableTools
+        from createagents.infra.config.available_tools import AvailableTools
 
         adapter = OpenAIChatAdapter()
         tools = list(AvailableTools.get_all_tool_instances().values())
@@ -1137,7 +1137,7 @@ class TestOpenAIChatAdapterToolsIntegration:
 
     def test_chat_with_currentdate_tool_get_datetime(self):
         _get_openai_api_key()
-        from arcadiumai.infra.config.available_tools import AvailableTools
+        from createagents.infra.config.available_tools import AvailableTools
 
         adapter = OpenAIChatAdapter()
         tools = list(AvailableTools.get_all_tool_instances().values())
@@ -1157,7 +1157,7 @@ class TestOpenAIChatAdapterToolsIntegration:
 
     def test_chat_with_currentdate_tool_get_timestamp(self):
         _get_openai_api_key()
-        from arcadiumai.infra.config.available_tools import AvailableTools
+        from createagents.infra.config.available_tools import AvailableTools
 
         adapter = OpenAIChatAdapter()
         tools = list(AvailableTools.get_all_tool_instances().values())
@@ -1177,7 +1177,7 @@ class TestOpenAIChatAdapterToolsIntegration:
 
     def test_chat_with_currentdate_tool_date_with_weekday(self):
         _get_openai_api_key()
-        from arcadiumai.infra.config.available_tools import AvailableTools
+        from createagents.infra.config.available_tools import AvailableTools
 
         adapter = OpenAIChatAdapter()
         tools = list(AvailableTools.get_all_tool_instances().values())
@@ -1197,7 +1197,7 @@ class TestOpenAIChatAdapterToolsIntegration:
 
     def test_chat_with_currentdate_tool_multiple_timezones(self):
         _get_openai_api_key()
-        from arcadiumai.infra.config.available_tools import AvailableTools
+        from createagents.infra.config.available_tools import AvailableTools
 
         adapter = OpenAIChatAdapter()
         tools = list(AvailableTools.get_all_tool_instances().values())
@@ -1222,7 +1222,7 @@ class TestOpenAIChatAdapterToolsIntegration:
         _get_openai_api_key()
         import os
 
-        from arcadiumai.infra.config.available_tools import AvailableTools
+        from createagents.infra.config.available_tools import AvailableTools
 
         adapter = OpenAIChatAdapter()
         tools = list(AvailableTools.get_all_tool_instances().values())
@@ -1252,7 +1252,7 @@ class TestOpenAIChatAdapterToolsIntegration:
         _get_openai_api_key()
         import os
 
-        from arcadiumai.infra.config.available_tools import AvailableTools
+        from createagents.infra.config.available_tools import AvailableTools
 
         adapter = OpenAIChatAdapter()
         tools = list(AvailableTools.get_all_tool_instances().values())
@@ -1280,7 +1280,7 @@ class TestOpenAIChatAdapterToolsIntegration:
 
     def test_chat_with_tools_and_configs_combined(self):
         _get_openai_api_key()
-        from arcadiumai.infra.config.available_tools import AvailableTools
+        from createagents.infra.config.available_tools import AvailableTools
 
         adapter = OpenAIChatAdapter()
         tools = list(AvailableTools.get_all_tool_instances().values())
@@ -1310,7 +1310,7 @@ class TestOpenAIChatAdapterToolsIntegration:
 
     def test_chat_with_multiple_tool_calls_in_conversation(self):
         _get_openai_api_key()
-        from arcadiumai.infra.config.available_tools import AvailableTools
+        from createagents.infra.config.available_tools import AvailableTools
 
         adapter = OpenAIChatAdapter()
         tools = list(AvailableTools.get_all_tool_instances().values())
@@ -1345,7 +1345,7 @@ class TestOpenAIChatAdapterToolsIntegration:
 
     def test_chat_without_tools_when_tools_available(self):
         _get_openai_api_key()
-        from arcadiumai.infra.config.available_tools import AvailableTools
+        from createagents.infra.config.available_tools import AvailableTools
 
         adapter = OpenAIChatAdapter()
         tools = list(AvailableTools.get_all_tool_instances().values())
@@ -1365,7 +1365,7 @@ class TestOpenAIChatAdapterToolsIntegration:
 
     def test_chat_with_tools_and_think_config(self):
         _get_openai_api_key()
-        from arcadiumai.infra.config.available_tools import AvailableTools
+        from createagents.infra.config.available_tools import AvailableTools
 
         adapter = OpenAIChatAdapter()
         tools = list(AvailableTools.get_all_tool_instances().values())
@@ -1390,7 +1390,7 @@ class TestOpenAIChatAdapterToolsIntegration:
 
     def test_chat_with_tools_and_top_k_config(self):
         _get_openai_api_key()
-        from arcadiumai.infra.config.available_tools import AvailableTools
+        from createagents.infra.config.available_tools import AvailableTools
 
         adapter = OpenAIChatAdapter()
         tools = list(AvailableTools.get_all_tool_instances().values())
@@ -1415,7 +1415,7 @@ class TestOpenAIChatAdapterToolsIntegration:
 
     def test_chat_with_tools_and_all_configs_openai(self):
         _get_openai_api_key()
-        from arcadiumai.infra.config.available_tools import AvailableTools
+        from createagents.infra.config.available_tools import AvailableTools
 
         adapter = OpenAIChatAdapter()
         tools = list(AvailableTools.get_all_tool_instances().values())

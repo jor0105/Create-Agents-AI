@@ -2,8 +2,8 @@ from unittest.mock import MagicMock, Mock, patch
 
 import pytest
 
-from arcadiumai.domain import ChatException
-from arcadiumai.infra import OllamaChatAdapter
+from createagents.domain import ChatException
+from createagents.infra import OllamaChatAdapter
 
 IA_OLLAMA_TEST_1: str = "phi4-mini:latest"
 IA_OLLAMA_TEST_2: str = "gemma3:4b"
@@ -29,7 +29,7 @@ class TestOllamaChatAdapter:
         assert hasattr(adapter, "_OllamaChatAdapter__host")
         assert hasattr(adapter, "_OllamaChatAdapter__max_retries")
 
-    @patch("arcadiumai.infra.adapters.Ollama.ollama_chat_adapter.chat")
+    @patch("createagents.infra.adapters.Ollama.ollama_chat_adapter.chat")
     def test_chat_with_valid_input(self, mock_chat):
         mock_chat.return_value = _mock_response(
             content="Ollama response", tool_calls=None, get_return=None
@@ -49,7 +49,7 @@ class TestOllamaChatAdapter:
         assert response == "Ollama response"
         mock_chat.assert_called_once()
 
-    @patch("arcadiumai.infra.adapters.Ollama.ollama_chat_adapter.chat")
+    @patch("createagents.infra.adapters.Ollama.ollama_chat_adapter.chat")
     def test_chat_constructs_messages_correctly(self, mock_chat):
         mock_chat.return_value = _mock_response(
             content="Response", tool_calls=None, get_return=None
@@ -74,7 +74,7 @@ class TestOllamaChatAdapter:
         assert messages[1] == {"role": "user", "content": "Previous message"}
         assert messages[2] == {"role": "user", "content": "User question"}
 
-    @patch("arcadiumai.infra.adapters.Ollama.ollama_chat_adapter.chat")
+    @patch("createagents.infra.adapters.Ollama.ollama_chat_adapter.chat")
     def test_chat_with_empty_history(self, mock_chat):
         mock_chat.return_value = _mock_response(
             content="Response", tool_calls=None, get_return=None
@@ -96,7 +96,7 @@ class TestOllamaChatAdapter:
 
         assert len(messages) == 2
 
-    @patch("arcadiumai.infra.adapters.Ollama.ollama_chat_adapter.chat")
+    @patch("createagents.infra.adapters.Ollama.ollama_chat_adapter.chat")
     def test_chat_with_multiple_history_items(self, mock_chat):
         mock_chat.return_value = _mock_response(
             content="Response", tool_calls=None, get_return=None
@@ -125,7 +125,7 @@ class TestOllamaChatAdapter:
 
         assert len(messages) == 6
 
-    @patch("arcadiumai.infra.adapters.Ollama.ollama_chat_adapter.chat")
+    @patch("createagents.infra.adapters.Ollama.ollama_chat_adapter.chat")
     def test_chat_passes_correct_model(self, mock_chat):
         mock_chat.return_value = _mock_response(
             content="Response", tool_calls=None, get_return=None
@@ -145,7 +145,7 @@ class TestOllamaChatAdapter:
         call_args = mock_chat.call_args
         assert call_args.kwargs["model"] == IA_OLLAMA_TEST_1
 
-    @patch("arcadiumai.infra.adapters.Ollama.ollama_chat_adapter.chat")
+    @patch("createagents.infra.adapters.Ollama.ollama_chat_adapter.chat")
     def test_chat_with_empty_response_raises_error(self, mock_chat):
         mock_chat.return_value = _mock_response(
             content="", tool_calls=None, get_return=None
@@ -165,7 +165,7 @@ class TestOllamaChatAdapter:
                 user_ask="Test",
             )
 
-    @patch("arcadiumai.infra.adapters.Ollama.ollama_chat_adapter.chat")
+    @patch("createagents.infra.adapters.Ollama.ollama_chat_adapter.chat")
     def test_chat_with_none_response_raises_error(self, mock_chat):
         mock_chat.return_value = _mock_response(
             content=None, tool_calls=None, get_return=None
@@ -185,7 +185,7 @@ class TestOllamaChatAdapter:
                 user_ask="Test",
             )
 
-    @patch("arcadiumai.infra.adapters.Ollama.ollama_chat_adapter.chat")
+    @patch("createagents.infra.adapters.Ollama.ollama_chat_adapter.chat")
     def test_chat_with_missing_message_key_raises_error(self, mock_chat):
         class BadMessage:
             tool_calls = None
@@ -212,7 +212,7 @@ class TestOllamaChatAdapter:
                 user_ask="Test",
             )
 
-    @patch("arcadiumai.infra.adapters.Ollama.ollama_chat_adapter.chat")
+    @patch("createagents.infra.adapters.Ollama.ollama_chat_adapter.chat")
     def test_chat_with_attribute_error_raises_chat_exception(self, mock_chat):
         class BadResponse:
             @property
@@ -235,7 +235,7 @@ class TestOllamaChatAdapter:
                 user_ask="Test",
             )
 
-    @patch("arcadiumai.infra.adapters.Ollama.ollama_chat_adapter.chat")
+    @patch("createagents.infra.adapters.Ollama.ollama_chat_adapter.chat")
     def test_chat_with_type_error_raises_chat_exception(self, mock_chat):
         mock_chat.side_effect = TypeError("Invalid type")
 
@@ -251,7 +251,7 @@ class TestOllamaChatAdapter:
                 user_ask="Test",
             )
 
-    @patch("arcadiumai.infra.adapters.Ollama.ollama_chat_adapter.chat")
+    @patch("createagents.infra.adapters.Ollama.ollama_chat_adapter.chat")
     def test_chat_with_generic_exception_raises_chat_exception(self, mock_chat):
         mock_chat.side_effect = RuntimeError("Connection error")
 
@@ -269,7 +269,7 @@ class TestOllamaChatAdapter:
                 user_ask="Test",
             )
 
-    @patch("arcadiumai.infra.adapters.Ollama.ollama_chat_adapter.chat")
+    @patch("createagents.infra.adapters.Ollama.ollama_chat_adapter.chat")
     def test_chat_preserves_original_error(self, mock_chat):
         original_error = RuntimeError("Original error")
         mock_chat.side_effect = original_error
@@ -288,7 +288,7 @@ class TestOllamaChatAdapter:
         except ChatException as e:
             assert e.original_error is original_error
 
-    @patch("arcadiumai.infra.adapters.Ollama.ollama_chat_adapter.chat")
+    @patch("createagents.infra.adapters.Ollama.ollama_chat_adapter.chat")
     def test_chat_propagates_chat_exception(self, mock_chat):
         original_exception = ChatException("Original chat error")
         mock_chat.side_effect = original_exception
@@ -307,7 +307,7 @@ class TestOllamaChatAdapter:
 
         assert exc_info.value is original_exception
 
-    @patch("arcadiumai.infra.adapters.Ollama.ollama_chat_adapter.chat")
+    @patch("createagents.infra.adapters.Ollama.ollama_chat_adapter.chat")
     def test_chat_with_special_characters(self, mock_chat):
         mock_chat.return_value = _mock_response(
             content="Resposta com 你好 e emojis 🎉", tool_calls=None, get_return=None
@@ -327,7 +327,7 @@ class TestOllamaChatAdapter:
         assert "你好" in response
         assert "🎉" in response
 
-    @patch("arcadiumai.infra.adapters.Ollama.ollama_chat_adapter.chat")
+    @patch("createagents.infra.adapters.Ollama.ollama_chat_adapter.chat")
     def test_chat_with_multiline_content(self, mock_chat):
         mock_chat.return_value = _mock_response(
             content="Line 1\nLine 2\nLine 3", tool_calls=None, get_return=None
@@ -348,7 +348,7 @@ class TestOllamaChatAdapter:
         assert "Line 1" in response
 
     def test_adapter_implements_chat_repository_interface(self):
-        from arcadiumai.application.interfaces.chat_repository import ChatRepository
+        from createagents.application.interfaces.chat_repository import ChatRepository
 
         adapter = OllamaChatAdapter()
 
@@ -356,7 +356,7 @@ class TestOllamaChatAdapter:
         assert hasattr(adapter, "chat")
         assert callable(adapter.chat)
 
-    @patch("arcadiumai.infra.adapters.Ollama.ollama_chat_adapter.chat")
+    @patch("createagents.infra.adapters.Ollama.ollama_chat_adapter.chat")
     def test_chat_collects_metrics_on_success(self, mock_chat):
         mock_chat.return_value = _mock_response(
             content="Success response", tool_calls=None, get_return=100
@@ -380,7 +380,7 @@ class TestOllamaChatAdapter:
         assert metrics[0].tokens_used == 100
         assert metrics[0].latency_ms > 0
 
-    @patch("arcadiumai.infra.adapters.Ollama.ollama_chat_adapter.chat")
+    @patch("createagents.infra.adapters.Ollama.ollama_chat_adapter.chat")
     def test_chat_collects_metrics_on_failure(self, mock_chat):
         mock_chat.side_effect = RuntimeError("Test error")
 
@@ -405,7 +405,7 @@ class TestOllamaChatAdapter:
         assert metrics[0].error_message is not None
         assert metrics[0].latency_ms > 0
 
-    @patch("arcadiumai.infra.adapters.Ollama.ollama_chat_adapter.chat")
+    @patch("createagents.infra.adapters.Ollama.ollama_chat_adapter.chat")
     def test_chat_collects_multiple_metrics(self, mock_chat):
         mock_chat.return_value = _mock_response(
             content="Response", tool_calls=None, get_return=None
@@ -444,7 +444,7 @@ class TestOllamaChatAdapter:
 
         assert metrics1 is not metrics2
 
-    @patch("arcadiumai.infra.adapters.Ollama.ollama_chat_adapter.chat")
+    @patch("createagents.infra.adapters.Ollama.ollama_chat_adapter.chat")
     def test_chat_with_empty_string_in_history(self, mock_chat):
         mock_chat.return_value = _mock_response(
             content="Response", tool_calls=None, get_return=None
@@ -471,7 +471,7 @@ class TestOllamaChatAdapter:
         messages = call_args.kwargs["messages"]
         assert len(messages) == 4
 
-    @patch("arcadiumai.infra.adapters.Ollama.ollama_chat_adapter.chat")
+    @patch("createagents.infra.adapters.Ollama.ollama_chat_adapter.chat")
     def test_chat_with_long_history(self, mock_chat):
         mock_chat.return_value = _mock_response(
             content="Response", tool_calls=None, get_return=None
@@ -498,7 +498,7 @@ class TestOllamaChatAdapter:
         messages = call_args.kwargs["messages"]
         assert len(messages) == 52
 
-    @patch("arcadiumai.infra.adapters.Ollama.ollama_chat_adapter.chat")
+    @patch("createagents.infra.adapters.Ollama.ollama_chat_adapter.chat")
     def test_chat_with_config_parameter(self, mock_chat):
         mock_chat.return_value = _mock_response(
             content="Response", tool_calls=None, get_return=None
@@ -519,7 +519,7 @@ class TestOllamaChatAdapter:
 
         assert response == "Response"
 
-    @patch("arcadiumai.infra.adapters.Ollama.ollama_chat_adapter.chat")
+    @patch("createagents.infra.adapters.Ollama.ollama_chat_adapter.chat")
     def test_chat_with_key_error_raises_chat_exception(self, mock_chat):
         mock_response = MagicMock()
         mock_response.message.tool_calls = None
@@ -540,7 +540,7 @@ class TestOllamaChatAdapter:
                 user_ask="Test",
             )
 
-    @patch("arcadiumai.infra.adapters.Ollama.ollama_chat_adapter.chat")
+    @patch("createagents.infra.adapters.Ollama.ollama_chat_adapter.chat")
     def test_chat_metrics_contain_error_message_on_empty_response(self, mock_chat):
         mock_chat.return_value = _mock_response(
             content="", tool_calls=None, get_return=None
@@ -565,7 +565,7 @@ class TestOllamaChatAdapter:
         assert metrics[0].error_message is not None
         assert metrics[0].success is False
 
-    @patch("arcadiumai.infra.adapters.Ollama.ollama_chat_adapter.chat")
+    @patch("createagents.infra.adapters.Ollama.ollama_chat_adapter.chat")
     def test_chat_passes_temperature_config(self, mock_chat):
         mock_chat.return_value = _mock_response(
             content="Response", tool_calls=None, get_return=None
@@ -585,7 +585,7 @@ class TestOllamaChatAdapter:
         call_args = mock_chat.call_args
         assert call_args.kwargs.get("options") == {"temperature": 0.7}
 
-    @patch("arcadiumai.infra.adapters.Ollama.ollama_chat_adapter.chat")
+    @patch("createagents.infra.adapters.Ollama.ollama_chat_adapter.chat")
     def test_chat_passes_max_tokens_as_num_predict(self, mock_chat):
         mock_chat.return_value = _mock_response(
             content="Response", tool_calls=None, get_return=None
@@ -605,7 +605,7 @@ class TestOllamaChatAdapter:
         call_args = mock_chat.call_args
         assert call_args.kwargs.get("options") == {"num_predict": 500}
 
-    @patch("arcadiumai.infra.adapters.Ollama.ollama_chat_adapter.chat")
+    @patch("createagents.infra.adapters.Ollama.ollama_chat_adapter.chat")
     def test_chat_passes_top_p_config(self, mock_chat):
         mock_chat.return_value = _mock_response(
             content="Response", tool_calls=None, get_return=None
@@ -625,7 +625,7 @@ class TestOllamaChatAdapter:
         call_args = mock_chat.call_args
         assert call_args.kwargs.get("options") == {"top_p": 0.9}
 
-    @patch("arcadiumai.infra.adapters.Ollama.ollama_chat_adapter.chat")
+    @patch("createagents.infra.adapters.Ollama.ollama_chat_adapter.chat")
     def test_chat_passes_all_configs(self, mock_chat):
         mock_chat.return_value = _mock_response(
             content="Response", tool_calls=None, get_return=None
@@ -656,7 +656,7 @@ class TestOllamaChatAdapter:
         }
         assert call_args.kwargs.get("options") == expected_options
 
-    @patch("arcadiumai.infra.adapters.Ollama.ollama_chat_adapter.chat")
+    @patch("createagents.infra.adapters.Ollama.ollama_chat_adapter.chat")
     def test_chat_with_empty_config_does_not_pass_options(self, mock_chat):
         mock_chat.return_value = _mock_response(
             content="Response", tool_calls=None, get_return=None
@@ -678,8 +678,8 @@ class TestOllamaChatAdapter:
         assert "model" in call_args.kwargs
         assert "messages" in call_args.kwargs
 
-    @patch("arcadiumai.infra.adapters.Ollama.ollama_chat_adapter.subprocess.run")
-    @patch("arcadiumai.infra.adapters.Ollama.ollama_chat_adapter.chat")
+    @patch("createagents.infra.adapters.Ollama.ollama_chat_adapter.subprocess.run")
+    @patch("createagents.infra.adapters.Ollama.ollama_chat_adapter.chat")
     def test_stop_model_is_called_after_chat(self, mock_chat, mock_subprocess):
         mock_chat.return_value = _mock_response(
             content="Response", tool_calls=None, get_return=None
@@ -701,8 +701,8 @@ class TestOllamaChatAdapter:
         call_args = mock_subprocess.call_args
         assert call_args[0][0] == ["ollama", "stop", IA_OLLAMA_TEST_1]
 
-    @patch("arcadiumai.infra.adapters.Ollama.ollama_chat_adapter.subprocess.run")
-    @patch("arcadiumai.infra.adapters.Ollama.ollama_chat_adapter.chat")
+    @patch("createagents.infra.adapters.Ollama.ollama_chat_adapter.subprocess.run")
+    @patch("createagents.infra.adapters.Ollama.ollama_chat_adapter.chat")
     def test_stop_model_called_even_on_error(self, mock_chat, mock_subprocess):
         mock_chat.side_effect = Exception("Chat error")
         mock_subprocess.return_value = Mock()
@@ -723,8 +723,8 @@ class TestOllamaChatAdapter:
 
         mock_subprocess.assert_called_once()
 
-    @patch("arcadiumai.infra.adapters.Ollama.ollama_chat_adapter.subprocess.run")
-    @patch("arcadiumai.infra.adapters.Ollama.ollama_chat_adapter.chat")
+    @patch("createagents.infra.adapters.Ollama.ollama_chat_adapter.subprocess.run")
+    @patch("createagents.infra.adapters.Ollama.ollama_chat_adapter.chat")
     def test_stop_model_handles_file_not_found(self, mock_chat, mock_subprocess):
         mock_chat.return_value = _mock_response(
             content="Response", tool_calls=None, get_return=None
@@ -744,8 +744,8 @@ class TestOllamaChatAdapter:
 
         assert response == "Response"
 
-    @patch("arcadiumai.infra.adapters.Ollama.ollama_chat_adapter.subprocess.run")
-    @patch("arcadiumai.infra.adapters.Ollama.ollama_chat_adapter.chat")
+    @patch("createagents.infra.adapters.Ollama.ollama_chat_adapter.subprocess.run")
+    @patch("createagents.infra.adapters.Ollama.ollama_chat_adapter.chat")
     def test_stop_model_handles_timeout(self, mock_chat, mock_subprocess):
         import subprocess
 
@@ -767,8 +767,8 @@ class TestOllamaChatAdapter:
 
         assert response == "Response"
 
-    @patch("arcadiumai.infra.adapters.Ollama.ollama_chat_adapter.subprocess.run")
-    @patch("arcadiumai.infra.adapters.Ollama.ollama_chat_adapter.chat")
+    @patch("createagents.infra.adapters.Ollama.ollama_chat_adapter.subprocess.run")
+    @patch("createagents.infra.adapters.Ollama.ollama_chat_adapter.chat")
     def test_stop_model_handles_generic_exception(self, mock_chat, mock_subprocess):
         mock_chat.return_value = _mock_response(
             content="Response", tool_calls=None, get_return=None
@@ -788,7 +788,7 @@ class TestOllamaChatAdapter:
 
         assert response == "Response"
 
-    @patch("arcadiumai.infra.adapters.Ollama.ollama_chat_adapter.chat")
+    @patch("createagents.infra.adapters.Ollama.ollama_chat_adapter.chat")
     def test_chat_with_none_instructions_omits_system_message(self, mock_chat):
         mock_chat.return_value = _mock_response(
             content="Response", tool_calls=None, get_return=None
@@ -811,7 +811,7 @@ class TestOllamaChatAdapter:
         assert len(messages) == 1
         assert messages[0] == {"role": "user", "content": "Test"}
 
-    @patch("arcadiumai.infra.adapters.Ollama.ollama_chat_adapter.chat")
+    @patch("createagents.infra.adapters.Ollama.ollama_chat_adapter.chat")
     def test_chat_with_whitespace_only_instructions(self, mock_chat):
         mock_chat.return_value = _mock_response(
             content="Response", tool_calls=None, get_return=None
@@ -836,7 +836,7 @@ class TestOllamaChatAdapter:
 
     def test_initialization_reads_environment_variables(self):
         with patch(
-            "arcadiumai.infra.adapters.Ollama.ollama_chat_adapter.EnvironmentConfig.get_env"
+            "createagents.infra.adapters.Ollama.ollama_chat_adapter.EnvironmentConfig.get_env"
         ) as mock_get_env:
             mock_get_env.side_effect = lambda key, default: {
                 "OLLAMA_HOST": "http://custom-host:11434",

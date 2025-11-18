@@ -17,7 +17,7 @@ Configure o **AI Agent Creator** em sua máquina.
 ### 1. Clonar o Repositório
 
 ```bash
-git clone https://github.com/jor0105/AI_Agent.git
+git clone https://github.com/jor0105/Creator-Agents-AI.git
 cd AI_Agent
 ```
 
@@ -66,7 +66,7 @@ cp .env.example .env
 ### 4. Testar Instalação
 
 ```python
-from arcadiumai import CreateAgent
+from createagents import CreateAgent
 
 agent = CreateAgent(provider="openai", model="gpt-4")
 print("✅ Instalação bem-sucedida!")

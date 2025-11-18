@@ -2,8 +2,8 @@ from unittest.mock import Mock, patch
 
 import pytest
 
-from arcadiumai.application import CreateAgent
-from arcadiumai.domain import InvalidAgentConfigException
+from createagents.application import CreateAgent
+from createagents.domain import InvalidAgentConfigException
 
 
 @pytest.mark.unit
@@ -137,7 +137,7 @@ class TestCreateAgentInitialization:
 
 @pytest.mark.unit
 class TestCreateAgentChat:
-    @patch("arcadiumai.application.facade.client.AgentComposer.create_chat_use_case")
+    @patch("createagents.application.facade.client.AgentComposer.create_chat_use_case")
     def test_chat_returns_response(self, mock_create_chat):
         mock_use_case = Mock()
         mock_output = Mock()
@@ -153,7 +153,7 @@ class TestCreateAgentChat:
 
         assert response == "AI response"
 
-    @patch("arcadiumai.application.facade.client.AgentComposer.create_chat_use_case")
+    @patch("createagents.application.facade.client.AgentComposer.create_chat_use_case")
     def test_chat_calls_use_case_with_correct_params(self, mock_create_chat):
         mock_use_case = Mock()
         mock_output = Mock()
@@ -171,7 +171,7 @@ class TestCreateAgentChat:
         call_args = mock_use_case.execute.call_args
         assert call_args[0][1].message == "Test message"
 
-    @patch("arcadiumai.application.facade.client.AgentComposer.create_chat_use_case")
+    @patch("createagents.application.facade.client.AgentComposer.create_chat_use_case")
     def test_chat_with_empty_message(self, mock_create_chat):
         mock_use_case = Mock()
         mock_output = Mock()
@@ -189,7 +189,7 @@ class TestCreateAgentChat:
         call_args = mock_use_case.execute.call_args
         assert call_args[0][1].message == ""
 
-    @patch("arcadiumai.application.facade.client.AgentComposer.create_chat_use_case")
+    @patch("createagents.application.facade.client.AgentComposer.create_chat_use_case")
     def test_chat_when_use_case_raises_exception(self, mock_create_chat):
         mock_use_case = Mock()
         mock_use_case.execute.side_effect = Exception("API Error")
@@ -202,7 +202,7 @@ class TestCreateAgentChat:
         with pytest.raises(Exception, match="API Error"):
             controller.chat("Hello")
 
-    @patch("arcadiumai.application.facade.client.AgentComposer.create_chat_use_case")
+    @patch("createagents.application.facade.client.AgentComposer.create_chat_use_case")
     def test_multiple_chat_calls(self, mock_create_chat):
         mock_use_case = Mock()
         mock_output = Mock()
@@ -219,7 +219,7 @@ class TestCreateAgentChat:
 
         assert mock_use_case.execute.call_count == 2
 
-    @patch("arcadiumai.application.facade.client.AgentComposer.create_chat_use_case")
+    @patch("createagents.application.facade.client.AgentComposer.create_chat_use_case")
     def test_chat_updates_agent_history(self, mock_create_chat):
         mock_use_case = Mock()
         mock_output = Mock()
@@ -246,7 +246,7 @@ class TestCreateAgentChat:
 @pytest.mark.unit
 class TestCreateAgentGetConfigs:
     @patch(
-        "arcadiumai.application.facade.client.AgentComposer.create_get_config_use_case"
+        "createagents.application.facade.client.AgentComposer.create_get_config_use_case"
     )
     def test_get_configs_returns_dict(self, mock_create_config):
         mock_use_case = Mock()
@@ -272,7 +272,7 @@ class TestCreateAgentGetConfigs:
         assert "model" in config
 
     @patch(
-        "arcadiumai.application.facade.client.AgentComposer.create_get_config_use_case"
+        "createagents.application.facade.client.AgentComposer.create_get_config_use_case"
     )
     def test_get_configs_calls_use_case(self, mock_create_config):
         mock_use_case = Mock()
@@ -290,7 +290,7 @@ class TestCreateAgentGetConfigs:
         assert mock_use_case.execute.called
 
     @patch(
-        "arcadiumai.application.facade.client.AgentComposer.create_get_config_use_case"
+        "createagents.application.facade.client.AgentComposer.create_get_config_use_case"
     )
     def test_get_configs_returns_all_expected_fields(self, mock_create_config):
         mock_use_case = Mock()
@@ -320,7 +320,7 @@ class TestCreateAgentGetConfigs:
         assert config == expected_config
 
     @patch(
-        "arcadiumai.application.facade.client.AgentComposer.create_get_config_use_case"
+        "createagents.application.facade.client.AgentComposer.create_get_config_use_case"
     )
     def test_get_configs_when_use_case_raises_exception(self, mock_create_config):
         mock_use_case = Mock()
@@ -417,9 +417,9 @@ class TestCreateAgentClearHistory:
 
         assert len(controller._CreateAgent__agent.history) == 0
 
-    @patch("arcadiumai.application.facade.client.AgentComposer.create_chat_use_case")
+    @patch("createagents.application.facade.client.AgentComposer.create_chat_use_case")
     @patch(
-        "arcadiumai.application.facade.client.AgentComposer.create_get_config_use_case"
+        "createagents.application.facade.client.AgentComposer.create_get_config_use_case"
     )
     def test_get_configs_after_clear_history_shows_empty_history(
         self, mock_create_config, mock_create_chat
@@ -450,9 +450,9 @@ class TestCreateAgentClearHistory:
 
 @pytest.mark.unit
 class TestCreateAgentMetrics:
-    @patch("arcadiumai.application.facade.client.AgentComposer.create_chat_use_case")
+    @patch("createagents.application.facade.client.AgentComposer.create_chat_use_case")
     def test_get_metrics_returns_list(self, mock_create_chat):
-        from arcadiumai.infra.config.metrics import ChatMetrics
+        from createagents.infra.config.metrics import ChatMetrics
 
         mock_use_case = Mock()
         mock_use_case.get_metrics.return_value = [
@@ -470,7 +470,7 @@ class TestCreateAgentMetrics:
         assert len(metrics) == 1
         assert isinstance(metrics[0], ChatMetrics)
 
-    @patch("arcadiumai.application.facade.client.AgentComposer.create_chat_use_case")
+    @patch("createagents.application.facade.client.AgentComposer.create_chat_use_case")
     def test_get_metrics_calls_use_case_method(self, mock_create_chat):
         mock_use_case = Mock()
         mock_use_case.get_metrics.return_value = []
@@ -484,7 +484,7 @@ class TestCreateAgentMetrics:
 
         mock_use_case.get_metrics.assert_called_once()
 
-    @patch("arcadiumai.application.facade.client.AgentComposer.create_chat_use_case")
+    @patch("createagents.application.facade.client.AgentComposer.create_chat_use_case")
     def test_get_metrics_when_adapter_has_no_metrics(self, mock_create_chat):
         mock_use_case = Mock()
         mock_use_case.get_metrics.return_value = []
@@ -498,9 +498,9 @@ class TestCreateAgentMetrics:
 
         assert metrics == []
 
-    @patch("arcadiumai.application.facade.client.AgentComposer.create_chat_use_case")
+    @patch("createagents.application.facade.client.AgentComposer.create_chat_use_case")
     def test_get_metrics_with_multiple_metrics(self, mock_create_chat):
-        from arcadiumai.infra.config.metrics import ChatMetrics
+        from createagents.infra.config.metrics import ChatMetrics
 
         mock_use_case = Mock()
         mock_use_case.get_metrics.return_value = [
@@ -519,9 +519,9 @@ class TestCreateAgentMetrics:
         assert len(metrics) == 3
         assert all(isinstance(m, ChatMetrics) for m in metrics)
 
-    @patch("arcadiumai.application.facade.client.AgentComposer.create_chat_use_case")
+    @patch("createagents.application.facade.client.AgentComposer.create_chat_use_case")
     def test_export_metrics_json(self, mock_create_chat):
-        from arcadiumai.infra.config.metrics import ChatMetrics
+        from createagents.infra.config.metrics import ChatMetrics
 
         mock_use_case = Mock()
         mock_use_case.get_metrics.return_value = [
@@ -539,11 +539,11 @@ class TestCreateAgentMetrics:
         assert "gpt-5-nano" in json_str
         assert "summary" in json_str
 
-    @patch("arcadiumai.application.facade.client.AgentComposer.create_chat_use_case")
+    @patch("createagents.application.facade.client.AgentComposer.create_chat_use_case")
     def test_export_metrics_json_to_file(self, mock_create_chat, tmp_path):
         import json
 
-        from arcadiumai.infra.config.metrics import ChatMetrics
+        from createagents.infra.config.metrics import ChatMetrics
 
         mock_use_case = Mock()
         mock_use_case.get_metrics.return_value = [
@@ -566,9 +566,9 @@ class TestCreateAgentMetrics:
         assert "summary" in data
         assert "metrics" in data
 
-    @patch("arcadiumai.application.facade.client.AgentComposer.create_chat_use_case")
+    @patch("createagents.application.facade.client.AgentComposer.create_chat_use_case")
     def test_export_metrics_prometheus(self, mock_create_chat):
-        from arcadiumai.infra.config.metrics import ChatMetrics
+        from createagents.infra.config.metrics import ChatMetrics
 
         mock_use_case = Mock()
         mock_use_case.get_metrics.return_value = [
@@ -585,9 +585,9 @@ class TestCreateAgentMetrics:
         assert isinstance(prom_text, str)
         assert "chat_requests_total" in prom_text
 
-    @patch("arcadiumai.application.facade.client.AgentComposer.create_chat_use_case")
+    @patch("createagents.application.facade.client.AgentComposer.create_chat_use_case")
     def test_export_metrics_prometheus_to_file(self, mock_create_chat, tmp_path):
-        from arcadiumai.infra.config.metrics import ChatMetrics
+        from createagents.infra.config.metrics import ChatMetrics
 
         mock_use_case = Mock()
         mock_use_case.get_metrics.return_value = [
@@ -609,7 +609,7 @@ class TestCreateAgentMetrics:
 
         assert "chat_requests_total" in content
 
-    @patch("arcadiumai.application.facade.client.AgentComposer.create_chat_use_case")
+    @patch("createagents.application.facade.client.AgentComposer.create_chat_use_case")
     def test_export_metrics_json_with_empty_metrics(self, mock_create_chat):
         mock_use_case = Mock()
         mock_use_case.get_metrics.return_value = []
@@ -624,7 +624,7 @@ class TestCreateAgentMetrics:
         assert isinstance(json_str, str)
         assert "summary" in json_str
 
-    @patch("arcadiumai.application.facade.client.AgentComposer.create_chat_use_case")
+    @patch("createagents.application.facade.client.AgentComposer.create_chat_use_case")
     def test_export_metrics_prometheus_with_empty_metrics(self, mock_create_chat):
         mock_use_case = Mock()
         mock_use_case.get_metrics.return_value = []
@@ -641,7 +641,7 @@ class TestCreateAgentMetrics:
 
 @pytest.mark.unit
 class TestCreateAgentIntegration:
-    @patch("arcadiumai.application.facade.client.AgentComposer.create_chat_use_case")
+    @patch("createagents.application.facade.client.AgentComposer.create_chat_use_case")
     def test_chat_and_get_configs_together(self, mock_create_chat):
         mock_use_case = Mock()
         mock_output = Mock()
@@ -659,7 +659,7 @@ class TestCreateAgentIntegration:
         configs = controller.get_configs()
         assert isinstance(configs, dict)
 
-    @patch("arcadiumai.application.facade.client.AgentComposer.create_chat_use_case")
+    @patch("createagents.application.facade.client.AgentComposer.create_chat_use_case")
     def test_chat_clear_history_chat_again(self, mock_create_chat):
         mock_use_case = Mock()
         mock_output = Mock()
@@ -687,9 +687,9 @@ class TestCreateAgentIntegration:
         controller.chat("Message 2")
         assert len(agent.history) == 2
 
-    @patch("arcadiumai.application.facade.client.AgentComposer.create_chat_use_case")
+    @patch("createagents.application.facade.client.AgentComposer.create_chat_use_case")
     def test_metrics_accumulate_after_multiple_chats(self, mock_create_chat):
-        from arcadiumai.infra.config.metrics import ChatMetrics
+        from createagents.infra.config.metrics import ChatMetrics
 
         mock_use_case = Mock()
         mock_output = Mock()
@@ -762,7 +762,7 @@ class TestCreateAgentEdgeCases:
         assert agent.name == unicode_name
         assert agent.instructions == unicode_instructions
 
-    @patch("arcadiumai.application.facade.client.AgentComposer.create_chat_use_case")
+    @patch("createagents.application.facade.client.AgentComposer.create_chat_use_case")
     def test_chat_with_very_long_message(self, mock_create_chat):
         mock_use_case = Mock()
         mock_output = Mock()
@@ -781,7 +781,7 @@ class TestCreateAgentEdgeCases:
         call_args = mock_use_case.execute.call_args
         assert call_args[0][1].message == long_message
 
-    @patch("arcadiumai.application.facade.client.AgentComposer.create_chat_use_case")
+    @patch("createagents.application.facade.client.AgentComposer.create_chat_use_case")
     def test_chat_with_unicode_message(self, mock_create_chat):
         mock_use_case = Mock()
         mock_output = Mock()
@@ -833,9 +833,9 @@ class TestCreateAgentEdgeCases:
         agent = controller._CreateAgent__agent
         assert agent.config == {}
 
-    @patch("arcadiumai.application.facade.client.AgentComposer.create_chat_use_case")
+    @patch("createagents.application.facade.client.AgentComposer.create_chat_use_case")
     def test_export_metrics_to_nonexistent_directory(self, mock_create_chat, tmp_path):
-        from arcadiumai.infra.config.metrics import ChatMetrics
+        from createagents.infra.config.metrics import ChatMetrics
 
         mock_use_case = Mock()
         mock_use_case.get_metrics.return_value = [
@@ -854,7 +854,7 @@ class TestCreateAgentEdgeCases:
         except (FileNotFoundError, OSError):
             pass
 
-    @patch("arcadiumai.application.facade.client.AgentComposer.create_chat_use_case")
+    @patch("createagents.application.facade.client.AgentComposer.create_chat_use_case")
     def test_chat_preserves_message_order(self, mock_create_chat):
         mock_use_case = Mock()
         mock_output = Mock()
@@ -884,9 +884,9 @@ class TestCreateAgentEdgeCases:
         assert history[2].content == "Second message"
         assert history[4].content == "Third message"
 
-    @patch("arcadiumai.application.facade.client.AgentComposer.create_chat_use_case")
+    @patch("createagents.application.facade.client.AgentComposer.create_chat_use_case")
     def test_get_metrics_does_not_modify_internal_state(self, mock_create_chat):
-        from arcadiumai.infra.config.metrics import ChatMetrics
+        from createagents.infra.config.metrics import ChatMetrics
 
         mock_use_case = Mock()
 
@@ -925,9 +925,9 @@ class TestCreateAgentEdgeCases:
                 getattr(controller, method_name)
             ), f"{method_name} is not callable"
 
-    @patch("arcadiumai.application.facade.client.AgentComposer.create_chat_use_case")
+    @patch("createagents.application.facade.client.AgentComposer.create_chat_use_case")
     def test_export_metrics_json_without_filepath(self, mock_create_chat):
-        from arcadiumai.infra.config.metrics import ChatMetrics
+        from createagents.infra.config.metrics import ChatMetrics
 
         mock_use_case = Mock()
         mock_use_case.get_metrics.return_value = [
@@ -945,9 +945,9 @@ class TestCreateAgentEdgeCases:
         assert len(json_str) > 0
         assert "summary" in json_str
 
-    @patch("arcadiumai.application.facade.client.AgentComposer.create_chat_use_case")
+    @patch("createagents.application.facade.client.AgentComposer.create_chat_use_case")
     def test_export_metrics_prometheus_without_filepath(self, mock_create_chat):
-        from arcadiumai.infra.config.metrics import ChatMetrics
+        from createagents.infra.config.metrics import ChatMetrics
 
         mock_use_case = Mock()
         mock_use_case.get_metrics.return_value = [
@@ -964,9 +964,9 @@ class TestCreateAgentEdgeCases:
         assert isinstance(prom_text, str)
         assert len(prom_text) > 0
 
-    @patch("arcadiumai.application.facade.client.AgentComposer.create_chat_use_case")
+    @patch("createagents.application.facade.client.AgentComposer.create_chat_use_case")
     @patch(
-        "arcadiumai.application.facade.client.AgentComposer.create_get_config_use_case"
+        "createagents.application.facade.client.AgentComposer.create_get_config_use_case"
     )
     def test_controller_workflow_chat_config_clear_repeat(
         self, mock_create_config, mock_create_chat
@@ -1027,7 +1027,7 @@ class TestCreateAgentEdgeCases:
         assert agent.instructions is None
         assert agent.config == {}
 
-    @patch("arcadiumai.application.facade.client.AgentComposer.create_chat_use_case")
+    @patch("createagents.application.facade.client.AgentComposer.create_chat_use_case")
     def test_multiple_consecutive_clear_history_calls(self, mock_create_chat):
         mock_use_case = Mock()
         mock_output = Mock()
@@ -1093,7 +1093,7 @@ class TestCreateAgentEdgeCases:
         assert agent.tools == []
 
     def test_initialization_with_single_tool(self):
-        from arcadiumai.domain import BaseTool
+        from createagents.domain import BaseTool
 
         class TestTool(BaseTool):
             name = "test_tool"
@@ -1116,7 +1116,7 @@ class TestCreateAgentEdgeCases:
         assert agent.tools[0] is tool
 
     def test_initialization_with_multiple_tools(self):
-        from arcadiumai.domain import BaseTool
+        from createagents.domain import BaseTool
 
         class Tool1(BaseTool):
             name = "tool1"
@@ -1145,7 +1145,7 @@ class TestCreateAgentEdgeCases:
         assert len(agent.tools) == 2
 
     def test_initialization_with_string_tool_name(self):
-        from arcadiumai.infra import AvailableTools
+        from createagents.infra import AvailableTools
 
         available = AvailableTools.get_all_available_tools()
         if available:
@@ -1164,8 +1164,8 @@ class TestCreateAgentEdgeCases:
             pytest.skip("No available tools to test")
 
     def test_initialization_with_mixed_tool_types(self):
-        from arcadiumai.domain import BaseTool
-        from arcadiumai.infra import AvailableTools
+        from createagents.domain import BaseTool
+        from createagents.infra import AvailableTools
 
         class TestTool(BaseTool):
             name = "test_tool"
@@ -1200,7 +1200,7 @@ class TestCreateAgentEdgeCases:
             assert len(agent.tools) == 1
 
     def test_get_configs_includes_tools(self):
-        from arcadiumai.domain import BaseTool
+        from createagents.domain import BaseTool
 
         class TestTool(BaseTool):
             name = "test_tool"
@@ -1225,7 +1225,7 @@ class TestCreateAgentEdgeCases:
     def test_initialization_tools_preserved_through_chat(self):
         from unittest.mock import Mock, patch
 
-        from arcadiumai.domain import BaseTool
+        from createagents.domain import BaseTool
 
         class TestTool(BaseTool):
             name = "test_tool"
@@ -1237,7 +1237,7 @@ class TestCreateAgentEdgeCases:
         tool = TestTool()
 
         with patch(
-            "arcadiumai.application.facade.client.AgentComposer.create_chat_use_case"
+            "createagents.application.facade.client.AgentComposer.create_chat_use_case"
         ) as mock_create_chat:
             mock_use_case = Mock()
             mock_output = Mock()
@@ -1298,7 +1298,7 @@ class TestCreateAgentGetAllAvailableTools:
         assert "currentdate" in tools
 
     def test_get_all_available_tools_includes_agent_tools(self):
-        from arcadiumai.domain import BaseTool
+        from createagents.domain import BaseTool
 
         class CustomTool(BaseTool):
             name = "custom_tool"
@@ -1324,7 +1324,7 @@ class TestCreateAgentGetAllAvailableTools:
         assert tools["custom_tool"] == "A custom tool for testing"
 
     def test_get_all_available_tools_with_multiple_agent_tools(self):
-        from arcadiumai.domain import BaseTool
+        from createagents.domain import BaseTool
 
         class Tool1(BaseTool):
             name = "tool1"
@@ -1387,7 +1387,7 @@ class TestCreateAgentGetAllAvailableTools:
         assert "currentdate" in tools
 
     def test_get_all_available_tools_case_insensitive(self):
-        from arcadiumai.domain import BaseTool
+        from createagents.domain import BaseTool
 
         class CustomTool(BaseTool):
             name = "CustomTool"
@@ -1410,7 +1410,7 @@ class TestCreateAgentGetAllAvailableTools:
         assert "customtool" in tools
 
     def test_get_all_available_tools_does_not_modify_agent(self):
-        from arcadiumai.domain import BaseTool
+        from createagents.domain import BaseTool
 
         class TestTool(BaseTool):
             name = "test_tool"

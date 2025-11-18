@@ -2,8 +2,8 @@ import os
 
 import pytest
 
-from arcadiumai.domain import ChatException
-from arcadiumai.infra import OllamaChatAdapter
+from createagents.domain import ChatException
+from createagents.infra import OllamaChatAdapter
 
 IA_OLLAMA_TEST_1: str = "granite4:latest"  # aceita tools, configs e não think
 IA_OLLAMA_TEST_2: str = (
@@ -424,7 +424,7 @@ class TestOllamaChatAdapterIntegration:
     def test_adapter_implements_chat_repository_interface(self):
         _check_ollama_available()
 
-        from arcadiumai.application.interfaces.chat_repository import ChatRepository
+        from createagents.application.interfaces.chat_repository import ChatRepository
 
         adapter = OllamaChatAdapter()
 
@@ -527,7 +527,7 @@ class TestOllamaChatAdapterToolsIntegration:
     def test_chat_with_currentdate_tool_get_date(self):
         _check_ollama_available()
         _check_model_available(IA_OLLAMA_TEST_1)
-        from arcadiumai.infra.config.available_tools import AvailableTools
+        from createagents.infra.config.available_tools import AvailableTools
 
         adapter = OllamaChatAdapter()
         tools = list(AvailableTools.get_all_tool_instances().values())
@@ -548,7 +548,7 @@ class TestOllamaChatAdapterToolsIntegration:
     def test_chat_with_currentdate_tool_get_time(self):
         _check_ollama_available()
         _check_model_available(IA_OLLAMA_TEST_1)
-        from arcadiumai.infra.config.available_tools import AvailableTools
+        from createagents.infra.config.available_tools import AvailableTools
 
         adapter = OllamaChatAdapter()
         tools = list(AvailableTools.get_all_tool_instances().values())
@@ -569,7 +569,7 @@ class TestOllamaChatAdapterToolsIntegration:
     def test_chat_with_currentdate_tool_multiple_actions(self):
         _check_ollama_available()
         _check_model_available(IA_OLLAMA_TEST_1)
-        from arcadiumai.infra.config.available_tools import AvailableTools
+        from createagents.infra.config.available_tools import AvailableTools
 
         adapter = OllamaChatAdapter()
         tools = list(AvailableTools.get_all_tool_instances().values())
@@ -603,7 +603,7 @@ class TestOllamaChatAdapterToolsIntegration:
     def test_chat_with_currentdate_tool_different_timezones(self):
         _check_ollama_available()
         _check_model_available(IA_OLLAMA_TEST_1)
-        from arcadiumai.infra.config.available_tools import AvailableTools
+        from createagents.infra.config.available_tools import AvailableTools
 
         adapter = OllamaChatAdapter()
         tools = list(AvailableTools.get_all_tool_instances().values())
@@ -629,7 +629,7 @@ class TestOllamaChatAdapterToolsIntegration:
         _check_model_available(IA_OLLAMA_TEST_1)
         import os
 
-        from arcadiumai.infra.config.available_tools import AvailableTools
+        from createagents.infra.config.available_tools import AvailableTools
 
         adapter = OllamaChatAdapter()
         tools = list(AvailableTools.get_all_tool_instances().values())
@@ -660,7 +660,7 @@ class TestOllamaChatAdapterToolsIntegration:
         _check_model_available(IA_OLLAMA_TEST_1)
         import os
 
-        from arcadiumai.infra.config.available_tools import AvailableTools
+        from createagents.infra.config.available_tools import AvailableTools
 
         adapter = OllamaChatAdapter()
         tools = list(AvailableTools.get_all_tool_instances().values())
@@ -689,7 +689,7 @@ class TestOllamaChatAdapterToolsIntegration:
     def test_chat_with_tools_and_configs_combined(self):
         _check_ollama_available()
         _check_model_available(IA_OLLAMA_TEST_1)
-        from arcadiumai.infra.config.available_tools import AvailableTools
+        from createagents.infra.config.available_tools import AvailableTools
 
         adapter = OllamaChatAdapter()
         tools = list(AvailableTools.get_all_tool_instances().values())
@@ -720,7 +720,7 @@ class TestOllamaChatAdapterToolsIntegration:
     def test_chat_with_multiple_tool_calls_in_conversation(self):
         _check_ollama_available()
         _check_model_available(IA_OLLAMA_TEST_1)
-        from arcadiumai.infra.config.available_tools import AvailableTools
+        from createagents.infra.config.available_tools import AvailableTools
 
         adapter = OllamaChatAdapter()
         tools = list(AvailableTools.get_all_tool_instances().values())
@@ -756,7 +756,7 @@ class TestOllamaChatAdapterToolsIntegration:
     def test_chat_with_tools_and_think_config(self):
         _check_ollama_available()
         _check_model_available(IA_OLLAMA_TEST_2)
-        from arcadiumai.infra.config.available_tools import AvailableTools
+        from createagents.infra.config.available_tools import AvailableTools
 
         adapter = OllamaChatAdapter()
         tools = list(AvailableTools.get_all_tool_instances().values())
@@ -782,7 +782,7 @@ class TestOllamaChatAdapterToolsIntegration:
     def test_chat_with_tools_and_top_k_config(self):
         _check_ollama_available()
         _check_model_available(IA_OLLAMA_TEST_1)
-        from arcadiumai.infra.config.available_tools import AvailableTools
+        from createagents.infra.config.available_tools import AvailableTools
 
         adapter = OllamaChatAdapter()
         tools = list(AvailableTools.get_all_tool_instances().values())
@@ -808,7 +808,7 @@ class TestOllamaChatAdapterToolsIntegration:
     def test_chat_with_tools_and_all_configs_ollama(self):
         _check_ollama_available()
         _check_model_available(IA_OLLAMA_TEST_1)
-        from arcadiumai.infra.config.available_tools import AvailableTools
+        from createagents.infra.config.available_tools import AvailableTools
 
         adapter = OllamaChatAdapter()
         tools = list(AvailableTools.get_all_tool_instances().values())

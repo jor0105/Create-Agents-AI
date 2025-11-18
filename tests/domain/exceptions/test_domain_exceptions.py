@@ -1,6 +1,6 @@
 import pytest
 
-from arcadiumai.domain import (
+from createagents.domain import (
     AdapterNotFoundException,
     AgentException,
     ChatException,
@@ -315,7 +315,7 @@ class TestInvalidConfigTypeException:
 @pytest.mark.unit
 class TestInvalidBaseToolException:
     def test_create_with_tool_object(self):
-        from arcadiumai.domain.exceptions import InvalidBaseToolException
+        from createagents.domain.exceptions import InvalidBaseToolException
 
         tool = {"name": "test_tool"}
         exception = InvalidBaseToolException(tool)
@@ -324,7 +324,7 @@ class TestInvalidBaseToolException:
         assert "must inherit from BaseTool" in str(exception)
 
     def test_exception_message_format(self):
-        from arcadiumai.domain.exceptions import InvalidBaseToolException
+        from createagents.domain.exceptions import InvalidBaseToolException
 
         exception = InvalidBaseToolException("invalid_tool")
 
@@ -333,7 +333,7 @@ class TestInvalidBaseToolException:
         assert "execute" in str(exception)
 
     def test_is_agent_exception(self):
-        from arcadiumai.domain.exceptions import InvalidBaseToolException
+        from createagents.domain.exceptions import InvalidBaseToolException
 
         exception = InvalidBaseToolException("test")
 
@@ -341,13 +341,13 @@ class TestInvalidBaseToolException:
         assert isinstance(exception, Exception)
 
     def test_raise_invalid_base_tool_exception(self):
-        from arcadiumai.domain.exceptions import InvalidBaseToolException
+        from createagents.domain.exceptions import InvalidBaseToolException
 
         with pytest.raises(InvalidBaseToolException):
             raise InvalidBaseToolException("bad_tool")
 
     def test_with_different_tool_types(self):
-        from arcadiumai.domain.exceptions import InvalidBaseToolException
+        from createagents.domain.exceptions import InvalidBaseToolException
 
         tools = ["string_tool", 123, {"name": "dict"}, None]
 
@@ -357,7 +357,7 @@ class TestInvalidBaseToolException:
             assert "BaseTool" in str(exception)
 
     def test_exception_mentions_required_attributes(self):
-        from arcadiumai.domain.exceptions import InvalidBaseToolException
+        from createagents.domain.exceptions import InvalidBaseToolException
 
         exception = InvalidBaseToolException("test")
         message = str(exception)
@@ -370,7 +370,7 @@ class TestInvalidBaseToolException:
 @pytest.mark.unit
 class TestFileReadException:
     def test_create_with_file_path_and_reason(self):
-        from arcadiumai.domain.exceptions import FileReadException
+        from createagents.domain.exceptions import FileReadException
 
         exception = FileReadException("/path/to/file.txt", "file not found")
 
@@ -379,7 +379,7 @@ class TestFileReadException:
         assert "Failed to read file" in str(exception)
 
     def test_exception_message_format(self):
-        from arcadiumai.domain.exceptions import FileReadException
+        from createagents.domain.exceptions import FileReadException
 
         exception = FileReadException("/data/test.json", "permission denied")
         expected_parts = ["/data/test.json", "permission denied", "Failed to read"]
@@ -389,7 +389,7 @@ class TestFileReadException:
             assert part in message
 
     def test_is_agent_exception(self):
-        from arcadiumai.domain.exceptions import FileReadException
+        from createagents.domain.exceptions import FileReadException
 
         exception = FileReadException("file.txt", "reason")
 
@@ -397,13 +397,13 @@ class TestFileReadException:
         assert isinstance(exception, Exception)
 
     def test_raise_file_read_exception(self):
-        from arcadiumai.domain.exceptions import FileReadException
+        from createagents.domain.exceptions import FileReadException
 
         with pytest.raises(FileReadException):
             raise FileReadException("/path/file.txt", "disk error")
 
     def test_with_different_file_paths(self):
-        from arcadiumai.domain.exceptions import FileReadException
+        from createagents.domain.exceptions import FileReadException
 
         paths = [
             "/absolute/path/file.txt",
@@ -417,7 +417,7 @@ class TestFileReadException:
             assert path in str(exception)
 
     def test_with_different_reasons(self):
-        from arcadiumai.domain.exceptions import FileReadException
+        from createagents.domain.exceptions import FileReadException
 
         reasons = [
             "file not found",
@@ -432,13 +432,13 @@ class TestFileReadException:
             assert reason in str(exception)
 
     def test_catch_as_agent_exception(self):
-        from arcadiumai.domain.exceptions import FileReadException
+        from createagents.domain.exceptions import FileReadException
 
         with pytest.raises(AgentException):
             raise FileReadException("/path/file.txt", "error")
 
     def test_with_empty_reason(self):
-        from arcadiumai.domain.exceptions import FileReadException
+        from createagents.domain.exceptions import FileReadException
 
         exception = FileReadException("/path/file.txt", "")
 
@@ -449,7 +449,7 @@ class TestFileReadException:
 @pytest.mark.unit
 class TestNewExceptionHierarchy:
     def test_all_new_agent_exceptions_inherit_from_agent_exception(self):
-        from arcadiumai.domain.exceptions import (
+        from createagents.domain.exceptions import (
             FileReadException,
             InvalidBaseToolException,
         )
@@ -467,7 +467,7 @@ class TestNewExceptionHierarchy:
             assert isinstance(exc, Exception)
 
     def test_catch_new_exceptions_as_agent_exception(self):
-        from arcadiumai.domain.exceptions import (
+        from createagents.domain.exceptions import (
             FileReadException,
             InvalidBaseToolException,
         )
