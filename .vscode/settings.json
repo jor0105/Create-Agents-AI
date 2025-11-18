@@ -1,6 +1,5 @@
 {
-  "python.envFile": "${workspaceFolder}/.env",
-  "python.pythonPath": "${command:python.interpreterPath}",
+  "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python",
   "python.terminal.activateEnvironment": true,
   "files.exclude": {
     "**/__pycache__": true,

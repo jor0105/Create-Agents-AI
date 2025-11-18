@@ -48,10 +48,10 @@ all = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/jor0105/Creator-Agents-AI"
-Repository = "https://github.com/jor0105/Creator-Agents-AI"
-Documentation = "https://github.com/jor0105/Creator-Agents-AI"
-"Bug Tracker" = "https://github.com/jor0105/Creator-Agents-AI/issues"
+Homepage = "https://github.com/jor0105/Create-Agents-AI"
+Repository = "https://github.com/jor0105/Create-Agents-AI"
+Documentation = "https://github.com/jor0105/Create-Agents-AI"
+"Bug Tracker" = "https://github.com/jor0105/Create-Agents-AI/issues"
 
 [tool.setuptools.package-data]
 createagents = ["*.txt", "*.md"]
