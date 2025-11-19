@@ -1,8 +1,8 @@
 # 💡 Exemplos Práticos
 
-Casos de uso reais do **AI Agent Creator** para inspirar suas aplicações.
+Casos de uso reais do **Create Agents AI** para inspirar suas aplicações.
 
----
+______________________________________________________________________
 
 ## 🎓 Assistente Educacional
 
@@ -30,7 +30,7 @@ response = professor.chat("Me dê um exemplo prático em Python")
 print(response)
 ```
 
----
+______________________________________________________________________
 
 ## 💼 Assistente Corporativo
 
@@ -57,7 +57,7 @@ response = assistente_corporativo.chat("Redija um email formal agradecendo parti
 print(response)
 ```
 
----
+______________________________________________________________________
 
 ## 👨‍💻 Code Assistant (Assistente de Programação)
 
@@ -92,7 +92,7 @@ def calc(a,b):
 print(code_review)
 ```
 
----
+______________________________________________________________________
 
 ## 🌐 Tradutor Profissional
 
@@ -124,7 +124,7 @@ Traduza para português (mantendo o tom informal):
 print(response)
 ```
 
----
+______________________________________________________________________
 
 ## 📊 Analista de Dados
 
@@ -156,7 +156,7 @@ response = analista.chat("Que ações você recomenda baseado nessa análise?")
 print(response)
 ```
 
----
+______________________________________________________________________
 
 ## 🤖 Chatbot Interativo Completo
 
@@ -204,7 +204,7 @@ print(f"  - Mensagens trocadas: {len(config['history'])}")
 print(f"  - Modelo usado: {config['model']}")
 ```
 
----
+______________________________________________________________________
 
 ## 🌍 Agente com Ferramentas Múltiplas
 
@@ -275,7 +275,7 @@ response = agente_completo.chat("Busque as últimas notícias sobre IA")
 print(response)  # Usa web_search
 ```
 
----
+______________________________________________________________________
 
 ## 🏢 Sistema Multi-Agente (Especialistas)
 
@@ -318,7 +318,7 @@ print(f"SQL Expert: {resposta_sql}\n")
 print(f"DevOps Expert: {resposta_devops}\n")
 ```
 
----
+______________________________________________________________________
 
 ## 🎮 Agente Local com Ollama (Privacidade Total)
 
@@ -341,7 +341,7 @@ response = agente_local.chat(f"Analise: {dados_confidenciais}")
 # Dados nunca saem da sua máquina!
 ```
 
----
+______________________________________________________________________
 
 ## 📈 Monitoramento com Métricas
 
@@ -384,7 +384,7 @@ agente_monitored.export_metrics_prometheus("metrics.prom")
 print("\n✅ Métricas exportadas!")
 ```
 
----
+______________________________________________________________________
 
 ## 💡 Dicas Avançadas
 
@@ -428,16 +428,16 @@ def rotear_agente(pergunta):
         return agente_premium.chat(pergunta)
 ```
 
----
+______________________________________________________________________
 
 ## 🎯 Próximos Passos
 
 Explore mais recursos:
 
 1. [Ferramentas (Tools)](../tools.md) - Adicione mais capacidades
-2. [API Reference](../api.md) - Documentação completa
-3. [Arquitetura](../arquitetura.md) - Entenda o design
+1. [API Reference](../api.md) - Documentação completa
+1. [Arquitetura](../arquitetura.md) - Entenda o design
 
----
+______________________________________________________________________
 
 **Versão:** 0.1.0 | **Atualização:** 17/11/2025

@@ -2,13 +2,13 @@
 
 Este guia explica as ferramentas disponíveis para seus agentes de IA e como usá-las.
 
----
+______________________________________________________________________
 
 ## 📦 Visão Geral
 
 Ferramentas são **capacidades adicionais** que seus agentes podem usar para executar tarefas específicas. Para manter o sistema leve, algumas ferramentas com dependências pesadas são **opcionais**.
 
----
+______________________________________________________________________
 
 ## 🎯 Ferramentas Disponíveis
 
@@ -41,7 +41,7 @@ print(response)
 - `timestamp` - Unix timestamp
 - `date_with_weekday` - Data com dia da semana
 
----
+______________________________________________________________________
 
 ### 🔧 ReadLocalFileTool (Opcional)
 
@@ -88,7 +88,7 @@ print(response)
 - ✅ Suporte a múltiplos formatos
 - ✅ Tratamento robusto de erros
 
----
+______________________________________________________________________
 
 ## 🚀 Uso com Agentes
 
@@ -135,7 +135,7 @@ agent.chat("Que dia é hoje?")  # Usa currentdate
 agent.chat("Leia notas.txt")   # Usa readlocalfile
 ```
 
----
+______________________________________________________________________
 
 ## 📋 Checklist de Instalação
 
@@ -164,7 +164,7 @@ Inclui:
 - [x] ReadLocalFileTool
 - [x] Suporte para PDF, Excel, CSV, Parquet
 
----
+______________________________________________________________________
 
 ## 🔍 Verificar Ferramentas Disponíveis
 
@@ -281,7 +281,7 @@ tools = agent.get_all_available_tools()
 print(list(tools.keys()))  # ['currentdate', 'readlocalfile']
 ```
 
----
+______________________________________________________________________
 
 ## ⚡ Performance
 
@@ -292,7 +292,7 @@ print(list(tools.keys()))  # ['currentdate', 'readlocalfile']
 | Básica         | ~50MB        | N/A                   |
 | Com file-tools | ~50MB        | ~200MB (quando usada) |
 
----
+______________________________________________________________________
 
 ## 🎨 Criar Suas Próprias Ferramentas
 
@@ -316,7 +316,7 @@ class CalculatorTool(BaseTool):
         return str(eval(expression))
 ```
 
----
+______________________________________________________________________
 
 ## 🤔 FAQ
 
@@ -332,6 +332,6 @@ R: Você receberá erro claro: `pip install ai-agent[file-tools]`
 **P: Posso criar minhas próprias ferramentas?**
 R: Sim! Siga o padrão de ferramentas próprias e estenda `BaseTool`.
 
----
+______________________________________________________________________
 
 **Última atualização:** 17/11/2025

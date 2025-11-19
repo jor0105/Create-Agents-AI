@@ -1,14 +1,14 @@
 ---
 # Project Information
-site_name: AI Agent Creator
+site_name: Create Agents AI
 site_author: Jordan Estralioto
 site_description: >-
   Enterprise-grade modular system for creating AI agents following
   Clean Architecture and SOLID principles
-site_url: https://jor0105.github.io/AI_Agent/
+site_url: https://jor0105.github.io/Create-Agents-AI/
 # Repository
-repo_name: Jordan/AI_Agent
-repo_url: https://github.com/jor0105/AI_Agent
+repo_name: Jordan/Create-Agents-AI
+repo_url: https://github.com/jor0105/Create-Agents-AI
 edit_uri: edit/main/docs/
 
 # Copyright
@@ -57,7 +57,7 @@ theme:
 extra:
   social:
     - icon: fontawesome/brands/github
-      link: https://github.com/jor0105/AI_Agent
+      link: https://github.com/jor0105/Create-Agents-AI
       name: Código-fonte
     - icon: material/email
       link: mailto:contato@exemplo.com
@@ -109,11 +109,22 @@ markdown_extensions:
 # Navigation
 nav:
   - Início: index.md
-  - Guia de Uso:
-      - Instalação: guia/instalacao.md
-      - Uso Básico: guia/uso-basico.md
-      - Exemplos: guia/exemplos.md
-  - Arquitetura: arquitetura.md
-  - Referência da API: api.md
-  - CI/CD & Workflows: ci-cd.md
-  - Ferramentas: tools.md
+  - Guia do Usuário:
+      - Instalação: user-guide/installation-user.md
+      - Uso Básico: user-guide/basic-usage-user.md
+      - Exemplos: user-guide/examples-user.md
+      - FAQ: user-guide/faq-user.md
+  - Guia Avançado:
+      - Instalação Avançada: guia/instalacao.md
+      - Uso Básico Avançado: guia/uso-basico.md
+      - Exemplos Avançados: guia/exemplos.md
+  - Guia do Desenvolvedor:
+      - Arquitetura: dev-guide/architecture-developer.md
+      - Exemplos Técnicos: dev-guide/technical-examples.md
+      - Como Contribuir: dev-guide/contribute.md
+  - Referência:
+      - Ferramentas: reference/tools.md
+      - Comandos: reference/commands.md
+  - Arquitetura (Resumo): arquitetura.md
+  - API Reference: api.md
+  - Ferramentas (Antigo): tools.md

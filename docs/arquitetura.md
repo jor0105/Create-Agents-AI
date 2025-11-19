@@ -2,7 +2,7 @@
 
 Documentação da arquitetura do sistema seguindo **Clean Architecture** e **SOLID principles**.
 
----
+______________________________________________________________________
 
 ## 📐 Estrutura de Camadas
 
@@ -28,7 +28,7 @@ Documentação da arquitetura do sistema seguindo **Clean Architecture** e **SOL
 └─────────────────────────────────────┘
 ```
 
----
+______________________________________________________________________
 
 ## 🎯 Camadas
 
@@ -52,7 +52,7 @@ Documentação da arquitetura do sistema seguindo **Clean Architecture** e **SOL
 - **Domain Services:** `ToolExecutor`, `ToolExecutionResult` (execução segura de ferramentas)
 - **Exceptions:** `domain.exceptions` (ex.: `AgentException`, `InvalidAgentConfigException`, `UnsupportedConfigException`)
 
----
+______________________________________________________________________
 
 ### 2. Application (Aplicação)
 
@@ -71,7 +71,7 @@ Documentação da arquitetura do sistema seguindo **Clean Architecture** e **SOL
 - **DTOs (application/dtos):** Objetos de transferência como `CreateAgentInputDTO`, `ChatInputDTO`, `AgentConfigOutputDTO` usados para comunicação entre controller/use-cases.
 - **Interfaces (application/interfaces):** `ChatRepository` — contrato que os adapters (`OpenAIChatAdapter`, `OllamaChatAdapter`) implementam para manter a camada de aplicação independente das integrações.
 
----
+______________________________________________________________________
 
 ### 3. Infrastructure (Infraestrutura)
 
@@ -90,7 +90,7 @@ Documentação da arquitetura do sistema seguindo **Clean Architecture** e **SOL
 - **Factory:** `ChatAdapterFactory` - Criação de adapters
 - **Config:** `EnvironmentConfig`, `LoggingConfig`, `MetricsCollector`
 
----
+______________________________________________________________________
 
 ## 🎨 Princípios SOLID
 
@@ -146,7 +146,7 @@ class ChatWithAgentUseCase:
         self.__chat_repository = chat_repository
 ```
 
----
+______________________________________________________________________
 
 ## 🔧 Padrões de Design
 
@@ -196,7 +196,7 @@ class Message:
     content: str
 ```
 
----
+______________________________________________________________________
 
 ## 🔄 Fluxo de Dados
 
@@ -211,7 +211,7 @@ User → CreateAgent.chat()
     ← response: str
 ```
 
----
+______________________________________________________________________
 
 ## 💡 Benefícios da Arquitetura
 
@@ -242,6 +242,6 @@ agent = CreateAgent(provider="ollama", model="llama2")
 - Responsabilidades claras
 - Fácil localizar e corrigir bugs
 
----
+______________________________________________________________________
 
 **Versão:** 0.1.0 | **Atualização:** 17/11/2025

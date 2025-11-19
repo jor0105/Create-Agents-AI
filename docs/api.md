@@ -2,7 +2,7 @@
 
 Documentação completa da API pública do **Arcadium AI**.
 
----
+______________________________________________________________________
 
 ## 🤖 CreateAgent
 
@@ -49,7 +49,7 @@ agent = CreateAgent(
 )
 ```
 
----
+______________________________________________________________________
 
 ### Métodos
 
@@ -74,7 +74,7 @@ response = agent.chat("Como criar uma função em Python?")
 print(response)
 ```
 
----
+______________________________________________________________________
 
 #### get_configs()
 
@@ -102,7 +102,7 @@ print(f"Modelo: {config['model']}")
 print(f"Histórico: {len(config['history'])} mensagens")
 ```
 
----
+______________________________________________________________________
 
 #### clear_history()
 
@@ -119,7 +119,7 @@ agent.clear_history()
 print("Histórico limpo!")
 ```
 
----
+______________________________________________________________________
 
 #### get_all_available_tools()
 
@@ -186,7 +186,7 @@ for name, description in tools.items():
 # - my_tool: Minha ferramenta personalizada
 ```
 
----
+______________________________________________________________________
 
 #### get_system_available_tools()
 
@@ -234,7 +234,7 @@ else:
 | `get_all_available_tools()`    | ✅ Sim                        | ✅ Sim                          | Ver todas as ferramentas que o agente pode usar        |
 | `get_system_available_tools()` | ✅ Sim                        | ❌ Não                          | Verificar quais ferramentas opcionais estão instaladas |
 
----
+______________________________________________________________________
 
 #### get_metrics()
 
@@ -259,7 +259,7 @@ for m in metrics:
     print(f"Tempo: {m.response_time:.2f}s, Tokens: {m.tokens_used}")
 ```
 
----
+______________________________________________________________________
 
 #### export_metrics_json()
 
@@ -285,7 +285,7 @@ agent.export_metrics_json("metrics.json")
 json_data = agent.export_metrics_json()
 ```
 
----
+______________________________________________________________________
 
 #### export_metrics_prometheus()
 
@@ -307,7 +307,7 @@ def export_metrics_prometheus(filepath: Optional[str] = None) -> str
 agent.export_metrics_prometheus("metrics.prom")
 ```
 
----
+______________________________________________________________________
 
 ## 🛠️ Ferramentas (Tools)
 
@@ -339,7 +339,7 @@ response = agent.chat("Que dia é hoje?")
 - `timestamp`: Unix timestamp
 - `date_with_weekday`: Data com dia da semana
 
----
+______________________________________________________________________
 
 #### ReadLocalFileTool
 
@@ -372,7 +372,7 @@ response = agent.chat("Leia o arquivo report.pdf")
 - Tamanho máximo: 100MB
 - Tokens máximos: Depende da AI utilizada
 
----
+______________________________________________________________________
 
 ## 📊 Configurações do Modelo
 
@@ -392,15 +392,15 @@ agent = CreateAgent(provider="openai", model="gpt-4.1-mini", config=config)
 
 **Parâmetros suportados:**
 
-| Nome          | Faixa/Tipo             | Descrição                                                                                                 |
-| ------------- | ---------------------- | --------------------------------------------------------------------------------------------------------- |
-| `temperature` | 0.0–2.0                | Controla aleatoriedade. 0=determinístico, 2=mais criativo                                                 |
-| `max_tokens`  | >0 (int)               | Limite de tokens na resposta                                                                              |
-| `top_p`       | 0.0–1.0                | Nucleus sampling                                                                                          |
-| `think`       | bool ou dict[str, str] | Ollama: bool (ativa/desativa), OpenAI: string de opções avançadas ("low", "medium" ou "high" disponíveis) |
-| `top_k`       | >0 (int)               | Número de tokens considerados no sampling                                                                 |
+| Nome          | Faixa/Tipo               | Descrição                                                                                                 |
+| ------------- | ------------------------ | --------------------------------------------------------------------------------------------------------- |
+| `temperature` | 0.0–2.0                  | Controla aleatoriedade. 0=determinístico, 2=mais criativo                                                 |
+| `max_tokens`  | >0 (int)                 | Limite de tokens na resposta                                                                              |
+| `top_p`       | 0.0–1.0                  | Nucleus sampling                                                                                          |
+| `think`       | bool ou dict\[str, str\] | Ollama: bool (ativa/desativa), OpenAI: string de opções avançadas ("low", "medium" ou "high" disponíveis) |
+| `top_k`       | >0 (int)                 | Número de tokens considerados no sampling                                                                 |
 
----
+______________________________________________________________________
 
 ## 💡 Exemplos de Uso
 
@@ -431,6 +431,6 @@ agent = CreateAgent(
 )
 ```
 
----
+______________________________________________________________________
 
 **Versão:** 0.1.0 | **Atualização:** 17/11/2025

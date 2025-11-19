@@ -61,3 +61,11 @@ repos:
     hooks:
       - id: yamllint
         args: [--strict]
+
+  # Markdown formatting and linting
+  - repo: https://github.com/executablebooks/mdformat
+    rev: 0.7.17
+    hooks:
+      - id: mdformat
+        additional_dependencies: [mdformat-gfm]
+        files: "\\.md$"

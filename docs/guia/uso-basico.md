@@ -1,8 +1,8 @@
 # 🎯 Guia de Uso Básico
 
-Aprenda os fundamentos do **AI Agent Creator**.
+Aprenda os fundamentos do **Create Agents AI**.
 
----
+______________________________________________________________________
 
 ## 🚀 Primeiro Agente
 
@@ -16,7 +16,7 @@ agent = CreateAgent(
 )
 ```
 
----
+______________________________________________________________________
 
 ## 💬 Conversando
 
@@ -62,7 +62,7 @@ except KeyboardInterrupt:
     print("\nChat interrompido pelo usuário. Saindo...")
 ```
 
----
+______________________________________________________________________
 
 ## 📊 Configurações
 
@@ -86,7 +86,7 @@ agent.clear_history()
 - Para economizar tokens
 - Quando histórico ficar longo
 
----
+______________________________________________________________________
 
 ## ⚙️ Personalizando
 
@@ -106,7 +106,7 @@ agent_tecnico = CreateAgent(
 )
 ```
 
----
+______________________________________________________________________
 
 ## 🔧 Configurações Avançadas
 
@@ -123,7 +123,7 @@ agent = CreateAgent(
 )
 ```
 
----
+______________________________________________________________________
 
 ## 🛠️ Ferramentas
 
@@ -199,7 +199,7 @@ print(f"Total de ferramentas: {len(tools)}")
 # (currentdate, readlocalfile, calculator)
 ```
 
----
+______________________________________________________________________
 
 ## 📊 Métricas
 
@@ -209,7 +209,7 @@ agent.export_metrics_json("metrics.json")
 agent.export_metrics_prometheus("metrics.prom")
 ```
 
----
+______________________________________________________________________
 
 ## 🎯 Próximos Passos
 
@@ -217,6 +217,6 @@ agent.export_metrics_prometheus("metrics.prom")
 - [Ferramentas](../tools.md)
 - [API Reference](../api.md)
 
----
+______________________________________________________________________
 
 **Versão:** 0.1.0 | **Atualização:** 17/11/2025

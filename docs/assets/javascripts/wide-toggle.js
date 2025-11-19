@@ -1,6 +1,6 @@
 /* Wide mode toggle for MkDocs Material */
 (function () {
-  var storageKey = "ai_agent_wide_mode";
+  var storageKey = "Create-Agents-AI_wide_mode";
   var html = document.documentElement;
 
   function applyPreference(value) {

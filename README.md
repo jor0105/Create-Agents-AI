@@ -1,104 +1,89 @@
-# 🤖 AI Agent Creator
+src/
+createagents/
+application/
+domain/
+infra/
+main/
+utils/
 
-Um sistema modular e profissional para criar agentes de IA com suporte a múltiplos provedores (OpenAI e Ollama) e ferramentas.
+# 🤖 Create Agents AI
 
-## ⚡ Quick Start
+Framework Python enterprise para criar agentes de IA inteligentes com arquitetura limpa, múltiplos provedores e ferramentas extensíveis.
 
-### Instalação
+[![Python](https://img.shields.io/badge/Python-3.12+-blue.svg)](https://www.python.org/downloads/)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
+[![Clean Architecture](https://img.shields.io/badge/Architecture-Clean-brightgreen.svg)](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html)
+
+---
+
+## 📚 Documentação
+
+Este repositório contém a documentação oficial do **Create Agents AI**.
+
+### Estrutura dos Docs
+
+- `index.md`: Visão geral, principais recursos, arquitetura resumida, links rápidos.
+- `user-guide/`: Guia do usuário (instalação, uso básico, exemplos, FAQ).
+- `guia/`: Guia avançado (instalação avançada, exemplos avançados).
+- `dev-guide/`: Guia do desenvolvedor (arquitetura, exemplos técnicos, contribuição).
+- `reference/`: Referência técnica (ferramentas, comandos).
+- `api.md`: Referência da API pública.
+- `arquitetura.md`: Resumo visual e explicativo da arquitetura.
+- `tools.md`: Guia antigo de ferramentas (mantido para referência).
+
+### Navegação Recomendada
+
+- **Guia do Usuário**: [Instalação](docs/user-guide/installation-user.md) | [Uso Básico](docs/user-guide/basic-usage-user.md) | [Exemplos](docs/user-guide/examples-user.md) | [FAQ](docs/user-guide/faq-user.md)
+- **Guia Avançado**: [Instalação Avançada](docs/guia/instalacao.md) | [Exemplos Avançados](docs/guia/exemplos.md)
+- **Guia do Desenvolvedor**: [Arquitetura](docs/dev-guide/architecture-developer.md) | [Exemplos Técnicos](docs/dev-guide/technical-examples.md) | [Como Contribuir](docs/dev-guide/contribute.md)
+- **Referência**: [Ferramentas](docs/reference/tools.md) | [Comandos](docs/reference/commands.md) | [API Reference](docs/api.md)
+- **Outros**: [Arquitetura (resumo)](docs/arquitetura.md)
+
+---
+
+## 🚀 Instalação Rápida
 
 ```bash
-# Clone o repositório
 git clone https://github.com/jor0105/Creator-Agents-AI.git
-cd AI_Agent
-
-# Instalação básica (sem ferramentas pesadas)
+cd Create-Agents-AI
 poetry install
-
-# OU Instalação completa (inclui ferramentas de leitura de arquivos)
-poetry install -E file-tools
-
-# OU Instalação com todas as funcionalidades
-poetry install -E all
-
-# Configure suas credenciais
-cp .env.example .env
-# Edite .env e adicione sua chave OpenAI
-```
-
-### 📦 Instalação de Extras Opcionais
-
-Este projeto oferece instalação modular para manter a biblioteca leve:
-
-**Instalação Básica** (apenas funcionalidades essenciais):
-
-```bash
-pip install ai-agent
-# ou
-poetry install
-```
-
-**Com ferramentas de leitura de arquivos** (PDF, Excel, CSV, Parquet):
-
-```bash
-pip install ai-agent[file-tools]
 # ou
 poetry install -E file-tools
 ```
 
-**Instalação completa** (todas as funcionalidades):
+## 🏗️ Build Local da Documentação
 
 ```bash
-pip install ai-agent[all]
-# ou
-poetry install -E all
+poetry run mkdocs serve
+# Acesse: http://localhost:8000
 ```
 
-#### 📋 Extras Disponíveis
+## 📄 Licença
 
-| Extra        | Dependências                                          | Funcionalidades                                                                       |
-| ------------ | ----------------------------------------------------- | ------------------------------------------------------------------------------------- |
-| `file-tools` | tiktoken, pymupdf, pandas, openpyxl, pyarrow, chardet | Ferramenta ReadLocalFileTool para ler arquivos locais (TXT, CSV, Excel, PDF, Parquet) |
-| `all`        | Todas acima                                           | Todas as funcionalidades opcionais                                                    |
+MIT - Use livremente em seus projetos.
 
-### Uso básico em 3 linhas
+## 👨‍💻 Autor
 
-```python
-from createagents import CreateAgent
+**Jordan Estralioto**
 
-agent = CreateAgent(provider="openai", model="gpt-4", name="Meu Assistente", instructions="Você é um assistente útil")
+- GitHub: [@jor0105](https://github.com/jor0105)
+- Email: estraliotojordan@gmail.com
 
-response = agent.chat("Olá! Como você está?")
-
-print(response)
-```
-
-## 🎯 Funcionalidades
-
-### ✅ Suporte a múltiplos provedores
-
-- **OpenAI**: Todos os modelos de Chat
-- **Ollama**: Modelos locais que você instalou
-
-### ✅ Interface intuitiva
-
-```python
-# Criar agente
-agent = CreateAgent(
-    provider="openai",
-    model="gpt-4",
-    name="Assistente Smart",
-    instructions="Você é um especialista em Python"
-)
+**Versão:** 0.1.0 | **Atualização:** 17/11/2025
 
 # Conversar
+
 response = agent.chat("Qual é a diferença entre lista e tupla?")
 
 # Obter histórico
+
 configs = agent.get_configs()
 
 # Limpar histórico
+
 agent.clear_history()
-```
+
+````
 
 ### ✅ Gerenciamento de histórico
 
@@ -112,7 +97,7 @@ agent = CreateAgent(provider="openai", model="gpt-4", history_max_size=20)
 
 # Limpar quando necessário
 agent.clear_history()
-```
+````
 
 ### ✅ Configuração customizada
 
@@ -324,9 +309,9 @@ src/
 Quer adicionar um novo provedor de IA?
 
 1. **Crie um novo adapter** em `src/infra/adapters/NomeProvedor/`
-2. **Implemente** a interface `ChatRepository`
-3. **Registre** em `ChatAdapterFactory`
-4. **Adicione testes** em `tests/infra/adapters/`
+1. **Implemente** a interface `ChatRepository`
+1. **Registre** em `ChatAdapterFactory`
+1. **Adicione testes** em `tests/infra/adapters/`
 
 Exemplo:
 
@@ -351,6 +336,7 @@ Este projeto tem automação profissional com GitHub Actions:
   - Executa: Manualmente via workflow_dispatch
 
 - **Pre-commit Hooks**: 15+ verificadores automáticos antes de cada commit
+
   - Black, Ruff, isort, mypy, pydocstyle, yamllint e mais
 
 **📖 Documentação Completa:** [`docs/ci-cd.md`](./docs/ci-cd.md)
@@ -375,8 +361,8 @@ MIT - Use livremente em seus projetos!
 ## 📞 Suporte
 
 - 📖 [Documentação Completa](./docs/)
-- 🐛 [Reportar Bugs](https://github.com/jor0105/AI_Agent/issues)
-- 💬 [Discussões](https://github.com/jor0105/AI_Agent/discussions)
+- 🐛 [Reportar Bugs](https://github.com/jor0105/Create-Agents-AI/issues)
+- 💬 [Discussões](https://github.com/jor0105/Create-Agents-AI/discussions)
 
 ## 👨‍💻 Autor
 

@@ -1,8 +1,8 @@
 # 📦 Guia de Instalação
 
-Configure o **AI Agent Creator** em sua máquina.
+Configure o **Create Agents AI** em sua máquina.
 
----
+______________________________________________________________________
 
 ## 📋 Pré-requisitos
 
@@ -10,7 +10,7 @@ Configure o **AI Agent Creator** em sua máquina.
 - **Poetry** (recomendado) ou **pip**
 - **Git** ([Download](https://git-scm.com/downloads))
 
----
+______________________________________________________________________
 
 ## ⚡ Instalação Rápida
 
@@ -18,7 +18,7 @@ Configure o **AI Agent Creator** em sua máquina.
 
 ```bash
 git clone https://github.com/jor0105/Creator-Agents-AI.git
-cd AI_Agent
+cd Create-Agents-AI
 ```
 
 ### 2. Instalar Dependências
@@ -72,16 +72,16 @@ agent = CreateAgent(provider="openai", model="gpt-4")
 print("✅ Instalação bem-sucedida!")
 ```
 
----
+______________________________________________________________________
 
 ## 🔐 Configuração OpenAI
 
 ### 1. Obter API Key
 
 1. Acesse [platform.openai.com](https://platform.openai.com)
-2. Faça login
-3. Vá para **API Keys**
-4. Crie nova chave
+1. Faça login
+1. Vá para **API Keys**
+1. Crie nova chave
 
 ### 2. Configurar .env
 
@@ -141,7 +141,7 @@ response = agent.chat("Explique machine learning")
 # 100% local, privado, sem custos
 ```
 
----
+______________________________________________________________________
 
 ## 🛡️ Segurança
 
@@ -151,7 +151,7 @@ response = agent.chat("Explique machine learning")
 - Mantenha suas API keys privadas
 - Rotacione chaves periodicamente
 
----
+______________________________________________________________________
 
 ## 🔧 Solução de Problemas
 
@@ -172,7 +172,7 @@ ollama serve  # Inicie o servidor
 ollama list   # Verifique modelos
 ```
 
----
+______________________________________________________________________
 
 ## 🎯 Próximos Passos
 
@@ -180,6 +180,6 @@ ollama list   # Verifique modelos
 - [Exemplos](exemplos.md)
 - [API Reference](../api.md)
 
----
+______________________________________________________________________
 
 **Versão:** 0.1.0 | **Atualização:** 17/11/2025
