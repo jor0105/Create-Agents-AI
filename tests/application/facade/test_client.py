@@ -1283,6 +1283,79 @@ class TestCreateAgentEdgeCases:
 
 
 @pytest.mark.unit
+class TestCreateAgentGetSystemAvailableTools:
+    @patch(
+        "createagents.application.facade.client.AgentComposer.create_get_system_available_tools_use_case"
+    )
+    def test_get_system_available_tools_returns_dict(self, mock_create_use_case):
+        mock_use_case = Mock()
+        mock_use_case.execute.return_value = {"currentdate": "Get current date"}
+        mock_create_use_case.return_value = mock_use_case
+
+        controller = CreateAgent(
+            provider="openai", model="gpt-5", name="Test", instructions="Test"
+        )
+
+        tools = controller.get_system_available_tools()
+
+        assert isinstance(tools, dict)
+        assert "currentdate" in tools
+
+    @patch(
+        "createagents.application.facade.client.AgentComposer.create_get_system_available_tools_use_case"
+    )
+    def test_get_system_available_tools_calls_use_case(self, mock_create_use_case):
+        mock_use_case = Mock()
+        mock_use_case.execute.return_value = {}
+        mock_create_use_case.return_value = mock_use_case
+
+        controller = CreateAgent(
+            provider="openai", model="gpt-5", name="Test", instructions="Test"
+        )
+
+        controller.get_system_available_tools()
+
+        mock_use_case.execute.assert_called_once()
+
+    @patch(
+        "createagents.application.facade.client.AgentComposer.create_get_system_available_tools_use_case"
+    )
+    def test_get_system_available_tools_with_multiple_tools(self, mock_create_use_case):
+        mock_use_case = Mock()
+        mock_use_case.execute.return_value = {
+            "currentdate": "Get current date",
+            "readlocalfile": "Read local file content",
+        }
+        mock_create_use_case.return_value = mock_use_case
+
+        controller = CreateAgent(
+            provider="openai", model="gpt-5", name="Test", instructions="Test"
+        )
+
+        tools = controller.get_system_available_tools()
+
+        assert len(tools) == 2
+        assert "currentdate" in tools
+        assert "readlocalfile" in tools
+
+    @patch(
+        "createagents.application.facade.client.AgentComposer.create_get_system_available_tools_use_case"
+    )
+    def test_get_system_available_tools_empty(self, mock_create_use_case):
+        mock_use_case = Mock()
+        mock_use_case.execute.return_value = {}
+        mock_create_use_case.return_value = mock_use_case
+
+        controller = CreateAgent(
+            provider="openai", model="gpt-5", name="Test", instructions="Test"
+        )
+
+        tools = controller.get_system_available_tools()
+
+        assert tools == {}
+
+
+@pytest.mark.unit
 class TestCreateAgentGetAllAvailableTools:
     def test_get_all_available_tools_includes_system_tools(self):
         controller = CreateAgent(

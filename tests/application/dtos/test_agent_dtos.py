@@ -1,3 +1,5 @@
+from unittest.mock import Mock, patch
+
 import pytest
 
 from createagents.application import (
@@ -269,18 +271,28 @@ class TestCreateAgentInputDTO:
 @pytest.mark.unit
 class TestCreateAgentInputDTOWithTools:
     def test_validate_with_string_tool_names(self):
-        dto = CreateAgentInputDTO(
-            provider="openai",
-            model="gpt-5-nano",
-            name="Test",
-            instructions="Test",
-            tools=["web_search"],
-        )
+        mock_tool = Mock()
+        mock_tool.name = "web_search"
+        mock_tool.description = "A web search tool"
+        mock_tool.execute = Mock()
 
-        try:
+        with patch(
+            "createagents.infra.config.available_tools.AvailableTools.get_tool_instance"
+        ) as mock_get_tool:
+            mock_get_tool.return_value = mock_tool
+
+            dto = CreateAgentInputDTO(
+                provider="openai",
+                model="gpt-5-nano",
+                name="Test",
+                instructions="Test",
+                tools=["web_search"],
+            )
+
             dto.validate()
-        except Exception:
-            pass
+
+            assert dto.tools == [mock_tool]
+            mock_get_tool.assert_called_with("web_search")
 
     def test_validate_with_base_tool_instances(self):
         from createagents.domain.value_objects import BaseTool
@@ -402,16 +414,21 @@ class TestCreateAgentInputDTOWithTools:
     def test_validate_with_invalid_tool_string_not_found(self):
         from createagents.domain.exceptions import InvalidBaseToolException
 
-        dto = CreateAgentInputDTO(
-            provider="openai",
-            model="gpt-5-nano",
-            name="Test",
-            instructions="Test",
-            tools=["nonexistent_tool_12345"],
-        )
+        with patch(
+            "createagents.infra.config.available_tools.AvailableTools.get_tool_instance"
+        ) as mock_get_tool:
+            mock_get_tool.return_value = None
 
-        with pytest.raises(InvalidBaseToolException):
-            dto.validate()
+            dto = CreateAgentInputDTO(
+                provider="openai",
+                model="gpt-5-nano",
+                name="Test",
+                instructions="Test",
+                tools=["nonexistent_tool_12345"],
+            )
+
+            with pytest.raises(InvalidBaseToolException):
+                dto.validate()
 
     def test_validate_with_mixed_tool_types(self):
         from createagents.domain.value_objects import BaseTool
