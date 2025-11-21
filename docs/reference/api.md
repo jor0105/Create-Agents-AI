@@ -1,6 +1,6 @@
 # 📚 API Reference
 
-Documentação completa da API pública do **Arcadium AI**.
+Documentação completa da API pública do **Create Agents AI**.
 
 ______________________________________________________________________
 
@@ -383,7 +383,7 @@ config = {
     "temperature": 0.7,   # 0.0–2.0: Criatividade
     "max_tokens": 2000,   # >0: Limite de tokens
     "top_p": 0.9,         # 0.0–1.0: Nucleus sampling
-    "think": True,        # Ollama: bool / OpenAI: dict[str, str]
+    "think": True,        # Ollama: bool / OpenAI: str ["low", "medium" or "high"]
     "top_k": 40,          # >0: (Ollama)
 }
 
@@ -392,13 +392,13 @@ agent = CreateAgent(provider="openai", model="gpt-4.1-mini", config=config)
 
 **Parâmetros suportados:**
 
-| Nome          | Faixa/Tipo               | Descrição                                                                                                 |
-| ------------- | ------------------------ | --------------------------------------------------------------------------------------------------------- |
-| `temperature` | 0.0–2.0                  | Controla aleatoriedade. 0=determinístico, 2=mais criativo                                                 |
-| `max_tokens`  | >0 (int)                 | Limite de tokens na resposta                                                                              |
-| `top_p`       | 0.0–1.0                  | Nucleus sampling                                                                                          |
-| `think`       | bool ou dict\[str, str\] | Ollama: bool (ativa/desativa), OpenAI: string de opções avançadas ("low", "medium" ou "high" disponíveis) |
-| `top_k`       | >0 (int)                 | Número de tokens considerados no sampling                                                                 |
+| Nome          | Faixa/Tipo  | Descrição                                                                                                 |
+| ------------- | ----------- | --------------------------------------------------------------------------------------------------------- |
+| `temperature` | 0.0–2.0     | Controla aleatoriedade. 0=determinístico, 2=mais criativo                                                 |
+| `max_tokens`  | >0 (int)    | Limite de tokens na resposta                                                                              |
+| `top_p`       | 0.0–1.0     | Nucleus sampling                                                                                          |
+| `think`       | bool ou str | Ollama: bool (ativa/desativa), OpenAI: string de opções avançadas ("low", "medium" ou "high" disponíveis) |
+| `top_k`       | >0 (int)    | Número de tokens considerados no sampling                                                                 |
 
 ______________________________________________________________________
 
@@ -433,4 +433,4 @@ agent = CreateAgent(
 
 ______________________________________________________________________
 
-**Versão:** 0.1.0 | **Atualização:** 17/11/2025
+**Versão:** 0.1.0 | **Atualização:** 21/11/2025

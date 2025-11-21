@@ -189,7 +189,7 @@ ______________________________________________________________________
 - [Exemplos](examples-user.md)
 - [FAQ](faq-user.md)
 - [Referência de Ferramentas](../reference/tools.md)
-- [API Reference](../api.md)
+- [API Reference](../reference/api.md)
 
 ______________________________________________________________________
 

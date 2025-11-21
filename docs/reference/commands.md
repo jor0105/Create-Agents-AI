@@ -46,5 +46,5 @@ agent.export_metrics_prometheus("metrics.prom")
 ## Links Relacionados
 
 - [Ferramentas](tools.md)
-- [API Reference](../api.md)
+- [API Reference](api.md)
 - [Guia do Usuário](../user-guide/installation-user.md)

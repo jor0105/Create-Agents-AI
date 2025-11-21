@@ -114,17 +114,11 @@ nav:
       - Uso Básico: user-guide/basic-usage-user.md
       - Exemplos: user-guide/examples-user.md
       - FAQ: user-guide/faq-user.md
-  - Guia Avançado:
-      - Instalação Avançada: guia/instalacao.md
-      - Uso Básico Avançado: guia/uso-basico.md
-      - Exemplos Avançados: guia/exemplos.md
   - Guia do Desenvolvedor:
       - Arquitetura: dev-guide/architecture-developer.md
       - Exemplos Técnicos: dev-guide/technical-examples.md
       - Como Contribuir: dev-guide/contribute.md
   - Referência:
+      - API Reference: reference/api.md
       - Ferramentas: reference/tools.md
       - Comandos: reference/commands.md
-  - Arquitetura (Resumo): arquitetura.md
-  - API Reference: api.md
-  - Ferramentas (Antigo): tools.md

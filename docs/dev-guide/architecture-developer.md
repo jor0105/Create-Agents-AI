@@ -1,75 +1,240 @@
-# Guia de Arquitetura para Desenvolvedores
+# 🏗️ Guia de Arquitetura para Desenvolvedores
 
-Este documento detalha a arquitetura do Create Agents AI, baseada em Clean Architecture e princípios SOLID.
+Documentação completa da arquitetura do **Create Agents AI**, baseada em **Clean Architecture** e **princípios SOLID**.
 
-## Estrutura de Camadas
+______________________________________________________________________
+
+## 📐 Estrutura de Camadas
 
 ```
-┌───────────────────────────────┐
-│        application           │  ← Interface do Usuário (CreateAgent)
-│     (Controllers/UI)         │
-└──────────────┬───────────────┘
+┌─────────────────────────────────────┐
+│        application                 │  CreateAgent Controller
+│     (Interface do Usuário)          │
+└──────────────┬──────────────────────┘
                │
-┌──────────────▼───────────────┐
-│        APPLICATION           │  ← Use Cases & DTOs
-│    (Business Logic)          │
-└──────────────┬───────────────┘
+┌──────────────▼──────────────────────┐
+│        APPLICATION                  │  Use Cases & DTOs
+│    (Lógica da Aplicação)            │
+└──────────────┬──────────────────────┘
                │
-┌──────────────▼───────────────┐
-│          DOMAIN              │  ← Entities & Rules
-│    (Core Business)           │
-└──────────────▲───────────────┘
+┌──────────────▼──────────────────────┐
+│          DOMAIN                     │  Entities, Rules
+│    (Regras de Negócio)              │
+└──────────────▲──────────────────────┘
                │
-┌──────────────┴───────────────┐
-│      INFRASTRUCTURE          │  ← Adapters (OpenAI, Ollama)
-│  (External Services)         │
-└──────────────────────────────┘
+┌──────────────┴──────────────────────┐
+│      INFRASTRUCTURE                 │  Adapters, Config
+│    (Detalhes Técnicos)              │
+└─────────────────────────────────────┘
 ```
+
+______________________________________________________________________
+
+## 🎯 Camadas
 
 ### 1. Domain (Domínio)
 
-- Localização: `src/createagents/domain/`
-- Responsável por regras de negócio puras, entidades, value objects, exceptions e serviços de domínio.
+**Localização:** `src/createagents/domain/`
+
+**Responsabilidade:** Regras de negócio puras, independentes de tecnologia.
+
+**Componentes:**
+
+- **Entities:** `Agent` (entidade principal)
+- **Value Objects:** `Message`, `MessageRole`, `History`, `SupportedConfigs`, `SupportedProviders`, `BaseTool` (ferramentas)
+- **Domain Services:** `ToolExecutor`, `ToolExecutionResult` (execução segura de ferramentas)
+- **Exceptions:** `domain.exceptions` (ex.: `AgentException`, `InvalidAgentConfigException`, `UnsupportedConfigException`)
+
+______________________________________________________________________
 
 ### 2. Application (Aplicação)
 
-- Localização: `src/createagents/application/`
-- Orquestra casos de uso, expõe a fachada `CreateAgent`, define DTOs e interfaces.
+**Localização:** `src/createagents/application/`
+
+**Responsabilidade:** Orquestrar casos de uso do sistema.
+
+**Componentes:**
+
+- **Facade / Controller:** `CreateAgent` — fachada simples que cria agentes e expõe métodos como `chat`, `get_configs`, `get_all_available_tools`, `clear_history`, `export_metrics_*`.
+- **Use Cases (application/use_cases):**
+  - `CreateAgentUseCase` — criação e validação de agentes (invocado por `AgentComposer`).
+  - `ChatWithAgentUseCase` — orquestra mensagens entre `Agent` e `ChatRepository` (adapters).
+  - `GetAgentConfigUseCase` — retorna as configurações do agente.
+  - `GetAllAvailableToolsUseCase` / `GetSystemAvailableToolsUseCase` — listagem de tools disponíveis.
+- **DTOs (application/dtos):** Objetos de transferência como `CreateAgentInputDTO`, `ChatInputDTO`, `AgentConfigOutputDTO` usados para comunicação entre controller/use-cases.
+- **Interfaces (application/interfaces):** `ChatRepository` — contrato que os adapters (`OpenAIChatAdapter`, `OllamaChatAdapter`) implementam para manter a camada de aplicação independente das integrações.
+
+______________________________________________________________________
 
 ### 3. Infrastructure (Infraestrutura)
 
-- Localização: `src/createagents/infra/`
-- Implementa integrações externas, adapters, tools, config e factories.
+**Localização:** `src/createagents/infra/`
 
-## Princípios SOLID
+**Responsabilidade:** Implementar detalhes técnicos e integrações externas.
 
-- **SRP**: Cada classe tem responsabilidade única.
-- **OCP**: Extensível sem modificar código existente.
-- **LSP**: Adapters são intercambiáveis.
-- **ISP**: Interfaces específicas e focadas.
-- **DIP**: Depende de abstrações, não implementações.
+**Componentes:**
 
-## Padrões de Design
+- **Adapters:**
+  - `OpenAIChatAdapter` - Integração com OpenAI
+  - `OllamaChatAdapter` - Integração com Ollama
+- **Tools:**
+  - `CurrentDateTool` - Ferramenta de data/hora
+  - `ReadLocalFileTool` - Leitura de arquivos
+- **Factory:** `ChatAdapterFactory` - Criação de adapters
+- **Config:** `EnvironmentConfig`, `LoggingConfig`, `MetricsCollector`
 
-- Repository, Factory, Facade, Value Object.
+______________________________________________________________________
 
-## Fluxo de Dados
+## 🎨 Princípios SOLID
+
+### Single Responsibility (SRP)
+
+Cada classe tem uma única responsabilidade:
+
+```python
+Agent          # Representa um agente
+History        # Gerencia histórico
+ChatWithAgentUseCase  # Orquestra conversa
+```
+
+### Open/Closed (OCP)
+
+Aberto para extensão, fechado para modificação:
+
+```python
+# Adicionar novo provider sem modificar código existente
+class ClaudeAdapter(ChatRepository):
+    def chat(self, ...): pass
+```
+
+### Liskov Substitution (LSP)
+
+Adapters são intercambiáveis:
+
+```python
+# Qualquer adapter pode substituir outro
+adapter: ChatRepository = OpenAIChatAdapter()
+# ou
+adapter: ChatRepository = OllamaChatAdapter()
+```
+
+### Interface Segregation (ISP)
+
+Interfaces específicas e focadas:
+
+```python
+class ChatRepository(ABC):
+    @abstractmethod
+    def chat(self, ...) -> str:
+        pass
+```
+
+### Dependency Inversion (DIP)
+
+Depende de abstrações, não de implementações:
+
+```python
+class ChatWithAgentUseCase:
+    def __init__(self, chat_repository: ChatRepository):  # Interface
+        self.__chat_repository = chat_repository
+```
+
+______________________________________________________________________
+
+## 🔧 Padrões de Design
+
+### Repository Pattern
+
+```python
+class ChatRepository(ABC):
+    @abstractmethod
+    def chat(self, ...) -> str:
+        pass
+
+class OpenAIChatAdapter(ChatRepository):
+    def chat(self, ...): # Implementação
+```
+
+### Factory Pattern
+
+```python
+class ChatAdapterFactory:
+    @staticmethod
+    def create(model: str, local_ai: Optional[str] = None):
+        if local_ai == "ollama":
+            return OllamaChatAdapter(model)
+        elif "gpt" in model.lower():
+            return OpenAIChatAdapter(model)
+        else:
+            return OllamaChatAdapter(model)
+```
+
+### Facade Pattern
+
+```python
+# CreateAgent é uma fachada simplificada
+class CreateAgent:
+    def __init__(self, provider, model, ...):
+        # Esconde complexidade da criação
+        self.__agent = AgentComposer.create_agent(...)
+        self.__chat_use_case = AgentComposer.create_chat_use_case(...)
+```
+
+### Value Object Pattern
+
+```python
+@dataclass(frozen=True)  # Imutável
+class Message:
+    role: MessageRole
+    content: str
+```
+
+______________________________________________________________________
+
+## 🔄 Fluxo de Dados
 
 ```
-Usuário → CreateAgent.chat()
+User → CreateAgent.chat()
     → ChatWithAgentUseCase.execute()
         → ChatRepository.chat()
             → OpenAIChatAdapter / OllamaChatAdapter
-                → API Externa
+                → API Externa (OpenAI / Ollama)
             ← Response
         ← ChatOutputDTO
     ← response: str
 ```
 
-## Benefícios
+______________________________________________________________________
 
-- Testável, flexível, escalável e manutenível.
+## 💡 Benefícios da Arquitetura
 
-## Versão
+### 🧪 Testabilidade
 
-0.1.0 | Atualização: 17/11/2025
+```python
+# Mock fácil de dependências
+mock_repo = Mock(spec=ChatRepository)
+use_case = ChatWithAgentUseCase(mock_repo)
+```
+
+### 🔄 Flexibilidade
+
+```python
+# Trocar provider sem mudar código
+agent = CreateAgent(provider="ollama", model="llama2")
+```
+
+### 📈 Escalabilidade
+
+- Adicionar novos providers facilmente
+- Extensível via interfaces
+- Preparado para crescimento
+
+### 🛡️ Manutenibilidade
+
+- Código organizado em camadas
+- Responsabilidades claras
+- Fácil localizar e corrigir bugs
+
+______________________________________________________________________
+
+**Versão:** 0.1.0 | **Atualização:** 21/11/2025
