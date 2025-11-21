@@ -1,5 +1,9 @@
 - [ ] Arrumar design na documentação no mkdocs;
+- [ ] Arrumar README.md
 - [ ] Arrumar ci/cd
 - [ ] Fazer merge na main;
 - [ ] Ver se docs estão corretos no github;
 - [ ] Testar a biblioteca em um projeto novo pelo pypi;
+- [ ] Aprimorar contexto e prompt system para deixar em cache;
+- [ ] Criar conexão com: gemini, grok e openrouter;
+- [ ] Criar tool de busca semantica em docs;

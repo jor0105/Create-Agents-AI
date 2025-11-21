@@ -7,53 +7,36 @@ ______________________________________________________________________
 ## 📝 Pré-requisitos
 
 - **Python 3.12+** ([Download](https://www.python.org/downloads/))
-- **Poetry** ([Guia de instalação](https://python-poetry.org/docs/#installation)) ou **pip**
-- **Git** ([Download](https://git-scm.com/downloads))
+- **pip** (geralmente incluído com Python)
 
-> **Dica:** Recomenda-se usar o Poetry para melhor gerenciamento de dependências e ambientes virtuais.
+> **Dica:** Recomenda-se usar ambientes virtuais para isolar as dependências do projeto.
 
 ______________________________________________________________________
 
 ## ⚡ Instalação Rápida
 
-### 1. Clonar o Repositório
-
-```bash
-git clone https://github.com/jor0105/Creator-Agents-AI.git
-cd Create-Agents-AI
-```
-
-### 2. Instalar Dependências
-
-#### Com Poetry (recomendado):
-
-```bash
-# Instale o Poetry se necessário
-curl -sSL https://install.python-poetry.org | python3 -
-
-# Instalação básica
-poetry install
-
-# OU com suporte a arquivos (PDF, Excel, CSV, Parquet)
-poetry install -E file-tools
-
-# Ativar ambiente virtual
-poetry shell
-```
-
-#### Com pip (alternativa):
+### 1. Criar Ambiente Virtual (Recomendado)
 
 ```bash
 # Criar ambiente virtual
 python3 -m venv .venv
+
+# Ativar ambiente virtual
 source .venv/bin/activate  # Linux/macOS
 # .venv\Scripts\activate  # Windows
-
-# Instalar dependências
-pip install -e .
-# OU com file-tools
-pip install -e ".[file-tools]"
 ```
+
+### 2. Instalar via PyPI
+
+```bash
+# Instalação básica
+pip install createagents
+
+# OU com suporte a arquivos (PDF, Excel, CSV, Parquet)
+pip install createagents[file-tools]
+```
+
+> **Nota:** A opção `[file-tools]` adiciona suporte para leitura de arquivos PDF, Excel, CSV e Parquet.
 
 ______________________________________________________________________
 
@@ -183,6 +166,57 @@ Se persistir, consulte a [FAQ](faq-user.md) ou abra uma issue no [GitHub](https:
 
 ______________________________________________________________________
 
+## 👨‍💻 Instalação para Desenvolvimento (Contribuidores)
+
+Se você deseja **contribuir** com o projeto ou precisa da versão de desenvolvimento:
+
+### 1. Clonar o Repositório
+
+```bash
+git clone https://github.com/jor0105/Create-Agents-AI.git
+cd Create-Agents-AI
+```
+
+### 2. Instalar com Poetry
+
+```bash
+# Instale o Poetry se necessário
+curl -sSL https://install.python-poetry.org | python3 -
+
+# Instalação básica
+poetry install
+
+# OU com suporte a file-tools
+poetry install -E file-tools
+
+# Ativar ambiente virtual
+poetry shell
+```
+
+### 3. Configurar Ambiente de Desenvolvimento
+
+```bash
+# Copiar arquivo de exemplo
+cp .env.example .env
+
+# Editar e adicionar sua chave
+# OPENAI_API_KEY=sk-proj-sua-chave
+```
+
+### 4. Instalar Pre-commit Hooks
+
+```bash
+# Instalar hooks de qualidade de código
+poetry run pre-commit install
+
+# Executar checks manualmente
+poetry run pre-commit run --all-files
+```
+
+📖 **Mais informações:** [Guia de Contribuição](../dev-guide/contribute.md)
+
+______________________________________________________________________
+
 ## 🚀 Próximos Passos
 
 - [Uso Básico](basic-usage-user.md)
@@ -193,4 +227,4 @@ ______________________________________________________________________
 
 ______________________________________________________________________
 
-**Versão:** 0.1.0 | **Atualização:** 19/11/2025
+**Versão:** 0.1.0 | **Atualização:** 21/11/2025

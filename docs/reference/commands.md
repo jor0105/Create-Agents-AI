@@ -2,9 +2,21 @@
 
 Veja comandos úteis, parâmetros de configuração e dicas para uso avançado do Create Agents AI.
 
-## Comandos Básicos
+## Comandos para Usuários
 
-- Instalar dependências:
+- Instalar via PyPI:
+  ```bash
+  pip install createagents
+  pip install createagents[file-tools]
+  ```
+- Atualizar:
+  ```bash
+  pip install --upgrade createagents
+  ```
+
+## Comandos para Desenvolvedores
+
+- Instalar dependências (desenvolvimento):
   ```bash
   poetry install
   poetry install -E file-tools

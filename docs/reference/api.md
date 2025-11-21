@@ -220,7 +220,7 @@ for name, description in system_tools.items():
 if "readlocalfile" in system_tools:
     print("✅ ReadLocalFileTool está instalada")
 else:
-    print("❌ Execute: poetry install -E file-tools")
+    print("❌ Execute: pip install createagents[file-tools]")
 
 # Saída:
 # - currentdate: Get the current date and/or time...
@@ -347,7 +347,7 @@ Lê arquivos locais em múltiplos formatos.
 
 **Nome:** `"readlocalfile"`
 
-**Requer:** `poetry install -E file-tools`
+**Requer:** `pip install createagents[file-tools]`
 
 **Formatos:**
 

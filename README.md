@@ -1,137 +1,174 @@
-src/
-createagents/
-application/
-domain/
-infra/
-main/
-utils/
-
 # 🤖 Create Agents AI
 
-Framework Python enterprise para criar agentes de IA inteligentes com arquitetura limpa, múltiplos provedores e ferramentas extensíveis.
+<div align="center">
+
+**Framework Python enterprise para criar agentes de IA inteligentes com arquitetura limpa, múltiplos provedores e ferramentas extensíveis.**
 
 [![Python](https://img.shields.io/badge/Python-3.12+-blue.svg)](https://www.python.org/downloads/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
 [![Clean Architecture](https://img.shields.io/badge/Architecture-Clean-brightgreen.svg)](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![Checked with mypy](https://img.shields.io/badge/mypy-checked-blue)](http://mypy-lang.org/)
+
+[Documentação](https://jor0105.github.io/Create-Agents-AI/) • [Exemplos](#-exemplos-de-uso) • [API Reference](https://jor0105.github.io/Create-Agents-AI/reference/api/) • [Contribuir](#-contribuindo)
+
+</div>
 
 ______________________________________________________________________
 
-## 📚 Documentação
+## 🎯 Sobre
 
-Este repositório contém a documentação oficial do **Create Agents AI**.
+**Create Agents AI** é um framework Python modular e extensível para construção de agentes conversacionais inteligentes, seguindo os princípios de **Clean Architecture** e **SOLID**. Projetado para ambientes enterprise, oferece suporte a múltiplos provedores de IA (OpenAI, Ollama), ferramentas extensíveis e métricas integradas.
 
-### Estrutura dos Docs
+### Por que usar?
 
-- `index.md`: Visão geral, principais recursos, arquitetura resumida, links rápidos.
-- `user-guide/`: Guia do usuário (instalação, uso básico, exemplos, FAQ).
-- `guia/`: Guia avançado (instalação avançada, exemplos avançados).
-- `dev-guide/`: Guia do desenvolvedor (arquitetura, exemplos técnicos, contribuição).
-- `reference/`: Referência técnica (ferramentas, comandos).
-- `api.md`: Referência da API pública.
-- `arquitetura.md`: Resumo visual e explicativo da arquitetura.
-- `tools.md`: Guia antigo de ferramentas (mantido para referência).
+- ✅ **Arquitetura Limpa**: Código testável, manutenível e escalável
+- ✅ **Múltiplos Provedores**: OpenAI e Ollama (local/privado)
+- ✅ **Ferramentas Extensíveis**: Sistema de tools com suporte a customização
+- ✅ **Histórico Contextual**: Gerenciamento automático de conversas
+- ✅ **Métricas Integradas**: Monitoramento em JSON e Prometheus
+- ✅ **Type Safety**: Suporte completo a type hints
+- ✅ **CI/CD Profissional**: Quality checks automáticos com GitHub Actions
 
-### Navegação Recomendada
+______________________________________________________________________
 
-- **Guia do Usuário**: [Instalação](docs/user-guide/installation-user.md) | [Uso Básico](docs/user-guide/basic-usage-user.md) | [Exemplos](docs/user-guide/examples-user.md) | [FAQ](docs/user-guide/faq-user.md)
-- **Guia Avançado**: [Instalação Avançada](docs/guia/instalacao.md) | [Exemplos Avançados](docs/guia/exemplos.md)
-- **Guia do Desenvolvedor**: [Arquitetura](docs/dev-guide/architecture-developer.md) | [Exemplos Técnicos](docs/dev-guide/technical-examples.md) | [Como Contribuir](docs/dev-guide/contribute.md)
-- **Referência**: [Ferramentas](docs/reference/tools.md) | [Comandos](docs/reference/commands.md) | [API Reference](docs/api.md)
-- **Outros**: [Arquitetura (resumo)](docs/arquitetura.md)
+## ✨ Features
+
+### 🤖 Provedores de IA
+
+| Provedor   | Status     |
+| ---------- | ---------- |
+| **OpenAI** | ✅ Estável |
+| **Ollama** | ✅ Estável |
+
+### 🔧 Ferramentas Built-in
+
+| Ferramenta            | Descrição                                    | Instalação                     |
+| --------------------- | -------------------------------------------- | ------------------------------ |
+| **CurrentDateTool**   | Data/hora em qualquer timezone               | Padrão                         |
+| **ReadLocalFileTool** | Lê PDF, Excel, CSV, Parquet, JSON, YAML, TXT | `poetry install -E file-tools` |
+
+### 📊 Recursos Avançados
+
+- **Histórico Automático**: Gerenciamento de contexto conversacional
+- **Métricas de Performance**: Exportação em JSON e Prometheus
+- **Sanitização de Logs**: Proteção automática de dados sensíveis
+- **Ferramentas Customizadas**: Interface `BaseTool` para extensões
+- **Configuração Flexível**: Temperature, max_tokens, top_p, think mode e mais.
 
 ______________________________________________________________________
 
 ## 🚀 Instalação Rápida
 
+### Pré-requisitos
+
+- Python 3.12 ou superior
+- pip (geralmente incluído com Python)
+
+### Instalação via PyPI (Usuários)
+
 ```bash
-git clone https://github.com/jor0105/Creator-Agents-AI.git
+# Instalação básica
+pip install createagents
+
+# OU com suporte a leitura de arquivos (PDF, Excel, CSV, Parquet)
+pip install createagents[file-tools]
+```
+
+### Configuração
+
+```bash
+# Configure sua chave de API da OpenAI
+export OPENAI_API_KEY="sk-proj-sua-chave"
+
+# Ou crie um arquivo .env no seu projeto
+echo "OPENAI_API_KEY=sk-proj-sua-chave" > .env
+```
+
+### Instalação para Desenvolvimento (Contribuidores)
+
+Se você deseja contribuir com o projeto:
+
+```bash
+# Clone o repositório
+git clone https://github.com/jor0105/Create-Agents-AI.git
 cd Create-Agents-AI
+
+# Instale com Poetry
 poetry install
-# ou
+
+# OU com suporte a file-tools
 poetry install -E file-tools
+
+# Configure o ambiente
+cp .env.example .env
+# Edite .env e adicione: OPENAI_API_KEY=sk-proj-sua-chave
 ```
 
-## 🏗️ Build Local da Documentação
+📖 [Guia completo para contribuidores →](https://jor0105.github.io/Create-Agents-AI/dev-guide/contribute/)
 
-```bash
-poetry run mkdocs serve
-# Acesse: http://localhost:8000
-```
+______________________________________________________________________
 
-## 📄 Licença
+## 💡 Quick Start
 
-MIT - Use livremente em seus projetos.
-
-## 👨‍💻 Autor
-
-**Jordan Estralioto**
-
-- GitHub: [@jor0105](https://github.com/jor0105)
-- Email: estraliotojordan@gmail.com
-
-**Versão:** 0.1.0 | **Atualização:** 17/11/2025
-
-# Conversar
-
-response = agent.chat("Qual é a diferença entre lista e tupla?")
-
-# Obter histórico
-
-configs = agent.get_configs()
-
-# Limpar histórico
-
-agent.clear_history()
-
-````
-
-### ✅ Gerenciamento de histórico
+### Exemplo Básico
 
 ```python
-# Histórico automático (últimas 10 mensagens por padrão)
-agent.chat("Primeira mensagem")
-agent.chat("Segunda mensagem")
+from createagents import CreateAgent
 
-# Personalizar tamanho do histórico
-agent = CreateAgent(provider="openai", model="gpt-4", history_max_size=20)
-
-# Limpar quando necessário
-agent.clear_history()
-````
-
-### ✅ Configuração customizada
-
-```python
-config = {
-    "temperature": 0.7,     # Criatividade (0-1)
-    "max_tokens": 1000,     # Limite de resposta
-}
-
+# Criar agente
 agent = CreateAgent(
     provider="openai",
     model="gpt-4",
-    name="Assistente",
-    instructions="Seja conciso",
-    config=config,
+    instructions="Você é um assistente técnico especializado em Python"
 )
+
+# Conversar
+response = agent.chat("Como criar uma função recursiva?")
+print(response)
 ```
 
-### ✅ Métricas e performance
+### Com Ferramentas
 
 ```python
-# Ver métricas de chamadas
-metrics = agent.get_metrics()
+from createagents import CreateAgent
 
-# Exportar como JSON
-json_data = agent.export_metrics_json()
+# Agente com ferramentas
+agent = CreateAgent(
+    provider="openai",
+    model="gpt-4",
+    tools=["currentdate", "readlocalfile"]
+)
 
-# Exportar formato Prometheus
-prom_data = agent.export_metrics_prometheus()
-
-# Salvar em arquivo
-agent.export_metrics_json("metrics.json")
-agent.export_metrics_prometheus("metrics.prom")
+# O agente usa ferramentas automaticamente
+agent.chat("Que dia é hoje?")  # Usa CurrentDateTool
+agent.chat("Leia o arquivo report.pdf")  # Usa ReadLocalFileTool
 ```
+
+### Ollama (Local)
+
+```bash
+# Instalar Ollama
+curl -fsSL https://ollama.ai/install.sh | sh
+
+# Baixar modelo
+ollama pull llama3.2:latest
+ollama serve
+```
+
+```python
+# Usar modelo local
+agent = CreateAgent(
+    provider="ollama",
+    model="llama3.2",
+    instructions="Você é um assistente local"
+)
+
+response = agent.chat("Explique Clean Architecture")
+print(response)
+```
+
+______________________________________________________________________
 
 ## 📋 Exemplos de Uso
 
@@ -160,24 +197,7 @@ print(f"Histórico: {len(config['history'])} mensagens")
 assistant.clear_history()
 ```
 
-### Exemplo 2: Agente Local com Ollama
-
-```python
-# Certifique-se que Ollama está rodando
-# ollama serve
-
-agent = CreateAgent(
-    provider="ollama",
-    model="llama2",
-    name="Local Assistant"
-)
-
-# Usar localmente (sem custos de API)
-response = agent.chat("Resuma Clean Architecture em 3 pontos")
-print(response)
-```
-
-### Exemplo 3: Múltiplos Agentes
+### Exemplo 2: Múltiplos Agentes
 
 ```python
 # Um para análise
@@ -205,12 +225,11 @@ print("Feedback:", feedback)
 print("Documentação:", docs)
 ```
 
-### Exemplo 4: Verificando Ferramentas Disponíveis
+### Exemplo 3: Ferramenta Customizada
 
 ```python
-from createagents import BaseTool
+from createagents import CreateAgent, BaseTool
 
-# Criar ferramenta customizada
 class CalculatorTool(BaseTool):
     name = "calculator"
     description = "Realiza cálculos matemáticos"
@@ -225,29 +244,112 @@ class CalculatorTool(BaseTool):
     def execute(self, expression: str) -> str:
         return str(eval(expression))
 
-# Criar agente com ferramentas
+# Criar agente com ferramenta customizada
 agent = CreateAgent(
     provider="openai",
     model="gpt-4",
     tools=["currentdate", CalculatorTool()]
 )
 
-# Ver todas as ferramentas do agente (sistema + customizadas)
+# Ver todas as ferramentas
 all_tools = agent.get_all_available_tools()
 print(f"Total de ferramentas: {len(all_tools)}")
 for name, description in all_tools.items():
     print(f"  • {name}: {description[:50]}...")
-
-# Ver apenas ferramentas do sistema
-system_tools = agent.get_system_available_tools()
-print(f"\nFerramentas do sistema: {list(system_tools.keys())}")
-
-# Verificar se ferramenta opcional está instalada
-if "readlocalfile" in system_tools:
-    print("✅ ReadLocalFileTool disponível")
-else:
-    print("⚠️  Execute: poetry install -E file-tools")
 ```
+
+### Exemplo 4: Métricas e Performance
+
+```python
+# Ver métricas de chamadas
+metrics = agent.get_metrics()
+
+# Exportar como JSON
+json_data = agent.export_metrics_json()
+
+# Exportar formato Prometheus
+prom_data = agent.export_metrics_prometheus()
+
+# Salvar em arquivo
+agent.export_metrics_json("metrics.json")
+agent.export_metrics_prometheus("metrics.prom")
+```
+
+______________________________________________________________________
+
+## 🏗️ Arquitetura
+
+Este projeto segue **Clean Architecture** e **SOLID Principles**:
+
+```
+src/
+└─ createagents/                # Pacote principal
+    ├─ domain/                 # Regras de negócio (entidades, services, value_objects, exceptions)
+    ├─ application/            # Casos de uso e DTOs (lógica da aplicação)
+    ├─ infra/                  # Implementações externas (adapters, factories, config)
+    ├─ main/                   # Composição e injeção de dependências (composers)
+    └─ utils/                  # Utilitários (text_sanitizer, helpers)
+```
+
+### Diagrama de Camadas
+
+```
+┌─────────────────────────────────────┐
+│        PRESENTATION                 │  ← CreateAgent (interface simples)
+│     (Controllers/UI)                │
+└──────────────┬──────────────────────┘
+               │
+┌──────────────▼──────────────────────┐
+│        APPLICATION                  │  ← Use Cases & DTOs
+│    (Business Logic)                 │
+└──────────────┬──────────────────────┘
+               │
+┌──────────────▼──────────────────────┐
+│          DOMAIN                     │  ← Entities & Rules
+│    (Core Business)                  │
+└──────────────▲──────────────────────┘
+               │
+┌──────────────┴──────────────────────┐
+│      INFRASTRUCTURE                 │  ← Adapters (OpenAI, Ollama)
+│  (External Services)                │
+└─────────────────────────────────────┘
+```
+
+**Benefícios**: Testável, Flexível, Escalável e Manutenível
+
+📖 [Documentação completa da arquitetura](https://jor0105.github.io/Create-Agents-AI/dev-guide/architecture-developer/)
+
+______________________________________________________________________
+
+## 📚 Documentação
+
+### Guia do Usuário
+
+- 📖 [Instalação](https://jor0105.github.io/Create-Agents-AI/user-guide/installation-user/)
+- 🚀 [Uso Básico](https://jor0105.github.io/Create-Agents-AI/user-guide/basic-usage-user/)
+- 💡 [Exemplos Práticos](https://jor0105.github.io/Create-Agents-AI/user-guide/examples-user/)
+- ❓ [FAQ](https://jor0105.github.io/Create-Agents-AI/user-guide/faq-user/)
+
+### Guia do Desenvolvedor
+
+- 🏗️ [Arquitetura](https://jor0105.github.io/Create-Agents-AI/dev-guide/architecture-developer/)
+- 🔧 [Exemplos Técnicos](https://jor0105.github.io/Create-Agents-AI/dev-guide/technical-examples/)
+- 🤝 [Como Contribuir](https://jor0105.github.io/Create-Agents-AI/dev-guide/contribute/)
+
+### Referência
+
+- 📚 [API Reference](https://jor0105.github.io/Create-Agents-AI/reference/api/)
+- 🛠️ [Ferramentas](https://jor0105.github.io/Create-Agents-AI/reference/tools/)
+- ⌨️ [Comandos](https://jor0105.github.io/Create-Agents-AI/reference/commands/)
+
+### Build Local da Documentação
+
+```bash
+poetry run mkdocs serve
+# Acesse: http://localhost:8000
+```
+
+______________________________________________________________________
 
 ## 🔧 Configuração
 
@@ -257,11 +359,32 @@ Crie um arquivo `.env`:
 
 ```bash
 # OpenAI
-OPENAI_API_KEY=sk-xxx...
-
+OPENAI_API_KEY=sk-proj-xxx...
 ```
 
-## 📊 API Referência
+### Configuração do Modelo
+
+```python
+config = {
+    "temperature": 0.7,     # Criatividade (0-1)
+    "max_tokens": 1000,     # Limite de resposta
+    "top_p": 0.9,           # Nucleus sampling
+    "think": True,          # Ollama: bool / OpenAI: "low"|"medium"|"high"
+}
+
+agent = CreateAgent(
+    provider="openai",
+    model="gpt-4",
+    name="Assistente",
+    instructions="Seja conciso",
+    config=config,
+    history_max_size=20
+)
+```
+
+______________________________________________________________________
+
+## 📊 API Reference
 
 ### CreateAgent
 
@@ -277,41 +400,56 @@ CreateAgent(
 )
 ```
 
-#### Métodos
+#### Métodos Principais
 
-| Método                                 | Retorno | Descrição                                                      |
-| -------------------------------------- | ------- | -------------------------------------------------------------- |
-| `chat(message)`                        | `str`   | Enviar mensagem e receber resposta                             |
-| `get_configs()`                        | `dict`  | Obter configurações e histórico                                |
-| `clear_history()`                      | `None`  | Limpar histórico de mensagens                                  |
-| `get_all_available_tools()`            | `dict`  | Listar todas as ferramentas do agente (sistema + customizadas) |
-| `get_system_available_tools()`         | `dict`  | Listar apenas ferramentas do sistema                           |
-| `get_metrics()`                        | `list`  | Obter métricas de performance                                  |
-| `export_metrics_json(path=None)`       | `str`   | Exportar métricas em JSON                                      |
-| `export_metrics_prometheus(path=None)` | `str`   | Exportar métricas em Prometheus                                |
+| Método                                 | Retorno | Descrição                                            |
+| -------------------------------------- | ------- | ---------------------------------------------------- |
+| `chat(message)`                        | `str`   | Enviar mensagem e receber resposta                   |
+| `get_configs()`                        | `dict`  | Obter configurações e histórico                      |
+| `clear_history()`                      | `None`  | Limpar histórico de mensagens                        |
+| `get_all_available_tools()`            | `dict`  | Listar todas as ferramentas (sistema + customizadas) |
+| `get_system_available_tools()`         | `dict`  | Listar apenas ferramentas do sistema                 |
+| `get_metrics()`                        | `list`  | Obter métricas de performance                        |
+| `export_metrics_json(path=None)`       | `str`   | Exportar métricas em JSON                            |
+| `export_metrics_prometheus(path=None)` | `str`   | Exportar métricas em Prometheus                      |
 
-## 📚 Arquitetura (Para Desenvolvedores)
+📖 [Documentação completa da API](https://jor0105.github.io/Create-Agents-AI/reference/api/)
 
-Este projeto segue **Clean Architecture** e **SOLID Principles**:
-
-```
-src/
-└─ createagents/                # Pacote principal
-    ├─ domain/                 # Regras de negócio (entidades, services, value_objects, exceptions)
-    ├─ application/            # Casos de uso e DTOs (lógica da aplicação)
-    ├─ infra/                  # Implementações externas (adapters, factories, config)
-    ├─ main/                   # Composição e injeção de dependências (composers)
-    └─ utils/                  # Utilitários (text_sanitizer, helpers)
-```
+______________________________________________________________________
 
 ## 🤝 Contribuindo
 
-Quer adicionar um novo provedor de IA?
+Contribuições são bem-vindas! Siga os passos:
 
-1. **Crie um novo adapter** em `src/infra/adapters/NomeProvedor/`
-1. **Implemente** a interface `ChatRepository`
-1. **Registre** em `ChatAdapterFactory`
-1. **Adicione testes** em `tests/infra/adapters/`
+1. **Fork** o repositório
+
+1. **Crie uma branch**: `git checkout -b feature/nova-feature`
+
+1. **Implemente** seguindo os padrões existentes
+
+1. **Adicione testes**: Garanta cobertura mínima de 70%
+
+1. **Execute os checks**:
+
+   ```bash
+   # Instalar pre-commit hooks
+   poetry run pre-commit install
+
+   # Executar todos os checks
+   poetry run pre-commit run --all-files
+
+   # Executar testes com cobertura
+   poetry run pytest --cov=src --cov-fail-under=70
+   ```
+
+1. **Envie um Pull Request**
+
+### Adicionando um Novo Provedor
+
+1. Crie um novo adapter em `src/infra/adapters/NomeProvedor/`
+1. Implemente a interface `ChatRepository`
+1. Registre em `ChatAdapterFactory`
+1. Adicione testes em `tests/infra/adapters/`
 
 Exemplo:
 
@@ -322,54 +460,65 @@ class MeuAdapter(ChatRepository):
         pass
 ```
 
-## 🧪 Para Desenvolvedores: CI/CD & Workflows
+📖 [Guia completo de contribuição](https://jor0105.github.io/Create-Agents-AI/dev-guide/contribute/)
+
+______________________________________________________________________
+
+## 🧪 CI/CD & Workflows
 
 Este projeto tem automação profissional com GitHub Actions:
 
-- **Quality Checks (CI)**: Lint, formatação, type checking, security, testes com cobertura mínima de 70%
+### Quality Checks (CI)
 
-  - Executa em: Push/PR para `develop` ou `main`
-  - Matrix: Python 3.12, 3.13, 3.14
+- **Executa em**: Push/PR para `develop` ou `main`
+- **Matrix**: Python 3.12, 3.13, 3.14
+- **Checks**:
+  - ✅ Lint (Black, Ruff, isort)
+  - ✅ Type checking (mypy)
+  - ✅ Security (Bandit, detect-secrets)
+  - ✅ Tests com cobertura mínima de 70%
+  - ✅ Docstring validation (pydocstyle)
 
-- **Documentation Build**: Build e validação da documentação com MkDocs
+### Documentation Build
 
-  - Executa: Manualmente via workflow_dispatch
+- **Executa**: Manualmente via `workflow_dispatch`
+- **Ação**: Build e validação da documentação com MkDocs
 
-- **Pre-commit Hooks**: 15+ verificadores automáticos antes de cada commit
+### Pre-commit Hooks
 
-  - Black, Ruff, isort, mypy, pydocstyle, yamllint e mais
-
-**📖 Documentação Completa:** [`docs/ci-cd.md`](./docs/ci-cd.md)
-
-**Quick start para contribuir:**
+15+ verificadores automáticos antes de cada commit:
 
 ```bash
-# Instalar pre-commit hooks
+# Instalar
 poetry run pre-commit install
 
-# Executar todos os checks localmente
+# Executar manualmente
 poetry run pre-commit run --all-files
-
-# Executar testes com cobertura
-poetry run pytest --cov=src --cov-fail-under=70
 ```
+
+______________________________________________________________________
 
 ## 📄 Licença
 
-MIT - Use livremente em seus projetos!
+Este projeto está licenciado sob a **MIT License** - veja o arquivo [LICENSE](LICENSE) para detalhes.
+
+______________________________________________________________________
 
 ## 📞 Suporte
 
-- 📖 [Documentação Completa](./docs/)
+- 📖 [Documentação Completa](https://jor0105.github.io/Create-Agents-AI/)
 - 🐛 [Reportar Bugs](https://github.com/jor0105/Create-Agents-AI/issues)
 - 💬 [Discussões](https://github.com/jor0105/Create-Agents-AI/discussions)
+- 📧 Email: estraliotojordan@gmail.com
+
+______________________________________________________________________
 
 ## 👨‍💻 Autor
 
 **Jordan Estralioto**
 
-- Email: estraliotojordan@gmail.com
 - GitHub: [@jor0105](https://github.com/jor0105)
+- Email: estraliotojordan@gmail.com
 
 ______________________________________________________________________
 
@@ -382,5 +531,12 @@ ______________________________________________________________________
 
 ______________________________________________________________________
 
-**Versão:** 0.1.0
-**Última atualização:** 17/11/2025
+<div align="center">
+
+**Versão:** 0.1.0\
+**Última atualização:** 21/11/2025\
+**Status:** 🚀 Projeto publicado! Aberto para contribuições e sugestões.
+
+⭐ Se este projeto foi útil, considere dar uma estrela no GitHub!
+
+</div>

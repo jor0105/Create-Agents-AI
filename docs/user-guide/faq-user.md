@@ -34,7 +34,13 @@ Abra uma issue no GitHub ou envie email para estraliotojordan@gmail.com.
 
 ## 9. Como atualizar o framework?
 
-Atualize o repositório e rode `poetry install` novamente.
+Atualize via pip:
+
+```bash
+pip install --upgrade createagents
+# OU com file-tools
+pip install --upgrade createagents[file-tools]
+```
 
 ## 10. Onde encontrar exemplos avançados?
 

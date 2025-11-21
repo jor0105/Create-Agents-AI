@@ -54,11 +54,7 @@ Lê arquivos locais em múltiplos formatos.
 **Instalação:**
 
 ```bash
-# Com pip
-pip install ai-agent[file-tools]
-
-# Com poetry
-poetry install -E file-tools
+pip install createagents[file-tools]
 ```
 
 **Uso:**
@@ -109,7 +105,7 @@ response = agent.chat("Que dia da semana é hoje?")
 ### Exemplo 2: Leitura de Arquivos
 
 ```python
-# Certifique-se que instalou: poetry install -E file-tools
+# Certifique-se que instalou: pip install createagents[file-tools]
 
 agent = CreateAgent(
     provider="openai",
@@ -142,7 +138,7 @@ ______________________________________________________________________
 ### Instalação Básica ✅
 
 ```bash
-poetry install
+pip install createagents
 ```
 
 Inclui:
@@ -155,7 +151,7 @@ Inclui:
 ### Instalação com File Tools 📁
 
 ```bash
-poetry install -E file-tools
+pip install createagents[file-tools]
 ```
 
 Inclui:
@@ -228,7 +224,7 @@ for name, description in system_tools.items():
 if "readlocalfile" in system_tools:
     print("✅ ReadLocalFileTool disponível!")
 else:
-    print("⚠️ Instale com: poetry install -E file-tools")
+    print("⚠️ Instale com: pip install createagents[file-tools]")
 ```
 
 ### Diferença Entre os Métodos
@@ -341,7 +337,7 @@ R: Para manter o sistema leve. Se você não precisa ler PDFs/Excel, não precis
 R: Use `agent.get_all_available_tools()` para listar.
 
 **P: O que acontece se eu tentar usar uma ferramenta não instalada?**
-R: Você receberá erro claro: `pip install ai-agent[file-tools]`
+R: Você receberá erro claro: `pip install createagents[file-tools]`
 
 **P: Posso criar minhas próprias ferramentas?**
 R: Sim! Siga o padrão de ferramentas próprias e estenda `BaseTool`.

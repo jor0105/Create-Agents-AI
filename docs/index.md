@@ -1,4 +1,3 @@
-````markdown
 # 🤖 Create Agents AI
 
 > Framework Python enterprise para criar agentes de IA inteligentes com arquitetura limpa, múltiplos provedores e ferramentas extensíveis.
@@ -7,7 +6,7 @@
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
 [![Clean Architecture](https://img.shields.io/badge/Architecture-Clean-brightgreen.svg)](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html)
 
----
+______________________________________________________________________
 
 ## 🎯 O que este sistema oferece?
 
@@ -19,26 +18,28 @@
 ✅ **Métricas integradas**: Monitore performance em JSON ou Prometheus
 ✅ **Arquitetura limpa**: Código testável, manutenível e escalável seguindo SOLID
 
----
+______________________________________________________________________
 
 ## 🚀 Quick Start
 
 ### Instalação
 
 ```bash
-# Clone o repositório
-git clone https://github.com/jor0105/Creator-Agents-AI.git
-cd Create-Agents-AI
-
-# Instalação básica
-poetry install
+# Instalação básica via PyPI
+pip install createagents
 
 # OU com suporte a leitura de arquivos (PDF, Excel, CSV, Parquet)
-poetry install -E file-tools
+pip install createagents[file-tools]
+```
 
-# Configure suas credenciais
-cp .env.example .env
-# Edite .env e adicione: OPENAI_API_KEY=sk-proj-sua-chave
+### Configuração
+
+```bash
+# Configure sua chave de API da OpenAI
+export OPENAI_API_KEY="sk-proj-sua-chave"
+
+# Ou crie um arquivo .env no seu projeto
+echo "OPENAI_API_KEY=sk-proj-sua-chave" > .env
 ```
 
 ### Primeiro Agente em 3 Linhas
@@ -53,7 +54,7 @@ response = agent.chat("Olá!")
 print(response)
 ```
 
----
+______________________________________________________________________
 
 ## ✨ Funcionalidades Principais
 
@@ -96,7 +97,7 @@ for name in system_tools.keys():
 
 - `currentdate` - Data/hora em qualquer timezone (sempre disponível)
 - `readlocalfile` - Lê PDF, Excel, CSV, Parquet, JSON, YAML, TXT (requer
-  `poetry install -E file-tools`)
+  `pip install createagents[file-tools]`)
 
 **Criar ferramentas customizadas:**
 
@@ -174,24 +175,30 @@ agent = CreateAgent(
 )
 ```
 
----
+______________________________________________________________________
 
 ## 📚 Documentação
 
 ### Para Usuários
 
-- **[Instalação](guia/instalacao.md)** - Configure seu ambiente passo a passo
-- **[Uso Básico](guia/uso-basico.md)** - Aprenda os fundamentos
-- **[Exemplos Práticos](guia/exemplos.md)** - Casos de uso reais
-- **[Ferramentas](tools.md)** - Guia completo das tools disponíveis
-- **[API Reference](api.md)** - Documentação completa da API
+- **[Instalação](user-guide/installation-user.md)** - Configure seu ambiente passo a passo
+- **[Uso Básico](user-guide/basic-usage-user.md)** - Aprenda os fundamentos
+- **[Exemplos Práticos](user-guide/examples-user.md)** - Casos de uso reais
+- **[FAQ](user-guide/faq-user.md)** - Perguntas frequentes
 
 ### Para Desenvolvedores
 
-- **[Arquitetura](arquitetura.md)** - Clean Architecture e padrões de design
-- **[CI/CD](ci-cd.md)** - Workflows e quality checks
+- **[Arquitetura](dev-guide/architecture-developer.md)** - Clean Architecture e padrões de design
+- **[Exemplos Técnicos](dev-guide/technical-examples.md)** - Exemplos avançados
+- **[Como Contribuir](dev-guide/contribute.md)** - Guia de contribuição
 
----
+### Referência
+
+- **[API Reference](reference/api.md)** - Documentação completa da API
+- **[Ferramentas](reference/tools.md)** - Guia completo das tools disponíveis
+- **[Comandos](reference/commands.md)** - Referência de comandos
+
+______________________________________________________________________
 
 ## 🏗️ Por Que Usar Este Framework?
 
@@ -209,7 +216,7 @@ agent = CreateAgent(
 - ✅ **Type hints**: Suporte completo para IDEs
 - ✅ **CI/CD**: Quality checks automáticos com GitHub Actions
 
----
+______________________________________________________________________
 
 ## 📊 Arquitetura
 
@@ -239,21 +246,23 @@ O projeto segue **Clean Architecture** e **SOLID principles**:
 
 **Benefícios**: Testável, Flexível, Escalável e Manutenível
 
-[Saiba mais sobre a arquitetura →](arquitetura.md)
+[Saiba mais sobre a arquitetura →](dev-guide/architecture-developer.md)
 
----
+______________________________________________________________________
 
 ## 🤝 Contribuindo
 
 Quer adicionar um novo provedor ou criar uma ferramenta?
 
 1. Fork o repositório
-2. Crie uma branch: `git checkout -b feature/nova-feature`
-3. Implemente seguindo os padrões existentes
-4. Teste: `poetry run pytest --cov=src`
-5. Envie um Pull Request
+1. Crie uma branch: `git checkout -b feature/nova-feature`
+1. Implemente seguindo os padrões existentes
+1. Teste: `poetry run pytest --cov=src`
+1. Envie um Pull Request
 
----
+[Guia completo de contribuição →](dev-guide/contribute.md)
+
+______________________________________________________________________
 
 ## 📞 Suporte
 
@@ -261,13 +270,13 @@ Quer adicionar um novo provedor ou criar uma ferramenta?
 - 🐛 **Bugs**: [GitHub Issues](https://github.com/jor0105/Create-Agents-AI/issues)
 - 💬 **Discussões**: [GitHub Discussions](https://github.com/jor0105/Create-Agents-AI/discussions)
 
----
+______________________________________________________________________
 
 ## 📄 Licença
 
 MIT - Use livremente em seus projetos.
 
----
+______________________________________________________________________
 
 ## 👨‍💻 Autor
 
@@ -276,9 +285,8 @@ MIT - Use livremente em seus projetos.
 - GitHub: [@jor0105](https://github.com/jor0105)
 - Email: estraliotojordan@gmail.com
 
----
+______________________________________________________________________
 
-**Versão:** 0.1.0
-**Última atualização:** 17/11/2025
+**Versão:** 0.1.0\
+**Última atualização:** 21/11/2025\
 **Status:** 🚀 Projeto publicado! Aberto para contribuições e sugestões.
-````
