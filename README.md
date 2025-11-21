@@ -14,7 +14,7 @@ Framework Python enterprise para criar agentes de IA inteligentes com arquitetur
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
 [![Clean Architecture](https://img.shields.io/badge/Architecture-Clean-brightgreen.svg)](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html)
 
----
+______________________________________________________________________
 
 ## 📚 Documentação
 
@@ -39,7 +39,7 @@ Este repositório contém a documentação oficial do **Create Agents AI**.
 - **Referência**: [Ferramentas](docs/reference/tools.md) | [Comandos](docs/reference/commands.md) | [API Reference](docs/api.md)
 - **Outros**: [Arquitetura (resumo)](docs/arquitetura.md)
 
----
+______________________________________________________________________
 
 ## 🚀 Instalação Rápida
 
@@ -371,7 +371,7 @@ MIT - Use livremente em seus projetos!
 - Email: estraliotojordan@gmail.com
 - GitHub: [@jor0105](https://github.com/jor0105)
 
----
+______________________________________________________________________
 
 ## 📚 Referências
 
@@ -380,7 +380,7 @@ MIT - Use livremente em seus projetos!
 - [Ollama Documentation](https://github.com/ollama/ollama)
 - [SOLID Principles](https://en.wikipedia.org/wiki/SOLID)
 
----
+______________________________________________________________________
 
 **Versão:** 0.1.0
 **Última atualização:** 17/11/2025

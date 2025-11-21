@@ -1,0 +1,5 @@
+- [ ] Arrumar design na documentação no mkdocs;
+- [ ] Arrumar ci/cd
+- [ ] Fazer merge na main;
+- [ ] Ver se docs estão corretos no github;
+- [ ] Testar a biblioteca em um projeto novo pelo pypi;

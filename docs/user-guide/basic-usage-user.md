@@ -36,13 +36,13 @@ agent.clear_history()
 
 ```python
 agent_formal = CreateAgent(
-    provider="openai", 
-    model="gpt-4", 
+    provider="openai",
+    model="gpt-4",
     instructions="Use linguagem formal"
 )
 agent_tecnico = CreateAgent(
     provider="openai",
-    model="gpt-4", 
+    model="gpt-4",
     instructions="Especialista em Python"
 )
 ```
@@ -51,9 +51,9 @@ agent_tecnico = CreateAgent(
 
 ```python
 agent = CreateAgent(
-    provider="openai", 
-    model="gpt-4", 
-    config={"temperature": 0.7, "max_tokens": 2000}, 
+    provider="openai",
+    model="gpt-4",
+    config={"temperature": 0.7, "max_tokens": 2000},
     history_max_size=50
 )
 ```
@@ -62,8 +62,8 @@ agent = CreateAgent(
 
 ```python
 agent = CreateAgent(
-    provider="openai", 
-    model="gpt-4", 
+    provider="openai",
+    model="gpt-4",
     tools=["currentdate"]
 )
 response = agent.chat("Que dia é hoje?")
@@ -85,13 +85,13 @@ class CalculatorTool(BaseTool):
     name = "calculator"
     description = "Realiza cálculos matemáticos"
     parameters = {
-        "type": "object", 
+        "type": "object",
         "properties": {
             "expression": {
-                "type": "string", 
+                "type": "string",
                 "description": "Expressão matemática"
             }
-        }, 
+        },
         "required": ["expression"]
     }
     def execute(self, expression: str) -> str:
