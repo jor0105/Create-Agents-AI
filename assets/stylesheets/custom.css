@@ -1,0 +1,316 @@
+/* ============================================================================
+   Fluid Layout & Typography for MkDocs Material
+   ----------------------------------------------------------------------------
+   Keeps the documentation fluid across breakpoints while staying easy to tweak.
+   ============================================================================ */
+
+:root {
+  /* Spacing scale */
+  --space-3xs: clamp(0.25rem, 0.45vw, 0.45rem);
+  --space-2xs: clamp(0.4rem, 0.65vw, 0.6rem);
+  --space-xs: clamp(0.6rem, 0.85vw, 0.85rem);
+  --space-sm: clamp(0.8rem, 1.05vw, 1.1rem);
+  --space-md: clamp(1.05rem, 1.4vw, 1.45rem);
+  --space-lg: clamp(1.35rem, 1.9vw, 1.85rem);
+  --space-xl: clamp(1.75rem, 2.4vw, 2.35rem);
+  --space-2xl: clamp(2.15rem, 3vw, 2.9rem);
+
+  /* Radii */
+  --radius-sm: 0.25rem;
+  --radius-md: 0.4rem;
+
+  /* Typography scale driven by clamp() for fluid sizing */
+  --font-body: clamp(0.88rem, 0.18vw + 0.81rem, 0.94rem);
+  --font-small: clamp(0.77rem, 0.16vw + 0.69rem, 0.88rem);
+  --font-code: clamp(0.74rem, 0.13vw + 0.66rem, 0.85rem);
+  --font-h1: clamp(1.65rem, 1.1vw + 1.32rem, 2.35rem);
+  --font-h2: clamp(1.4rem, 0.85vw + 1.15rem, 1.95rem);
+  --font-h3: clamp(1.15rem, 0.7vw + 0.92rem, 1.55rem);
+  --font-h4: clamp(0.95rem, 0.5vw + 0.82rem, 1.2rem);
+
+  /* Layout */
+  --content-width: min(88vw, 68rem);
+  --content-padding: clamp(1.15rem, 2.85vw, 3rem);
+  --table-border: 1px solid rgba(0, 0, 0, 0.08);
+  --table-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.04);
+}
+
+body {
+  font-size: var(--font-body);
+  line-height: 1.65;
+  letter-spacing: 0.015em;
+}
+
+.md-content {
+  padding-inline: var(--content-padding);
+}
+
+.md-content__inner {
+  max-width: var(--content-width);
+  margin-inline: auto;
+  width: 100%;
+}
+
+.md-typeset {
+  line-height: 1.7;
+}
+
+.md-typeset h1 {
+  font-size: var(--font-h1);
+  line-height: 1.28;
+  margin-block: var(--space-2xl) var(--space-lg);
+}
+
+.md-typeset h2 {
+  font-size: var(--font-h2);
+  line-height: 1.32;
+  margin-block: var(--space-xl) var(--space-sm);
+  padding-bottom: var(--space-2xs);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.md-typeset h3 {
+  font-size: var(--font-h3);
+  line-height: 1.35;
+  margin-block: var(--space-lg) var(--space-xs);
+}
+
+.md-typeset h4 {
+  font-size: var(--font-h4);
+  margin-block: var(--space-md) var(--space-2xs);
+}
+
+.md-typeset h5,
+.md-typeset h6 {
+  font-size: var(--font-small);
+  margin-block: var(--space-md) var(--space-3xs);
+}
+
+.md-typeset p,
+.md-typeset li {
+  font-size: var(--font-body);
+  line-height: 1.72;
+}
+
+.md-typeset p {
+  margin-block: 0 var(--space-sm);
+}
+
+.md-typeset ul,
+.md-typeset ol {
+  margin-block: var(--space-sm);
+  padding-inline-start: clamp(1.2rem, 3vw, 2.25rem);
+}
+
+.md-typeset code {
+  font-size: var(--font-code);
+  padding: 0.2rem 0.45rem;
+  border-radius: var(--radius-sm);
+}
+
+.md-typeset pre {
+  font-size: var(--font-code);
+  line-height: 1.6;
+  padding: var(--space-sm);
+  margin-block: var(--space-lg);
+  border-radius: var(--radius-md);
+  overflow-x: auto;
+}
+
+.md-typeset table {
+  width: 100%;
+  margin-block: var(--space-lg);
+  border-collapse: collapse;
+  box-shadow: var(--table-shadow);
+  font-size: clamp(0.9rem, 0.2vw + 0.82rem, 1rem);
+}
+
+.md-typeset table th,
+.md-typeset table td {
+  padding: var(--space-2xs) var(--space-xs);
+  border: var(--table-border);
+  text-align: left;
+}
+
+.md-typeset table th {
+  background-color: rgba(0, 0, 0, 0.04);
+  font-weight: 600;
+}
+
+.md-typeset img,
+.md-typeset video,
+.md-typeset iframe {
+  max-width: 100%;
+  height: auto;
+  margin-block: var(--space-lg);
+  border-radius: var(--radius-md);
+  display: block;
+}
+
+.md-nav {
+  font-size: clamp(0.88rem, 0.22vw + 0.8rem, 0.97rem);
+}
+
+.md-nav__link,
+.md-nav__title {
+  padding: var(--space-3xs) var(--space-sm);
+  border-radius: var(--radius-sm);
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.md-nav__link:hover {
+  background-color: rgba(63, 81, 181, 0.12);
+  color: var(--md-color-primary);
+}
+
+.md-nav__link--active {
+  color: var(--md-color-primary);
+  font-weight: 600;
+}
+
+.md-sidebar__inner {
+  padding-block: var(--space-xs);
+}
+
+[data-md-color-scheme="default"] .md-typeset blockquote {
+  margin-block: var(--space-lg);
+  padding-inline: var(--space-sm);
+  border-left: 3px solid var(--md-color-primary);
+  color: rgba(0, 0, 0, 0.7);
+  font-style: italic;
+}
+
+.md-typeset .admonition,
+.md-typeset .note,
+.md-typeset details {
+  margin-block: var(--space-md);
+  padding: var(--space-sm);
+  border-radius: var(--radius-md);
+}
+
+.md-nav__link:focus,
+.md-typeset a:focus {
+  outline: 2px solid var(--md-color-primary);
+  outline-offset: 2px;
+}
+
+/* -------------------------------------------------------------------------- */
+/*  Responsive refinements                                                    */
+/* -------------------------------------------------------------------------- */
+
+@media (min-width: 1200px) {
+  :root {
+    /* Constrain for readability on very wide screens */
+    --content-width: min(74rem, 78vw);
+  }
+}
+
+@media (max-width: 1024px) {
+  :root {
+    --content-width: min(92vw, 60rem);
+  }
+
+  .md-nav {
+    font-size: clamp(0.86rem, 0.25vw + 0.76rem, 0.94rem);
+  }
+}
+
+@media (max-width: 768px) {
+  :root {
+    --content-padding: clamp(1rem, 4vw, 2.25rem);
+    --font-body: clamp(0.92rem, 0.32vw + 0.84rem, 0.96rem);
+  }
+
+  .md-typeset pre {
+    padding: var(--space-xs);
+  }
+
+  .md-sidebar--secondary {
+    display: none;
+  }
+
+  .md-nav__link,
+  .md-nav__title {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+  }
+}
+
+@media (max-width: 540px) {
+  :root {
+    --content-width: 96vw;
+    --content-padding: clamp(0.9rem, 5vw, 1.6rem);
+    --font-body: clamp(0.88rem, 0.4vw + 0.78rem, 0.94rem);
+  }
+
+  .md-typeset h1 {
+    margin-block: var(--space-xl) var(--space-sm);
+  }
+
+  .md-nav {
+    font-size: clamp(0.8rem, 0.3vw + 0.7rem, 0.9rem);
+  }
+
+  .md-typeset table {
+    font-size: clamp(0.82rem, 0.28vw + 0.72rem, 0.92rem);
+  }
+}
+
+/* Wide mode toggle (user preference) */
+body.wide-mode .md-content__inner {
+  max-width: min(88rem, 92vw);
+}
+body.wide-mode .md-sidebar--primary {
+  width: 15rem;
+}
+body.wide-mode .md-sidebar--secondary {
+  display: block;
+}
+
+/* Improve code block contrast and spacing */
+.md-typeset pre code {
+  background: transparent;
+}
+.md-typeset pre {
+  background: var(--md-code-bg-color, #1e1e21);
+  color: #eee;
+}
+.md-typeset pre:hover {
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08), 0 2px 6px rgba(0, 0, 0, 0.25);
+}
+
+/* Task list checkbox alignment */
+.task-list-item {
+  list-style: none;
+}
+.task-list-item input {
+  margin-right: 0.35rem;
+}
+
+/* -------------------------------------------------------------------------- */
+/*  Quality of life                                                           */
+/* -------------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@media print {
+  .md-header,
+  .md-navigation,
+  .md-sidebar,
+  .md-footer {
+    display: none !important;
+  }
+
+  .md-content {
+    padding: 0;
+    margin: 0;
+    max-width: 100%;
+  }
+}
