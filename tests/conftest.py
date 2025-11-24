@@ -1,4 +1,5 @@
-from unittest.mock import Mock
+import os
+from unittest.mock import Mock, patch
 
 import pytest
 
@@ -52,6 +53,41 @@ def populated_history():
     history.add_user_message("Message 2")
     history.add_assistant_message("Response 2")
     return history
+
+
+@pytest.fixture(autouse=True)
+def mock_openai_api_key(request):
+    """
+    Automatically mock OPENAI_API_KEY and OpenAI client for all unit tests.
+
+    This prevents tests from failing in CI/CD environments where the actual
+    API key is not available. Integration tests are excluded from this mock
+    so they can test real API interactions.
+
+    Tests that specifically test the ClientOpenAI class are also excluded
+    since they provide their own mocks.
+    """
+    # Only apply to unit tests, not integration tests
+    if "unit" in request.keywords:
+        from unittest.mock import MagicMock
+
+        # Skip if the test is in test_client_openai.py (those tests mock OpenAI themselves)
+        if "test_client_openai" in request.node.nodeid:
+            yield
+            return
+
+        with (
+            patch.dict(os.environ, {"OPENAI_API_KEY": "test-key-mock"}),
+            patch(
+                "createagents.infra.adapters.OpenAI.client_openai.ClientOpenAI.get_client"
+            ) as mock_get_client,
+        ):
+            # Create a mock OpenAI client
+            mock_client = MagicMock()
+            mock_get_client.return_value = mock_client
+            yield
+    else:
+        yield
 
 
 def pytest_configure(config):
