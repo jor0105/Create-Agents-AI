@@ -8,7 +8,7 @@ on:
 
 permissions:
   contents: read
-  id-token: write # IMPORTANT: required for trusted publishing
+  id-token: write  # IMPORTANT: required for trusted publishing
 
 jobs:
   publish:
