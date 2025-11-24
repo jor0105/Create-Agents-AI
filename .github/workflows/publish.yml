@@ -4,20 +4,19 @@ name: CD - Publish to PyPI
 on:
   release:
     types: [published]
-  workflow_dispatch:
-    inputs:
-      version:
-        description: "Version to publish (e.g., v0.1.0)"
-        required: true
-        type: string
+  workflow_dispatch: {}
 
 permissions:
   contents: read
+  id-token: write # IMPORTANT: required for trusted publishing
 
 jobs:
   publish:
     name: Build and publish to PyPI
     runs-on: ubuntu-latest
+    environment:
+      name: release
+      url: https://pypi.org/project/createagents/
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -40,15 +39,16 @@ jobs:
       - name: Build package
         run: poetry build
 
-      - name: Check package
+      - name: Check package distribution
         run: |
           pip install twine
           twine check dist/*
 
-      - name: Publish to PyPI
-        env:
-          POETRY_PYPI_TOKEN_PYPI: ${{ secrets.PYPI_API_TOKEN }}
-        run: poetry publish --no-interaction
+      - name: Publish to PyPI using Trusted Publishers
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          print-hash: true
+          verbose: true
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4

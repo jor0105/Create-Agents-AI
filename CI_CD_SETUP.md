@@ -36,28 +36,55 @@ Três workflows de GitHub Actions foram criados e configurados:
 
 ## 🔧 Configurações Necessárias
 
-### 1. Configurar Token do PyPI
+### 1. Configurar Trusted Publisher no PyPI (RECOMENDADO)
 
-Para que a publicação automática funcione, você precisa configurar o token do PyPI:
+O PyPI agora suporta **Trusted Publishers** usando OIDC, que é **muito mais seguro** que tokens de API. Este método não requer armazenar secrets no GitHub!
 
-#### Passo 1: Criar Token no PyPI
+#### Passo 1: Configurar Pending Publisher no PyPI (Para primeira publicação)
 
-1. Acesse https://pypi.org/manage/account/token/
+1. Acesse https://pypi.org/manage/account/publishing/
 2. Faça login na sua conta PyPI
-3. Clique em "Add API token"
-4. Nome do token: `createagents-github-actions`
-5. Escopo: **Projeto específico** → selecione `createagents` (após primeira publicação manual) OU **Conta inteira** (para primeira publicação)
-6. Clique em "Add token"
-7. **COPIE O TOKEN** (você só verá uma vez!)
+3. Clique em **"Add a new pending publisher"**
+4. Preencha os campos **EXATAMENTE** como abaixo:
+   - **PyPI Project Name**: `createagents` (deve corresponder ao `name` em `pyproject.toml`)
+   - **Owner**: `jor0105` (seu usuário/organização do GitHub)
+   - **Repository name**: `Create-Agents-AI` (nome do seu repositório)
+   - **Workflow name**: `publish.yml` (nome do arquivo de workflow)
+   - **Environment name**: `release` (nome do environment no GitHub Actions)
+5. Clique em **"Add"**
 
-#### Passo 2: Adicionar Token ao GitHub
+> **Importante**: Após a primeira publicação bem-sucedida, o "pending publisher" se tornará um "trusted publisher" permanente.
+
+#### Passo 2: Criar Environment no GitHub (Opcional mas Recomendado)
+
+Para adicionar uma camada extra de segurança:
 
 1. Vá para o repositório no GitHub
-2. Settings → Secrets and variables → Actions
-3. Clique em "New repository secret"
-4. Nome: `PYPI_API_TOKEN`
-5. Value: Cole o token copiado do PyPI
-6. Clique em "Add secret"
+2. Settings → Environments
+3. Clique em **"New environment"**
+4. Nome: `release`
+5. (Opcional) Configure regras de proteção:
+   - ✅ Required reviewers (ex: você mesmo)
+   - ✅ Wait timer (ex: 5 minutos)
+6. Clique em **"Configure environment"**
+
+> **Nota**: O environment não é obrigatório, mas adiciona proteção contra publicações acidentais.
+
+### Alternativa: Usar Token de API (Método Antigo - NÃO RECOMENDADO)
+
+<details>
+<summary>Clique para ver instruções do método antigo (apenas se você não quiser usar Trusted Publishers)</summary>
+
+Se por algum motivo você preferir usar o método antigo com tokens:
+
+1. Acesse https://pypi.org/manage/account/token/
+2. Crie um token com escopo de **conta inteira** (para primeira publicação)
+3. Adicione como secret `PYPI_API_TOKEN` no GitHub
+4. Modifique o workflow para usar `poetry publish` com o token
+
+**⚠️ Aviso**: Este método é menos seguro e não é mais recomendado pelo PyPI.
+
+</details>
 
 ### 2. Habilitar GitHub Pages
 
@@ -154,12 +181,13 @@ twine check dist/*
 ## 🚀 Próximos Passos
 
 1. ✅ Workflows criados e testados
-2. ⏳ **Configurar token `PYPI_API_TOKEN` no GitHub** (você precisa fazer)
-3. ⏳ **Habilitar GitHub Pages** (você precisa fazer)
-4. ⏳ Fazer commit e push dos workflows
-5. ⏳ Testar CI com um PR
-6. ⏳ Testar deploy da documentação (push para main)
-7. ⏳ Criar primeira release para testar publicação no PyPI
+2. ⏳ **Configurar Trusted Publisher no PyPI** (você precisa fazer - veja seção acima)
+3. ⏳ **(Opcional) Criar environment `release` no GitHub** (recomendado para segurança extra)
+4. ⏳ **Habilitar GitHub Pages** (você precisa fazer)
+5. ⏳ Fazer commit e push dos workflows
+6. ⏳ Testar CI com um PR
+7. ⏳ Testar deploy da documentação (push para main)
+8. ⏳ Criar primeira release para testar publicação no PyPI
 
 ---
 
@@ -170,16 +198,29 @@ twine check dist/*
 - **Coverage mínimo**: 70% (configurado em `pytest.ini` e no workflow)
 - **Versionamento**: Sempre atualize `pyproject.toml` antes de criar uma release
 - **Documentação**: Atualiza automaticamente a cada push para `main`
-- **PyPI**: Publica automaticamente quando você cria uma release no GitHub
+- **PyPI**: Publica automaticamente quando você cria uma release no GitHub usando **Trusted Publishers** (OIDC)
+- **Segurança**: Não é necessário armazenar tokens do PyPI no GitHub (método moderno e mais seguro)
 
 ---
 
 ## 🔍 Troubleshooting
 
-### Erro: "PYPI_API_TOKEN not found"
+### Erro: "Trusted Publisher authentication failed"
 
-- Verifique se o secret foi adicionado corretamente no GitHub
-- Nome deve ser exatamente `PYPI_API_TOKEN`
+- Verifique se o Pending Publisher foi configurado corretamente no PyPI
+- Confirme que os campos estão **exatamente** como especificado:
+  - Owner: `jor0105`
+  - Repository: `Create-Agents-AI`
+  - Workflow: `publish.yml`
+  - Environment: `release`
+- Certifique-se de que o workflow tem `id-token: write` nas permissões
+
+### Erro: "Environment protection rules not satisfied"
+
+- Se você configurou regras de proteção no environment `release`:
+  - Aprove a publicação manualmente em Actions
+  - Ou aguarde o timer configurado
+- Você pode remover o environment do workflow se não quiser essa proteção
 
 ### Erro: "Package already exists on PyPI"
 
@@ -197,3 +238,18 @@ twine check dist/*
 - Execute localmente: `poetry run pytest -m "not integration and not slow"`
 - Verifique se todas as dependências estão no `pyproject.toml`
 - Verifique se o coverage está acima de 70%
+
+### Alternativa: Usar método antigo com token
+
+Se o Trusted Publisher não funcionar, você pode voltar para o método antigo:
+
+1. Remova a seção `environment` do `publish.yml`
+2. Remova `id-token: write` das permissões
+3. Substitua o step de publicação por:
+   ```yaml
+   - name: Publish to PyPI
+     env:
+       POETRY_PYPI_TOKEN_PYPI: ${{ secrets.PYPI_API_TOKEN }}
+     run: poetry publish --no-interaction
+   ```
+4. Configure o secret `PYPI_API_TOKEN` no GitHub
