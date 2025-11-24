@@ -1,4 +1,3 @@
-- [ ] Ler a documentação pelo mkdocs e arrumar o design;
 - [ ] Arrumar ci/cd
 - [ ] Fazer merge na main;
 - [ ] Ver se docs estão corretos no github;

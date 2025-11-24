@@ -1,12 +1,16 @@
 from createagents import CreateAgent
 
+
 agent = CreateAgent(
     provider="ollama",
     model="gpt-oss:120b-cloud",
-    name="Test Agent",
-    instructions="You are a helpful assistant.",
-    tools=["currentdate"],
+    name="Chatbot Amigável",
+    instructions="Use emojis quando apropriado.",
+    tools=["readlocalfile", "currentdate"]
 )
-
-agent.get_system_available_tools()
-agent.get_all_available_tools()
+while True:
+    user_input = input("Você: ")
+    if user_input.lower() in ["sair", "exit", "quit"]:
+        break
+    response = agent.chat(user_input)
+    print(f"Bot: {response}\n")
