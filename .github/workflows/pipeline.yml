@@ -1,11 +1,11 @@
 ---
-name: Quality Checks
+name: CI - Quality & Tests
 
 on:
   pull_request:
     branches: [develop, main]
   push:
-    branches: [main]
+    branches: [main, develop]
   workflow_dispatch: {}
 
 permissions:
@@ -61,7 +61,7 @@ jobs:
       - name: Security check with bandit
         run: poetry run bandit -r src -ll -q
 
-      - name: Run tests (unit only) with coverage
+      - name: Run tests (excluding integration and slow tests)
         env:
           PYTHONPATH: .
         run: |
