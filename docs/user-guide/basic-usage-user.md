@@ -6,16 +6,21 @@ Aprenda a criar e interagir com agentes de IA rapidamente.
 
 ```python
 from createagents import CreateAgent
-agent = CreateAgent(provider="openai", model="gpt-4", instructions="Você é um assistente útil")
+agent = CreateAgent(
+    provider="openai",
+    model="gpt-4",
+    instructions="Você é um assistente útil"
+)
 ```
 
 ## Conversando
 
 ```python
-response = agent.chat("Olá! Como você está?")
-print(response)
-response = agent.chat("Qual é a capital do Brasil?")
-response = agent.chat("E a população?")
+response1 = agent.chat("Olá! Como você está?")
+response2 = agent.chat("Qual é a capital do Brasil?")
+response3 = agent.chat("E a população?")
+for response in [response1, response2, response3]:
+    print(response)
 ```
 
 ## Configurações
@@ -81,6 +86,7 @@ for name, description in all_tools.items():
 
 ```python
 from createagents import BaseTool
+
 class CalculatorTool(BaseTool):
     name = "calculator"
     description = "Realiza cálculos matemáticos"

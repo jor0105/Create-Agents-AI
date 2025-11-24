@@ -47,8 +47,11 @@ echo "OPENAI_API_KEY=sk-proj-sua-chave" > .env
 ```python
 from createagents import CreateAgent
 
-agent = CreateAgent(provider="openai", model="gpt-4",
-                instructions="Você é um assistente útil")
+agent = CreateAgent(
+    provider="openai",
+    model="gpt-4",
+    instructions="Você é um assistente útil"
+)
 
 response = agent.chat("Olá!")
 print(response)

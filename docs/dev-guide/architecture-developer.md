@@ -159,14 +159,23 @@ class OpenAIChatAdapter(ChatRepository):
 
 ```python
 class ChatAdapterFactory:
-    @staticmethod
-    def create(model: str, local_ai: Optional[str] = None):
-        if local_ai == "ollama":
-            return OllamaChatAdapter(model)
-        elif "gpt" in model.lower():
-            return OpenAIChatAdapter(model)
+    @classmethod
+    def create(
+        cls,
+        provider: str,
+        model: str,
+    ) -> ChatRepository:
+
+        provider_lower = provider.lower()
+        adapter: ChatRepository
+
+        if provider_lower == "openai":
+            adapter = OpenAIChatAdapter()
+        elif provider_lower == "ollama":
+            adapter = OllamaChatAdapter()
         else:
-            return OllamaChatAdapter(model)
+            raise ValueError(f"Invalid provider: {provider}.")
+        return adapter
 ```
 
 ### Facade Pattern
