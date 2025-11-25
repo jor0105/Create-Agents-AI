@@ -214,12 +214,13 @@ class TestLoggingConfig:
         assert isinstance(logger, logging.Logger)
         assert logger.name == "test.module"
 
-    def test_get_logger_configures_if_needed(self):
+    def test_get_logger_does_not_configure_automatically(self):
         assert LoggingConfig._configured is False
 
         logger = LoggingConfig.get_logger("test")
 
-        assert LoggingConfig._configured is True
+        # Should NOT configure automatically anymore
+        assert LoggingConfig._configured is False
         assert isinstance(logger, logging.Logger)
 
     def test_set_level_changes_level(self):
@@ -332,8 +333,8 @@ class TestLoggingConfig:
         logger1 = LoggingConfig.get_logger("module1")
         logger2 = LoggingConfig.get_logger("module2")
 
-        assert logger1.level == logging.WARNING
-        assert logger2.level == logging.WARNING
+        assert logger1.getEffectiveLevel() == logging.WARNING
+        assert logger2.getEffectiveLevel() == logging.WARNING
 
     def test_logger_logs_at_correct_level(self):
         import io
