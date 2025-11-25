@@ -1,4 +1,8 @@
-from createagents import CreateAgent
+from createagents import CreateAgent, LoggingConfig     # type: ignore
+# import logging
+
+
+# LoggingConfig.configure_for_development(level=logging.INFO)
 
 
 agent = CreateAgent(
@@ -6,7 +10,7 @@ agent = CreateAgent(
     model="gpt-oss:120b-cloud",
     name="Chatbot Amigável",
     instructions="Use emojis quando apropriado.",
-    tools=["readlocalfile", "currentdate"]
+    tools=["currentdate"],
 )
 while True:
     user_input = input("Você: ")
