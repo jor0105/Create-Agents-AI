@@ -188,6 +188,15 @@ class LoggingConfig:
         cls._configured = True
 
     @classmethod
+    def configure_for_development(cls, level: int = logging.INFO) -> None:
+        """Helper method to configure logging for development/testing environments.
+
+        This is useful for seeing logs during development, tests, or examples.
+        It enables console logging with sensible defaults.
+        """
+        cls.configure(level=level)
+
+    @classmethod
     def _resolve_log_file_path(cls, log_file_path: Optional[str]) -> str:
         """Resolves and validates the log file path.
 
@@ -228,25 +237,19 @@ class LoggingConfig:
 
     @classmethod
     def get_logger(cls, name: str) -> logging.Logger:
-        """Retrieves a configured logger for the specified module.
+        """Retrieves a logger for the specified module.
+
+        Note: This no longer configures logging automatically.
+        The application using the library is responsible for configuring logging.
 
         Args:
             name: The name of the module (usually `__name__`).
 
         Returns:
-            A configured logger.
+            A standard python logger.
         """
-        if not cls._configured:
-            cls.configure()
-
-        logger = logging.getLogger(name)
-        logger.setLevel(cls._log_level)
-
-        # Se o nível é ERROR, adiciona filtro ao logger
-        if cls._log_level >= logging.ERROR:
-            logger.addFilter(ErrorOnlyFilter())
-
-        return logger
+        # Simply return the logger. Configuration is up to the app.
+        return logging.getLogger(name)
 
     @classmethod
     def set_level(cls, level: int) -> None:

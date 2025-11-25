@@ -181,3 +181,7 @@ metrics.prom
 *.tmp
 *.bak
 *.backup
+
+# User requested ignores
+examples/
+CHECKLIST.md

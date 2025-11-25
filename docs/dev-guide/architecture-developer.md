@@ -246,4 +246,4 @@ agent = CreateAgent(provider="ollama", model="llama2")
 
 ______________________________________________________________________
 
-**Versão:** 0.1.0 | **Atualização:** 21/11/2025
+**Versão:** 0.1.1 | **Atualização:** 25/11/2025

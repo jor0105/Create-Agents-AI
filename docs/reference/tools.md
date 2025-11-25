@@ -344,4 +344,4 @@ R: Sim! Siga o padrão de ferramentas próprias e estenda `BaseTool`.
 
 ______________________________________________________________________
 
-**Última atualização:** 21/11/2025
+**Última atualização:** 25/11/2025

@@ -14,6 +14,23 @@ DEFAULT_TEST_INSTRUCTIONS = "You are a test agent"
 MOCKED_AI_RESPONSE = "Mocked AI response"
 
 
+@pytest.fixture(autouse=True)
+def configure_logging():
+    """Configures logging for all tests."""
+    import logging
+
+    from createagents.infra.config.logging_config import LoggingConfig
+
+    # Configure logging for tests to ensure we can see output if needed
+    # Using DEBUG level by default for tests to catch everything
+    LoggingConfig.configure_for_development(level=logging.DEBUG)
+
+    yield
+
+    # Reset logging after test
+    LoggingConfig.reset()
+
+
 @pytest.fixture
 def mock_chat_repository():
     mock = Mock(spec=ChatRepository)

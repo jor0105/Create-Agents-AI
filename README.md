@@ -53,8 +53,23 @@ ______________________________________________________________________
 - **Histórico Automático**: Gerenciamento de contexto conversacional
 - **Métricas de Performance**: Exportação em JSON e Prometheus
 - **Sanitização de Logs**: Proteção automática de dados sensíveis
+- **Logging Configurável**: Silencioso por padrão, ativável para debug
 - **Ferramentas Customizadas**: Interface `BaseTool` para extensões
 - **Configuração Flexível**: Temperature, max_tokens, top_p, think mode e mais.
+
+### 📝 Logging
+
+A biblioteca é **silenciosa por padrão** (não emite logs). Para ver logs durante o desenvolvimento:
+
+```python
+import logging
+from createagents import LoggingConfig
+
+# Ativar logs para debug
+LoggingConfig.configure_for_development(level=logging.INFO)
+```
+
+📖 [Guia completo de Logging](docs/dev-guide/logging_guide.md)
 
 ______________________________________________________________________
 
@@ -533,8 +548,8 @@ ______________________________________________________________________
 
 <div align="center">
 
-**Versão:** 0.1.0\
-**Última atualização:** 21/11/2025\
+**Versão:** 0.1.1\
+**Última atualização:** 25/11/2025\
 **Status:** 🚀 Projeto publicado! Aberto para contribuições e sugestões.
 
 ⭐ Se este projeto foi útil, considere dar uma estrela no GitHub!
