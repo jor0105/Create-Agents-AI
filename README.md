@@ -549,7 +549,7 @@ ______________________________________________________________________
 <div align="center">
 
 **Versão:** 0.1.1\
-**Última atualização:** 21/11/2025\
+**Última atualização:** 25/11/2025\
 **Status:** 🚀 Projeto publicado! Aberto para contribuições e sugestões.
 
 ⭐ Se este projeto foi útil, considere dar uma estrela no GitHub!
