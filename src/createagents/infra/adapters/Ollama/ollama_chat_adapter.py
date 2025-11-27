@@ -1,4 +1,4 @@
-import subprocess
+import subprocess  # nosec B404 - Only used to call local ollama CLI binary
 import time
 from typing import Any, Dict, List, Optional
 
@@ -6,7 +6,12 @@ from ollama import ChatResponse, chat
 
 from ....application.interfaces import ChatRepository
 from ....domain import BaseTool, ChatException, ToolExecutor
-from ...config import ChatMetrics, EnvironmentConfig, LoggingConfig, retry_with_backoff
+from ...config import (
+    ChatMetrics,
+    EnvironmentConfig,
+    LoggingConfig,
+    retry_with_backoff,
+)
 from .ollama_tool_schema_formatter import OllamaToolSchemaFormatter
 
 
@@ -28,19 +33,25 @@ class OllamaChatAdapter(ChatRepository):
         self.__logger = LoggingConfig.get_logger(__name__)
         self.__metrics: List[ChatMetrics] = []
 
-        self.__host = EnvironmentConfig.get_env("OLLAMA_HOST", "http://localhost:11434")
-        self.__max_retries = int(EnvironmentConfig.get_env("OLLAMA_MAX_RETRIES", "3"))
+        self.__host = EnvironmentConfig.get_env(
+            'OLLAMA_HOST', 'http://localhost:11434'
+        )
+        self.__max_retries = int(
+            EnvironmentConfig.get_env('OLLAMA_MAX_RETRIES', '3')
+        )
         self.__max_tool_iterations = int(
-            EnvironmentConfig.get_env("OLLAMA_MAX_TOOL_ITERATIONS", "100")
+            EnvironmentConfig.get_env('OLLAMA_MAX_TOOL_ITERATIONS', '100')
         )
 
         self.__logger.info(
-            f"Ollama adapter initialized (host: {self.__host}, "
-            f"max_retries: {self.__max_retries}, "
-            f"max_tool_iterations: {self.__max_tool_iterations})"
+            f'Ollama adapter initialized (host: {self.__host}, '
+            f'max_retries: {self.__max_retries}, '
+            f'max_tool_iterations: {self.__max_tool_iterations})'
         )
 
-    @retry_with_backoff(max_attempts=3, initial_delay=1.0, exceptions=(Exception,))
+    @retry_with_backoff(
+        max_attempts=3, initial_delay=1.0, exceptions=(Exception,)
+    )
     def __call_ollama_api(
         self,
         model: str,
@@ -65,19 +76,20 @@ class OllamaChatAdapter(ChatRepository):
         """
         try:
             chat_kwargs: Dict[str, Any] = {
-                "model": model,
-                "messages": messages,
+                'model': model,
+                'messages': messages,
+                'stream': False,  # Ensure non-streaming response to get ChatResponse object
             }
 
             if tools:
-                chat_kwargs["tools"] = tools
+                chat_kwargs['tools'] = tools
             if config:
                 config_copy = config.copy()
-                if "think" in config_copy:
-                    chat_kwargs["think"] = config_copy.pop("think")
-                if "max_tokens" in config_copy:
-                    config_copy["num_predict"] = config_copy.pop("max_tokens")
-                chat_kwargs["options"] = config_copy
+                if 'think' in config_copy:
+                    chat_kwargs['think'] = config_copy.pop('think')
+                if 'max_tokens' in config_copy:
+                    config_copy['num_predict'] = config_copy.pop('max_tokens')
+                chat_kwargs['options'] = config_copy
 
             response_api: ChatResponse = chat(**chat_kwargs)
 
@@ -96,17 +108,19 @@ class OllamaChatAdapter(ChatRepository):
             model: The name of the model to stop.
         """
         try:
-            subprocess.run(
-                ["ollama", "stop", model],
+            subprocess.run(  # nosec B603 B607 - Controlled call to local ollama binary
+                ['ollama', 'stop', model],
                 capture_output=True,
                 timeout=10,
                 check=False,
             )
-            self.__logger.debug(f"Model {model} stopped successfully.")
+            self.__logger.debug(f'Model {model} stopped successfully.')
         except (FileNotFoundError, subprocess.TimeoutExpired) as e:
-            self.__logger.warning(f"Could not stop model {model}: {str(e)}")
+            self.__logger.warning(f'Could not stop model {model}: {str(e)}')
         except Exception as e:
-            self.__logger.warning(f"Error trying to stop model {model}: {str(e)}")
+            self.__logger.warning(
+                f'Error trying to stop model {model}: {str(e)}'
+            )
 
     def chat(
         self,
@@ -143,23 +157,25 @@ class OllamaChatAdapter(ChatRepository):
         start_time = time.time()
 
         try:
-            self.__logger.debug(f"Starting chat with model {model} on Ollama.")
+            self.__logger.debug(f'Starting chat with model {model} on Ollama.')
 
             # Setup tool executor and schemas if tools are provided
             tool_executor = None
             tool_schemas = None
             if tools:
                 tool_executor = ToolExecutor(tools)
-                tool_schemas = OllamaToolSchemaFormatter.format_tools_for_ollama(tools)
+                tool_schemas = (
+                    OllamaToolSchemaFormatter.format_tools_for_ollama(tools)
+                )
                 self.__logger.debug(
-                    f"Tools enabled (native API): {[tool.name for tool in tools]}"
+                    f'Tools enabled (native API): {[tool.name for tool in tools]}'
                 )
 
             messages = []
             if instructions and instructions.strip():
-                messages.append({"role": "system", "content": instructions})
+                messages.append({'role': 'system', 'content': instructions})
             messages.extend(history)
-            messages.append({"role": "user", "content": user_ask})
+            messages.append({'role': 'user', 'content': user_ask})
 
             # Tool calling loop
             iteration = 0
@@ -170,9 +186,11 @@ class OllamaChatAdapter(ChatRepository):
             while iteration < self.__max_tool_iterations:
                 iteration += 1
                 self.__logger.info(
-                    f"Ollama tool calling iteration {iteration}/{self.__max_tool_iterations}"
+                    f'Ollama tool calling iteration {iteration}/{self.__max_tool_iterations}'
                 )
-                self.__logger.debug(f"Current message history size: {len(messages)}")
+                self.__logger.debug(
+                    f'Current message history size: {len(messages)}'
+                )
 
                 # Call Ollama API with tools
                 response_api = self.__call_ollama_api(
@@ -181,21 +199,21 @@ class OllamaChatAdapter(ChatRepository):
 
                 # Check if response contains tool calls (native format)
                 if (
-                    hasattr(response_api.message, "tool_calls")
+                    hasattr(response_api.message, 'tool_calls')
                     and response_api.message.tool_calls
                 ):
                     tool_calls = response_api.message.tool_calls
                     self.__logger.info(
-                        f"Tool calls detected: {len(tool_calls)} tool(s)"
+                        f'Tool calls detected: {len(tool_calls)} tool(s)'
                     )
 
                     # Verify that tools were provided
                     if tool_executor is None:
                         self.__logger.error(
-                            "Tool calls detected but no tools were provided"
+                            'Tool calls detected but no tools were provided'
                         )
                         raise ChatException(
-                            "Tool calls detected but no tools were provided to the agent"
+                            'Tool calls detected but no tools were provided to the agent'
                         )
 
                     # Add assistant message with tool calls to conversation
@@ -220,15 +238,15 @@ class OllamaChatAdapter(ChatRepository):
                         result_text = (
                             str(execution_result.result)
                             if execution_result.success
-                            else f"Error: {execution_result.error}"
+                            else f'Error: {execution_result.error}'
                         )
 
                         # Add tool result to messages (Ollama native format)
                         messages.append(
                             {
-                                "role": "tool",
-                                "tool_name": tool_name,
-                                "content": result_text,
+                                'role': 'tool',
+                                'tool_name': tool_name,
+                                'content': result_text,
                             }
                         )
 
@@ -245,30 +263,32 @@ class OllamaChatAdapter(ChatRepository):
                 if not content:
                     empty_response_count += 1
                     self.__logger.warning(
-                        f"Ollama returned an empty response (count: {empty_response_count}/{max_empty_responses})"
+                        f'Ollama returned an empty response (count: {empty_response_count}/{max_empty_responses})'
                     )
 
                     # If we keep getting empty responses, try to generate a summary
                     if empty_response_count >= max_empty_responses:
                         self.__logger.warning(
-                            "Max empty responses reached. Generating summary from conversation history."
+                            'Max empty responses reached. Generating summary from conversation history.'
                         )
                         # Generate a summary response based on the conversation
-                        summary_prompt = self.__generate_summary_from_tools(messages)
+                        summary_prompt = self.__generate_summary_from_tools(
+                            messages
+                        )
                         if summary_prompt:
                             final_response = summary_prompt
                             break
                         else:
                             raise ChatException(
-                                "Ollama returned multiple empty responses and could not generate summary."
+                                'Ollama returned multiple empty responses and could not generate summary.'
                             )
 
                     # Retry without tool calls - send a simpler prompt
                     retry_messages = messages.copy()
                     retry_messages.append(
                         {
-                            "role": "user",
-                            "content": "Based on the information gathered, please provide a final answer to the original question.",
+                            'role': 'user',
+                            'content': 'Based on the information gathered, please provide a final answer to the original question.',
                         }
                     )
 
@@ -284,7 +304,7 @@ class OllamaChatAdapter(ChatRepository):
                         # If still empty, use the content we have or raise
                         if iteration >= self.__max_tool_iterations - 1:
                             raise ChatException(
-                                "Ollama returned empty responses. Unable to generate final answer."
+                                'Ollama returned empty responses. Unable to generate final answer.'
                             )
                         continue
 
@@ -294,28 +314,31 @@ class OllamaChatAdapter(ChatRepository):
             # Check if we got a final response
             if final_response is None:
                 self.__logger.warning(
-                    f"Max tool iterations ({self.__max_tool_iterations}) reached"
+                    f'Max tool iterations ({self.__max_tool_iterations}) reached'
                 )
                 raise ChatException(
-                    f"Max tool calling iterations ({self.__max_tool_iterations}) exceeded"
+                    f'Max tool calling iterations ({self.__max_tool_iterations}) exceeded'
                 )
 
             # Record metrics
             latency = (time.time() - start_time) * 1000
-            tokens_info = response_api.get("eval_count", None)
+            tokens_info = response_api.get('eval_count', None)
 
             metrics = ChatMetrics(
-                model=model, latency_ms=latency, tokens_used=tokens_info, success=True
+                model=model,
+                latency_ms=latency,
+                tokens_used=tokens_info,
+                success=True,
             )
             self.__metrics.append(metrics)
 
-            self.__logger.info(f"Chat completed: {metrics}")
+            self.__logger.info(f'Chat completed: {metrics}')
             self.__logger.debug(
-                f"Response (first 100 chars): {final_response[:100]}..."
+                f'Response (first 100 chars): {final_response[:100]}...'
             )
 
             self.__logger.debug(
-                f"Response after formatting (first 100 chars): {final_response[:100]}..."
+                f'Response after formatting (first 100 chars): {final_response[:100]}...'
             )
 
             return final_response
@@ -326,7 +349,7 @@ class OllamaChatAdapter(ChatRepository):
                 model=model,
                 latency_ms=latency,
                 success=False,
-                error_message="Ollama chat error",
+                error_message='Ollama chat error',
             )
             self.__metrics.append(metrics)
             raise
@@ -336,14 +359,14 @@ class OllamaChatAdapter(ChatRepository):
                 model=model,
                 latency_ms=latency,
                 success=False,
-                error_message=f"Missing key: {str(e)}",
+                error_message=f'Missing key: {str(e)}',
             )
             self.__metrics.append(metrics)
             self.__logger.error(
-                f"The Ollama response has an invalid format. Missing key: {str(e)}"
+                f'The Ollama response has an invalid format. Missing key: {str(e)}'
             )
             raise ChatException(
-                f"The Ollama response has an invalid format. Missing key: {str(e)}",
+                f'The Ollama response has an invalid format. Missing key: {str(e)}',
                 original_error=e,
             )
         except TypeError as e:
@@ -352,27 +375,30 @@ class OllamaChatAdapter(ChatRepository):
                 model=model,
                 latency_ms=latency,
                 success=False,
-                error_message=f"Type error: {str(e)}",
+                error_message=f'Type error: {str(e)}',
             )
             self.__metrics.append(metrics)
             self.__logger.error(
-                f"A type error occurred while processing the Ollama response: {str(e)}"
+                f'A type error occurred while processing the Ollama response: {str(e)}'
             )
             raise ChatException(
-                f"A type error occurred while processing the Ollama response: {str(e)}",
+                f'A type error occurred while processing the Ollama response: {str(e)}',
                 original_error=e,
             )
         except Exception as e:
             latency = (time.time() - start_time) * 1000
             metrics = ChatMetrics(
-                model=model, latency_ms=latency, success=False, error_message=str(e)
+                model=model,
+                latency_ms=latency,
+                success=False,
+                error_message=str(e),
             )
             self.__metrics.append(metrics)
             self.__logger.error(
-                f"An error occurred while communicating with Ollama: {str(e)}"
+                f'An error occurred while communicating with Ollama: {str(e)}'
             )
             raise ChatException(
-                f"An error occurred while communicating with Ollama: {str(e)}",
+                f'An error occurred while communicating with Ollama: {str(e)}',
                 original_error=e,
             )
         finally:
@@ -389,25 +415,27 @@ class OllamaChatAdapter(ChatRepository):
         try:
             tool_results = []
             for msg in messages:
-                if msg.get("role") == "tool":
-                    tool_name = msg.get("tool_name", "unknown")
-                    content = msg.get("content", "")
+                if msg.get('role') == 'tool':
+                    tool_name = msg.get('tool_name', 'unknown')
+                    content = msg.get('content', '')
                     if content:
-                        tool_results.append(f"From {tool_name}: {content[:500]}")
+                        tool_results.append(
+                            f'From {tool_name}: {content[:500]}'
+                        )
 
             if not tool_results:
                 return None
 
             # Create a summary based on gathered tool results
-            summary = "Based on the gathered information:\n\n" + "\n\n".join(
+            summary = 'Based on the gathered information:\n\n' + '\n\n'.join(
                 tool_results[:3]
             )
             self.__logger.info(
-                f"Generated summary from {len(tool_results)} tool result(s)"
+                f'Generated summary from {len(tool_results)} tool result(s)'
             )
             return summary
         except Exception as e:
-            self.__logger.error(f"Error generating summary: {str(e)}")
+            self.__logger.error(f'Error generating summary: {str(e)}')
             return None
 
     def get_metrics(self) -> List[ChatMetrics]:

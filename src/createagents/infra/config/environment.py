@@ -12,12 +12,12 @@ class EnvironmentConfig:
     safety in multi-threaded environments.
     """
 
-    _instance: Optional["EnvironmentConfig"] = None
+    _instance: Optional['EnvironmentConfig'] = None
     _initialized: bool = False
     _cache: Dict[str, str] = {}
     _lock: threading.Lock = threading.Lock()
 
-    def __new__(cls) -> "EnvironmentConfig":
+    def __new__(cls) -> 'EnvironmentConfig':
         """Implements the singleton pattern with thread-safety."""
         if cls._instance is None:
             with cls._lock:
@@ -63,7 +63,7 @@ class EnvironmentConfig:
             if not api_key or not api_key.strip():
                 raise EnvironmentError(
                     f"The environment variable '{key}' was not found or is empty. "
-                    "Ensure it is defined in the .env file."
+                    'Ensure it is defined in the .env file.'
                 )
 
             api_key = api_key.strip()

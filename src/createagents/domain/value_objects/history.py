@@ -24,11 +24,15 @@ class History:
 
     def __post_init__(self) -> None:
         if not isinstance(self.max_size, int) or self.max_size <= 0:
-            raise ValueError("The history's max size must be greater than zero.")
+            raise ValueError(
+                "The history's max size must be greater than zero."
+            )
 
         messages = list(self._messages) if self._messages else []
-        object.__setattr__(self, "_messages", deque(messages, maxlen=self.max_size))
-        object.__setattr__(self, "_lock", Lock())
+        object.__setattr__(
+            self, '_messages', deque(messages, maxlen=self.max_size)
+        )
+        object.__setattr__(self, '_lock', Lock())
 
     def add(self, message: Message) -> None:
         """
@@ -39,7 +43,7 @@ class History:
             message: The message to be added.
         """
         if not isinstance(message, Message):
-            raise TypeError("Only Message objects can be added.")
+            raise TypeError('Only Message objects can be added.')
 
         with self._lock:
             self._messages.append(message)
@@ -110,7 +114,9 @@ class History:
             return [message.to_dict() for message in self._messages]
 
     @classmethod
-    def from_dict_list(cls, data: List[Dict[str, str]], max_size: int) -> "History":
+    def from_dict_list(
+        cls, data: List[Dict[str, str]], max_size: int
+    ) -> 'History':
         """
         Creates a History instance from a list of dictionaries.
 

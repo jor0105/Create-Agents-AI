@@ -19,7 +19,7 @@ class GetAllAvailableToolsUseCase:
         Returns:
             Dict[str, str]: Dictionary mapping all tool names to descriptions.
         """
-        self.__logger.debug("Retrieving all available tools (system + agent).")
+        self.__logger.debug('Retrieving all available tools (system + agent).')
         all_tools: Dict[str, str] = AvailableTools.get_all_available_tools()
-        self.__logger.info(f"Retrieved {len(all_tools)} total tool(s).")
+        self.__logger.info(f'Retrieved {len(all_tools)} total tool(s).')
         return all_tools

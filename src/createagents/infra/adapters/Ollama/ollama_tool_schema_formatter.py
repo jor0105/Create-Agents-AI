@@ -62,7 +62,7 @@ class OllamaToolSchemaFormatter:
             ]
         """
         if not tools:
-            OllamaToolSchemaFormatter._logger.debug("No tools to format")
+            OllamaToolSchemaFormatter._logger.debug('No tools to format')
             return []
 
         formatted_tools = []
@@ -72,11 +72,11 @@ class OllamaToolSchemaFormatter:
 
                 # Convert to Ollama's native format
                 ollama_tool = {
-                    "type": "function",
-                    "function": {
-                        "name": schema["name"],
-                        "description": schema["description"],
-                        "parameters": schema["parameters"],
+                    'type': 'function',
+                    'function': {
+                        'name': schema['name'],
+                        'description': schema['description'],
+                        'parameters': schema['parameters'],
                     },
                 }
 
@@ -86,11 +86,12 @@ class OllamaToolSchemaFormatter:
                 )
             except Exception as e:
                 OllamaToolSchemaFormatter._logger.error(
-                    f"Error formatting tool {tool.name}: {str(e)}", exc_info=True
+                    f'Error formatting tool {tool.name}: {str(e)}',
+                    exc_info=True,
                 )
                 continue
 
         OllamaToolSchemaFormatter._logger.info(
-            f"Formatted {len(formatted_tools)} tool(s) for Ollama native API"
+            f'Formatted {len(formatted_tools)} tool(s) for Ollama native API'
         )
         return formatted_tools

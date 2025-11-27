@@ -30,26 +30,26 @@ class ReadLocalFileTool(BaseTool):
     Supports formats: txt, csv, excel (xls/xlsx), pdf, parquet, and common text files.
     """
 
-    name = "readlocalfile"
+    name = 'readlocalfile'
     description = """Use this tool to read local files from the system.
     Supports text files (txt, md, py, etc.), CSV, Excel, PDF and Parquet formats.
     The tool validates file size in tokens to prevent overload.
     Input must include the absolute or relative file path and optionally the maximum number of tokens allowed (default: 30000).
     """
     parameters: Dict[str, Any] = {
-        "type": "object",
-        "properties": {
-            "path": {
-                "type": "string",
-                "description": "Absolute or relative path to the file to read.",
+        'type': 'object',
+        'properties': {
+            'path': {
+                'type': 'string',
+                'description': 'Absolute or relative path to the file to read.',
             },
-            "max_tokens": {
-                "type": "integer",
-                "description": "Maximum number of tokens allowed in the file content. Files exceeding this limit will be rejected.",
-                "default": 30000,
+            'max_tokens': {
+                'type': 'integer',
+                'description': 'Maximum number of tokens allowed in the file content. Files exceeding this limit will be rejected.',
+                'default': 30000,
             },
         },
-        "required": ["path", "max_tokens"],
+        'required': ['path', 'max_tokens'],
     }
 
     MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_BYTES
@@ -62,9 +62,9 @@ class ReadLocalFileTool(BaseTool):
         """
         if not DEPENDENCIES_AVAILABLE:
             raise RuntimeError(
-                "ReadLocalFileTool requires optional dependencies. "
-                "Install with: pip install ai-agent[file-tools] or poetry install -E file-tools\n"
-                f"Missing dependencies error: {IMPORT_ERROR}"
+                'ReadLocalFileTool requires optional dependencies. '
+                'Install with: pip install ai-agent[file-tools] or poetry install -E file-tools\n'
+                f'Missing dependencies error: {IMPORT_ERROR}'
             )
 
         self.__logger = LoggingConfig.get_logger(__name__)
@@ -99,10 +99,10 @@ class ReadLocalFileTool(BaseTool):
             file_path = Path(path).resolve()
 
             if not file_path.exists():
-                return self.__format_error("File not found", path)
+                return self.__format_error('File not found', path)
 
             if not file_path.is_file():
-                return self.__format_error("Path is a directory", path)
+                return self.__format_error('Path is a directory', path)
 
             # Validation: File size check (before reading)
             file_size = file_path.stat().st_size
@@ -110,25 +110,25 @@ class ReadLocalFileTool(BaseTool):
                 size_mb = file_size / (1024 * 1024)
                 max_mb = self.MAX_FILE_SIZE_BYTES / (1024 * 1024)
                 return self.__format_error(
-                    "File too large",
-                    f"{path} is {size_mb:.2f} MB (max: {max_mb:.2f} MB)",
+                    'File too large',
+                    f'{path} is {size_mb:.2f} MB (max: {max_mb:.2f} MB)',
                 )
 
             # Determine file type and read content
-            extension = file_path.suffix.lstrip(".").lower() or "txt"
-            self.__logger.debug(f"Processing file as type: {extension}")
+            extension = file_path.suffix.lstrip('.').lower() or 'txt'
+            self.__logger.debug(f'Processing file as type: {extension}')
 
             file_type = determine_file_type(extension)
             content = read_file_by_type(file_path, file_type)
 
             token_count = count_tokens(content, self.__encoding)
-            self.__logger.debug(f"File content has {token_count} tokens")
+            self.__logger.debug(f'File content has {token_count} tokens')
 
             if token_count > max_tokens:
                 return self.__format_error(
-                    "Content exceeds token limit",
-                    f"{path} has {token_count} tokens (max: {max_tokens}). "
-                    f"Consider increasing max_tokens or processing in chunks",
+                    'Content exceeds token limit',
+                    f'{path} has {token_count} tokens (max: {max_tokens}). '
+                    f'Consider increasing max_tokens or processing in chunks',
                 )
 
             self.__logger.info(
@@ -137,18 +137,16 @@ class ReadLocalFileTool(BaseTool):
             return content
 
         except FileNotFoundError:
-            return self.__format_error("File not found", path)
+            return self.__format_error('File not found', path)
 
         except FileReadException as e:
-            return self.__format_error("File read error", e.message)
+            return self.__format_error('File read error', e.message)
 
         except PermissionError:
-            return self.__format_error("Permission denied", path)
+            return self.__format_error('Permission denied', path)
 
         except Exception as e:
-            error_msg = (
-                f"[ReadLocalFileTool Error] Unexpected error: {type(e).__name__}: {e}"
-            )
+            error_msg = f'[ReadLocalFileTool Error] Unexpected error: {type(e).__name__}: {e}'
             self.__logger.error(error_msg, exc_info=True)
             return error_msg
 
@@ -162,6 +160,6 @@ class ReadLocalFileTool(BaseTool):
         Returns:
             Formatted error message string.
         """
-        error_msg = f"[ReadLocalFileTool Error] {error_type}: {details}"
+        error_msg = f'[ReadLocalFileTool Error] {error_type}: {details}'
         self.__logger.error(error_msg)
         return error_msg

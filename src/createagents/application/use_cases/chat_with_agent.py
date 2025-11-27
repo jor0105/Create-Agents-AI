@@ -38,7 +38,7 @@ class ChatWithAgentUseCase:
         self.__logger.info(
             "Running chat with agent '%s' (model: %s)", agent.name, agent.model
         )
-        self.__logger.debug("User message: %s...", input_dto.message[:100])
+        self.__logger.debug('User message: %s...', input_dto.message[:100])
 
         try:
             response = self.__chat_repository.chat(
@@ -50,46 +50,52 @@ class ChatWithAgentUseCase:
                 user_ask=input_dto.message,
             )
 
-            final_response = TextSanitizer.format_markdown_for_terminal(response)
+            final_response = TextSanitizer.format_markdown_for_terminal(
+                response
+            )
 
             if not final_response:
-                self.__logger.error("Empty response received from repository")
-                raise ChatException("Empty response received from repository")
+                self.__logger.error('Empty response received from repository')
+                raise ChatException('Empty response received from repository')
 
             output_dto = ChatOutputDTO(response=final_response)
 
             agent.add_user_message(input_dto.message)
             agent.add_assistant_message(final_response)
 
-            self.__logger.info("Chat executed successfully")
+            self.__logger.info('Chat executed successfully')
             self.__logger.debug(
-                "Response (first 100 chars): %s...", final_response[:100]
+                'Response (first 100 chars): %s...', final_response[:100]
             )
 
             return output_dto
 
         except ChatException:
-            self.__logger.error("ChatException during chat execution", exc_info=True)
+            self.__logger.error(
+                'ChatException during chat execution', exc_info=True
+            )
             raise
         except (ValueError, TypeError, KeyError) as e:
             error_map = {
                 ValueError: (
-                    "Validation error",
-                    "Validation error during chat: {}",
+                    'Validation error',
+                    'Validation error during chat: {}',
                 ),
-                TypeError: ("Type error", "Type error during chat: {}"),
+                TypeError: ('Type error', 'Type error during chat: {}'),
                 KeyError: (
-                    "Error processing response",
-                    "Error processing AI response: {}",
+                    'Error processing response',
+                    'Error processing AI response: {}',
                 ),
             }
-            msg, user_msg = error_map.get(type(e), ("Error", "Error during chat: {}"))
-            self.__logger.error("%s: %s", msg, str(e), exc_info=True)
+            msg, user_msg = error_map.get(
+                type(e), ('Error', 'Error during chat: {}')
+            )
+            self.__logger.error('%s: %s', msg, str(e), exc_info=True)
             raise ChatException(user_msg.format(str(e)))
         except Exception as e:
-            self.__logger.error("Unexpected error: %s", str(e), exc_info=True)
+            self.__logger.error('Unexpected error: %s', str(e), exc_info=True)
             raise ChatException(
-                f"Unexpected error during communication with AI: {str(e)}",
+                f'Unexpected error during communication with AI: {str(e)}',
                 original_error=e,
             )
 
@@ -100,7 +106,7 @@ class ChatWithAgentUseCase:
         Returns:
             A list of metrics if the repository supports it; otherwise, an empty list.
         """
-        if hasattr(self.__chat_repository, "get_metrics"):
+        if hasattr(self.__chat_repository, 'get_metrics'):
             metrics = self.__chat_repository.get_metrics()
             if isinstance(metrics, list):
                 return metrics

@@ -6,10 +6,10 @@ from typing import Dict
 class MessageRole(str, Enum):
     """Enum to define possible roles in a message."""
 
-    SYSTEM = "system"
-    USER = "user"
-    ASSISTANT = "assistant"
-    TOOL = "tool"  # For tool execution results
+    SYSTEM = 'system'
+    USER = 'user'
+    ASSISTANT = 'assistant'
+    TOOL = 'tool'  # For tool execution results
 
     def __str__(self) -> str:
         return self.value
@@ -31,7 +31,7 @@ class Message:
             raise ValueError("The 'role' must be an instance of MessageRole.")
 
         if not self.content or not self.content.strip():
-            raise ValueError("The message content cannot be empty.")
+            raise ValueError('The message content cannot be empty.')
 
     def to_dict(self) -> Dict[str, str]:
         """
@@ -40,10 +40,10 @@ class Message:
         Returns:
             A dictionary with the role and content.
         """
-        return {"role": self.role.value, "content": self.content}
+        return {'role': self.role.value, 'content': self.content}
 
     @classmethod
-    def from_dict(cls, data: Dict[str, str]) -> "Message":
+    def from_dict(cls, data: Dict[str, str]) -> 'Message':
         """
         Creates a Message instance from a dictionary.
 
@@ -56,14 +56,16 @@ class Message:
         Raises:
             ValueError: If the dictionary does not contain the required fields.
         """
-        if "role" not in data or "content" not in data:
-            raise ValueError("The dictionary must contain 'role' and 'content'.")
+        if 'role' not in data or 'content' not in data:
+            raise ValueError(
+                "The dictionary must contain 'role' and 'content'."
+            )
 
         try:
-            role = MessageRole(data["role"])
+            role = MessageRole(data['role'])
         except ValueError:
             raise ValueError(
                 f"Invalid role: '{data['role']}'. Valid values are: {[r.value for r in MessageRole]}"
             )
 
-        return cls(role=role, content=data["content"])
+        return cls(role=role, content=data['content'])

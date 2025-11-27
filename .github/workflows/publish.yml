@@ -8,12 +8,51 @@ on:
 
 permissions:
   contents: read
-  id-token: write  # IMPORTANT: required for trusted publishing
+  id-token: write # IMPORTANT: required for trusted publishing
 
 jobs:
+  # --------------------------------------------------------------------------
+  # Security Scan before Publishing
+  # --------------------------------------------------------------------------
+  security-scan:
+    name: Security scan before release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          version: 2.2.1
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+
+      - name: Install dependencies
+        run: poetry install --no-interaction --no-ansi --with dev
+
+      - name: Security analysis with Bandit
+        run: |
+          poetry run bandit -c pyproject.toml -r src -ll
+          echo "✅ Security analysis passed"
+
+      - name: Check for vulnerable dependencies
+        run: |
+          poetry run pip-audit
+          echo "✅ No vulnerable dependencies in release"
+
+  # --------------------------------------------------------------------------
+  # Build and Publish
+  # --------------------------------------------------------------------------
   publish:
     name: Build and publish to PyPI
     runs-on: ubuntu-latest
+    needs: security-scan # Only publish if security checks pass
     environment:
       name: release
       url: https://pypi.org/project/createagents/
@@ -41,8 +80,8 @@ jobs:
 
       - name: Check package distribution
         run: |
-          pip install twine
-          twine check dist/*
+          poetry run pip install twine
+          poetry run twine check dist/*
 
       - name: Publish to PyPI using Trusted Publishers
         uses: pypa/gh-action-pypi-publish@release/v1

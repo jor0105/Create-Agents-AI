@@ -36,14 +36,14 @@ def _lazy_import(module_name: str, package_name: str):
     except ImportError as e:
         error_msg = (
             f"'{module_name}' is required for this operation. "
-            f"Install it with: pip install ai-agent[file-tools] "
-            f"or poetry install -E file-tools"
+            f'Install it with: pip install ai-agent[file-tools] '
+            f'or poetry install -E file-tools'
         )
         logger.error(error_msg)
         raise RuntimeError(error_msg) from e
 
 
-def initialize_tiktoken() -> "tiktoken.Encoding":
+def initialize_tiktoken() -> 'tiktoken.Encoding':
     """Initialize the tiktoken encoder for token counting.
 
     Returns:
@@ -56,20 +56,20 @@ def initialize_tiktoken() -> "tiktoken.Encoding":
         import tiktoken
 
         encoding = tiktoken.get_encoding(TIKTOKEN_ENCODING)
-        logger.debug(f"Initialized tiktoken encoder: {TIKTOKEN_ENCODING}")
+        logger.debug(f'Initialized tiktoken encoder: {TIKTOKEN_ENCODING}')
         return encoding
     except ImportError as e:
         raise RuntimeError(
-            "tiktoken is required for token counting. "
-            "Install with: pip install ai-agent[file-tools]"
+            'tiktoken is required for token counting. '
+            'Install with: pip install ai-agent[file-tools]'
         ) from e
     except Exception as e:
-        error_msg = f"Failed to initialize tiktoken encoder: {e}"
+        error_msg = f'Failed to initialize tiktoken encoder: {e}'
         logger.error(error_msg)
         raise RuntimeError(error_msg) from e
 
 
-def count_tokens(text: str, encoding: "tiktoken.Encoding") -> int:
+def count_tokens(text: str, encoding: 'tiktoken.Encoding') -> int:
     """Count the number of tokens in the given text.
 
     Args:
@@ -82,7 +82,7 @@ def count_tokens(text: str, encoding: "tiktoken.Encoding") -> int:
     try:
         return len(encoding.encode(text))
     except Exception as e:
-        logger.error(f"Error counting tokens: {e}")
+        logger.error(f'Error counting tokens: {e}')
         # Fallback to character-based estimation (rough approximation: ~4 chars per token)
         return len(text) // 4
 
@@ -100,31 +100,33 @@ def detect_encoding(file_path: Path) -> str:
         import chardet
 
         try:
-            with open(file_path, "rb") as file:
+            with open(file_path, 'rb') as file:
                 raw_data = file.read(100000)  # Read first 100KB for detection
                 result = chardet.detect(raw_data)
-                detected_encoding = result.get("encoding", "utf-8")
-                confidence = result.get("confidence", 0)
+                detected_encoding = result.get('encoding', 'utf-8')
+                confidence = result.get('confidence', 0)
 
                 logger.debug(
-                    f"Detected encoding: {detected_encoding} (confidence: {confidence:.2f})"
+                    f'Detected encoding: {detected_encoding} (confidence: {confidence:.2f})'
                 )
 
                 # If confidence is low, fallback to utf-8
                 if confidence < 0.7:
                     logger.warning(
-                        f"Low confidence ({confidence:.2f}) in detected encoding, trying common encodings"
+                        f'Low confidence ({confidence:.2f}) in detected encoding, trying common encodings'
                     )
-                    return "utf-8"
+                    return 'utf-8'
 
-                return detected_encoding or "utf-8"
+                return detected_encoding or 'utf-8'
         except Exception as e:
-            logger.warning(f"Encoding detection failed: {e}, using utf-8")
-            return "utf-8"
+            logger.warning(f'Encoding detection failed: {e}, using utf-8')
+            return 'utf-8'
 
     except ImportError:
-        logger.warning("chardet not available, using utf-8 as default encoding")
-        return "utf-8"
+        logger.warning(
+            'chardet not available, using utf-8 as default encoding'
+        )
+        return 'utf-8'
 
 
 def read_text_file(file_path: Path) -> str:
@@ -149,22 +151,24 @@ def read_text_file(file_path: Path) -> str:
     last_error: Optional[Exception] = None
     for encoding in encodings_to_try:
         try:
-            content = file_path.read_text(encoding=encoding, errors="strict")
-            logger.debug(f"Successfully read file with encoding: {encoding}")
+            content = file_path.read_text(encoding=encoding, errors='strict')
+            logger.debug(f'Successfully read file with encoding: {encoding}')
             return content
         except (UnicodeDecodeError, LookupError) as e:
             last_error = e
-            logger.debug(f"Failed to read with {encoding}: {e}")
+            logger.debug(f'Failed to read with {encoding}: {e}')
             continue
 
     # If all encodings fail, try UTF-8 with error replacement
     try:
-        content = file_path.read_text(encoding="utf-8", errors="replace")
-        logger.warning("All encodings failed, using UTF-8 with character replacement")
+        content = file_path.read_text(encoding='utf-8', errors='replace')
+        logger.warning(
+            'All encodings failed, using UTF-8 with character replacement'
+        )
         return content
     except Exception:
         raise UnicodeDecodeError(
-            "unknown", b"", 0, 0, f"Failed to decode file: {last_error}"
+            'unknown', b'', 0, 0, f'Failed to decode file: {last_error}'
         )
 
 
@@ -185,8 +189,8 @@ def read_csv_file(file_path: Path) -> str:
         import pandas as pd
     except ImportError as e:
         raise RuntimeError(
-            "pandas is required for CSV reading. "
-            "Install with: pip install ai-agent[file-tools]"
+            'pandas is required for CSV reading. '
+            'Install with: pip install ai-agent[file-tools]'
         ) from e
 
     # Try detected encoding first
@@ -197,7 +201,7 @@ def read_csv_file(file_path: Path) -> str:
     ]
 
     # Common CSV delimiters to try
-    delimiters = [",", ";", "\t", "|"]
+    delimiters = [',', ';', '\t', '|']
 
     last_error: Optional[Exception] = None
 
@@ -209,13 +213,13 @@ def read_csv_file(file_path: Path) -> str:
                     file_path,
                     encoding=encoding,
                     sep=delimiter,
-                    on_bad_lines="skip",  # Skip malformed lines
-                    engine="python",  # More flexible parser
+                    on_bad_lines='skip',  # Skip malformed lines
+                    engine='python',  # More flexible parser
                 )
 
                 if not df.empty:
                     logger.debug(
-                        f"Read CSV file with encoding {encoding}, "
+                        f'Read CSV file with encoding {encoding}, '
                         f"delimiter '{delimiter}', shape: {df.shape}"
                     )
                     result: str = df.to_string(index=False)
@@ -234,21 +238,21 @@ def read_csv_file(file_path: Path) -> str:
     try:
         df = pd.read_csv(
             file_path,
-            encoding="utf-8",
-            encoding_errors="replace",
-            on_bad_lines="skip",
-            engine="python",
+            encoding='utf-8',
+            encoding_errors='replace',
+            on_bad_lines='skip',
+            engine='python',
         )
         logger.warning(
-            "All encodings/delimiters failed for CSV, "
-            "using UTF-8 with character replacement and skipping bad lines"
+            'All encodings/delimiters failed for CSV, '
+            'using UTF-8 with character replacement and skipping bad lines'
         )
         result = df.to_string(index=False)
         return result
     except Exception:
         raise FileReadException(
             str(file_path),
-            f"Failed to read CSV with any strategy. Last error: {last_error}",
+            f'Failed to read CSV with any strategy. Last error: {last_error}',
         )
 
 
@@ -272,37 +276,39 @@ def read_excel_file(file_path: Path) -> str:
         import pandas as pd
     except ImportError as e:
         raise RuntimeError(
-            "pandas is required for Excel reading. "
-            "Install with: pip install ai-agent[file-tools]"
+            'pandas is required for Excel reading. '
+            'Install with: pip install ai-agent[file-tools]'
         ) from e
 
     # Determine which engine to try based on file extension
     extension = file_path.suffix.lower()
     engines_to_try = []
 
-    if extension == ".xlsx":
-        engines_to_try = ["openpyxl", "xlrd"]
-    elif extension in [".xls", ".xlsm"]:
-        engines_to_try = ["xlrd", "openpyxl"]
+    if extension == '.xlsx':
+        engines_to_try = ['openpyxl', 'xlrd']
+    elif extension in ['.xls', '.xlsm']:
+        engines_to_try = ['xlrd', 'openpyxl']
     else:
-        engines_to_try = ["openpyxl", "xlrd"]
+        engines_to_try = ['openpyxl', 'xlrd']
 
     last_error: Optional[Exception] = None
 
     for engine in engines_to_try:
         try:
             df = pd.read_excel(file_path, sheet_name=0, engine=engine)
-            logger.debug(f"Read Excel file with engine {engine}, shape: {df.shape}")
+            logger.debug(
+                f'Read Excel file with engine {engine}, shape: {df.shape}'
+            )
             result: str = df.to_string(index=False)
             return result
         except Exception as e:
             last_error = e
-            logger.debug(f"Failed to read Excel with engine {engine}: {e}")
+            logger.debug(f'Failed to read Excel with engine {engine}: {e}')
             continue
 
     raise FileReadException(
         str(file_path),
-        f"Failed to read Excel file with any engine. Last error: {last_error}",
+        f'Failed to read Excel file with any engine. Last error: {last_error}',
     )
 
 
@@ -326,27 +332,29 @@ def read_parquet_file(file_path: Path) -> str:
         import pandas as pd
     except ImportError as e:
         raise RuntimeError(
-            "pandas is required for Parquet reading. "
-            "Install with: pip install ai-agent[file-tools]"
+            'pandas is required for Parquet reading. '
+            'Install with: pip install ai-agent[file-tools]'
         ) from e
 
-    engines_to_try = ["pyarrow", "fastparquet"]
+    engines_to_try = ['pyarrow', 'fastparquet']
     last_error: Optional[Exception] = None
 
     for engine in engines_to_try:
         try:
             df = pd.read_parquet(file_path, engine=engine)
-            logger.debug(f"Read Parquet file with engine {engine}, shape: {df.shape}")
+            logger.debug(
+                f'Read Parquet file with engine {engine}, shape: {df.shape}'
+            )
             result: str = df.to_string(index=False)
             return result
         except Exception as e:
             last_error = e
-            logger.debug(f"Failed to read Parquet with engine {engine}: {e}")
+            logger.debug(f'Failed to read Parquet with engine {engine}: {e}')
             continue
 
     raise FileReadException(
         str(file_path),
-        f"Failed to read Parquet file with any engine. Last error: {last_error}",
+        f'Failed to read Parquet file with any engine. Last error: {last_error}',
     )
 
 
@@ -371,12 +379,12 @@ def read_pdf_file(file_path: Path) -> str:
         from unstructured.partition.pdf import partition_pdf
     except ImportError as e:
         raise RuntimeError(
-            "unstructured is required for PDF reading. "
-            "Install with: pip install ai-agent[file-tools]"
+            'unstructured is required for PDF reading. '
+            'Install with: pip install ai-agent[file-tools]'
         ) from e
 
     try:
-        logger.debug(f"Reading PDF file: {file_path}")
+        logger.debug(f'Reading PDF file: {file_path}')
 
         # partition_pdf automatically handles:
         # - Text extraction from native PDFs
@@ -385,12 +393,14 @@ def read_pdf_file(file_path: Path) -> str:
         # - Tables, images, and other structured content
         elements = partition_pdf(
             filename=str(file_path),
-            strategy="auto",  # Automatically chooses best strategy (fast, hi_res, ocr_only)
+            strategy='auto',  # Automatically chooses best strategy (fast, hi_res, ocr_only)
             infer_table_structure=True,  # Extract tables as structured data
         )
 
         if not elements:
-            raise FileReadException(str(file_path), "No readable content found in PDF")
+            raise FileReadException(
+                str(file_path), 'No readable content found in PDF'
+            )
 
         # Combine all extracted text elements
         content_parts: list[str] = []
@@ -400,8 +410,8 @@ def read_pdf_file(file_path: Path) -> str:
         for element in elements:
             # Group content by page if metadata is available
             element_page = (
-                getattr(element.metadata, "page_number", None)
-                if hasattr(element, "metadata")
+                getattr(element.metadata, 'page_number', None)
+                if hasattr(element, 'metadata')
                 else None
             )
 
@@ -409,7 +419,8 @@ def read_pdf_file(file_path: Path) -> str:
                 # Save previous page content
                 if page_content:
                     content_parts.append(
-                        f"--- Page {current_page} ---\n" + "\n".join(page_content)
+                        f'--- Page {current_page} ---\n'
+                        + '\n'.join(page_content)
                     )
                     page_content = []
                 current_page = element_page
@@ -422,13 +433,15 @@ def read_pdf_file(file_path: Path) -> str:
         if page_content:
             if current_page is not None:
                 content_parts.append(
-                    f"--- Page {current_page} ---\n" + "\n".join(page_content)
+                    f'--- Page {current_page} ---\n' + '\n'.join(page_content)
                 )
             else:
                 content_parts.extend(page_content)
 
-        result = "\n\n".join(content_parts)
-        logger.debug(f"Successfully extracted {len(elements)} elements from PDF")
+        result = '\n\n'.join(content_parts)
+        logger.debug(
+            f'Successfully extracted {len(elements)} elements from PDF'
+        )
         return result
 
     except FileReadException:
@@ -436,7 +449,7 @@ def read_pdf_file(file_path: Path) -> str:
     except Exception as e:
         raise FileReadException(
             str(file_path),
-            f"PDF processing failed: {type(e).__name__}: {e}",
+            f'PDF processing failed: {type(e).__name__}: {e}',
         )
 
 
@@ -460,31 +473,35 @@ def read_document_file(file_path: Path) -> str:
         from unstructured.partition.auto import partition
     except ImportError as e:
         raise RuntimeError(
-            "unstructured is required for document reading. "
-            "Install with: pip install ai-agent[file-tools]"
+            'unstructured is required for document reading. '
+            'Install with: pip install ai-agent[file-tools]'
         ) from e
 
     try:
-        logger.debug(f"Reading document file: {file_path}")
+        logger.debug(f'Reading document file: {file_path}')
 
         # partition automatically detects file type and uses appropriate parser
         elements = partition(
             filename=str(file_path),
-            strategy="auto",
+            strategy='auto',
             infer_table_structure=True,
         )
 
         if not elements:
             raise FileReadException(
-                str(file_path), "No readable content found in document"
+                str(file_path), 'No readable content found in document'
             )
 
         content_parts = [
-            str(element).strip() for element in elements if str(element).strip()
+            str(element).strip()
+            for element in elements
+            if str(element).strip()
         ]
 
-        result = "\n\n".join(content_parts)
-        logger.debug(f"Successfully extracted {len(elements)} elements from document")
+        result = '\n\n'.join(content_parts)
+        logger.debug(
+            f'Successfully extracted {len(elements)} elements from document'
+        )
         return result
 
     except FileReadException:
@@ -492,7 +509,7 @@ def read_document_file(file_path: Path) -> str:
     except Exception as e:
         raise FileReadException(
             str(file_path),
-            f"Document processing failed: {type(e).__name__}: {e}",
+            f'Document processing failed: {type(e).__name__}: {e}',
         )
 
 
@@ -507,13 +524,13 @@ def determine_file_type(extension: str) -> FileType:
     """
     if extension in TEXT_EXTENSIONS:
         return FileType.TEXT
-    elif extension == "csv":
+    elif extension == 'csv':
         return FileType.CSV
     elif extension in EXCEL_EXTENSIONS:
         return FileType.EXCEL
-    elif extension == "pdf":
+    elif extension == 'pdf':
         return FileType.PDF
-    elif extension == "parquet":
+    elif extension == 'parquet':
         return FileType.PARQUET
     elif extension in DOCUMENT_EXTENSIONS:
         return FileType.DOCUMENT
@@ -552,18 +569,18 @@ def read_file_by_type(file_path: Path, file_type: FileType) -> str:
             try:
                 content = read_text_file(file_path)
                 logger.warning(
-                    f"Unknown file type, successfully read as text: {file_path.suffix}"
+                    f'Unknown file type, successfully read as text: {file_path.suffix}'
                 )
                 return content
             except UnicodeDecodeError as e:
                 raise FileReadException(
                     str(file_path),
-                    f"Cannot decode file as text: {e.reason}",
+                    f'Cannot decode file as text: {e.reason}',
                 )
     except FileReadException:
         raise
     except Exception as e:
         raise FileReadException(
             str(file_path),
-            f"{type(e).__name__}: {e}",
+            f'{type(e).__name__}: {e}',
         )

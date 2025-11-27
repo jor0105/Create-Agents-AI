@@ -6,7 +6,7 @@ from createagents.infra import OllamaToolCallParser
 @pytest.mark.unit
 class TestOllamaToolCallParser:
     def test_has_tool_calls_with_empty_string(self):
-        result = OllamaToolCallParser.has_tool_calls("")
+        result = OllamaToolCallParser.has_tool_calls('')
 
         assert result is False
 
@@ -63,19 +63,19 @@ class TestOllamaToolCallParser:
         assert result is True
 
     def test_has_tool_calls_without_tool_calls(self):
-        response = "This is just regular text without any tool calls."
+        response = 'This is just regular text without any tool calls.'
 
         result = OllamaToolCallParser.has_tool_calls(response)
 
         assert result is False
 
     def test_extract_tool_calls_from_empty_string(self):
-        result = OllamaToolCallParser.extract_tool_calls("")
+        result = OllamaToolCallParser.extract_tool_calls('')
 
         assert result == []
 
     def test_extract_tool_calls_from_plain_text(self):
-        response = "Just some plain text"
+        response = 'Just some plain text'
 
         result = OllamaToolCallParser.extract_tool_calls(response)
 
@@ -94,8 +94,8 @@ class TestOllamaToolCallParser:
         result = OllamaToolCallParser.extract_tool_calls(response)
 
         assert len(result) == 1
-        assert result[0]["name"] == "get_weather"
-        assert result[0]["arguments"] == {"location": "Paris"}
+        assert result[0]['name'] == 'get_weather'
+        assert result[0]['arguments'] == {'location': 'Paris'}
 
     def test_extract_tool_calls_xml_multiple_arguments(self):
         response = """
@@ -112,10 +112,10 @@ class TestOllamaToolCallParser:
         result = OllamaToolCallParser.extract_tool_calls(response)
 
         assert len(result) == 1
-        assert result[0]["name"] == "get_weather"
-        assert result[0]["arguments"]["location"] == "Tokyo"
-        assert result[0]["arguments"]["unit"] == "celsius"
-        assert result[0]["arguments"]["include_forecast"] is True
+        assert result[0]['name'] == 'get_weather'
+        assert result[0]['arguments']['location'] == 'Tokyo'
+        assert result[0]['arguments']['unit'] == 'celsius'
+        assert result[0]['arguments']['include_forecast'] is True
 
     def test_extract_tool_calls_xml_no_arguments(self):
         response = """
@@ -128,8 +128,8 @@ class TestOllamaToolCallParser:
         result = OllamaToolCallParser.extract_tool_calls(response)
 
         assert len(result) == 1
-        assert result[0]["name"] == "get_current_time"
-        assert result[0]["arguments"] == {}
+        assert result[0]['name'] == 'get_current_time'
+        assert result[0]['arguments'] == {}
 
     def test_extract_tool_calls_xml_missing_arguments_element(self):
         response = """
@@ -141,8 +141,8 @@ class TestOllamaToolCallParser:
         result = OllamaToolCallParser.extract_tool_calls(response)
 
         assert len(result) == 1
-        assert result[0]["name"] == "no_params_tool"
-        assert result[0]["arguments"] == {}
+        assert result[0]['name'] == 'no_params_tool'
+        assert result[0]['arguments'] == {}
 
     def test_extract_tool_calls_json_single_tool(self):
         response = """
@@ -157,8 +157,8 @@ class TestOllamaToolCallParser:
         result = OllamaToolCallParser.extract_tool_calls(response)
 
         assert len(result) == 1
-        assert result[0]["name"] == "web_search"
-        assert result[0]["arguments"] == {"query": "Python tutorials"}
+        assert result[0]['name'] == 'web_search'
+        assert result[0]['arguments'] == {'query': 'Python tutorials'}
 
     def test_extract_tool_calls_json_multiple_arguments(self):
         response = """
@@ -178,9 +178,9 @@ class TestOllamaToolCallParser:
         result = OllamaToolCallParser.extract_tool_calls(response)
 
         assert len(result) == 1
-        assert result[0]["name"] == "search"
-        assert result[0]["arguments"]["limit"] == 10
-        assert result[0]["arguments"]["include_archived"] is False
+        assert result[0]['name'] == 'search'
+        assert result[0]['arguments']['limit'] == 10
+        assert result[0]['arguments']['include_archived'] is False
 
     def test_extract_tool_calls_json_nested_arguments(self):
         response = """
@@ -201,8 +201,11 @@ class TestOllamaToolCallParser:
         result = OllamaToolCallParser.extract_tool_calls(response)
 
         assert len(result) == 1
-        assert result[0]["arguments"]["filters"]["date_from"] == "2024-01-01"
-        assert result[0]["arguments"]["filters"]["categories"] == ["tech", "science"]
+        assert result[0]['arguments']['filters']['date_from'] == '2024-01-01'
+        assert result[0]['arguments']['filters']['categories'] == [
+            'tech',
+            'science',
+        ]
 
     def test_extract_tool_calls_multiple_tools(self):
         response = """
@@ -223,8 +226,8 @@ class TestOllamaToolCallParser:
         result = OllamaToolCallParser.extract_tool_calls(response)
 
         assert len(result) == 2
-        assert result[0]["name"] == "web_search"
-        assert result[1]["name"] == "get_weather"
+        assert result[0]['name'] == 'web_search'
+        assert result[1]['name'] == 'get_weather'
 
     def test_extract_tool_calls_xml_value_type_conversion(self):
         response = """
@@ -243,12 +246,12 @@ class TestOllamaToolCallParser:
         result = OllamaToolCallParser.extract_tool_calls(response)
 
         assert len(result) == 1
-        args = result[0]["arguments"]
-        assert args["count"] == 42
-        assert args["price"] == 19.99
-        assert args["active"] is True
-        assert args["disabled"] is False
-        assert args["name"] == "test"
+        args = result[0]['arguments']
+        assert args['count'] == 42
+        assert args['price'] == 19.99
+        assert args['active'] is True
+        assert args['disabled'] is False
+        assert args['name'] == 'test'
 
     def test_extract_tool_calls_skips_invalid_xml(self):
         response = """
@@ -265,7 +268,7 @@ class TestOllamaToolCallParser:
         result = OllamaToolCallParser.extract_tool_calls(response)
 
         assert len(result) == 1
-        assert result[0]["name"] == "good_tool"
+        assert result[0]['name'] == 'good_tool'
 
     def test_extract_tool_calls_skips_invalid_json(self):
         response = """
@@ -280,7 +283,7 @@ class TestOllamaToolCallParser:
         result = OllamaToolCallParser.extract_tool_calls(response)
 
         assert len(result) == 1
-        assert result[0]["name"] == "good_tool"
+        assert result[0]['name'] == 'good_tool'
 
     def test_extract_tool_calls_json_without_name_fails(self):
         response = """
@@ -343,13 +346,13 @@ class TestOllamaToolCallParser:
 
         result = OllamaToolCallParser.remove_tool_calls_from_response(response)
 
-        assert "<tool_call>" not in result
-        assert "</tool_call>" not in result
-        assert "Here is some text" in result
-        assert "More text after" in result
+        assert '<tool_call>' not in result
+        assert '</tool_call>' not in result
+        assert 'Here is some text' in result
+        assert 'More text after' in result
 
     def test_remove_tool_calls_preserves_text_without_calls(self):
-        response = "This is plain text without any tool calls"
+        response = 'This is plain text without any tool calls'
 
         result = OllamaToolCallParser.remove_tool_calls_from_response(response)
 
@@ -357,13 +360,13 @@ class TestOllamaToolCallParser:
 
     def test_format_tool_results_for_llm(self):
         result = OllamaToolCallParser.format_tool_results_for_llm(
-            tool_name="get_weather", result="Weather is sunny"
+            tool_name='get_weather', result='Weather is sunny'
         )
 
-        assert "<tool_result>" in result
-        assert "</tool_result>" in result
-        assert "<name>get_weather</name>" in result
-        assert "<result>Weather is sunny</result>" in result
+        assert '<tool_result>' in result
+        assert '</tool_result>' in result
+        assert '<name>get_weather</name>' in result
+        assert '<result>Weather is sunny</result>' in result
 
     def test_format_tool_results_with_multiline_result(self):
         multiline_result = """Line 1
@@ -371,22 +374,22 @@ Line 2
 Line 3"""
 
         result = OllamaToolCallParser.format_tool_results_for_llm(
-            tool_name="test", result=multiline_result
+            tool_name='test', result=multiline_result
         )
 
-        assert "Line 1" in result
-        assert "Line 2" in result
-        assert "\n" in result
+        assert 'Line 1' in result
+        assert 'Line 2' in result
+        assert '\n' in result
 
     def test_format_tool_results_with_special_characters(self):
-        special_result = "Result with <html> & special chars: 你好"
+        special_result = 'Result with <html> & special chars: 你好'
 
         result = OllamaToolCallParser.format_tool_results_for_llm(
-            tool_name="test", result=special_result
+            tool_name='test', result=special_result
         )
 
-        assert "你好" in result
-        assert "<html>" in result
+        assert '你好' in result
+        assert '<html>' in result
 
     def test_extract_tool_calls_case_insensitive_tags(self):
         response = """
@@ -399,7 +402,7 @@ Line 3"""
         result = OllamaToolCallParser.extract_tool_calls(response)
 
         assert len(result) == 1
-        assert result[0]["name"] == "test_tool"
+        assert result[0]['name'] == 'test_tool'
 
     def test_extract_tool_calls_with_whitespace_variations(self):
         response = """<tool_call>
@@ -417,7 +420,7 @@ Line 3"""
         result = OllamaToolCallParser.extract_tool_calls(response)
 
         assert len(result) == 1
-        assert result[0]["name"] == "test_tool"
+        assert result[0]['name'] == 'test_tool'
 
     def test_extract_tool_calls_xml_with_empty_string_values(self):
         response = """
@@ -432,7 +435,7 @@ Line 3"""
         result = OllamaToolCallParser.extract_tool_calls(response)
 
         assert len(result) == 1
-        assert result[0]["arguments"]["param"] == ""
+        assert result[0]['arguments']['param'] == ''
 
     def test_extract_tool_calls_json_empty_arguments(self):
         response = """
@@ -447,30 +450,30 @@ Line 3"""
         result = OllamaToolCallParser.extract_tool_calls(response)
 
         assert len(result) == 1
-        assert result[0]["arguments"] == {}
+        assert result[0]['arguments'] == {}
 
     def test_convert_value_handles_boolean_variations(self):
-        assert OllamaToolCallParser._convert_value("true") is True
-        assert OllamaToolCallParser._convert_value("True") is True
-        assert OllamaToolCallParser._convert_value("TRUE") is True
-        assert OllamaToolCallParser._convert_value("false") is False
-        assert OllamaToolCallParser._convert_value("False") is False
-        assert OllamaToolCallParser._convert_value("FALSE") is False
+        assert OllamaToolCallParser._convert_value('true') is True
+        assert OllamaToolCallParser._convert_value('True') is True
+        assert OllamaToolCallParser._convert_value('TRUE') is True
+        assert OllamaToolCallParser._convert_value('false') is False
+        assert OllamaToolCallParser._convert_value('False') is False
+        assert OllamaToolCallParser._convert_value('FALSE') is False
 
     def test_convert_value_handles_integers(self):
-        assert OllamaToolCallParser._convert_value("42") == 42
-        assert OllamaToolCallParser._convert_value("-10") == -10
-        assert OllamaToolCallParser._convert_value("0") == 0
+        assert OllamaToolCallParser._convert_value('42') == 42
+        assert OllamaToolCallParser._convert_value('-10') == -10
+        assert OllamaToolCallParser._convert_value('0') == 0
 
     def test_convert_value_handles_floats(self):
-        assert OllamaToolCallParser._convert_value("3.14") == 3.14
-        assert OllamaToolCallParser._convert_value("-2.5") == -2.5
-        assert OllamaToolCallParser._convert_value("0.0") == 0.0
+        assert OllamaToolCallParser._convert_value('3.14') == 3.14
+        assert OllamaToolCallParser._convert_value('-2.5') == -2.5
+        assert OllamaToolCallParser._convert_value('0.0') == 0.0
 
     def test_convert_value_keeps_strings(self):
-        assert OllamaToolCallParser._convert_value("hello") == "hello"
-        assert OllamaToolCallParser._convert_value("test123") == "test123"
-        assert OllamaToolCallParser._convert_value("") == ""
+        assert OllamaToolCallParser._convert_value('hello') == 'hello'
+        assert OllamaToolCallParser._convert_value('test123') == 'test123'
+        assert OllamaToolCallParser._convert_value('') == ''
 
     def test_extract_tool_calls_preserves_order(self):
         response = """
@@ -491,9 +494,9 @@ Line 3"""
         result = OllamaToolCallParser.extract_tool_calls(response)
 
         assert len(result) == 3
-        assert result[0]["name"] == "first_tool"
-        assert result[1]["name"] == "second_tool"
-        assert result[2]["name"] == "third_tool"
+        assert result[0]['name'] == 'first_tool'
+        assert result[1]['name'] == 'second_tool'
+        assert result[2]['name'] == 'third_tool'
 
     def test_extract_tool_calls_handles_mixed_xml_json(self):
         response = """
@@ -509,13 +512,13 @@ Line 3"""
         result = OllamaToolCallParser.extract_tool_calls(response)
 
         assert len(result) == 2
-        assert result[0]["name"] == "xml_tool"
-        assert result[0]["arguments"]["param"] == "xml_value"
-        assert result[1]["name"] == "json_tool"
-        assert result[1]["arguments"]["param"] == "json_value"
+        assert result[0]['name'] == 'xml_tool'
+        assert result[0]['arguments']['param'] == 'xml_value'
+        assert result[1]['name'] == 'json_tool'
+        assert result[1]['arguments']['param'] == 'json_value'
 
     def test_has_tool_calls_with_incomplete_tag(self):
-        response = "<tool_call>incomplete"
+        response = '<tool_call>incomplete'
 
         result = OllamaToolCallParser.has_tool_calls(response)
 
@@ -545,20 +548,20 @@ Line 3"""
 
         result = OllamaToolCallParser.remove_tool_calls_from_response(response)
 
-        assert result.count("<tool_call>") == 0
-        assert result.count("</tool_call>") == 0
-        assert "Text before" in result
-        assert "Middle text" in result
-        assert "Text after" in result
+        assert result.count('<tool_call>') == 0
+        assert result.count('</tool_call>') == 0
+        assert 'Text before' in result
+        assert 'Middle text' in result
+        assert 'Text after' in result
 
     def test_format_tool_results_with_empty_result(self):
         result = OllamaToolCallParser.format_tool_results_for_llm(
-            tool_name="test", result=""
+            tool_name='test', result=''
         )
 
-        assert "<tool_result>" in result
-        assert "<name>test</name>" in result
-        assert "<result></result>" in result
+        assert '<tool_result>' in result
+        assert '<name>test</name>' in result
+        assert '<result></result>' in result
 
     def test_extract_tool_calls_with_numeric_tool_names(self):
         response = """
@@ -571,7 +574,7 @@ Line 3"""
         result = OllamaToolCallParser.extract_tool_calls(response)
 
         assert len(result) == 1
-        assert result[0]["name"] == "tool_v2_updated"
+        assert result[0]['name'] == 'tool_v2_updated'
 
     def test_extract_tool_calls_with_unicode_in_xml(self):
         response = """
@@ -587,7 +590,7 @@ Line 3"""
         result = OllamaToolCallParser.extract_tool_calls(response)
 
         assert len(result) == 1
-        assert result[0]["arguments"]["text"] == "你好世界"
+        assert result[0]['arguments']['text'] == '你好世界'
 
     def test_extract_tool_calls_with_unicode_in_json(self):
         response = """
@@ -602,5 +605,5 @@ Line 3"""
         result = OllamaToolCallParser.extract_tool_calls(response)
 
         assert len(result) == 1
-        assert "🌍" in result[0]["arguments"]["message"]
-        assert "🚀" in result[0]["arguments"]["message"]
+        assert '🌍' in result[0]['arguments']['message']
+        assert '🚀' in result[0]['arguments']['message']

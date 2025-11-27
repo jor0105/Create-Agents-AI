@@ -35,11 +35,11 @@ class ToolSchemaFormatter:
         )
 
         return {
-            "type": "function",
-            "function": {
-                "name": schema["name"],
-                "description": schema["description"],
-                "parameters": schema["parameters"],
+            'type': 'function',
+            'function': {
+                'name': schema['name'],
+                'description': schema['description'],
+                'parameters': schema['parameters'],
             },
         }
 
@@ -60,10 +60,10 @@ class ToolSchemaFormatter:
         )
 
         return {
-            "type": "function",
-            "name": schema["name"],
-            "description": schema["description"],
-            "parameters": schema["parameters"],
+            'type': 'function',
+            'name': schema['name'],
+            'description': schema['description'],
+            'parameters': schema['parameters'],
         }
 
     @staticmethod
@@ -77,19 +77,23 @@ class ToolSchemaFormatter:
             List of dictionaries formatted for OpenAI's tools parameter.
         """
         ToolSchemaFormatter._logger.info(
-            f"Formatting {len(tools)} tool(s) for OpenAI Completions API"
+            f'Formatting {len(tools)} tool(s) for OpenAI Completions API'
         )
 
-        formatted = [ToolSchemaFormatter.format_tool_for_openai(tool) for tool in tools]
+        formatted = [
+            ToolSchemaFormatter.format_tool_for_openai(tool) for tool in tools
+        ]
 
         ToolSchemaFormatter._logger.debug(
-            f"Formatted tools: {[t['function']['name'] for t in formatted]}"
+            f'Formatted tools: {[t["function"]["name"] for t in formatted]}'
         )
 
         return formatted
 
     @staticmethod
-    def format_tools_for_responses_api(tools: List[BaseTool]) -> List[Dict[str, Any]]:
+    def format_tools_for_responses_api(
+        tools: List[BaseTool],
+    ) -> List[Dict[str, Any]]:
         """Convert multiple tools to OpenAI Responses API format.
 
         Args:
@@ -99,15 +103,16 @@ class ToolSchemaFormatter:
             List of dictionaries formatted for Responses API's tools parameter.
         """
         ToolSchemaFormatter._logger.info(
-            f"Formatting {len(tools)} tool(s) for OpenAI Responses API"
+            f'Formatting {len(tools)} tool(s) for OpenAI Responses API'
         )
 
         formatted = [
-            ToolSchemaFormatter.format_tool_for_responses_api(tool) for tool in tools
+            ToolSchemaFormatter.format_tool_for_responses_api(tool)
+            for tool in tools
         ]
 
         ToolSchemaFormatter._logger.debug(
-            f"Formatted tools: {[t['name'] for t in formatted]}"
+            f'Formatted tools: {[t["name"] for t in formatted]}'
         )
 
         return formatted

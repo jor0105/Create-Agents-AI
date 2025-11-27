@@ -32,22 +32,28 @@ class CurrentDateTool(BaseTool):
     - Otherwise, a string with the requested date/time information (sanitized)
     """
 
-    name = "currentdate"
+    name = 'currentdate'
     description = "Get the current date and/or time in a specific timezone. Essential for answering 'What time is it?' or 'What day is it?' questions."
     parameters: Dict[str, Any] = {
-        "type": "object",
-        "properties": {
-            "action": {
-                "type": "string",
-                "enum": ["date", "time", "datetime", "timestamp", "date_with_weekday"],
-                "description": "What information to return: 'date' (just the date), 'time' (just the time), 'datetime' (both), 'timestamp' (unix seconds), or 'date_with_weekday' (full date with weekday)",
+        'type': 'object',
+        'properties': {
+            'action': {
+                'type': 'string',
+                'enum': [
+                    'date',
+                    'time',
+                    'datetime',
+                    'timestamp',
+                    'date_with_weekday',
+                ],
+                'description': "What information to return: 'date' (just the date), 'time' (just the time), 'datetime' (both), 'timestamp' (unix seconds), or 'date_with_weekday' (full date with weekday)",
             },
-            "tz": {
-                "type": "string",
-                "description": "IANA timezone identifier. Examples: 'UTC', 'America/New_York' (New York), 'America/Los_Angeles' (California), 'America/Chicago' (Chicago), 'America/Sao_Paulo' (Brazil), 'Europe/Lisbon', etc.",
+            'tz': {
+                'type': 'string',
+                'description': "IANA timezone identifier. Examples: 'UTC', 'America/New_York' (New York), 'America/Los_Angeles' (California), 'America/Chicago' (Chicago), 'America/Sao_Paulo' (Brazil), 'Europe/Lisbon', etc.",
             },
         },
-        "required": ["action", "tz"],
+        'required': ['action', 'tz'],
     }
 
     # Limits / security constants
@@ -62,7 +68,7 @@ class CurrentDateTool(BaseTool):
         try:
             return _get_zoneinfo(tz.strip())
         except ZoneInfoNotFoundError:
-            raise ValueError(f"Invalid timezone: {tz}")
+            raise ValueError(f'Invalid timezone: {tz}')
 
     def execute(
         self,
@@ -80,13 +86,19 @@ class CurrentDateTool(BaseTool):
                 "[CurrentDateTool Error]".
         """
         self.__logger.info(
-            "CurrentDateTool.execute called: action=%s, tz=%s",
+            'CurrentDateTool.execute called: action=%s, tz=%s',
             action,
             tz,
         )
 
         # Validate action
-        allowed = {"date", "time", "datetime", "timestamp", "date_with_weekday"}
+        allowed = {
+            'date',
+            'time',
+            'datetime',
+            'timestamp',
+            'date_with_weekday',
+        }
         if action not in allowed:
             return self.__error(
                 f"Invalid action '{action}'. Allowed: {sorted(allowed)}"
@@ -100,25 +112,25 @@ class CurrentDateTool(BaseTool):
         try:
             now = datetime.now(zone)
 
-            if action == "date":
+            if action == 'date':
                 out = now.date().isoformat()
 
-            elif action == "time":
-                out = now.time().strftime("%H:%M:%S")
+            elif action == 'time':
+                out = now.time().strftime('%H:%M:%S')
 
-            elif action == "datetime":
+            elif action == 'datetime':
                 out = now.isoformat()
 
-            elif action == "timestamp":
+            elif action == 'timestamp':
                 out = str(int(now.timestamp()))
 
-            elif action == "date_with_weekday":
-                weekday = now.strftime("%A")
-                date_str = now.strftime("%d de %B de %Y")
-                out = f"{weekday}, {date_str}"
+            elif action == 'date_with_weekday':
+                weekday = now.strftime('%A')
+                date_str = now.strftime('%d de %B de %Y')
+                out = f'{weekday}, {date_str}'
 
             else:
-                return self.__error("Unsupported action")
+                return self.__error('Unsupported action')
 
             sanitized_response: str = TextSanitizer.sanitize(out)
 
@@ -126,11 +138,11 @@ class CurrentDateTool(BaseTool):
 
         except Exception as e:
             self.__logger.error(
-                "Unexpected error in CurrentDateTool: %s", e, exc_info=True
+                'Unexpected error in CurrentDateTool: %s', e, exc_info=True
             )
-            return self.__error(f"Unexpected error: {type(e).__name__}: {e}")
+            return self.__error(f'Unexpected error: {type(e).__name__}: {e}')
 
     def __error(self, details: str) -> str:
-        msg = f"[CurrentDateTool Error] {details}"
+        msg = f'[CurrentDateTool Error] {details}'
         self.__logger.warning(msg)
         return msg

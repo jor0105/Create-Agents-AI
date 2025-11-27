@@ -44,24 +44,24 @@ class ChatAdapterFactory:
             return cls.__cache[cache_key]
 
         cls.__logger.info(
-            f"Creating new chat adapter - Provider: {provider}, Model: {model}"
+            f'Creating new chat adapter - Provider: {provider}, Model: {model}'
         )
 
         provider_lower = provider.lower()
         adapter: ChatRepository
 
-        if provider_lower == "openai":
-            cls.__logger.debug("Creating OpenAI chat adapter")
+        if provider_lower == 'openai':
+            cls.__logger.debug('Creating OpenAI chat adapter')
             adapter = OpenAIChatAdapter()
-        elif provider_lower == "ollama":
-            cls.__logger.debug("Creating Ollama chat adapter")
+        elif provider_lower == 'ollama':
+            cls.__logger.debug('Creating Ollama chat adapter')
             adapter = OllamaChatAdapter()
         else:
-            cls.__logger.error(f"Invalid provider requested: {provider}")
-            raise ValueError(f"Invalid provider: {provider}.")
+            cls.__logger.error(f'Invalid provider requested: {provider}')
+            raise ValueError(f'Invalid provider: {provider}.')
 
         cls.__cache[cache_key] = adapter
-        cls.__logger.debug(f"Adapter cached with key: {cache_key}")
+        cls.__logger.debug(f'Adapter cached with key: {cache_key}')
 
         return adapter
 
@@ -71,5 +71,5 @@ class ChatAdapterFactory:
         cache_size = len(cls.__cache)
         cls.__cache.clear()
         cls.__logger.info(
-            f"Adapter cache cleared - Removed {cache_size} cached adapter(s)"
+            f'Adapter cache cleared - Removed {cache_size} cached adapter(s)'
         )

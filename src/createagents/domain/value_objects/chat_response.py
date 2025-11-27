@@ -49,13 +49,13 @@ class ChatResponse:
             Dictionary with content and tool_calls.
         """
         return {
-            "content": self.content,
-            "tool_calls": [
+            'content': self.content,
+            'tool_calls': [
                 {
-                    "tool_name": tc.tool_name,
-                    "arguments": tc.arguments,
-                    "result": tc.result,
-                    "success": tc.success,
+                    'tool_name': tc.tool_name,
+                    'arguments': tc.arguments,
+                    'result': tc.result,
+                    'success': tc.success,
                 }
                 for tc in self.tool_calls
             ],

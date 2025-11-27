@@ -32,7 +32,7 @@ class AvailableTools:
         if not cls.__SYSTEM_TOOLS:
             from ..adapters import CurrentDateTool
 
-            cls.__SYSTEM_TOOLS["currentdate"] = CurrentDateTool()
+            cls.__SYSTEM_TOOLS['currentdate'] = CurrentDateTool()
 
     @classmethod
     def get_system_tools(cls) -> Dict[str, str]:
@@ -46,7 +46,7 @@ class AvailableTools:
         cls._ensure_system_tools_loaded()
 
         # Try to load lazy system tools on first access
-        if "readlocalfile" not in cls.__LAZY_SYSTEM_TOOLS:
+        if 'readlocalfile' not in cls.__LAZY_SYSTEM_TOOLS:
             cls.__try_load_read_local_file_tool()
 
         # Get all system tool instances
@@ -71,7 +71,7 @@ class AvailableTools:
         cls._ensure_system_tools_loaded()
 
         # Try to load lazy system tools on first access
-        if "readlocalfile" not in cls.__LAZY_SYSTEM_TOOLS:
+        if 'readlocalfile' not in cls.__LAZY_SYSTEM_TOOLS:
             cls.__try_load_read_local_file_tool()
 
         # Get all system tool names (keys in the dictionaries)
@@ -93,7 +93,8 @@ class AvailableTools:
         """
         # Convert to name: description mapping
         return {
-            tool_name: tool.description for tool_name, tool in cls.__AGENT_TOOLS.items()
+            tool_name: tool.description
+            for tool_name, tool in cls.__AGENT_TOOLS.items()
         }
 
     @classmethod
@@ -124,7 +125,7 @@ class AvailableTools:
         cls._ensure_system_tools_loaded()
 
         # Try to load lazy system tools on first access
-        if "readlocalfile" not in cls.__LAZY_SYSTEM_TOOLS:
+        if 'readlocalfile' not in cls.__LAZY_SYSTEM_TOOLS:
             cls.__try_load_read_local_file_tool()
 
         # Combine eager and lazy system tools
@@ -148,7 +149,7 @@ class AvailableTools:
         cls._ensure_system_tools_loaded()
 
         # Try to load lazy tools on first access
-        if "readlocalfile" not in cls.__LAZY_SYSTEM_TOOLS:
+        if 'readlocalfile' not in cls.__LAZY_SYSTEM_TOOLS:
             cls.__try_load_read_local_file_tool()
 
         # Combine eager and lazy tools (both system and agent)
@@ -197,7 +198,7 @@ class AvailableTools:
         and marks the tool as unavailable.
         """
         # Only load once - check if already loaded
-        if "readlocalfile" in cls.__LAZY_SYSTEM_TOOLS:
+        if 'readlocalfile' in cls.__LAZY_SYSTEM_TOOLS:
             return
 
         try:
@@ -205,21 +206,21 @@ class AvailableTools:
             from .logging_config import LoggingConfig
 
             logger = LoggingConfig.get_logger(__name__)
-            cls.__LAZY_SYSTEM_TOOLS["readlocalfile"] = ReadLocalFileTool()
-            logger.debug("ReadLocalFileTool loaded successfully")
+            cls.__LAZY_SYSTEM_TOOLS['readlocalfile'] = ReadLocalFileTool()
+            logger.debug('ReadLocalFileTool loaded successfully')
         except ImportError as e:
             from .logging_config import LoggingConfig
 
             logger = LoggingConfig.get_logger(__name__)
             logger.warning(
-                f"ReadLocalFileTool not available - optional dependencies missing. "
-                f"Install with: pip install ai-agent[file-tools]\n"
-                f"Error: {e}"
+                f'ReadLocalFileTool not available - optional dependencies missing. '
+                f'Install with: pip install ai-agent[file-tools]\n'
+                f'Error: {e}'
             )
-            cls.__LAZY_SYSTEM_TOOLS["readlocalfile"] = None
+            cls.__LAZY_SYSTEM_TOOLS['readlocalfile'] = None
         except Exception as e:
             from .logging_config import LoggingConfig
 
             logger = LoggingConfig.get_logger(__name__)
-            logger.error(f"Failed to load ReadLocalFileTool: {e}")
-            cls.__LAZY_SYSTEM_TOOLS["readlocalfile"] = None
+            logger.error(f'Failed to load ReadLocalFileTool: {e}')
+            cls.__LAZY_SYSTEM_TOOLS['readlocalfile'] = None

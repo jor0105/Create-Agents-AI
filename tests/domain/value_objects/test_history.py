@@ -23,7 +23,7 @@ class TestHistory:
 
     def test_add_message_object(self):
         history = History()
-        message = Message(role=MessageRole.USER, content="Hello")
+        message = Message(role=MessageRole.USER, content='Hello')
 
         history.add(message)
 
@@ -31,14 +31,20 @@ class TestHistory:
         assert history.get_messages()[0] == message
 
     @pytest.mark.parametrize(
-        "method,expected_role,content",
+        'method,expected_role,content',
         [
-            ("add_user_message", MessageRole.USER, "User message"),
-            ("add_assistant_message", MessageRole.ASSISTANT, "Assistant response"),
-            ("add_system_message", MessageRole.SYSTEM, "System instruction"),
+            ('add_user_message', MessageRole.USER, 'User message'),
+            (
+                'add_assistant_message',
+                MessageRole.ASSISTANT,
+                'Assistant response',
+            ),
+            ('add_system_message', MessageRole.SYSTEM, 'System instruction'),
         ],
     )
-    def test_add_role_messages_via_helpers(self, method, expected_role, content):
+    def test_add_role_messages_via_helpers(
+        self, method, expected_role, content
+    ):
         history = History()
         getattr(history, method)(content)
 
@@ -50,53 +56,55 @@ class TestHistory:
     def test_add_invalid_type_raises_error(self):
         history = History()
 
-        with pytest.raises(TypeError, match="Only Message objects can be added"):
-            history.add("Not a message")
+        with pytest.raises(
+            TypeError, match='Only Message objects can be added'
+        ):
+            history.add('Not a message')
 
     def test_add_user_message(self):
         history = History()
 
-        history.add_user_message("User message")
+        history.add_user_message('User message')
 
         assert len(history) == 1
         messages = history.get_messages()
         assert messages[0].role == MessageRole.USER
-        assert messages[0].content == "User message"
+        assert messages[0].content == 'User message'
 
     def test_add_assistant_message(self):
         history = History()
 
-        history.add_assistant_message("Assistant response")
+        history.add_assistant_message('Assistant response')
 
         assert len(history) == 1
         messages = history.get_messages()
         assert messages[0].role == MessageRole.ASSISTANT
-        assert messages[0].content == "Assistant response"
+        assert messages[0].content == 'Assistant response'
 
     def test_add_system_message(self):
         history = History()
 
-        history.add_system_message("System instruction")
+        history.add_system_message('System instruction')
 
         assert len(history) == 1
         messages = history.get_messages()
         assert messages[0].role == MessageRole.SYSTEM
-        assert messages[0].content == "System instruction"
+        assert messages[0].content == 'System instruction'
 
     def test_add_multiple_messages(self):
         history = History()
 
-        history.add_user_message("Message 1")
-        history.add_assistant_message("Response 1")
-        history.add_user_message("Message 2")
-        history.add_assistant_message("Response 2")
+        history.add_user_message('Message 1')
+        history.add_assistant_message('Response 1')
+        history.add_user_message('Message 2')
+        history.add_assistant_message('Response 2')
 
         assert len(history) == 4
 
     def test_clear_history(self):
         history = History()
-        history.add_user_message("Message 1")
-        history.add_user_message("Message 2")
+        history.add_user_message('Message 1')
+        history.add_user_message('Message 2')
 
         assert len(history) == 2
 
@@ -107,7 +115,7 @@ class TestHistory:
 
     def test_get_messages_returns_copy(self):
         history = History()
-        history.add_user_message("Test")
+        history.add_user_message('Test')
 
         messages1 = history.get_messages()
         messages2 = history.get_messages()
@@ -125,14 +133,14 @@ class TestHistory:
 
     def test_to_dict_list_with_messages(self):
         history = History()
-        history.add_user_message("Hello")
-        history.add_assistant_message("Hi there!")
+        history.add_user_message('Hello')
+        history.add_assistant_message('Hi there!')
 
         result = history.to_dict_list()
 
         assert len(result) == 2
-        assert result[0] == {"role": "user", "content": "Hello"}
-        assert result[1] == {"role": "assistant", "content": "Hi there!"}
+        assert result[0] == {'role': 'user', 'content': 'Hello'}
+        assert result[1] == {'role': 'assistant', 'content': 'Hi there!'}
 
     def test_from_dict_list_empty(self):
         data = []
@@ -142,8 +150,8 @@ class TestHistory:
 
     def test_from_dict_list_with_messages(self):
         data = [
-            {"role": "user", "content": "Hello"},
-            {"role": "assistant", "content": "Hi!"},
+            {'role': 'user', 'content': 'Hello'},
+            {'role': 'assistant', 'content': 'Hi!'},
         ]
 
         history = History.from_dict_list(data, max_size=5)
@@ -151,12 +159,12 @@ class TestHistory:
         assert len(history) == 2
         messages = history.get_messages()
         assert messages[0].role == MessageRole.USER
-        assert messages[0].content == "Hello"
+        assert messages[0].content == 'Hello'
         assert messages[1].role == MessageRole.ASSISTANT
-        assert messages[1].content == "Hi!"
+        assert messages[1].content == 'Hi!'
 
     def test_from_dict_list_with_custom_max_size(self):
-        data = [{"role": "user", "content": "Test"}]
+        data = [{'role': 'user', 'content': 'Test'}]
         history = History().from_dict_list(data, max_size=5)
 
         assert history.max_size == 5
@@ -164,29 +172,32 @@ class TestHistory:
     def test_history_max_size_limit(self):
         history = History(max_size=3)
 
-        history.add_user_message("Msg 1")
-        history.add_user_message("Msg 2")
-        history.add_user_message("Msg 3")
-        history.add_user_message("Msg 4")
-        history.add_user_message("Msg 5")
+        history.add_user_message('Msg 1')
+        history.add_user_message('Msg 2')
+        history.add_user_message('Msg 3')
+        history.add_user_message('Msg 4')
+        history.add_user_message('Msg 5')
 
         assert len(history) == 3
         messages = history.get_messages()
-        assert messages[0].content == "Msg 3"
-        assert messages[1].content == "Msg 4"
-        assert messages[2].content == "Msg 5"
+        assert messages[0].content == 'Msg 3'
+        assert messages[1].content == 'Msg 4'
+        assert messages[2].content == 'Msg 5'
 
     def test_history_invalid_max_size_raises(self):
         with pytest.raises(
-            ValueError, match="The history's max size must be greater than zero"
+            ValueError,
+            match="The history's max size must be greater than zero",
         ):
             History(max_size=None)
         with pytest.raises(
-            ValueError, match="The history's max size must be greater than zero"
+            ValueError,
+            match="The history's max size must be greater than zero",
         ):
             History(max_size=0)
         with pytest.raises(
-            ValueError, match="The history's max size must be greater than zero"
+            ValueError,
+            match="The history's max size must be greater than zero",
         ):
             History(max_size=-1)
 
@@ -194,16 +205,16 @@ class TestHistory:
         history = History(max_size=10)
 
         for i in range(15):
-            history.add_user_message(f"Message {i}")
+            history.add_user_message(f'Message {i}')
 
         assert len(history) == 10
         messages = history.get_messages()
-        assert messages[0].content == "Message 5"
-        assert messages[-1].content == "Message 14"
+        assert messages[0].content == 'Message 5'
+        assert messages[-1].content == 'Message 14'
 
     def test_history_bool_true_when_has_messages(self):
         history = History()
-        history.add_user_message("Test")
+        history.add_user_message('Test')
 
         assert bool(history) is True
 
@@ -217,10 +228,10 @@ class TestHistory:
 
         assert len(history) == 0
 
-        history.add_user_message("Msg 1")
+        history.add_user_message('Msg 1')
         assert len(history) == 1
 
-        history.add_assistant_message("Msg 2")
+        history.add_assistant_message('Msg 2')
         assert len(history) == 2
 
         history.clear()
@@ -228,9 +239,9 @@ class TestHistory:
 
     def test_to_dict_list_and_from_dict_list_roundtrip(self):
         original = History(max_size=10)
-        original.add_user_message("User msg")
-        original.add_assistant_message("Assistant msg")
-        original.add_system_message("System msg")
+        original.add_user_message('User msg')
+        original.add_assistant_message('Assistant msg')
+        original.add_system_message('System msg')
 
         dict_list = original.to_dict_list()
         reconstructed = History.from_dict_list(dict_list, max_size=10)
@@ -246,8 +257,8 @@ class TestHistory:
         history = History(max_size=20)
 
         for i in range(5):
-            history.add_user_message(f"User {i}")
-            history.add_assistant_message(f"Assistant {i}")
+            history.add_user_message(f'User {i}')
+            history.add_assistant_message(f'Assistant {i}')
 
         assert len(history) == 10
         messages = history.get_messages()
@@ -259,19 +270,19 @@ class TestHistory:
     def test_history_preserves_message_order(self):
         history = History()
 
-        history.add_user_message("First")
-        history.add_assistant_message("Second")
-        history.add_user_message("Third")
+        history.add_user_message('First')
+        history.add_assistant_message('Second')
+        history.add_user_message('Third')
 
         messages = history.get_messages()
 
-        assert messages[0].content == "First"
-        assert messages[1].content == "Second"
-        assert messages[2].content == "Third"
+        assert messages[0].content == 'First'
+        assert messages[1].content == 'Second'
+        assert messages[2].content == 'Third'
 
     def test_history_with_special_characters(self):
         history = History(max_size=1)
-        special_content = "Hello! 你好 🎉 @#$%"
+        special_content = 'Hello! 你好 🎉 @#$%'
 
         history.add_user_message(special_content)
 
@@ -280,7 +291,7 @@ class TestHistory:
 
     def test_history_with_multiline_content(self):
         history = History()
-        multiline = "Line 1\nLine 2\nLine 3"
+        multiline = 'Line 1\nLine 2\nLine 3'
 
         history.add_user_message(multiline)
 
@@ -289,24 +300,24 @@ class TestHistory:
 
     def test_history_from_dict_list_preserves_order(self):
         data = [
-            {"role": "user", "content": "First"},
-            {"role": "assistant", "content": "Second"},
-            {"role": "user", "content": "Third"},
+            {'role': 'user', 'content': 'First'},
+            {'role': 'assistant', 'content': 'Second'},
+            {'role': 'user', 'content': 'Third'},
         ]
         history = History.from_dict_list(data, max_size=10)
 
         messages = history.get_messages()
         assert len(messages) == 3
-        assert messages[0].content == "First"
-        assert messages[1].content == "Second"
-        assert messages[2].content == "Third"
+        assert messages[0].content == 'First'
+        assert messages[1].content == 'Second'
+        assert messages[2].content == 'Third'
 
     def test_history_add_multiple_same_type(self):
         history = History()
 
-        history.add_user_message("User 1")
-        history.add_user_message("User 2")
-        history.add_user_message("User 3")
+        history.add_user_message('User 1')
+        history.add_user_message('User 2')
+        history.add_user_message('User 3')
 
         messages = history.get_messages()
         assert len(messages) == 3
@@ -323,15 +334,15 @@ class TestHistory:
         history = History(max_size=5)
 
         for i in range(5):
-            history.add_user_message(f"Msg {i}")
+            history.add_user_message(f'Msg {i}')
 
         assert len(history) == 5
 
-        history.add_user_message("Msg 5")
+        history.add_user_message('Msg 5')
 
         assert len(history) == 5
         messages = history.get_messages()
-        assert messages[0].content == "Msg 1"
+        assert messages[0].content == 'Msg 1'
 
     def test_history_to_dict_list_empty(self):
         history = History()
@@ -356,19 +367,19 @@ class TestHistoryDequePerformance:
     def test_deque_auto_removes_old_messages(self):
         history = History(max_size=3)
 
-        history.add_user_message("Msg 1")
-        history.add_user_message("Msg 2")
-        history.add_user_message("Msg 3")
-        history.add_user_message("Msg 4")
+        history.add_user_message('Msg 1')
+        history.add_user_message('Msg 2')
+        history.add_user_message('Msg 3')
+        history.add_user_message('Msg 4')
         messages = history.get_messages()
         assert len(messages) == 3
-        assert messages[0].content == "Msg 2"
-        assert messages[1].content == "Msg 3"
-        assert messages[2].content == "Msg 4"
+        assert messages[0].content == 'Msg 2'
+        assert messages[1].content == 'Msg 3'
+        assert messages[2].content == 'Msg 4'
 
     def test_get_messages_returns_list_not_deque(self):
         history = History(max_size=5)
-        history.add_user_message("Test")
+        history.add_user_message('Test')
 
         messages = history.get_messages()
         assert isinstance(messages, list)
@@ -386,10 +397,11 @@ class TestHistoryConcurrency:
 
         def add_messages(thread_id):
             for i in range(messages_per_thread):
-                history.add_user_message(f"Thread {thread_id} - Message {i}")
+                history.add_user_message(f'Thread {thread_id} - Message {i}')
 
         threads = [
-            threading.Thread(target=add_messages, args=(i,)) for i in range(num_threads)
+            threading.Thread(target=add_messages, args=(i,))
+            for i in range(num_threads)
         ]
 
         for thread in threads:
@@ -402,7 +414,7 @@ class TestHistoryConcurrency:
         messages = history.get_messages()
         for msg in messages:
             assert msg.role == MessageRole.USER
-            assert "Thread" in msg.content
+            assert 'Thread' in msg.content
 
     def test_history_concurrent_additions_respects_max_size(self):
         import threading
@@ -414,10 +426,11 @@ class TestHistoryConcurrency:
 
         def add_messages(thread_id):
             for i in range(messages_per_thread):
-                history.add_user_message(f"T{thread_id}-M{i}")
+                history.add_user_message(f'T{thread_id}-M{i}')
 
         threads = [
-            threading.Thread(target=add_messages, args=(i,)) for i in range(num_threads)
+            threading.Thread(target=add_messages, args=(i,))
+            for i in range(num_threads)
         ]
 
         for thread in threads:
@@ -441,7 +454,7 @@ class TestHistoryConcurrency:
 
         def writer(thread_id):
             for i in range(messages_per_writer):
-                history.add_user_message(f"Writer {thread_id} - Msg {i}")
+                history.add_user_message(f'Writer {thread_id} - Msg {i}')
                 time.sleep(0.001)
 
         def reader(thread_id):
@@ -452,10 +465,12 @@ class TestHistoryConcurrency:
                 time.sleep(0.001)
 
         writer_threads = [
-            threading.Thread(target=writer, args=(i,)) for i in range(num_writers)
+            threading.Thread(target=writer, args=(i,))
+            for i in range(num_writers)
         ]
         reader_threads = [
-            threading.Thread(target=reader, args=(i,)) for i in range(num_readers)
+            threading.Thread(target=reader, args=(i,))
+            for i in range(num_readers)
         ]
 
         all_threads = writer_threads + reader_threads
@@ -480,7 +495,7 @@ class TestHistoryConcurrency:
 
         def adder(thread_id):
             for i in range(operations_per_thread):
-                history.add_user_message(f"Adder {thread_id} - {i}")
+                history.add_user_message(f'Adder {thread_id} - {i}')
                 time.sleep(0.001)
 
         def clearer(thread_id):
@@ -489,10 +504,12 @@ class TestHistoryConcurrency:
                 time.sleep(0.002)
 
         adder_threads = [
-            threading.Thread(target=adder, args=(i,)) for i in range(num_adders)
+            threading.Thread(target=adder, args=(i,))
+            for i in range(num_adders)
         ]
         clearer_threads = [
-            threading.Thread(target=clearer, args=(i,)) for i in range(num_clearers)
+            threading.Thread(target=clearer, args=(i,))
+            for i in range(num_clearers)
         ]
 
         all_threads = adder_threads + clearer_threads
@@ -513,15 +530,15 @@ class TestHistoryConcurrency:
 
         def add_user_messages():
             for i in range(messages_per_thread):
-                history.add_user_message(f"User {i}")
+                history.add_user_message(f'User {i}')
 
         def add_assistant_messages():
             for i in range(messages_per_thread):
-                history.add_assistant_message(f"Assistant {i}")
+                history.add_assistant_message(f'Assistant {i}')
 
         def add_system_messages():
             for i in range(messages_per_thread):
-                history.add_system_message(f"System {i}")
+                history.add_system_message(f'System {i}')
 
         threads = [
             threading.Thread(target=add_user_messages),
@@ -540,7 +557,8 @@ class TestHistoryConcurrency:
         roles = {msg.role for msg in messages}
         assert len(roles) >= 1
         assert all(
-            role in [MessageRole.USER, MessageRole.ASSISTANT, MessageRole.SYSTEM]
+            role
+            in [MessageRole.USER, MessageRole.ASSISTANT, MessageRole.SYSTEM]
             for role in roles
         )
 
@@ -553,13 +571,14 @@ class TestHistoryConcurrency:
 
         def add_and_convert(thread_id):
             for i in range(10):
-                history.add_user_message(f"Thread {thread_id} - {i}")
+                history.add_user_message(f'Thread {thread_id} - {i}')
                 dict_list = history.to_dict_list()
                 with dict_lock:
                     dict_results.append(len(dict_list))
 
         threads = [
-            threading.Thread(target=add_and_convert, args=(i,)) for i in range(5)
+            threading.Thread(target=add_and_convert, args=(i,))
+            for i in range(5)
         ]
 
         for thread in threads:
@@ -583,9 +602,9 @@ class TestHistoryConcurrency:
             try:
                 for i in range(operations_per_thread):
                     if i % 4 == 0:
-                        history.add_user_message(f"T{thread_id}-{i}")
+                        history.add_user_message(f'T{thread_id}-{i}')
                     elif i % 4 == 1:
-                        history.add_assistant_message(f"T{thread_id}-{i}")
+                        history.add_assistant_message(f'T{thread_id}-{i}')
                     elif i % 4 == 2:
                         _ = history.get_messages()
                     else:
@@ -603,7 +622,7 @@ class TestHistoryConcurrency:
         for thread in threads:
             thread.join()
 
-        assert len(errors) == 0, f"Errors found: {errors}"
+        assert len(errors) == 0, f'Errors found: {errors}'
         assert len(history) <= 200
 
         messages = history.get_messages()

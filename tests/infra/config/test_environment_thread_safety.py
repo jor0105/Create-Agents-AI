@@ -11,12 +11,12 @@ from createagents.infra import EnvironmentConfig
 class TestEnvironmentConfigThreadSafety:
     def setup_method(self):
         EnvironmentConfig.reset()
-        os.environ["TEST_VAR"] = "test_value"
+        os.environ['TEST_VAR'] = 'test_value'
 
     def teardown_method(self):
         EnvironmentConfig.reset()
-        if "TEST_VAR" in os.environ:
-            del os.environ["TEST_VAR"]
+        if 'TEST_VAR' in os.environ:
+            del os.environ['TEST_VAR']
 
     def test_singleton_is_thread_safe(self):
         instances = []
@@ -42,7 +42,7 @@ class TestEnvironmentConfigThreadSafety:
         lock = threading.Lock()
 
         def get_value():
-            value = EnvironmentConfig.get_env("TEST_VAR")
+            value = EnvironmentConfig.get_env('TEST_VAR')
             with lock:
                 results.append(value)
 
@@ -50,17 +50,17 @@ class TestEnvironmentConfigThreadSafety:
             futures = [executor.submit(get_value) for _ in range(50)]
             concurrent.futures.wait(futures)
 
-        assert all(v == "test_value" for v in results)
+        assert all(v == 'test_value' for v in results)
         assert len(results) == 50
 
     def test_cache_is_consistent_across_threads(self):
-        EnvironmentConfig.get_env("TEST_VAR")
+        EnvironmentConfig.get_env('TEST_VAR')
 
         results = []
         lock = threading.Lock()
 
         def get_cached_value():
-            value = EnvironmentConfig.get_env("TEST_VAR")
+            value = EnvironmentConfig.get_env('TEST_VAR')
             with lock:
                 results.append(value)
 
@@ -68,17 +68,17 @@ class TestEnvironmentConfigThreadSafety:
             futures = [executor.submit(get_cached_value) for _ in range(30)]
             concurrent.futures.wait(futures)
 
-        assert all(v == "test_value" for v in results)
+        assert all(v == 'test_value' for v in results)
 
     def test_get_api_key_is_thread_safe(self):
-        os.environ["API_KEY_TEST"] = "secret123"
+        os.environ['API_KEY_TEST'] = 'secret123'
 
         results = []
         lock = threading.Lock()
 
         def get_key():
             try:
-                key = EnvironmentConfig.get_api_key("API_KEY_TEST")
+                key = EnvironmentConfig.get_api_key('API_KEY_TEST')
                 with lock:
                     results.append(key)
             except Exception as e:
@@ -89,9 +89,9 @@ class TestEnvironmentConfigThreadSafety:
             futures = [executor.submit(get_key) for _ in range(40)]
             concurrent.futures.wait(futures)
 
-        assert all(r == "secret123" for r in results)
+        assert all(r == 'secret123' for r in results)
 
-        del os.environ["API_KEY_TEST"]
+        del os.environ['API_KEY_TEST']
 
 
 @pytest.mark.unit
@@ -103,45 +103,45 @@ class TestEnvironmentConfigNewFeatures:
         EnvironmentConfig.reset()
 
     def test_get_env_with_default_value(self):
-        value = EnvironmentConfig.get_env("NONEXISTENT_VAR", "default_value")
-        assert value == "default_value"
+        value = EnvironmentConfig.get_env('NONEXISTENT_VAR', 'default_value')
+        assert value == 'default_value'
 
     def test_get_env_returns_actual_value_when_exists(self):
-        os.environ["EXISTING_VAR"] = "real_value"
-        value = EnvironmentConfig.get_env("EXISTING_VAR", "default_value")
-        assert value == "real_value"
-        del os.environ["EXISTING_VAR"]
+        os.environ['EXISTING_VAR'] = 'real_value'
+        value = EnvironmentConfig.get_env('EXISTING_VAR', 'default_value')
+        assert value == 'real_value'
+        del os.environ['EXISTING_VAR']
 
     def test_get_env_caches_value(self):
-        os.environ["CACHE_TEST"] = "value1"
+        os.environ['CACHE_TEST'] = 'value1'
 
-        value1 = EnvironmentConfig.get_env("CACHE_TEST")
-        assert value1 == "value1"
+        value1 = EnvironmentConfig.get_env('CACHE_TEST')
+        assert value1 == 'value1'
 
-        os.environ["CACHE_TEST"] = "value2"
+        os.environ['CACHE_TEST'] = 'value2'
 
-        value2 = EnvironmentConfig.get_env("CACHE_TEST")
-        assert value2 == "value1"
+        value2 = EnvironmentConfig.get_env('CACHE_TEST')
+        assert value2 == 'value1'
 
-        del os.environ["CACHE_TEST"]
+        del os.environ['CACHE_TEST']
 
     def test_clear_cache_works(self):
-        os.environ["CLEAR_TEST"] = "value1"
+        os.environ['CLEAR_TEST'] = 'value1'
 
-        value1 = EnvironmentConfig.get_env("CLEAR_TEST")
-        assert value1 == "value1"
+        value1 = EnvironmentConfig.get_env('CLEAR_TEST')
+        assert value1 == 'value1'
 
-        os.environ["CLEAR_TEST"] = "value2"
+        os.environ['CLEAR_TEST'] = 'value2'
         EnvironmentConfig.clear_cache()
 
-        value2 = EnvironmentConfig.get_env("CLEAR_TEST")
-        assert value2 == "value2"
+        value2 = EnvironmentConfig.get_env('CLEAR_TEST')
+        assert value2 == 'value2'
 
-        del os.environ["CLEAR_TEST"]
+        del os.environ['CLEAR_TEST']
 
     def test_reload_thread_safety(self):
-        os.environ["RELOAD_VAR"] = "initial"
-        EnvironmentConfig.get_env("RELOAD_VAR")
+        os.environ['RELOAD_VAR'] = 'initial'
+        EnvironmentConfig.get_env('RELOAD_VAR')
 
         results = []
         errors = []
@@ -151,7 +151,7 @@ class TestEnvironmentConfigNewFeatures:
             try:
                 EnvironmentConfig.reload()
                 with lock:
-                    results.append("success")
+                    results.append('success')
             except Exception as e:
                 with lock:
                     errors.append(str(e))
@@ -162,10 +162,10 @@ class TestEnvironmentConfigNewFeatures:
 
         assert len(errors) == 0
         assert len(results) == 50
-        del os.environ["RELOAD_VAR"]
+        del os.environ['RELOAD_VAR']
 
     def test_concurrent_reload_and_get(self):
-        os.environ["CONCURRENT_VAR"] = "value"
+        os.environ['CONCURRENT_VAR'] = 'value'
 
         results = []
         errors = []
@@ -175,31 +175,33 @@ class TestEnvironmentConfigNewFeatures:
             try:
                 EnvironmentConfig.reload()
                 with lock:
-                    results.append("reload")
+                    results.append('reload')
             except Exception as e:
                 with lock:
                     errors.append(str(e))
 
         def get_action():
             try:
-                value = EnvironmentConfig.get_env("CONCURRENT_VAR")
+                value = EnvironmentConfig.get_env('CONCURRENT_VAR')
                 with lock:
-                    results.append(f"get:{value}")
+                    results.append(f'get:{value}')
             except Exception as e:
                 with lock:
                     errors.append(str(e))
 
         with concurrent.futures.ThreadPoolExecutor(max_workers=20) as executor:
-            reload_futures = [executor.submit(reload_action) for _ in range(10)]
+            reload_futures = [
+                executor.submit(reload_action) for _ in range(10)
+            ]
             get_futures = [executor.submit(get_action) for _ in range(30)]
             concurrent.futures.wait(reload_futures + get_futures)
 
         assert len(errors) == 0
         assert len(results) == 40
-        del os.environ["CONCURRENT_VAR"]
+        del os.environ['CONCURRENT_VAR']
 
     def test_get_api_key_with_empty_value_thread_safe(self):
-        os.environ["EMPTY_API_KEY"] = ""
+        os.environ['EMPTY_API_KEY'] = ''
 
         results = []
         errors = []
@@ -207,15 +209,15 @@ class TestEnvironmentConfigNewFeatures:
 
         def get_empty_key():
             try:
-                key = EnvironmentConfig.get_api_key("EMPTY_API_KEY")
+                key = EnvironmentConfig.get_api_key('EMPTY_API_KEY')
                 with lock:
                     results.append(key)
             except EnvironmentError:
                 with lock:
-                    errors.append("expected_error")
+                    errors.append('expected_error')
             except Exception as e:
                 with lock:
-                    errors.append(f"unexpected:{str(e)}")
+                    errors.append(f'unexpected:{str(e)}')
 
         with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
             futures = [executor.submit(get_empty_key) for _ in range(20)]
@@ -223,17 +225,17 @@ class TestEnvironmentConfigNewFeatures:
 
         assert len(results) == 0
         assert len(errors) == 20
-        assert all(e == "expected_error" for e in errors)
-        del os.environ["EMPTY_API_KEY"]
+        assert all(e == 'expected_error' for e in errors)
+        del os.environ['EMPTY_API_KEY']
 
     def test_get_api_key_strips_whitespace_thread_safe(self):
-        os.environ["WHITESPACE_API"] = "  spaced_value  "
+        os.environ['WHITESPACE_API'] = '  spaced_value  '
 
         results = []
         lock = threading.Lock()
 
         def get_stripped():
-            key = EnvironmentConfig.get_api_key("WHITESPACE_API")
+            key = EnvironmentConfig.get_api_key('WHITESPACE_API')
             with lock:
                 results.append(key)
 
@@ -241,18 +243,18 @@ class TestEnvironmentConfigNewFeatures:
             futures = [executor.submit(get_stripped) for _ in range(30)]
             concurrent.futures.wait(futures)
 
-        assert all(r == "spaced_value" for r in results)
+        assert all(r == 'spaced_value' for r in results)
         assert len(results) == 30
-        del os.environ["WHITESPACE_API"]
+        del os.environ['WHITESPACE_API']
 
     def test_get_env_does_not_cache_empty_thread_safe(self):
-        os.environ["EMPTY_ENV_VAR"] = ""
+        os.environ['EMPTY_ENV_VAR'] = ''
 
         results = []
         lock = threading.Lock()
 
         def get_empty_env():
-            value = EnvironmentConfig.get_env("EMPTY_ENV_VAR", "default")
+            value = EnvironmentConfig.get_env('EMPTY_ENV_VAR', 'default')
             with lock:
                 results.append(value)
 
@@ -260,30 +262,30 @@ class TestEnvironmentConfigNewFeatures:
             futures = [executor.submit(get_empty_env) for _ in range(20)]
             concurrent.futures.wait(futures)
 
-        assert all(r == "default" for r in results)
-        assert "EMPTY_ENV_VAR" not in EnvironmentConfig._cache
-        del os.environ["EMPTY_ENV_VAR"]
+        assert all(r == 'default' for r in results)
+        assert 'EMPTY_ENV_VAR' not in EnvironmentConfig._cache
+        del os.environ['EMPTY_ENV_VAR']
 
     def test_concurrent_cache_operations(self):
-        os.environ["CACHE_OP_VAR"] = "test"
+        os.environ['CACHE_OP_VAR'] = 'test'
 
         operations = []
         lock = threading.Lock()
 
         def read_cache():
-            value = EnvironmentConfig.get_env("CACHE_OP_VAR")
+            value = EnvironmentConfig.get_env('CACHE_OP_VAR')
             with lock:
-                operations.append(("read", value))
+                operations.append(('read', value))
 
         def clear_cache():
             EnvironmentConfig.clear_cache()
             with lock:
-                operations.append(("clear", None))
+                operations.append(('clear', None))
 
         def reload_config():
             EnvironmentConfig.reload()
             with lock:
-                operations.append(("reload", None))
+                operations.append(('reload', None))
 
         with concurrent.futures.ThreadPoolExecutor(max_workers=20) as executor:
             read_futures = [executor.submit(read_cache) for _ in range(30)]
@@ -294,10 +296,10 @@ class TestEnvironmentConfigNewFeatures:
             concurrent.futures.wait(all_futures)
 
         assert len(operations) == 40
-        del os.environ["CACHE_OP_VAR"]
+        del os.environ['CACHE_OP_VAR']
 
     def test_massive_concurrent_access(self):
-        os.environ["STRESS_VAR"] = "stress_value"
+        os.environ['STRESS_VAR'] = 'stress_value'
 
         results = []
         errors = []
@@ -305,18 +307,20 @@ class TestEnvironmentConfigNewFeatures:
 
         def access_env():
             try:
-                value = EnvironmentConfig.get_env("STRESS_VAR")
+                value = EnvironmentConfig.get_env('STRESS_VAR')
                 with lock:
                     results.append(value)
             except Exception as e:
                 with lock:
                     errors.append(str(e))
 
-        with concurrent.futures.ThreadPoolExecutor(max_workers=100) as executor:
+        with concurrent.futures.ThreadPoolExecutor(
+            max_workers=100
+        ) as executor:
             futures = [executor.submit(access_env) for _ in range(1000)]
             concurrent.futures.wait(futures)
 
         assert len(errors) == 0
-        assert all(r == "stress_value" for r in results)
+        assert all(r == 'stress_value' for r in results)
         assert len(results) == 1000
-        del os.environ["STRESS_VAR"]
+        del os.environ['STRESS_VAR']

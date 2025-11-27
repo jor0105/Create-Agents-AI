@@ -1,50 +1,76 @@
----
+# See https://pre-commit.com for more information
+# See https://pre-commit.com/hooks.html for more hooks
 repos:
-  # Basic: Whitespace, EOF, YAML, AST, merge conflicts
+  # --------------------------------------------------------------------------
+  # 1. Basic File Checks
+  # --------------------------------------------------------------------------
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v6.0.0
     hooks:
       - id: trailing-whitespace
       - id: end-of-file-fixer
       - id: check-yaml
-      - id: check-json
       - id: check-toml
       - id: check-merge-conflict
       - id: check-added-large-files
       - id: debug-statements
       - id: check-ast
 
-  # Formatting: Black
-  - repo: https://github.com/psf/black
-    rev: 24.4.2
+  # --------------------------------------------------------------------------
+  # 2. Project Integrity (Poetry)
+  # --------------------------------------------------------------------------
+  - repo: https://github.com/python-poetry/poetry
+    rev: 2.2.1
     hooks:
-      - id: black
-        args: [--line-length=88]
+      - id: poetry-check
+      - id: poetry-lock
 
-  # Linting and formatting: Ruff
+  # --------------------------------------------------------------------------
+  # 3. Security Checks
+  # --------------------------------------------------------------------------
+  # Static Analysis for Security (Bandit)
+  - repo: https://github.com/PyCQA/bandit
+    rev: 1.9.2
+    hooks:
+      - id: bandit
+        args: ["-c", "pyproject.toml"]
+        additional_dependencies: ["bandit[toml]"]
+        exclude: ^tests/
+
+  # Dependency Vulnerabilities (pip-audit)
+  # Runs locally using the project's environment
+  - repo: local
+    hooks:
+      - id: pip-audit
+        name: pip-audit
+        entry: poetry run pip-audit --ignore-vuln GHSA-f83h-ghpp-7wcc
+        language: system
+        pass_filenames: false
+        always_run: true
+
+  # --------------------------------------------------------------------------
+  # 4. Formatting & Linting (Ruff replaces isort/flake8)
+  # --------------------------------------------------------------------------
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.4.4
+    rev: v0.14.6
     hooks:
       - id: ruff
-        args: [--fix]
+        args: [--fix, --exit-non-zero-on-fix]
       - id: ruff-format
 
-  # Import organization
-  - repo: https://github.com/PyCQA/isort
-    rev: 5.12.0
-    hooks:
-      - id: isort
-        args: ["--profile", "black", "--line-length=88"]
-
-  # Type checking
+  # --------------------------------------------------------------------------
+  # 5. Type Checking
+  # --------------------------------------------------------------------------
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.11.1
+    rev: v1.18.2
     hooks:
       - id: mypy
         args: [--ignore-missing-imports, --pretty]
-        exclude: ^(tests/|docs/)
+        additional_dependencies: [types-requests, types-toml]
 
-  # Docstring validation (only critical errors)
+  # --------------------------------------------------------------------------
+  # 6. Documentation
+  # --------------------------------------------------------------------------
   - repo: https://github.com/PyCQA/pydocstyle
     rev: 6.3.0
     hooks:
@@ -53,19 +79,3 @@ repos:
           - --convention=google
           - --match-dir=^src
           - --add-ignore=D104,D100,D101,D102,D103,D105,D107,D205,D212,D417,D415
-        exclude: ^(tests/|__pycache__|\.venv)
-
-  # YAML linting
-  - repo: https://github.com/adrienverge/yamllint
-    rev: v1.27.1
-    hooks:
-      - id: yamllint
-        args: [--strict]
-
-  # Markdown formatting and linting
-  - repo: https://github.com/executablebooks/mdformat
-    rev: 0.7.17
-    hooks:
-      - id: mdformat
-        additional_dependencies: [mdformat-gfm]
-        files: "\\.md$"

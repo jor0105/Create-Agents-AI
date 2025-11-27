@@ -52,17 +52,17 @@ class JSONFormatter(logging.Formatter):
     def format(self, record: logging.LogRecord) -> str:
         """Formats the log record as a structured JSON object."""
         log_data = {
-            "timestamp": self.formatTime(record, self.datefmt),
-            "level": record.levelname,
-            "logger": record.name,
-            "message": record.getMessage(),
-            "module": record.module,
-            "function": record.funcName,
-            "line": record.lineno,
+            'timestamp': self.formatTime(record, self.datefmt),
+            'level': record.levelname,
+            'logger': record.name,
+            'message': record.getMessage(),
+            'module': record.module,
+            'function': record.funcName,
+            'line': record.lineno,
         }
 
         if record.exc_info:
-            log_data["exception"] = self.formatException(record.exc_info)
+            log_data['exception'] = self.formatException(record.exc_info)
 
         json_str = json.dumps(log_data, ensure_ascii=False)
         result: str = SensitiveDataFilter.filter(json_str)
@@ -81,7 +81,7 @@ class LoggingConfig:
     DEFAULT_LOG_LEVEL = logging.INFO
     DEFAULT_MAX_BYTES = 10 * 1024 * 1024  # 10MB
     DEFAULT_BACKUP_COUNT = 5
-    DEFAULT_LOG_PATH = "logs/app.log"
+    DEFAULT_LOG_PATH = 'logs/app.log'
 
     _configured: bool = False
     _log_level: int = DEFAULT_LOG_LEVEL
@@ -116,19 +116,24 @@ class LoggingConfig:
         #     return
 
         level = level or cls._get_log_level_from_env()
-        log_to_file = log_to_file or os.getenv("LOG_TO_FILE", "false").lower() == "true"
+        log_to_file = (
+            log_to_file or os.getenv('LOG_TO_FILE', 'false').lower() == 'true'
+        )
         log_file_path = cls._resolve_log_file_path(log_file_path)
         json_format = (
-            json_format or os.getenv("LOG_JSON_FORMAT", "false").lower() == "true"
+            json_format
+            or os.getenv('LOG_JSON_FORMAT', 'false').lower() == 'true'
         )
 
         cls._log_level = level
 
         if format_string is None:
             if include_timestamp:
-                format_string = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+                format_string = (
+                    '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+                )
             else:
-                format_string = "%(name)s - %(levelname)s - %(message)s"
+                format_string = '%(name)s - %(levelname)s - %(message)s'
 
         root_logger = logging.getLogger()
         root_logger.setLevel(level)
@@ -173,7 +178,7 @@ class LoggingConfig:
                 str(log_file_path),
                 maxBytes=max_bytes,
                 backupCount=backup_count,
-                encoding="utf-8",
+                encoding='utf-8',
             )
             file_handler.setLevel(level)
             file_handler.setFormatter(formatter)
@@ -208,7 +213,7 @@ class LoggingConfig:
         Returns:
             A valid path as a string.
         """
-        default_path = os.getenv("LOG_FILE_PATH", cls.DEFAULT_LOG_PATH)
+        default_path = os.getenv('LOG_FILE_PATH', cls.DEFAULT_LOG_PATH)
 
         if log_file_path is None or isinstance(log_file_path, bool):
             return default_path
@@ -225,13 +230,13 @@ class LoggingConfig:
         Returns:
             The logging level (default: INFO).
         """
-        level_name = os.getenv("LOG_LEVEL", "INFO").upper()
+        level_name = os.getenv('LOG_LEVEL', 'INFO').upper()
         level_map = {
-            "DEBUG": logging.DEBUG,
-            "INFO": logging.INFO,
-            "WARNING": logging.WARNING,
-            "ERROR": logging.ERROR,
-            "CRITICAL": logging.CRITICAL,
+            'DEBUG': logging.DEBUG,
+            'INFO': logging.INFO,
+            'WARNING': logging.WARNING,
+            'ERROR': logging.ERROR,
+            'CRITICAL': logging.CRITICAL,
         }
         return level_map.get(level_name, logging.INFO)
 

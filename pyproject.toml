@@ -1,6 +1,6 @@
 [project]
 name = "createagents"
-version = "0.1.1"
+version = "0.1.2"
 description = "Enterprise-grade modular system for creating AI agents"
 readme = "README.md"
 license = "MIT"
@@ -31,20 +31,20 @@ dependencies = [
 
 [project.optional-dependencies]
 file-tools = [
-    "tiktoken>=0.8.0",
-    "unstructured[pdf,docx,pptx]>=0.16.9",
-    "pandas>=2.2.3",
-    "openpyxl>=3.1.5",
-    "pyarrow>=18.1.0",
-    "chardet>=5.2.0"
+    "tiktoken>=0.8.0,<1.0.0",
+    "unstructured[pdf,docx,pptx]>=0.16.9,<1.0.0",
+    "pandas>=2.2.3,<3.0.0",
+    "openpyxl>=3.1.5,<4.0.0",
+    "pyarrow>=18.1.0,<19.0.0",
+    "chardet>=5.2.0,<6.0.0"
 ]
 all = [
-    "tiktoken>=0.8.0",
-    "unstructured[pdf,docx,pptx]>=0.16.9",
-    "pandas>=2.2.3",
-    "openpyxl>=3.1.5",
-    "pyarrow>=18.1.0",
-    "chardet>=5.2.0"
+    "tiktoken>=0.8.0,<1.0.0",
+    "unstructured[pdf,docx,pptx]>=0.16.9,<1.0.0",
+    "pandas>=2.2.3,<3.0.0",
+    "openpyxl>=3.1.5,<4.0.0",
+    "pyarrow>=18.1.0,<19.0.0",
+    "chardet>=5.2.0,<6.0.0"
 ]
 
 [project.urls]
@@ -72,6 +72,7 @@ mkdocs-material = "^9.6.22"
 mdformat = "^0.7.17"
 mdformat-gfm = "^0.3.5"
 ipykernel = "^7.1.0"
+pip-audit = "^2.9.0"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
@@ -87,3 +88,20 @@ warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = false
 ignore_missing_imports = true
+
+[tool.bandit]
+exclude_dirs = [".venv"]
+
+[tool.bandit.per_file_ignores]
+"tests/*" = ["B101", "B108"]
+
+[tool.ruff]
+# Blue style: 79 characters line length
+line-length = 79
+
+[tool.ruff.format]
+# Blue style: Single quotes
+quote-style = "single"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"

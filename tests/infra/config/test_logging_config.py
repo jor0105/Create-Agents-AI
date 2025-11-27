@@ -17,54 +17,54 @@ class TestSensitiveDataFormatter:
         SensitiveDataFilter.clear_cache()
 
     def test_format_filters_sensitive_data(self):
-        formatter = SensitiveDataFormatter("%(message)s")
+        formatter = SensitiveDataFormatter('%(message)s')
         record = logging.LogRecord(
-            name="test",
+            name='test',
             level=logging.INFO,
-            pathname="test.py",
+            pathname='test.py',
             lineno=1,
-            msg="password=secret123",
+            msg='password=secret123',
             args=(),
             exc_info=None,
         )
 
         result = formatter.format(record)
 
-        assert "secret123" not in result
-        assert "[PASSWORD_REDACTED]" in result
+        assert 'secret123' not in result
+        assert '[PASSWORD_REDACTED]' in result
 
     def test_format_preserves_normal_messages(self):
-        formatter = SensitiveDataFormatter("%(message)s")
+        formatter = SensitiveDataFormatter('%(message)s')
         record = logging.LogRecord(
-            name="test",
+            name='test',
             level=logging.INFO,
-            pathname="test.py",
+            pathname='test.py',
             lineno=1,
-            msg="Normal message",
+            msg='Normal message',
             args=(),
             exc_info=None,
         )
 
         result = formatter.format(record)
 
-        assert result == "Normal message"
+        assert result == 'Normal message'
 
     def test_format_with_timestamp(self):
-        formatter = SensitiveDataFormatter("%(asctime)s - %(message)s")
+        formatter = SensitiveDataFormatter('%(asctime)s - %(message)s')
         record = logging.LogRecord(
-            name="test",
+            name='test',
             level=logging.INFO,
-            pathname="test.py",
+            pathname='test.py',
             lineno=1,
-            msg="Test message",
+            msg='Test message',
             args=(),
             exc_info=None,
         )
 
         result = formatter.format(record)
 
-        assert "Test message" in result
-        assert "-" in result
+        assert 'Test message' in result
+        assert '-' in result
 
 
 class TestJSONFormatter:
@@ -74,11 +74,11 @@ class TestJSONFormatter:
     def test_format_returns_valid_json(self):
         formatter = JSONFormatter()
         record = logging.LogRecord(
-            name="test.module",
+            name='test.module',
             level=logging.INFO,
-            pathname="test.py",
+            pathname='test.py',
             lineno=42,
-            msg="Test message",
+            msg='Test message',
             args=(),
             exc_info=None,
         )
@@ -86,20 +86,20 @@ class TestJSONFormatter:
         result = formatter.format(record)
         parsed = json.loads(result)
 
-        assert parsed["level"] == "INFO"
-        assert parsed["logger"] == "test.module"
-        assert parsed["message"] == "Test message"
-        assert parsed["module"] == "test"
-        assert parsed["line"] == 42
+        assert parsed['level'] == 'INFO'
+        assert parsed['logger'] == 'test.module'
+        assert parsed['message'] == 'Test message'
+        assert parsed['module'] == 'test'
+        assert parsed['line'] == 42
 
     def test_format_filters_sensitive_data_in_json(self):
         formatter = JSONFormatter()
         record = logging.LogRecord(
-            name="test",
+            name='test',
             level=logging.INFO,
-            pathname="test.py",
+            pathname='test.py',
             lineno=1,
-            msg="API_KEY=sk-123456789012",
+            msg='API_KEY=sk-123456789012',
             args=(),
             exc_info=None,
         )
@@ -107,24 +107,24 @@ class TestJSONFormatter:
         result = formatter.format(record)
         parsed = json.loads(result)
 
-        assert "sk-123456789012" not in parsed["message"]
-        assert "[API_KEY_REDACTED]" in parsed["message"]
+        assert 'sk-123456789012' not in parsed['message']
+        assert '[API_KEY_REDACTED]' in parsed['message']
 
     def test_format_includes_exception(self):
         formatter = JSONFormatter()
         try:
-            raise ValueError("Test error")
+            raise ValueError('Test error')
         except ValueError:
             import sys
 
             exc_info = sys.exc_info()
 
         record = logging.LogRecord(
-            name="test",
+            name='test',
             level=logging.ERROR,
-            pathname="test.py",
+            pathname='test.py',
             lineno=1,
-            msg="Error occurred",
+            msg='Error occurred',
             args=(),
             exc_info=exc_info,
         )
@@ -132,8 +132,8 @@ class TestJSONFormatter:
         result = formatter.format(record)
         parsed = json.loads(result)
 
-        assert "exception" in parsed
-        assert "ValueError: Test error" in parsed["exception"]
+        assert 'exception' in parsed
+        assert 'ValueError: Test error' in parsed['exception']
 
 
 class TestLoggingConfig:
@@ -142,7 +142,12 @@ class TestLoggingConfig:
 
     def teardown_method(self):
         LoggingConfig.reset()
-        for key in ["LOG_LEVEL", "LOG_TO_FILE", "LOG_FILE_PATH", "LOG_JSON_FORMAT"]:
+        for key in [
+            'LOG_LEVEL',
+            'LOG_TO_FILE',
+            'LOG_FILE_PATH',
+            'LOG_JSON_FORMAT',
+        ]:
             if key in os.environ:
                 del os.environ[key]
 
@@ -161,31 +166,35 @@ class TestLoggingConfig:
         assert root_logger.level == logging.DEBUG
 
     def test_configure_from_env_var(self):
-        os.environ["LOG_LEVEL"] = "WARNING"
+        os.environ['LOG_LEVEL'] = 'WARNING'
         LoggingConfig.configure()
 
         assert LoggingConfig._log_level == logging.WARNING
 
     def test_configure_invalid_env_var_uses_default(self):
-        os.environ["LOG_LEVEL"] = "INVALID"
+        os.environ['LOG_LEVEL'] = 'INVALID'
         LoggingConfig.configure()
 
         assert LoggingConfig._log_level == logging.INFO
 
     def test_configure_with_file_handler(self):
         with tempfile.TemporaryDirectory() as tmpdir:
-            log_file = Path(tmpdir) / "test.log"
+            log_file = Path(tmpdir) / 'test.log'
 
-            LoggingConfig.configure(log_to_file=True, log_file_path=str(log_file))
+            LoggingConfig.configure(
+                log_to_file=True, log_file_path=str(log_file)
+            )
 
             assert len(LoggingConfig._handlers) == 2
             assert log_file.exists() or log_file.parent.exists()
 
     def test_configure_creates_log_directory(self):
         with tempfile.TemporaryDirectory() as tmpdir:
-            log_file = Path(tmpdir) / "nested" / "dir" / "test.log"
+            log_file = Path(tmpdir) / 'nested' / 'dir' / 'test.log'
 
-            LoggingConfig.configure(log_to_file=True, log_file_path=str(log_file))
+            LoggingConfig.configure(
+                log_to_file=True, log_file_path=str(log_file)
+            )
 
             assert log_file.parent.exists()
 
@@ -209,15 +218,15 @@ class TestLoggingConfig:
         assert second_level == logging.ERROR
 
     def test_get_logger_returns_logger(self):
-        logger = LoggingConfig.get_logger("test.module")
+        logger = LoggingConfig.get_logger('test.module')
 
         assert isinstance(logger, logging.Logger)
-        assert logger.name == "test.module"
+        assert logger.name == 'test.module'
 
     def test_get_logger_does_not_configure_automatically(self):
         assert LoggingConfig._configured is False
 
-        logger = LoggingConfig.get_logger("test")
+        logger = LoggingConfig.get_logger('test')
 
         # Should NOT configure automatically anymore
         assert LoggingConfig._configured is False
@@ -241,7 +250,7 @@ class TestLoggingConfig:
         assert len(LoggingConfig._handlers) == 0
 
     def test_reset_clears_sensitive_data_cache(self):
-        test_text = "password=secret123"
+        test_text = 'password=secret123'
         SensitiveDataFilter.filter(test_text)
         SensitiveDataFilter.filter(test_text)
 
@@ -265,25 +274,27 @@ class TestLoggingConfig:
 
     def test_logging_filters_sensitive_data(self):
         with tempfile.TemporaryDirectory() as tmpdir:
-            log_file = Path(tmpdir) / "test.log"
-            LoggingConfig.configure(log_to_file=True, log_file_path=str(log_file))
+            log_file = Path(tmpdir) / 'test.log'
+            LoggingConfig.configure(
+                log_to_file=True, log_file_path=str(log_file)
+            )
 
-            logger = LoggingConfig.get_logger("test")
-            logger.info("User password=secret123")
+            logger = LoggingConfig.get_logger('test')
+            logger.info('User password=secret123')
 
             for handler in LoggingConfig._handlers:
                 handler.flush()
 
             if log_file.exists():
                 content = log_file.read_text()
-                assert "secret123" not in content
-                assert "[PASSWORD_REDACTED]" in content
+                assert 'secret123' not in content
+                assert '[PASSWORD_REDACTED]' in content
 
     def test_configure_with_env_file_logging(self):
         with tempfile.TemporaryDirectory() as tmpdir:
-            log_file = Path(tmpdir) / "app.log"
-            os.environ["LOG_TO_FILE"] = "true"
-            os.environ["LOG_FILE_PATH"] = str(log_file)
+            log_file = Path(tmpdir) / 'app.log'
+            os.environ['LOG_TO_FILE'] = 'true'
+            os.environ['LOG_FILE_PATH'] = str(log_file)
 
             LoggingConfig.configure()
 
@@ -294,10 +305,10 @@ class TestLoggingConfig:
 
         handlers = LoggingConfig.get_handlers()
         formatter = handlers[0].formatter
-        assert "asctime" not in formatter._fmt
+        assert 'asctime' not in formatter._fmt
 
     def test_configure_custom_format_string(self):
-        custom_format = "%(levelname)s - %(message)s"
+        custom_format = '%(levelname)s - %(message)s'
         LoggingConfig.configure(format_string=custom_format)
 
         handlers = LoggingConfig.get_handlers()
@@ -308,7 +319,7 @@ class TestLoggingConfig:
         from logging.handlers import RotatingFileHandler
 
         with tempfile.TemporaryDirectory() as tmpdir:
-            log_file = Path(tmpdir) / "test.log"
+            log_file = Path(tmpdir) / 'test.log'
             max_bytes = 1024
             backup_count = 3
 
@@ -320,9 +331,9 @@ class TestLoggingConfig:
             )
 
             handlers = LoggingConfig.get_handlers()
-            file_handler = [h for h in handlers if isinstance(h, RotatingFileHandler)][
-                0
-            ]
+            file_handler = [
+                h for h in handlers if isinstance(h, RotatingFileHandler)
+            ][0]
 
             assert file_handler.maxBytes == max_bytes
             assert file_handler.backupCount == backup_count
@@ -330,8 +341,8 @@ class TestLoggingConfig:
     def test_multiple_loggers_share_config(self):
         LoggingConfig.configure(level=logging.WARNING)
 
-        logger1 = LoggingConfig.get_logger("module1")
-        logger2 = LoggingConfig.get_logger("module2")
+        logger1 = LoggingConfig.get_logger('module1')
+        logger2 = LoggingConfig.get_logger('module2')
 
         assert logger1.getEffectiveLevel() == logging.WARNING
         assert logger2.getEffectiveLevel() == logging.WARNING
@@ -345,20 +356,20 @@ class TestLoggingConfig:
 
         LoggingConfig.reset()
         LoggingConfig.configure(level=logging.WARNING)
-        logger = LoggingConfig.get_logger("test")
+        logger = LoggingConfig.get_logger('test')
 
         logger.addHandler(handler)
 
-        logger.debug("Debug message")
-        logger.info("Info message")
-        logger.warning("Warning message")
+        logger.debug('Debug message')
+        logger.info('Info message')
+        logger.warning('Warning message')
 
         handler.flush()
         output = stream.getvalue()
 
-        assert "Debug message" not in output
-        assert "Info message" not in output
-        assert "Warning message" in output
+        assert 'Debug message' not in output
+        assert 'Info message' not in output
+        assert 'Warning message' in output
 
 
 class TestLoggingIntegration:
@@ -370,61 +381,66 @@ class TestLoggingIntegration:
 
     def test_real_world_scenario_with_sensitive_data(self):
         with tempfile.TemporaryDirectory() as tmpdir:
-            log_file = Path(tmpdir) / "app.log"
-            LoggingConfig.configure(log_to_file=True, log_file_path=str(log_file))
+            log_file = Path(tmpdir) / 'app.log'
+            LoggingConfig.configure(
+                log_to_file=True, log_file_path=str(log_file)
+            )
 
-            logger = LoggingConfig.get_logger("app")
+            logger = LoggingConfig.get_logger('app')
 
-            logger.info("User logged in: user@example.com")
-            logger.debug("API request with key: sk-proj-123456789012")
-            logger.warning("Database connection: postgres://admin:pass123@db.com")
-            logger.error("Failed payment for card: 4532-1234-5678-9010")
+            logger.info('User logged in: user@example.com')
+            logger.debug('API request with key: sk-proj-123456789012')
+            logger.warning(
+                'Database connection: postgres://admin:pass123@db.com'
+            )
+            logger.error('Failed payment for card: 4532-1234-5678-9010')
 
             for handler in LoggingConfig._handlers:
                 handler.flush()
 
             content = log_file.read_text()
 
-            assert "user@example.com" not in content
-            assert "sk-proj-123456789012" not in content
-            assert "pass123" not in content
-            assert "4532-1234-5678-9010" not in content
+            assert 'user@example.com' not in content
+            assert 'sk-proj-123456789012' not in content
+            assert 'pass123' not in content
+            assert '4532-1234-5678-9010' not in content
 
-            assert "[EMAIL_REDACTED]" in content
+            assert '[EMAIL_REDACTED]' in content
             assert (
-                "[PASSWORD_REDACTED]" in content or "[CREDENTIALS_REDACTED]" in content
+                '[PASSWORD_REDACTED]' in content
+                or '[CREDENTIALS_REDACTED]' in content
             )
-            assert "[CREDIT_CARD_REDACTED]" in content
+            assert '[CREDIT_CARD_REDACTED]' in content
 
     def test_json_logging_production_ready(self):
         with tempfile.TemporaryDirectory() as tmpdir:
-            log_file = Path(tmpdir) / "app.json"
+            log_file = Path(tmpdir) / 'app.json'
             LoggingConfig.configure(
                 log_to_file=True, log_file_path=str(log_file), json_format=True
             )
 
-            logger = LoggingConfig.get_logger("api")
-            logger.info("Request received from user@test.com")
+            logger = LoggingConfig.get_logger('api')
+            logger.info('Request received from user@test.com')
 
             for handler in LoggingConfig._handlers:
                 handler.flush()
 
-            lines = log_file.read_text().strip().split("\n")
+            lines = log_file.read_text().strip().split('\n')
             for line in lines:
                 log_entry = json.loads(line)
 
-                assert "timestamp" in log_entry
-                assert "level" in log_entry
-                assert "logger" in log_entry
-                assert "message" in log_entry
+                assert 'timestamp' in log_entry
+                assert 'level' in log_entry
+                assert 'logger' in log_entry
+                assert 'message' in log_entry
 
-                assert "user@test.com" not in log_entry["message"]
+                assert 'user@test.com' not in log_entry['message']
 
     def test_default_constants_defined(self):
-        assert hasattr(LoggingConfig, "DEFAULT_LOG_LEVEL")
-        assert hasattr(LoggingConfig, "DEFAULT_MAX_BYTES")
-        assert hasattr(LoggingConfig, "DEFAULT_BACKUP_COUNT")
-        assert hasattr(LoggingConfig, "DEFAULT_LOG_PATH")
+        assert hasattr(LoggingConfig, 'DEFAULT_LOG_LEVEL')
+        assert hasattr(LoggingConfig, 'DEFAULT_MAX_BYTES')
+        assert hasattr(LoggingConfig, 'DEFAULT_BACKUP_COUNT')
+        assert hasattr(LoggingConfig, 'DEFAULT_LOG_PATH')
 
     def test_default_log_level_constant(self):
         assert LoggingConfig.DEFAULT_LOG_LEVEL == logging.INFO
@@ -436,7 +452,7 @@ class TestLoggingIntegration:
         assert LoggingConfig.DEFAULT_BACKUP_COUNT == 5
 
     def test_default_log_path_constant(self):
-        assert LoggingConfig.DEFAULT_LOG_PATH == "logs/app.log"
+        assert LoggingConfig.DEFAULT_LOG_PATH == 'logs/app.log'
 
     def test_configure_uses_default_constants(self):
         LoggingConfig.configure()
@@ -450,7 +466,7 @@ class TestLoggingIntegration:
         assert len(result) > 0
 
     def test_resolve_log_file_path_with_valid_string(self):
-        test_path = "/tmp/test.log"
+        test_path = '/tmp/test.log'
         result = LoggingConfig._resolve_log_file_path(test_path)
 
         assert result == test_path
@@ -459,7 +475,7 @@ class TestLoggingIntegration:
         result = LoggingConfig._resolve_log_file_path(True)
 
         assert isinstance(result, str)
-        assert result != "True"
+        assert result != 'True'
 
     def test_resolve_log_file_path_with_invalid_type(self):
         result = LoggingConfig._resolve_log_file_path(12345)
@@ -467,19 +483,19 @@ class TestLoggingIntegration:
         assert isinstance(result, str)
 
     def test_resolve_log_file_path_respects_env_var(self):
-        custom_path = "/custom/path/app.log"
-        os.environ["LOG_FILE_PATH"] = custom_path
+        custom_path = '/custom/path/app.log'
+        os.environ['LOG_FILE_PATH'] = custom_path
 
         try:
             result = LoggingConfig._resolve_log_file_path(None)
             assert result == custom_path
         finally:
-            if "LOG_FILE_PATH" in os.environ:
-                del os.environ["LOG_FILE_PATH"]
+            if 'LOG_FILE_PATH' in os.environ:
+                del os.environ['LOG_FILE_PATH']
 
     def test_configure_with_custom_max_bytes(self):
         with tempfile.TemporaryDirectory() as tmpdir:
-            log_file = Path(tmpdir) / "test.log"
+            log_file = Path(tmpdir) / 'test.log'
 
             custom_max_bytes = 5 * 1024 * 1024
             LoggingConfig.configure(
@@ -499,7 +515,7 @@ class TestLoggingIntegration:
 
     def test_configure_with_custom_backup_count(self):
         with tempfile.TemporaryDirectory() as tmpdir:
-            log_file = Path(tmpdir) / "test.log"
+            log_file = Path(tmpdir) / 'test.log'
 
             custom_backup = 3
             LoggingConfig.configure(
@@ -519,9 +535,11 @@ class TestLoggingIntegration:
 
     def test_configure_uses_default_max_bytes_when_not_specified(self):
         with tempfile.TemporaryDirectory() as tmpdir:
-            log_file = Path(tmpdir) / "test.log"
+            log_file = Path(tmpdir) / 'test.log'
 
-            LoggingConfig.configure(log_to_file=True, log_file_path=str(log_file))
+            LoggingConfig.configure(
+                log_to_file=True, log_file_path=str(log_file)
+            )
 
             file_handlers = [
                 h
@@ -534,9 +552,11 @@ class TestLoggingIntegration:
 
     def test_configure_uses_default_backup_count_when_not_specified(self):
         with tempfile.TemporaryDirectory() as tmpdir:
-            log_file = Path(tmpdir) / "test.log"
+            log_file = Path(tmpdir) / 'test.log'
 
-            LoggingConfig.configure(log_to_file=True, log_file_path=str(log_file))
+            LoggingConfig.configure(
+                log_to_file=True, log_file_path=str(log_file)
+            )
 
             file_handlers = [
                 h
@@ -545,7 +565,10 @@ class TestLoggingIntegration:
             ]
 
             assert len(file_handlers) > 0
-            assert file_handlers[0].backupCount == LoggingConfig.DEFAULT_BACKUP_COUNT
+            assert (
+                file_handlers[0].backupCount
+                == LoggingConfig.DEFAULT_BACKUP_COUNT
+            )
 
     def test_constants_are_immutable_values(self):
         assert isinstance(LoggingConfig.DEFAULT_LOG_LEVEL, int)
@@ -556,13 +579,13 @@ class TestLoggingIntegration:
     def test_resolve_log_file_path_handles_path_like_objects(self):
         from pathlib import Path
 
-        test_path = Path("/tmp/test.log")
+        test_path = Path('/tmp/test.log')
         result = LoggingConfig._resolve_log_file_path(str(test_path))
 
         assert result == str(test_path)
 
     def test_configure_with_default_log_path_creates_directory(self):
-        if Path("logs").exists():
+        if Path('logs').exists():
             LoggingConfig.configure(log_to_file=True)
             assert LoggingConfig._configured
 
@@ -593,13 +616,13 @@ class TestLoggingIntegration:
     def test_resolve_log_file_path_with_exception_handling(self):
         class UnconvertibleObject:
             def __str__(self):
-                raise ValueError("Cannot convert to string")
+                raise ValueError('Cannot convert to string')
 
         result = LoggingConfig._resolve_log_file_path(UnconvertibleObject())
 
         assert isinstance(result, str)
         assert result == LoggingConfig.DEFAULT_LOG_PATH or result == os.getenv(
-            "LOG_FILE_PATH", LoggingConfig.DEFAULT_LOG_PATH
+            'LOG_FILE_PATH', LoggingConfig.DEFAULT_LOG_PATH
         )
 
     def test_configure_removes_existing_handlers_before_adding_new(self):

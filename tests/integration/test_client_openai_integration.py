@@ -5,23 +5,29 @@ import pytest
 from createagents.domain import ChatException
 from createagents.infra import OpenAIChatAdapter
 
-IA_OPENAI_TEST_1: str = "gpt-5-nano"  # nao aceita configs, aceita tools e think: low
-IA_OPENAI_TEST_2: str = "gpt-4.1-mini"  # aceita configs e tools e nao aceita think
+IA_OPENAI_TEST_1: str = (
+    'gpt-5-nano'  # nao aceita configs, aceita tools e think: low
+)
+IA_OPENAI_TEST_2: str = (
+    'gpt-4.1-mini'  # aceita configs e tools e nao aceita think
+)
 
 
 def _get_openai_api_key():
     from createagents.infra.adapters.OpenAI.client_openai import ClientOpenAI
     from createagents.infra.config.environment import EnvironmentConfig
 
-    if os.getenv("CI"):
-        pytest.skip("Skipping real API integration test on CI (set CI=0 to run)")
+    if os.getenv('CI'):
+        pytest.skip(
+            'Skipping real API integration test on CI (set CI=0 to run)'
+        )
 
     try:
         api_key = EnvironmentConfig.get_api_key(ClientOpenAI.API_OPENAI_NAME)
         return api_key
     except EnvironmentError:
         pytest.skip(
-            f"Skipping integration test: {ClientOpenAI.API_OPENAI_NAME} not found in .env file"
+            f'Skipping integration test: {ClientOpenAI.API_OPENAI_NAME} not found in .env file'
         )
 
 
@@ -33,9 +39,9 @@ class TestOpenAIChatAdapterIntegration:
         adapter = OpenAIChatAdapter()
 
         assert adapter is not None
-        assert hasattr(adapter, "chat")
+        assert hasattr(adapter, 'chat')
         assert callable(adapter.chat)
-        assert hasattr(adapter, "get_metrics")
+        assert hasattr(adapter, 'get_metrics')
         assert callable(adapter.get_metrics)
 
     def test_chat_with_real_openai_simple_question(self):
@@ -45,17 +51,17 @@ class TestOpenAIChatAdapterIntegration:
 
         response = adapter.chat(
             model=IA_OPENAI_TEST_1,
-            instructions="You are a helpful assistant. Answer briefly.",
+            instructions='You are a helpful assistant. Answer briefly.',
             config={},
             tools=None,
             history=[],
-            user_ask="What is 2+2?",
+            user_ask='What is 2+2?',
         )
 
         assert response is not None
         assert isinstance(response, str)
         assert len(response) > 0
-        assert "4" in response or "four" in response.lower()
+        assert '4' in response or 'four' in response.lower()
 
     def test_chat_with_second_model(self):
         _get_openai_api_key()
@@ -64,11 +70,11 @@ class TestOpenAIChatAdapterIntegration:
 
         response = adapter.chat(
             model=IA_OPENAI_TEST_1,
-            instructions="You are a helpful assistant. Answer with one word only.",
+            instructions='You are a helpful assistant. Answer with one word only.',
             config={},
             tools=None,
             history=[],
-            user_ask="What color is the sky? Answer with one word.",
+            user_ask='What color is the sky? Answer with one word.',
         )
 
         assert response is not None
@@ -81,23 +87,23 @@ class TestOpenAIChatAdapterIntegration:
         adapter = OpenAIChatAdapter()
 
         history = [
-            {"role": "user", "content": "My name is Alice."},
-            {"role": "assistant", "content": "Hello Alice! Nice to meet you."},
+            {'role': 'user', 'content': 'My name is Alice.'},
+            {'role': 'assistant', 'content': 'Hello Alice! Nice to meet you.'},
         ]
 
         response = adapter.chat(
             model=IA_OPENAI_TEST_1,
-            instructions="You are a helpful assistant.",
+            instructions='You are a helpful assistant.',
             config={},
             tools=None,
             history=history,
-            user_ask="What is my name?",
+            user_ask='What is my name?',
         )
 
         assert response is not None
         assert isinstance(response, str)
         assert len(response) > 0
-        assert "alice" in response.lower()
+        assert 'alice' in response.lower()
 
     def test_chat_with_complex_instructions(self):
         _get_openai_api_key()
@@ -106,11 +112,11 @@ class TestOpenAIChatAdapterIntegration:
 
         response = adapter.chat(
             model=IA_OPENAI_TEST_1,
-            instructions="You are a math teacher. Explain concepts simply and clearly.",
+            instructions='You are a math teacher. Explain concepts simply and clearly.',
             config={},
             tools=None,
             history=[],
-            user_ask="What is a prime number?",
+            user_ask='What is a prime number?',
         )
 
         assert response is not None
@@ -118,7 +124,7 @@ class TestOpenAIChatAdapterIntegration:
         assert len(response) > 0
         assert any(
             word in response.lower()
-            for word in ["prime", "number", "divisible", "divide"]
+            for word in ['prime', 'number', 'divisible', 'divide']
         )
 
     def test_chat_with_multiple_history_items(self):
@@ -127,25 +133,25 @@ class TestOpenAIChatAdapterIntegration:
         adapter = OpenAIChatAdapter()
 
         history = [
-            {"role": "user", "content": "I like pizza."},
-            {"role": "assistant", "content": "Pizza is delicious!"},
-            {"role": "user", "content": "My favorite is pepperoni."},
-            {"role": "assistant", "content": "Pepperoni is a classic choice!"},
+            {'role': 'user', 'content': 'I like pizza.'},
+            {'role': 'assistant', 'content': 'Pizza is delicious!'},
+            {'role': 'user', 'content': 'My favorite is pepperoni.'},
+            {'role': 'assistant', 'content': 'Pepperoni is a classic choice!'},
         ]
 
         response = adapter.chat(
             model=IA_OPENAI_TEST_1,
-            instructions="You are a friendly assistant.",
+            instructions='You are a friendly assistant.',
             config={},
             tools=None,
             history=history,
-            user_ask="What food did I mention?",
+            user_ask='What food did I mention?',
         )
 
         assert response is not None
         assert isinstance(response, str)
         assert len(response) > 0
-        assert "pizza" in response.lower() or "pepperoni" in response.lower()
+        assert 'pizza' in response.lower() or 'pepperoni' in response.lower()
 
     def test_chat_with_special_characters(self):
         _get_openai_api_key()
@@ -154,11 +160,11 @@ class TestOpenAIChatAdapterIntegration:
 
         response = adapter.chat(
             model=IA_OPENAI_TEST_1,
-            instructions="You are a helpful assistant. Respond briefly.",
+            instructions='You are a helpful assistant. Respond briefly.',
             config={},
             tools=None,
             history=[],
-            user_ask="Say hello in Chinese (你好) and add a celebration emoji 🎉",
+            user_ask='Say hello in Chinese (你好) and add a celebration emoji 🎉',
         )
 
         assert response is not None
@@ -178,7 +184,7 @@ class TestOpenAIChatAdapterIntegration:
 
         response = adapter.chat(
             model=IA_OPENAI_TEST_1,
-            instructions="You are a helpful assistant.",
+            instructions='You are a helpful assistant.',
             config={},
             tools=None,
             history=[],
@@ -196,7 +202,7 @@ class TestOpenAIChatAdapterIntegration:
 
         response = adapter.chat(
             model=IA_OPENAI_TEST_1,
-            instructions="Answer briefly.",
+            instructions='Answer briefly.',
             config={},
             tools=None,
             history=[],
@@ -221,12 +227,12 @@ class TestOpenAIChatAdapterIntegration:
 
         with pytest.raises(ChatException):
             adapter.chat(
-                model="invalid-model-that-does-not-exist-xyz-123",
-                instructions="Test",
+                model='invalid-model-that-does-not-exist-xyz-123',
+                instructions='Test',
                 config={},
                 tools=None,
                 history=[],
-                user_ask="Test",
+                user_ask='Test',
             )
 
     def test_chat_collects_metrics_on_failure(self):
@@ -236,19 +242,19 @@ class TestOpenAIChatAdapterIntegration:
 
         try:
             adapter.chat(
-                model="invalid-model-xyz-123",
-                instructions="Test",
+                model='invalid-model-xyz-123',
+                instructions='Test',
                 config={},
                 tools=None,
                 history=[],
-                user_ask="Test",
+                user_ask='Test',
             )
         except ChatException:
             pass
 
         metrics = adapter.get_metrics()
         assert len(metrics) == 1
-        assert metrics[0].model == "invalid-model-xyz-123"
+        assert metrics[0].model == 'invalid-model-xyz-123'
         assert metrics[0].success is False
         assert metrics[0].error_message is not None
         assert metrics[0].latency_ms > 0
@@ -260,11 +266,11 @@ class TestOpenAIChatAdapterIntegration:
 
         response = adapter.chat(
             model=IA_OPENAI_TEST_1,
-            instructions="You are a helpful assistant.",
+            instructions='You are a helpful assistant.',
             config={},
             tools=None,
             history=[],
-            user_ask="",
+            user_ask='',
         )
 
         assert response is not None
@@ -277,11 +283,11 @@ class TestOpenAIChatAdapterIntegration:
 
         response = adapter.chat(
             model=IA_OPENAI_TEST_1,
-            instructions="",
+            instructions='',
             config={},
             tools=None,
             history=[],
-            user_ask="What is 1+1?",
+            user_ask='What is 1+1?',
         )
 
         assert response is not None
@@ -299,7 +305,7 @@ class TestOpenAIChatAdapterIntegration:
             config={},
             tools=None,
             history=[],
-            user_ask="What is 1+1?",
+            user_ask='What is 1+1?',
         )
 
         assert response is not None
@@ -313,7 +319,7 @@ class TestOpenAIChatAdapterIntegration:
 
         response1 = adapter.chat(
             model=IA_OPENAI_TEST_1,
-            instructions="Answer briefly.",
+            instructions='Answer briefly.',
             config={},
             tools=None,
             history=[],
@@ -322,7 +328,7 @@ class TestOpenAIChatAdapterIntegration:
 
         response2 = adapter.chat(
             model=IA_OPENAI_TEST_1,
-            instructions="Answer briefly.",
+            instructions='Answer briefly.',
             config={},
             tools=None,
             history=[],
@@ -344,20 +350,20 @@ class TestOpenAIChatAdapterIntegration:
 
         response1 = adapter.chat(
             model=IA_OPENAI_TEST_1,
-            instructions="Answer briefly.",
+            instructions='Answer briefly.',
             config={},
             tools=None,
             history=[],
-            user_ask="What is Python?",
+            user_ask='What is Python?',
         )
 
         response2 = adapter.chat(
             model=IA_OPENAI_TEST_1,
-            instructions="Answer briefly.",
+            instructions='Answer briefly.',
             config={},
             tools=None,
             history=[],
-            user_ask="What is Python?",
+            user_ask='What is Python?',
         )
 
         assert response1 is not None
@@ -370,12 +376,16 @@ class TestOpenAIChatAdapterIntegration:
         assert metrics[0].model == IA_OPENAI_TEST_1
         assert metrics[1].model == IA_OPENAI_TEST_1
         assert all(m.success for m in metrics)
-        assert all((m.tokens_used is None or m.tokens_used > 0) for m in metrics)
+        assert all(
+            (m.tokens_used is None or m.tokens_used > 0) for m in metrics
+        )
 
     def test_adapter_implements_chat_repository_interface(self):
         _get_openai_api_key()
 
-        from createagents.application.interfaces.chat_repository import ChatRepository
+        from createagents.application.interfaces.chat_repository import (
+            ChatRepository,
+        )
 
         adapter = OpenAIChatAdapter()
 
@@ -388,18 +398,23 @@ class TestOpenAIChatAdapterIntegration:
 
         history = []
         for i in range(5):
-            history.append({"role": "user", "content": f"Message number {i+1}"})
             history.append(
-                {"role": "assistant", "content": f"Response to message {i+1}"}
+                {'role': 'user', 'content': f'Message number {i + 1}'}
+            )
+            history.append(
+                {
+                    'role': 'assistant',
+                    'content': f'Response to message {i + 1}',
+                }
             )
 
         response = adapter.chat(
             model=IA_OPENAI_TEST_1,
-            instructions="You are a helpful assistant.",
+            instructions='You are a helpful assistant.',
             config={},
             tools=None,
             history=history,
-            user_ask="How many messages did I send before this one?",
+            user_ask='How many messages did I send before this one?',
         )
 
         assert response is not None
@@ -413,17 +428,17 @@ class TestOpenAIChatAdapterIntegration:
 
         response = adapter.chat(
             model=IA_OPENAI_TEST_1,
-            instructions="You are a helpful assistant.",
+            instructions='You are a helpful assistant.',
             config={},
             tools=None,
             history=[],
-            user_ask="Hello!",
+            user_ask='Hello!',
         )
 
         assert response is not None
         assert isinstance(response, str)
         assert len(response) > 0
-        assert response.strip() != ""
+        assert response.strip() != ''
 
     def test_get_metrics_returns_copy(self):
         _get_openai_api_key()
@@ -432,11 +447,11 @@ class TestOpenAIChatAdapterIntegration:
 
         adapter.chat(
             model=IA_OPENAI_TEST_1,
-            instructions="Test",
+            instructions='Test',
             config={},
             tools=None,
             history=[],
-            user_ask="Test",
+            user_ask='Test',
         )
 
         metrics1 = adapter.get_metrics()
@@ -451,17 +466,17 @@ class TestOpenAIChatAdapterIntegration:
         adapter = OpenAIChatAdapter()
 
         config = {
-            "temperature": 0.7,
-            "max_tokens": 100,
+            'temperature': 0.7,
+            'max_tokens': 100,
         }
 
         response = adapter.chat(
             model=IA_OPENAI_TEST_2,
-            instructions="Answer briefly.",
+            instructions='Answer briefly.',
             config=config,
             tools=None,
             history=[],
-            user_ask="Say hello.",
+            user_ask='Say hello.',
         )
 
         assert response is not None
@@ -473,11 +488,11 @@ class TestOpenAIChatAdapterIntegration:
 
         adapter = OpenAIChatAdapter()
 
-        long_question = "Tell me about Python. " * 50
+        long_question = 'Tell me about Python. ' * 50
 
         response = adapter.chat(
             model=IA_OPENAI_TEST_1,
-            instructions="Answer briefly.",
+            instructions='Answer briefly.',
             config={},
             tools=None,
             history=[],
@@ -502,11 +517,11 @@ class TestOpenAIChatAdapterIntegration:
 
         response = adapter.chat(
             model=IA_OPENAI_TEST_1,
-            instructions="You are a code reviewer.",
+            instructions='You are a code reviewer.',
             config={},
             tools=None,
             history=[],
-            user_ask="What does this Python code do?\n\ndef add(a, b):\n    return a + b",
+            user_ask='What does this Python code do?\n\ndef add(a, b):\n    return a + b',
         )
 
         assert response is not None
@@ -520,11 +535,11 @@ class TestOpenAIChatAdapterIntegration:
 
         adapter.chat(
             model=IA_OPENAI_TEST_1,
-            instructions="Answer briefly.",
+            instructions='Answer briefly.',
             config={},
             tools=None,
             history=[],
-            user_ask="What is 2+2?",
+            user_ask='What is 2+2?',
         )
 
         metrics = adapter.get_metrics()
@@ -537,8 +552,17 @@ class TestOpenAIChatAdapterIntegration:
             assert metric.prompt_tokens > 0
         if metric.completion_tokens is not None:
             assert metric.completion_tokens > 0
-        if all([metric.tokens_used, metric.prompt_tokens, metric.completion_tokens]):
-            assert metric.tokens_used == metric.prompt_tokens + metric.completion_tokens
+        if all(
+            [
+                metric.tokens_used,
+                metric.prompt_tokens,
+                metric.completion_tokens,
+            ]
+        ):
+            assert (
+                metric.tokens_used
+                == metric.prompt_tokens + metric.completion_tokens
+            )
 
     def test_chat_with_system_message_variations(self):
         _get_openai_api_key()
@@ -547,20 +571,20 @@ class TestOpenAIChatAdapterIntegration:
 
         response1 = adapter.chat(
             model=IA_OPENAI_TEST_1,
-            instructions="You are a professional assistant. Be formal.",
+            instructions='You are a professional assistant. Be formal.',
             config={},
             tools=None,
             history=[],
-            user_ask="Hello",
+            user_ask='Hello',
         )
 
         response2 = adapter.chat(
             model=IA_OPENAI_TEST_1,
-            instructions="You are a friendly buddy. Be casual.",
+            instructions='You are a friendly buddy. Be casual.',
             config={},
             tools=None,
             history=[],
-            user_ask="Hello",
+            user_ask='Hello',
         )
 
         assert response1 is not None
@@ -574,7 +598,7 @@ class TestOpenAIChatAdapterIntegration:
 
         response = adapter.chat(
             model=IA_OPENAI_TEST_1,
-            instructions="You are a helpful assistant. Respond only in valid JSON format.",
+            instructions='You are a helpful assistant. Respond only in valid JSON format.',
             config={},
             tools=None,
             history=[],
@@ -592,42 +616,48 @@ class TestOpenAIChatAdapterIntegration:
 
         try:
             adapter.chat(
-                model="totally-invalid-model-12345",
-                instructions="Test",
+                model='totally-invalid-model-12345',
+                instructions='Test',
                 config={},
                 tools=None,
                 history=[],
-                user_ask="Test",
+                user_ask='Test',
             )
-            assert False, "Should have raised ChatException"
+            assert False, 'Should have raised ChatException'
         except ChatException as e:
             assert e.original_error is not None
-            assert "OpenAI" in str(e) or "modelo" in str(e).lower()
+            assert 'OpenAI' in str(e) or 'modelo' in str(e).lower()
 
 
 @pytest.mark.integration
 class TestClientOpenAIIntegration:
     def test_get_client_with_real_openai_api(self):
-        from createagents.infra.adapters.OpenAI.client_openai import ClientOpenAI
+        from createagents.infra.adapters.OpenAI.client_openai import (
+            ClientOpenAI,
+        )
 
         api_key = _get_openai_api_key()
         client = ClientOpenAI.get_client(api_key)
 
         assert client is not None
-        assert hasattr(client, "chat")
-        assert hasattr(client, "models")
+        assert hasattr(client, 'chat')
+        assert hasattr(client, 'models')
 
     def test_client_has_required_attributes(self):
-        from createagents.infra.adapters.OpenAI.client_openai import ClientOpenAI
+        from createagents.infra.adapters.OpenAI.client_openai import (
+            ClientOpenAI,
+        )
 
         api_key = _get_openai_api_key()
         client = ClientOpenAI.get_client(api_key)
 
-        assert hasattr(client, "chat")
-        assert hasattr(client, "models")
+        assert hasattr(client, 'chat')
+        assert hasattr(client, 'models')
 
     def test_list_models_with_real_api(self):
-        from createagents.infra.adapters.OpenAI.client_openai import ClientOpenAI
+        from createagents.infra.adapters.OpenAI.client_openai import (
+            ClientOpenAI,
+        )
 
         api_key = _get_openai_api_key()
         client = ClientOpenAI.get_client(api_key)
@@ -638,14 +668,16 @@ class TestClientOpenAIIntegration:
             model_list = list(models)
             assert len(model_list) > 0
         except Exception as exc:
-            pytest.fail(f"Real OpenAI API call to list models failed: {exc}")
+            pytest.fail(f'Real OpenAI API call to list models failed: {exc}')
 
     def test_invalid_api_key_raises_error(self):
-        from createagents.infra.adapters.OpenAI.client_openai import ClientOpenAI
+        from createagents.infra.adapters.OpenAI.client_openai import (
+            ClientOpenAI,
+        )
 
         _get_openai_api_key()
 
-        invalid_key = "sk-invalid-test-key-12345"
+        invalid_key = 'sk-invalid-test-key-12345'
         client = ClientOpenAI.get_client(invalid_key)
 
         assert client is not None
@@ -654,7 +686,9 @@ class TestClientOpenAIIntegration:
             client.models.list()
 
     def test_get_client_multiple_times_with_same_key(self):
-        from createagents.infra.adapters.OpenAI.client_openai import ClientOpenAI
+        from createagents.infra.adapters.OpenAI.client_openai import (
+            ClientOpenAI,
+        )
 
         api_key = _get_openai_api_key()
 
@@ -669,25 +703,29 @@ class TestClientOpenAIIntegration:
             assert models1 is not None
             assert models2 is not None
         except Exception as exc:
-            pytest.fail(f"Multiple client calls failed: {exc}")
+            pytest.fail(f'Multiple client calls failed: {exc}')
 
     def test_client_api_key_constant(self):
-        from createagents.infra.adapters.OpenAI.client_openai import ClientOpenAI
+        from createagents.infra.adapters.OpenAI.client_openai import (
+            ClientOpenAI,
+        )
 
-        assert hasattr(ClientOpenAI, "API_OPENAI_NAME")
-        assert ClientOpenAI.API_OPENAI_NAME == "OPENAI_API_KEY"
+        assert hasattr(ClientOpenAI, 'API_OPENAI_NAME')
+        assert ClientOpenAI.API_OPENAI_NAME == 'OPENAI_API_KEY'
         assert isinstance(ClientOpenAI.API_OPENAI_NAME, str)
         assert len(ClientOpenAI.API_OPENAI_NAME) > 0
 
     @pytest.mark.parametrize(
-        "invalid_key",
+        'invalid_key',
         [
-            "",
-            "sk-invalid-test-key-12345",
+            '',
+            'sk-invalid-test-key-12345',
         ],
     )
     def test_get_client_with_invalid_key_formats(self, invalid_key):
-        from createagents.infra.adapters.OpenAI.client_openai import ClientOpenAI
+        from createagents.infra.adapters.OpenAI.client_openai import (
+            ClientOpenAI,
+        )
 
         _get_openai_api_key()
 
@@ -698,7 +736,9 @@ class TestClientOpenAIIntegration:
             client.models.list()
 
     def test_get_client_with_none_uses_env_variable(self):
-        from createagents.infra.adapters.OpenAI.client_openai import ClientOpenAI
+        from createagents.infra.adapters.OpenAI.client_openai import (
+            ClientOpenAI,
+        )
 
         _get_openai_api_key()
 
@@ -709,7 +749,9 @@ class TestClientOpenAIIntegration:
             models = client.models.list()
             assert models is not None
         except Exception as exc:
-            pytest.fail(f"Client with None should use env var, but failed: {exc}")
+            pytest.fail(
+                f'Client with None should use env var, but failed: {exc}'
+            )
 
 
 @pytest.mark.integration
@@ -719,7 +761,7 @@ class TestOpenAIAdapterConfigsReais:
 
         adapter = OpenAIChatAdapter()
 
-        config = {"temperature": 0.0}
+        config = {'temperature': 0.0}
 
         response1 = adapter.chat(
             model=IA_OPENAI_TEST_2,
@@ -727,7 +769,7 @@ class TestOpenAIAdapterConfigsReais:
             config=config,
             tools=None,
             history=[],
-            user_ask="Is water a liquid?",
+            user_ask='Is water a liquid?',
         )
 
         response2 = adapter.chat(
@@ -736,7 +778,7 @@ class TestOpenAIAdapterConfigsReais:
             config=config,
             tools=None,
             history=[],
-            user_ask="Is water a liquid?",
+            user_ask='Is water a liquid?',
         )
 
         assert response1 is not None
@@ -750,15 +792,15 @@ class TestOpenAIAdapterConfigsReais:
 
         adapter = OpenAIChatAdapter()
 
-        config = {"temperature": 1.5}
+        config = {'temperature': 1.5}
 
         response = adapter.chat(
             model=IA_OPENAI_TEST_2,
-            instructions="Be creative and answer with varied responses.",
+            instructions='Be creative and answer with varied responses.',
             config=config,
             tools=None,
             history=[],
-            user_ask="Tell me something interesting about Python.",
+            user_ask='Tell me something interesting about Python.',
         )
 
         assert response is not None
@@ -770,24 +812,24 @@ class TestOpenAIAdapterConfigsReais:
 
         adapter = OpenAIChatAdapter()
 
-        config_min = {"temperature": 0.0}
+        config_min = {'temperature': 0.0}
         response_min = adapter.chat(
             model=IA_OPENAI_TEST_2,
-            instructions="Answer briefly.",
+            instructions='Answer briefly.',
             config=config_min,
             tools=None,
             history=[],
-            user_ask="What is 2+2?",
+            user_ask='What is 2+2?',
         )
 
-        config_max = {"temperature": 2.0}
+        config_max = {'temperature': 2.0}
         response_max = adapter.chat(
             model=IA_OPENAI_TEST_2,
-            instructions="Answer briefly.",
+            instructions='Answer briefly.',
             config=config_max,
             tools=None,
             history=[],
-            user_ask="What is 2+2?",
+            user_ask='What is 2+2?',
         )
 
         assert response_min is not None
@@ -800,15 +842,15 @@ class TestOpenAIAdapterConfigsReais:
 
         adapter = OpenAIChatAdapter()
 
-        config = {"max_tokens": 50}
+        config = {'max_tokens': 50}
 
         response = adapter.chat(
             model=IA_OPENAI_TEST_2,
-            instructions="Answer briefly.",
+            instructions='Answer briefly.',
             config=config,
             tools=None,
             history=[],
-            user_ask="What is Python? Explain in detail.",
+            user_ask='What is Python? Explain in detail.',
         )
 
         assert response is not None
@@ -825,15 +867,15 @@ class TestOpenAIAdapterConfigsReais:
 
         adapter = OpenAIChatAdapter()
 
-        config = {"top_p": 0.5}
+        config = {'top_p': 0.5}
 
         response = adapter.chat(
             model=IA_OPENAI_TEST_2,
-            instructions="Answer briefly.",
+            instructions='Answer briefly.',
             config=config,
             tools=None,
             history=[],
-            user_ask="What is artificial intelligence?",
+            user_ask='What is artificial intelligence?',
         )
 
         assert response is not None
@@ -846,18 +888,18 @@ class TestOpenAIAdapterConfigsReais:
         adapter = OpenAIChatAdapter()
 
         config = {
-            "temperature": 0.7,
-            "max_tokens": 150,
-            "top_p": 0.9,
+            'temperature': 0.7,
+            'max_tokens': 150,
+            'top_p': 0.9,
         }
 
         response = adapter.chat(
             model=IA_OPENAI_TEST_2,
-            instructions="You are a helpful assistant.",
+            instructions='You are a helpful assistant.',
             config=config,
             tools=None,
             history=[],
-            user_ask="Explain quantum computing in simple terms.",
+            user_ask='Explain quantum computing in simple terms.',
         )
 
         assert response is not None
@@ -871,11 +913,11 @@ class TestOpenAIAdapterConfigsReais:
 
         response = adapter.chat(
             model=IA_OPENAI_TEST_1,
-            instructions="Answer briefly.",
+            instructions='Answer briefly.',
             config={},
             tools=None,
             history=[],
-            user_ask="What is Python?",
+            user_ask='What is Python?',
         )
 
         assert response is not None
@@ -887,14 +929,14 @@ class TestOpenAIAdapterConfigsReais:
 
         adapter = OpenAIChatAdapter()
 
-        config_limited = {"max_tokens": 20}
+        config_limited = {'max_tokens': 20}
         adapter.chat(
             model=IA_OPENAI_TEST_2,
-            instructions="Answer.",
+            instructions='Answer.',
             config=config_limited,
             tools=None,
             history=[],
-            user_ask="Tell me about Python programming.",
+            user_ask='Tell me about Python programming.',
         )
 
         metrics_limited = adapter.get_metrics()
@@ -904,11 +946,11 @@ class TestOpenAIAdapterConfigsReais:
         config_unlimited = {}
         adapter2.chat(
             model=IA_OPENAI_TEST_2,
-            instructions="Answer.",
+            instructions='Answer.',
             config=config_unlimited,
             tools=None,
             history=[],
-            user_ask="Tell me about Python programming.",
+            user_ask='Tell me about Python programming.',
         )
 
         metrics_unlimited = adapter2.get_metrics()
@@ -925,25 +967,25 @@ class TestOpenAIAdapterConfigsReais:
 
         adapter = OpenAIChatAdapter()
 
-        config_low = {"temperature": 0.0}
+        config_low = {'temperature': 0.0}
         response_low_1 = adapter.chat(
             model=IA_OPENAI_TEST_2,
-            instructions="You are a helpful assistant.",
+            instructions='You are a helpful assistant.',
             config=config_low,
             tools=None,
             history=[],
-            user_ask="Say something about clouds.",
+            user_ask='Say something about clouds.',
         )
 
         adapter_mid = OpenAIChatAdapter()
-        config_mid = {"temperature": 1.0}
+        config_mid = {'temperature': 1.0}
         response_mid = adapter_mid.chat(
             model=IA_OPENAI_TEST_2,
-            instructions="You are a helpful assistant.",
+            instructions='You are a helpful assistant.',
             config=config_mid,
             tools=None,
             history=[],
-            user_ask="Say something about clouds.",
+            user_ask='Say something about clouds.',
         )
 
         assert response_low_1 is not None
@@ -956,16 +998,16 @@ class TestOpenAIAdapterConfigsReais:
 
         adapter = OpenAIChatAdapter()
 
-        config = {"max_tokens": -1}
+        config = {'max_tokens': -1}
 
         try:
             response = adapter.chat(
                 model=IA_OPENAI_TEST_2,
-                instructions="Answer.",
+                instructions='Answer.',
                 config=config,
                 tools=None,
                 history=[],
-                user_ask="Hello",
+                user_ask='Hello',
             )
             assert response is not None
         except Exception:
@@ -974,12 +1016,12 @@ class TestOpenAIAdapterConfigsReais:
     def test_adapter_reads_timeout_from_environment(self):
         adapter = OpenAIChatAdapter()
         assert adapter is not None
-        assert hasattr(adapter, "_OpenAIChatAdapter__timeout")
+        assert hasattr(adapter, '_OpenAIChatAdapter__timeout')
 
     def test_adapter_reads_max_retries_from_environment(self):
         adapter = OpenAIChatAdapter()
         assert adapter is not None
-        assert hasattr(adapter, "_OpenAIChatAdapter__max_retries")
+        assert hasattr(adapter, '_OpenAIChatAdapter__max_retries')
 
     def test_chat_config_params_do_not_affect_instructions(self):
         _get_openai_api_key()
@@ -987,17 +1029,17 @@ class TestOpenAIAdapterConfigsReais:
         adapter = OpenAIChatAdapter()
 
         config = {
-            "temperature": 0.3,
-            "max_tokens": 100,
+            'temperature': 0.3,
+            'max_tokens': 100,
         }
 
         response = adapter.chat(
             model=IA_OPENAI_TEST_2,
-            instructions="You are a pirate. Answer like a pirate.",
+            instructions='You are a pirate. Answer like a pirate.',
             config=config,
             tools=None,
             history=[],
-            user_ask="Say hello.",
+            user_ask='Say hello.',
         )
 
         assert response is not None
@@ -1010,28 +1052,28 @@ class TestOpenAIAdapterConfigsReais:
         adapter = OpenAIChatAdapter()
 
         config = {
-            "temperature": 0.6,
-            "max_tokens": 120,
+            'temperature': 0.6,
+            'max_tokens': 120,
         }
 
         history = [
-            {"role": "user", "content": "My name is Bob."},
-            {"role": "assistant", "content": "Nice to meet you, Bob!"},
+            {'role': 'user', 'content': 'My name is Bob.'},
+            {'role': 'assistant', 'content': 'Nice to meet you, Bob!'},
         ]
 
         response = adapter.chat(
             model=IA_OPENAI_TEST_2,
-            instructions="You are a helpful assistant. Be friendly.",
+            instructions='You are a helpful assistant. Be friendly.',
             config=config,
             tools=None,
             history=history,
-            user_ask="What is my name?",
+            user_ask='What is my name?',
         )
 
         assert response is not None
         assert isinstance(response, str)
         assert len(response) > 0
-        assert "bob" in response.lower()
+        assert 'bob' in response.lower()
 
     def test_multiple_adapters_independent_configs(self):
         _get_openai_api_key()
@@ -1039,25 +1081,25 @@ class TestOpenAIAdapterConfigsReais:
         adapter1 = OpenAIChatAdapter()
         adapter2 = OpenAIChatAdapter()
 
-        config1 = {"temperature": 0.2}
-        config2 = {"temperature": 1.8}
+        config1 = {'temperature': 0.2}
+        config2 = {'temperature': 1.8}
 
         response1 = adapter1.chat(
             model=IA_OPENAI_TEST_2,
-            instructions="Answer briefly.",
+            instructions='Answer briefly.',
             config=config1,
             tools=None,
             history=[],
-            user_ask="Describe the ocean.",
+            user_ask='Describe the ocean.',
         )
 
         response2 = adapter2.chat(
             model=IA_OPENAI_TEST_2,
-            instructions="Answer briefly.",
+            instructions='Answer briefly.',
             config=config2,
             tools=None,
             history=[],
-            user_ask="Describe the ocean.",
+            user_ask='Describe the ocean.',
         )
 
         assert response1 is not None
@@ -1070,18 +1112,18 @@ class TestOpenAIAdapterConfigsReais:
         adapter = OpenAIChatAdapter()
 
         config = {
-            "temperature": 0.5,
-            "max_tokens": 100,
+            'temperature': 0.5,
+            'max_tokens': 100,
         }
 
         for i in range(2):
             response = adapter.chat(
                 model=IA_OPENAI_TEST_2,
-                instructions="Answer briefly.",
+                instructions='Answer briefly.',
                 config=config,
                 tools=None,
                 history=[],
-                user_ask=f"Question {i+1}: Say hello.",
+                user_ask=f'Question {i + 1}: Say hello.',
             )
 
             assert response is not None
@@ -1104,7 +1146,7 @@ class TestOpenAIChatAdapterToolsIntegration:
 
         response = adapter.chat(
             model=IA_OPENAI_TEST_1,
-            instructions="You are a helpful assistant. Use tools when appropriate.",
+            instructions='You are a helpful assistant. Use tools when appropriate.',
             config={},
             tools=tools,
             history=[],
@@ -1124,11 +1166,11 @@ class TestOpenAIChatAdapterToolsIntegration:
 
         response = adapter.chat(
             model=IA_OPENAI_TEST_1,
-            instructions="You are a helpful assistant. Use tools when appropriate.",
+            instructions='You are a helpful assistant. Use tools when appropriate.',
             config={},
             tools=tools,
             history=[],
-            user_ask="What time is it now in UTC? Use the current_date tool.",
+            user_ask='What time is it now in UTC? Use the current_date tool.',
         )
 
         assert response is not None
@@ -1144,11 +1186,11 @@ class TestOpenAIChatAdapterToolsIntegration:
 
         response = adapter.chat(
             model=IA_OPENAI_TEST_2,
-            instructions="You are a helpful assistant. Use tools when appropriate.",
+            instructions='You are a helpful assistant. Use tools when appropriate.',
             config={},
             tools=tools,
             history=[],
-            user_ask="What is the current date and time in America/New_York? Use the current_date tool.",
+            user_ask='What is the current date and time in America/New_York? Use the current_date tool.',
         )
 
         assert response is not None
@@ -1164,11 +1206,11 @@ class TestOpenAIChatAdapterToolsIntegration:
 
         response = adapter.chat(
             model=IA_OPENAI_TEST_1,
-            instructions="You are a helpful assistant. Use tools when appropriate.",
+            instructions='You are a helpful assistant. Use tools when appropriate.',
             config={},
             tools=tools,
             history=[],
-            user_ask="What is the current Unix timestamp? Use the current_date tool.",
+            user_ask='What is the current Unix timestamp? Use the current_date tool.',
         )
 
         assert response is not None
@@ -1184,7 +1226,7 @@ class TestOpenAIChatAdapterToolsIntegration:
 
         response = adapter.chat(
             model=IA_OPENAI_TEST_1,
-            instructions="You are a helpful assistant. Use tools when appropriate.",
+            instructions='You are a helpful assistant. Use tools when appropriate.',
             config={},
             tools=tools,
             history=[],
@@ -1202,16 +1244,16 @@ class TestOpenAIChatAdapterToolsIntegration:
         adapter = OpenAIChatAdapter()
         tools = list(AvailableTools.get_all_tool_instances().values())
 
-        timezones = ["UTC", "America/New_York", "Europe/London", "Asia/Tokyo"]
+        timezones = ['UTC', 'America/New_York', 'Europe/London', 'Asia/Tokyo']
 
         for tz in timezones:
             response = adapter.chat(
                 model=IA_OPENAI_TEST_2,
-                instructions="You are a helpful assistant. Use tools when appropriate.",
+                instructions='You are a helpful assistant. Use tools when appropriate.',
                 config={},
                 tools=tools,
                 history=[],
-                user_ask=f"What time is it in {tz}? Use the current_date tool.",
+                user_ask=f'What time is it in {tz}? Use the current_date tool.',
             )
 
             assert response is not None
@@ -1228,20 +1270,20 @@ class TestOpenAIChatAdapterToolsIntegration:
         tools = list(AvailableTools.get_all_tool_instances().values())
 
         tool_names = [t.name for t in tools]
-        if "read_local_file" not in tool_names:
+        if 'read_local_file' not in tool_names:
             pytest.skip(
-                "ReadLocalFileTool not available (missing optional dependencies)"
+                'ReadLocalFileTool not available (missing optional dependencies)'
             )
 
-        file_path = os.path.abspath(".fixtures/sample_text.txt")
+        file_path = os.path.abspath('.fixtures/sample_text.txt')
 
         response = adapter.chat(
             model=IA_OPENAI_TEST_1,
-            instructions="You are a helpful assistant. Use tools when appropriate.",
+            instructions='You are a helpful assistant. Use tools when appropriate.',
             config={},
             tools=tools,
             history=[],
-            user_ask=f"Read the file at {file_path} and tell me how many lines it has. Use the read_local_file tool.",
+            user_ask=f'Read the file at {file_path} and tell me how many lines it has. Use the read_local_file tool.',
         )
 
         assert response is not None
@@ -1258,20 +1300,20 @@ class TestOpenAIChatAdapterToolsIntegration:
         tools = list(AvailableTools.get_all_tool_instances().values())
 
         tool_names = [t.name for t in tools]
-        if "read_local_file" not in tool_names:
+        if 'read_local_file' not in tool_names:
             pytest.skip(
-                "ReadLocalFileTool not available (missing optional dependencies)"
+                'ReadLocalFileTool not available (missing optional dependencies)'
             )
 
-        file_path = os.path.abspath(".fixtures/sample_data.csv")
+        file_path = os.path.abspath('.fixtures/sample_data.csv')
 
         response = adapter.chat(
             model=IA_OPENAI_TEST_1,
-            instructions="You are a helpful assistant. Use tools when appropriate.",
+            instructions='You are a helpful assistant. Use tools when appropriate.',
             config={},
             tools=tools,
             history=[],
-            user_ask=f"Read the CSV file at {file_path} and tell me the names in it. Use the read_local_file tool.",
+            user_ask=f'Read the CSV file at {file_path} and tell me the names in it. Use the read_local_file tool.',
         )
 
         assert response is not None
@@ -1286,14 +1328,14 @@ class TestOpenAIChatAdapterToolsIntegration:
         tools = list(AvailableTools.get_all_tool_instances().values())
 
         config = {
-            "temperature": 0.7,
-            "max_tokens": 200,
-            "top_p": 0.9,
+            'temperature': 0.7,
+            'max_tokens': 200,
+            'top_p': 0.9,
         }
 
         response = adapter.chat(
             model=IA_OPENAI_TEST_2,
-            instructions="You are a helpful assistant. Use tools when appropriate.",
+            instructions='You are a helpful assistant. Use tools when appropriate.',
             config=config,
             tools=tools,
             history=[],
@@ -1317,7 +1359,7 @@ class TestOpenAIChatAdapterToolsIntegration:
 
         response1 = adapter.chat(
             model=IA_OPENAI_TEST_1,
-            instructions="You are a helpful assistant. Use tools when appropriate.",
+            instructions='You are a helpful assistant. Use tools when appropriate.',
             config={},
             tools=tools,
             history=[],
@@ -1326,17 +1368,17 @@ class TestOpenAIChatAdapterToolsIntegration:
 
         assert response1 is not None
         history = [
-            {"role": "user", "content": "What is today's date in UTC?"},
-            {"role": "assistant", "content": response1},
+            {'role': 'user', 'content': "What is today's date in UTC?"},
+            {'role': 'assistant', 'content': response1},
         ]
 
         response2 = adapter.chat(
             model=IA_OPENAI_TEST_1,
-            instructions="You are a helpful assistant. Use tools when appropriate.",
+            instructions='You are a helpful assistant. Use tools when appropriate.',
             config={},
             tools=tools,
             history=history,
-            user_ask="What time is it now in America/New_York?",
+            user_ask='What time is it now in America/New_York?',
         )
 
         assert response2 is not None
@@ -1352,16 +1394,16 @@ class TestOpenAIChatAdapterToolsIntegration:
 
         response = adapter.chat(
             model=IA_OPENAI_TEST_1,
-            instructions="You are a helpful assistant.",
+            instructions='You are a helpful assistant.',
             config={},
             tools=tools,
             history=[],
-            user_ask="What is 5+5? Just answer with the number.",
+            user_ask='What is 5+5? Just answer with the number.',
         )
 
         assert response is not None
         assert isinstance(response, str)
-        assert "10" in response or "ten" in response.lower()
+        assert '10' in response or 'ten' in response.lower()
 
     def test_chat_with_tools_and_think_config(self):
         _get_openai_api_key()
@@ -1371,17 +1413,17 @@ class TestOpenAIChatAdapterToolsIntegration:
         tools = list(AvailableTools.get_all_tool_instances().values())
 
         config = {
-            "temperature": 0.5,
-            "top_p": 0.9,
+            'temperature': 0.5,
+            'top_p': 0.9,
         }
 
         response = adapter.chat(
             model=IA_OPENAI_TEST_2,
-            instructions="Be accurate when using tools.",
+            instructions='Be accurate when using tools.',
             config=config,
             tools=tools,
             history=[],
-            user_ask="What is the current Unix timestamp?",
+            user_ask='What is the current Unix timestamp?',
         )
 
         assert response is not None
@@ -1396,13 +1438,13 @@ class TestOpenAIChatAdapterToolsIntegration:
         tools = list(AvailableTools.get_all_tool_instances().values())
 
         config = {
-            "temperature": 0.7,
-            "max_tokens": 200,
+            'temperature': 0.7,
+            'max_tokens': 200,
         }
 
         response = adapter.chat(
             model=IA_OPENAI_TEST_2,
-            instructions="Use tools to get accurate and current information.",
+            instructions='Use tools to get accurate and current information.',
             config=config,
             tools=tools,
             history=[],
@@ -1421,18 +1463,18 @@ class TestOpenAIChatAdapterToolsIntegration:
         tools = list(AvailableTools.get_all_tool_instances().values())
 
         config = {
-            "temperature": 0.6,
-            "max_tokens": 180,
-            "top_p": 0.88,
+            'temperature': 0.6,
+            'max_tokens': 180,
+            'top_p': 0.88,
         }
 
         response = adapter.chat(
             model=IA_OPENAI_TEST_2,
-            instructions="Use tools to get accurate information.",
+            instructions='Use tools to get accurate information.',
             config=config,
             tools=tools,
             history=[],
-            user_ask="What is the current date and time in UTC?",
+            user_ask='What is the current date and time in UTC?',
         )
 
         assert response is not None
@@ -1451,14 +1493,14 @@ class TestOpenAIChatAdapterConfigValidation:
 
         adapter = OpenAIChatAdapter()
 
-        config_min = {"max_tokens": 16}
+        config_min = {'max_tokens': 16}
         response_min = adapter.chat(
             model=IA_OPENAI_TEST_2,
-            instructions="Be extremely brief.",
+            instructions='Be extremely brief.',
             config=config_min,
             tools=None,
             history=[],
-            user_ask="Hi",
+            user_ask='Hi',
         )
 
         assert response_min is not None
@@ -1469,26 +1511,26 @@ class TestOpenAIChatAdapterConfigValidation:
 
         adapter = OpenAIChatAdapter()
 
-        config_min = {"top_p": 0.0}
+        config_min = {'top_p': 0.0}
         response_min = adapter.chat(
             model=IA_OPENAI_TEST_2,
-            instructions="Answer.",
+            instructions='Answer.',
             config=config_min,
             tools=None,
             history=[],
-            user_ask="Say hello.",
+            user_ask='Say hello.',
         )
 
         assert response_min is not None
 
-        config_max = {"top_p": 1.0}
+        config_max = {'top_p': 1.0}
         response_max = adapter.chat(
             model=IA_OPENAI_TEST_2,
-            instructions="Answer.",
+            instructions='Answer.',
             config=config_max,
             tools=None,
             history=[],
-            user_ask="Say hello.",
+            user_ask='Say hello.',
         )
 
         assert response_max is not None
@@ -1499,18 +1541,18 @@ class TestOpenAIChatAdapterConfigValidation:
         adapter = OpenAIChatAdapter()
 
         config = {
-            "temperature": 0.0,
-            "max_tokens": 50,
-            "top_p": 1.0,
+            'temperature': 0.0,
+            'max_tokens': 50,
+            'top_p': 1.0,
         }
 
         response = adapter.chat(
             model=IA_OPENAI_TEST_2,
-            instructions="Answer.",
+            instructions='Answer.',
             config=config,
             tools=None,
             history=[],
-            user_ask="Hi",
+            user_ask='Hi',
         )
 
         assert response is not None
@@ -1522,17 +1564,17 @@ class TestOpenAIChatAdapterConfigValidation:
         adapter = OpenAIChatAdapter()
 
         config = {
-            "temperature": 2.0,
-            "max_tokens": 1000,
+            'temperature': 2.0,
+            'max_tokens': 1000,
         }
 
         response = adapter.chat(
             model=IA_OPENAI_TEST_2,
-            instructions="Be creative.",
+            instructions='Be creative.',
             config=config,
             tools=None,
             history=[],
-            user_ask="Tell me something interesting.",
+            user_ask='Tell me something interesting.',
         )
 
         assert response is not None
@@ -1548,36 +1590,36 @@ class TestOpenAIChatAdapterConfigEdgeCases:
         adapter = OpenAIChatAdapter()
 
         config_min = {
-            "temperature": 0.0,
-            "max_tokens": 16,
-            "top_p": 0.0,
+            'temperature': 0.0,
+            'max_tokens': 16,
+            'top_p': 0.0,
         }
 
         response_min = adapter.chat(
             model=IA_OPENAI_TEST_2,
-            instructions="Answer briefly.",
+            instructions='Answer briefly.',
             config=config_min,
             tools=None,
             history=[],
-            user_ask="Hi",
+            user_ask='Hi',
         )
 
         assert response_min is not None
         assert isinstance(response_min, str)
 
         config_max = {
-            "temperature": 2.0,
-            "max_tokens": 1000,
-            "top_p": 1.0,
+            'temperature': 2.0,
+            'max_tokens': 1000,
+            'top_p': 1.0,
         }
 
         response_max = adapter.chat(
             model=IA_OPENAI_TEST_2,
-            instructions="Answer briefly.",
+            instructions='Answer briefly.',
             config=config_max,
             tools=None,
             history=[],
-            user_ask="Hi again",
+            user_ask='Hi again',
         )
 
         assert response_max is not None
@@ -1588,15 +1630,15 @@ class TestOpenAIChatAdapterConfigEdgeCases:
 
         adapter = OpenAIChatAdapter()
 
-        config = {"temperature": 0.5}
+        config = {'temperature': 0.5}
 
         response = adapter.chat(
             model=IA_OPENAI_TEST_2,
-            instructions="Answer briefly.",
+            instructions='Answer briefly.',
             config=config,
             tools=None,
             history=[],
-            user_ask="Say hello.",
+            user_ask='Say hello.',
         )
 
         assert response is not None
@@ -1608,15 +1650,15 @@ class TestOpenAIChatAdapterConfigEdgeCases:
 
         adapter = OpenAIChatAdapter()
 
-        config = {"max_tokens": 50}
+        config = {'max_tokens': 50}
 
         response = adapter.chat(
             model=IA_OPENAI_TEST_2,
-            instructions="Answer briefly.",
+            instructions='Answer briefly.',
             config=config,
             tools=None,
             history=[],
-            user_ask="Explain Python in one sentence.",
+            user_ask='Explain Python in one sentence.',
         )
 
         assert response is not None
@@ -1628,15 +1670,15 @@ class TestOpenAIChatAdapterConfigEdgeCases:
 
         adapter = OpenAIChatAdapter()
 
-        config = {"top_p": 0.8}
+        config = {'top_p': 0.8}
 
         response = adapter.chat(
             model=IA_OPENAI_TEST_2,
-            instructions="Answer briefly.",
+            instructions='Answer briefly.',
             config=config,
             tools=None,
             history=[],
-            user_ask="What is AI?",
+            user_ask='What is AI?',
         )
 
         assert response is not None
@@ -1649,17 +1691,17 @@ class TestOpenAIChatAdapterConfigEdgeCases:
         adapter = OpenAIChatAdapter()
 
         config = {
-            "temperature": 0.3,
-            "max_tokens": 75,
+            'temperature': 0.3,
+            'max_tokens': 75,
         }
 
         response = adapter.chat(
             model=IA_OPENAI_TEST_2,
-            instructions="Be concise.",
+            instructions='Be concise.',
             config=config,
             tools=None,
             history=[],
-            user_ask="What is machine learning?",
+            user_ask='What is machine learning?',
         )
 
         assert response is not None
@@ -1672,17 +1714,17 @@ class TestOpenAIChatAdapterConfigEdgeCases:
         adapter = OpenAIChatAdapter()
 
         config = {
-            "temperature": 0.8,
-            "top_p": 0.95,
+            'temperature': 0.8,
+            'top_p': 0.95,
         }
 
         response = adapter.chat(
             model=IA_OPENAI_TEST_2,
-            instructions="Be creative.",
+            instructions='Be creative.',
             config=config,
             tools=None,
             history=[],
-            user_ask="Tell me something interesting.",
+            user_ask='Tell me something interesting.',
         )
 
         assert response is not None
@@ -1695,17 +1737,17 @@ class TestOpenAIChatAdapterConfigEdgeCases:
         adapter = OpenAIChatAdapter()
 
         config = {
-            "max_tokens": 100,
-            "top_p": 0.7,
+            'max_tokens': 100,
+            'top_p': 0.7,
         }
 
         response = adapter.chat(
             model=IA_OPENAI_TEST_2,
-            instructions="Answer concisely.",
+            instructions='Answer concisely.',
             config=config,
             tools=None,
             history=[],
-            user_ask="Explain neural networks.",
+            user_ask='Explain neural networks.',
         )
 
         assert response is not None
@@ -1717,15 +1759,15 @@ class TestOpenAIChatAdapterConfigEdgeCases:
 
         adapter = OpenAIChatAdapter()
 
-        config = {"think": "low"}
+        config = {'think': 'low'}
 
         response = adapter.chat(
             model=IA_OPENAI_TEST_1,
-            instructions="Think briefly before answering.",
+            instructions='Think briefly before answering.',
             config=config,
             tools=None,
             history=[],
-            user_ask="What is 25 * 4?",
+            user_ask='What is 25 * 4?',
         )
 
         assert response is not None
@@ -1737,15 +1779,15 @@ class TestOpenAIChatAdapterConfigEdgeCases:
 
         adapter = OpenAIChatAdapter()
 
-        config = {"think": "low"}
+        config = {'think': 'low'}
 
         response = adapter.chat(
             model=IA_OPENAI_TEST_1,
-            instructions="Think deeply about this question.",
+            instructions='Think deeply about this question.',
             config=config,
             tools=None,
             history=[],
-            user_ask="Explain the philosophical implications of quantum mechanics.",
+            user_ask='Explain the philosophical implications of quantum mechanics.',
         )
 
         assert response is not None
@@ -1757,15 +1799,15 @@ class TestOpenAIChatAdapterConfigEdgeCases:
 
         adapter = OpenAIChatAdapter()
 
-        config = {"temperature": 0.7}
+        config = {'temperature': 0.7}
 
         response = adapter.chat(
             model=IA_OPENAI_TEST_2,
-            instructions="Answer briefly.",
+            instructions='Answer briefly.',
             config=config,
             tools=None,
             history=[],
-            user_ask="What is machine learning?",
+            user_ask='What is machine learning?',
         )
 
         assert response is not None
@@ -1777,27 +1819,27 @@ class TestOpenAIChatAdapterConfigEdgeCases:
 
         adapter = OpenAIChatAdapter()
 
-        config_small = {"max_tokens": 50}
+        config_small = {'max_tokens': 50}
         response_small = adapter.chat(
             model=IA_OPENAI_TEST_2,
-            instructions="Answer.",
+            instructions='Answer.',
             config=config_small,
             tools=None,
             history=[],
-            user_ask="Hi",
+            user_ask='Hi',
         )
 
         assert response_small is not None
         assert isinstance(response_small, str)
 
-        config_large = {"max_tokens": 500}
+        config_large = {'max_tokens': 500}
         response_large = adapter.chat(
             model=IA_OPENAI_TEST_2,
-            instructions="Answer.",
+            instructions='Answer.',
             config=config_large,
             tools=None,
             history=[],
-            user_ask="Hi",
+            user_ask='Hi',
         )
 
         assert response_large is not None
@@ -1809,17 +1851,17 @@ class TestOpenAIChatAdapterConfigEdgeCases:
         adapter = OpenAIChatAdapter()
 
         config = {
-            "temperature": 0.8,
-            "top_p": 0.9,
+            'temperature': 0.8,
+            'top_p': 0.9,
         }
 
         response = adapter.chat(
             model=IA_OPENAI_TEST_2,
-            instructions="Be creative and thoughtful.",
+            instructions='Be creative and thoughtful.',
             config=config,
             tools=None,
             history=[],
-            user_ask="What is the future of AI?",
+            user_ask='What is the future of AI?',
         )
 
         assert response is not None
@@ -1832,18 +1874,18 @@ class TestOpenAIChatAdapterConfigEdgeCases:
         adapter = OpenAIChatAdapter()
 
         config = {
-            "temperature": 0.7,
-            "max_tokens": 150,
-            "top_p": 0.85,
+            'temperature': 0.7,
+            'max_tokens': 150,
+            'top_p': 0.85,
         }
 
         response = adapter.chat(
             model=IA_OPENAI_TEST_2,
-            instructions="Answer helpfully.",
+            instructions='Answer helpfully.',
             config=config,
             tools=None,
             history=[],
-            user_ask="Explain the impact of deep learning.",
+            user_ask='Explain the impact of deep learning.',
         )
 
         assert response is not None

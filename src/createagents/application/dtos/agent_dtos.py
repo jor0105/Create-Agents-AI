@@ -45,7 +45,8 @@ class CreateAgentInputDTO:
             )
 
         if self.instructions is not None and (
-            not isinstance(self.instructions, str) or not self.instructions.strip()
+            not isinstance(self.instructions, str)
+            or not self.instructions.strip()
         ):
             raise ValueError(
                 "The 'instructions' field must be a valid string and cannot be empty."
@@ -60,13 +61,15 @@ class CreateAgentInputDTO:
             validated_tools: List[BaseTool] = []
             for tool in self.tools:
                 if isinstance(tool, str):
-                    available_tool = AvailableTools.get_tool_instance(tool.lower())
+                    available_tool = AvailableTools.get_tool_instance(
+                        tool.lower()
+                    )
                     if available_tool:
                         validated_tools.append(available_tool)
                     else:
                         raise InvalidBaseToolException(tool)
                 elif isinstance(tool, BaseTool):
-                    required_method = "execute"
+                    required_method = 'execute'
                     if not hasattr(tool, required_method) or not callable(
                         getattr(tool, required_method)
                     ):
@@ -82,10 +85,15 @@ class CreateAgentInputDTO:
                 else:
                     raise InvalidBaseToolException(tool)
 
-            object.__setattr__(self, "tools", validated_tools)
+            object.__setattr__(self, 'tools', validated_tools)
 
-        if not isinstance(self.history_max_size, int) or self.history_max_size <= 0:
-            raise ValueError("The 'history_max_size' field must be a positive integer.")
+        if (
+            not isinstance(self.history_max_size, int)
+            or self.history_max_size <= 0
+        ):
+            raise ValueError(
+                "The 'history_max_size' field must be a positive integer."
+            )
 
 
 @dataclass
@@ -107,14 +115,14 @@ class AgentConfigOutputDTO:
             tool_names = [tool.name for tool in self.tools]
 
         return {
-            "provider": self.provider,
-            "model": self.model,
-            "name": self.name,
-            "instructions": self.instructions,
-            "config": self.config,
-            "tools": tool_names,
-            "history": self.history,
-            "history_max_size": self.history_max_size,
+            'provider': self.provider,
+            'model': self.model,
+            'name': self.name,
+            'instructions': self.instructions,
+            'config': self.config,
+            'tools': tool_names,
+            'history': self.history,
+            'history_max_size': self.history_max_size,
         }
 
 
@@ -139,5 +147,5 @@ class ChatOutputDTO:
 
     def to_dict(self) -> Dict:
         return {
-            "response": self.response,
+            'response': self.response,
         }

@@ -28,7 +28,9 @@ class InvalidModelException(AgentException):
 class ChatException(Exception):
     """Base exception for errors during communication with AI."""
 
-    def __init__(self, message: str, original_error: Optional[Exception] = None):
+    def __init__(
+        self, message: str, original_error: Optional[Exception] = None
+    ):
         self.message = message
         self.original_error = original_error
         super().__init__(self.message)
@@ -46,10 +48,8 @@ class InvalidProviderException(AgentException):
     """Exception raised when the provider is not supported."""
 
     def __init__(self, provider: str, available_providers: Set[str]):
-        providers = ", ".join(sorted(available_providers))
-        message = (
-            f"Provider '{provider}' is not available. Available providers: {providers}"
-        )
+        providers = ', '.join(sorted(available_providers))
+        message = f"Provider '{provider}' is not available. Available providers: {providers}"
         super().__init__(message)
 
 
@@ -57,10 +57,8 @@ class UnsupportedConfigException(AgentException):
     """Exception raised when a configuration is not supported."""
 
     def __init__(self, config_key: str, available_configs: Set[str]):
-        configs = ", ".join(sorted(available_configs))
-        message = (
-            f"Configuration '{config_key}' is not supported. Valid options: {configs}"
-        )
+        configs = ', '.join(sorted(available_configs))
+        message = f"Configuration '{config_key}' is not supported. Valid options: {configs}"
         super().__init__(message)
 
 
@@ -68,9 +66,7 @@ class InvalidConfigTypeException(AgentException):
     """Exception raised when the configuration type is invalid."""
 
     def __init__(self, config_key: str, value_type: type):
-        message = (
-            f"Configuration '{config_key}' has invalid type: {value_type.__name__}"
-        )
+        message = f"Configuration '{config_key}' has invalid type: {value_type.__name__}"
         super().__init__(message)
 
 

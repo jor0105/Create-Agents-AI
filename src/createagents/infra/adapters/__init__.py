@@ -1,7 +1,16 @@
 from typing import TYPE_CHECKING
 
-from .Ollama import OllamaChatAdapter, OllamaToolCallParser, OllamaToolSchemaFormatter
-from .OpenAI import ClientOpenAI, OpenAIChatAdapter, ToolCallParser, ToolSchemaFormatter
+from .Ollama import (
+    OllamaChatAdapter,
+    OllamaToolCallParser,
+    OllamaToolSchemaFormatter,
+)
+from .OpenAI import (
+    ClientOpenAI,
+    OpenAIChatAdapter,
+    ToolCallParser,
+    ToolSchemaFormatter,
+)
 from .Tools import CurrentDateTool
 
 if TYPE_CHECKING:
@@ -9,17 +18,17 @@ if TYPE_CHECKING:
 
 __all__ = [
     # ollama
-    "OllamaChatAdapter",
-    "OllamaToolCallParser",
-    "OllamaToolSchemaFormatter",
+    'OllamaChatAdapter',
+    'OllamaToolCallParser',
+    'OllamaToolSchemaFormatter',
     # openai
-    "OpenAIChatAdapter",
-    "ClientOpenAI",
-    "ToolCallParser",
-    "ToolSchemaFormatter",
+    'OpenAIChatAdapter',
+    'ClientOpenAI',
+    'ToolCallParser',
+    'ToolSchemaFormatter',
     # tools
-    "ReadLocalFileTool",
-    "CurrentDateTool",
+    'ReadLocalFileTool',
+    'CurrentDateTool',
 ]
 
 
@@ -36,9 +45,9 @@ def __getattr__(name: str):
         AttributeError: If the name doesn't exist.
         ImportError: If optional dependencies are not installed.
     """
-    if name == "ReadLocalFileTool":
+    if name == 'ReadLocalFileTool':
         from .Tools import ReadLocalFileTool
 
         return ReadLocalFileTool
 
-    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+    raise AttributeError(f'module {__name__!r} has no attribute {name!r}')

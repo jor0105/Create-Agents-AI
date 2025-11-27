@@ -15,52 +15,52 @@ class TestCreateAgentUseCase:
     def test_execute_with_valid_input(self):
         use_case = CreateAgentUseCase()
         input_dto = CreateAgentInputDTO(
-            provider="openai",
-            model="gpt-5-nano",
-            name="Test Agent",
-            instructions="Be helpful",
+            provider='openai',
+            model='gpt-5-nano',
+            name='Test Agent',
+            instructions='Be helpful',
         )
 
         agent = use_case.execute(input_dto)
 
         assert isinstance(agent, Agent)
-        assert agent.provider == "openai"
-        assert agent.model == "gpt-5-nano"
-        assert agent.name == "Test Agent"
-        assert agent.instructions == "Be helpful"
+        assert agent.provider == 'openai'
+        assert agent.model == 'gpt-5-nano'
+        assert agent.name == 'Test Agent'
+        assert agent.instructions == 'Be helpful'
 
     def test_execute_with_ollama_provider(self):
         use_case = CreateAgentUseCase()
         input_dto = CreateAgentInputDTO(
-            provider="ollama",
-            model="phi4-mini:latest",
-            name="Local Agent",
-            instructions="Test",
+            provider='ollama',
+            model='phi4-mini:latest',
+            name='Local Agent',
+            instructions='Test',
         )
 
         agent = use_case.execute(input_dto)
 
-        assert agent.provider == "ollama"
+        assert agent.provider == 'ollama'
 
     def test_execute_with_openai_provider(self):
         use_case = CreateAgentUseCase()
         input_dto = CreateAgentInputDTO(
-            provider="openai",
-            model="gpt-4",
-            name="Test",
-            instructions="Test",
+            provider='openai',
+            model='gpt-4',
+            name='Test',
+            instructions='Test',
         )
 
         agent = use_case.execute(input_dto)
-        assert agent.provider == "openai"
+        assert agent.provider == 'openai'
 
     def test_execute_creates_empty_history(self):
         use_case = CreateAgentUseCase()
         input_dto = CreateAgentInputDTO(
-            provider="openai",
-            model="gpt-5-nano",
-            name="Test",
-            instructions="Test",
+            provider='openai',
+            model='gpt-5-nano',
+            name='Test',
+            instructions='Test',
         )
 
         agent = use_case.execute(input_dto)
@@ -70,10 +70,10 @@ class TestCreateAgentUseCase:
     def test_execute_uses_default_history_max_size(self):
         use_case = CreateAgentUseCase()
         input_dto = CreateAgentInputDTO(
-            provider="openai",
-            model="gpt-5-nano",
-            name="Test",
-            instructions="Test",
+            provider='openai',
+            model='gpt-5-nano',
+            name='Test',
+            instructions='Test',
         )
 
         agent = use_case.execute(input_dto)
@@ -83,10 +83,10 @@ class TestCreateAgentUseCase:
     def test_execute_with_custom_history_max_size(self):
         use_case = CreateAgentUseCase()
         input_dto = CreateAgentInputDTO(
-            provider="openai",
-            model="gpt-5-nano",
-            name="Test",
-            instructions="Test",
+            provider='openai',
+            model='gpt-5-nano',
+            name='Test',
+            instructions='Test',
             history_max_size=20,
         )
 
@@ -96,10 +96,10 @@ class TestCreateAgentUseCase:
     def test_execute_with_empty_config(self):
         use_case = CreateAgentUseCase()
         input_dto = CreateAgentInputDTO(
-            provider="openai",
-            model="gpt-5-nano",
-            name="Test",
-            instructions="Test",
+            provider='openai',
+            model='gpt-5-nano',
+            name='Test',
+            instructions='Test',
         )
 
         agent = use_case.execute(input_dto)
@@ -109,15 +109,15 @@ class TestCreateAgentUseCase:
     def test_execute_with_valid_config(self):
         use_case = CreateAgentUseCase()
         config = {
-            "temperature": 0.7,
-            "max_tokens": 100,
-            "top_p": 0.9,
+            'temperature': 0.7,
+            'max_tokens': 100,
+            'top_p': 0.9,
         }
         input_dto = CreateAgentInputDTO(
-            provider="openai",
-            model="gpt-5-nano",
-            name="Test",
-            instructions="Test",
+            provider='openai',
+            model='gpt-5-nano',
+            name='Test',
+            instructions='Test',
             config=config,
         )
 
@@ -128,10 +128,10 @@ class TestCreateAgentUseCase:
     def test_execute_preserves_all_input_data(self):
         use_case = CreateAgentUseCase()
         input_dto = CreateAgentInputDTO(
-            provider="ollama",
-            model="phi4-mini:latest",
-            name="Complex Agent",
-            instructions="Detailed instructions here",
+            provider='ollama',
+            model='phi4-mini:latest',
+            name='Complex Agent',
+            instructions='Detailed instructions here',
         )
 
         agent = use_case.execute(input_dto)
@@ -144,10 +144,10 @@ class TestCreateAgentUseCase:
     def test_execute_multiple_times_creates_different_agents(self):
         use_case = CreateAgentUseCase()
         input_dto = CreateAgentInputDTO(
-            provider="openai",
-            model="gpt-5-nano",
-            name="Test",
-            instructions="Test",
+            provider='openai',
+            model='gpt-5-nano',
+            name='Test',
+            instructions='Test',
         )
 
         agent1 = use_case.execute(input_dto)
@@ -158,15 +158,15 @@ class TestCreateAgentUseCase:
 
     def test_execute_with_different_models(self):
         use_case = CreateAgentUseCase()
-        models = ["gpt-5-nano", "gpt-4", "phi4-mini:latest"]
-        providers = ["openai", "openai", "ollama"]
+        models = ['gpt-5-nano', 'gpt-4', 'phi4-mini:latest']
+        providers = ['openai', 'openai', 'ollama']
 
         for model, provider in zip(models, providers):
             input_dto = CreateAgentInputDTO(
                 provider=provider,
                 model=model,
-                name="Test",
-                instructions="Test",
+                name='Test',
+                instructions='Test',
             )
             agent = use_case.execute(input_dto)
             assert agent.model == model
@@ -175,10 +175,10 @@ class TestCreateAgentUseCase:
     def test_execute_with_empty_model_raises_error(self):
         use_case = CreateAgentUseCase()
         input_dto = CreateAgentInputDTO(
-            provider="openai",
-            model="",
-            name="Test",
-            instructions="Test",
+            provider='openai',
+            model='',
+            name='Test',
+            instructions='Test',
         )
 
         with pytest.raises(InvalidAgentConfigException):
@@ -187,10 +187,10 @@ class TestCreateAgentUseCase:
     def test_execute_with_whitespace_only_model_raises_error(self):
         use_case = CreateAgentUseCase()
         input_dto = CreateAgentInputDTO(
-            provider="openai",
-            model="   ",
-            name="Test",
-            instructions="Test",
+            provider='openai',
+            model='   ',
+            name='Test',
+            instructions='Test',
         )
 
         with pytest.raises(InvalidAgentConfigException):
@@ -199,10 +199,10 @@ class TestCreateAgentUseCase:
     def test_execute_with_empty_name_raises_error(self):
         use_case = CreateAgentUseCase()
         input_dto = CreateAgentInputDTO(
-            provider="openai",
-            model="gpt-5-nano",
-            name="",
-            instructions="Test",
+            provider='openai',
+            model='gpt-5-nano',
+            name='',
+            instructions='Test',
         )
 
         with pytest.raises(InvalidAgentConfigException):
@@ -211,10 +211,10 @@ class TestCreateAgentUseCase:
     def test_execute_with_whitespace_only_name_raises_error(self):
         use_case = CreateAgentUseCase()
         input_dto = CreateAgentInputDTO(
-            provider="openai",
-            model="gpt-5-nano",
-            name="   ",
-            instructions="Test",
+            provider='openai',
+            model='gpt-5-nano',
+            name='   ',
+            instructions='Test',
         )
 
         with pytest.raises(InvalidAgentConfigException):
@@ -223,10 +223,10 @@ class TestCreateAgentUseCase:
     def test_execute_with_empty_instructions_raises_error(self):
         use_case = CreateAgentUseCase()
         input_dto = CreateAgentInputDTO(
-            provider="openai",
-            model="gpt-5-nano",
-            name="Test",
-            instructions="",
+            provider='openai',
+            model='gpt-5-nano',
+            name='Test',
+            instructions='',
         )
 
         with pytest.raises(InvalidAgentConfigException):
@@ -235,10 +235,10 @@ class TestCreateAgentUseCase:
     def test_execute_with_whitespace_only_instructions_raises_error(self):
         use_case = CreateAgentUseCase()
         input_dto = CreateAgentInputDTO(
-            provider="openai",
-            model="gpt-5-nano",
-            name="Test",
-            instructions="   ",
+            provider='openai',
+            model='gpt-5-nano',
+            name='Test',
+            instructions='   ',
         )
 
         with pytest.raises(InvalidAgentConfigException):
@@ -247,10 +247,10 @@ class TestCreateAgentUseCase:
     def test_execute_with_none_name(self):
         use_case = CreateAgentUseCase()
         input_dto = CreateAgentInputDTO(
-            provider="openai",
-            model="gpt-5-nano",
+            provider='openai',
+            model='gpt-5-nano',
             name=None,
-            instructions="Test",
+            instructions='Test',
         )
 
         agent = use_case.execute(input_dto)
@@ -259,9 +259,9 @@ class TestCreateAgentUseCase:
     def test_execute_with_none_instructions(self):
         use_case = CreateAgentUseCase()
         input_dto = CreateAgentInputDTO(
-            provider="openai",
-            model="gpt-5-nano",
-            name="Test",
+            provider='openai',
+            model='gpt-5-nano',
+            name='Test',
             instructions=None,
         )
 
@@ -271,8 +271,8 @@ class TestCreateAgentUseCase:
     def test_execute_with_both_none(self):
         use_case = CreateAgentUseCase()
         input_dto = CreateAgentInputDTO(
-            provider="openai",
-            model="gpt-5-nano",
+            provider='openai',
+            model='gpt-5-nano',
             name=None,
             instructions=None,
         )
@@ -284,23 +284,23 @@ class TestCreateAgentUseCase:
     def test_execute_with_only_required_fields(self):
         use_case = CreateAgentUseCase()
         input_dto = CreateAgentInputDTO(
-            provider="openai",
-            model="gpt-5-nano",
+            provider='openai',
+            model='gpt-5-nano',
         )
 
         agent = use_case.execute(input_dto)
-        assert agent.provider == "openai"
-        assert agent.model == "gpt-5-nano"
+        assert agent.provider == 'openai'
+        assert agent.model == 'gpt-5-nano'
         assert agent.name is None
         assert agent.instructions is None
 
     def test_execute_with_empty_provider_raises_error(self):
         use_case = CreateAgentUseCase()
         input_dto = CreateAgentInputDTO(
-            provider="",
-            model="gpt-5-nano",
-            name="Test",
-            instructions="Test",
+            provider='',
+            model='gpt-5-nano',
+            name='Test',
+            instructions='Test',
         )
 
         with pytest.raises(InvalidAgentConfigException):
@@ -309,10 +309,10 @@ class TestCreateAgentUseCase:
     def test_execute_with_whitespace_only_provider_raises_error(self):
         use_case = CreateAgentUseCase()
         input_dto = CreateAgentInputDTO(
-            provider="   ",
-            model="gpt-5-nano",
-            name="Test",
-            instructions="Test",
+            provider='   ',
+            model='gpt-5-nano',
+            name='Test',
+            instructions='Test',
         )
 
         with pytest.raises(InvalidAgentConfigException):
@@ -321,24 +321,24 @@ class TestCreateAgentUseCase:
     def test_execute_error_message_contains_field_name(self):
         use_case = CreateAgentUseCase()
         input_dto = CreateAgentInputDTO(
-            provider="openai",
-            model="",
-            name="Test",
-            instructions="Test",
+            provider='openai',
+            model='',
+            name='Test',
+            instructions='Test',
         )
 
         with pytest.raises(InvalidAgentConfigException) as exc_info:
             use_case.execute(input_dto)
 
-        assert "input_dto" in str(exc_info.value)
+        assert 'input_dto' in str(exc_info.value)
 
     def test_execute_with_zero_history_max_size_raises_error(self):
         use_case = CreateAgentUseCase()
         input_dto = CreateAgentInputDTO(
-            provider="openai",
-            model="gpt-5-nano",
-            name="Test",
-            instructions="Test",
+            provider='openai',
+            model='gpt-5-nano',
+            name='Test',
+            instructions='Test',
             history_max_size=0,
         )
 
@@ -348,10 +348,10 @@ class TestCreateAgentUseCase:
     def test_execute_with_negative_history_max_size_raises_error(self):
         use_case = CreateAgentUseCase()
         input_dto = CreateAgentInputDTO(
-            provider="openai",
-            model="gpt-5-nano",
-            name="Test",
-            instructions="Test",
+            provider='openai',
+            model='gpt-5-nano',
+            name='Test',
+            instructions='Test',
             history_max_size=-5,
         )
 
@@ -361,10 +361,10 @@ class TestCreateAgentUseCase:
     def test_execute_with_float_history_max_size_raises_error(self):
         use_case = CreateAgentUseCase()
         input_dto = CreateAgentInputDTO(
-            provider="openai",
-            model="gpt-5-nano",
-            name="Test",
-            instructions="Test",
+            provider='openai',
+            model='gpt-5-nano',
+            name='Test',
+            instructions='Test',
         )
         input_dto.history_max_size = 5.5
 
@@ -374,12 +374,12 @@ class TestCreateAgentUseCase:
     def test_execute_with_non_dict_config_raises_error(self):
         use_case = CreateAgentUseCase()
         input_dto = CreateAgentInputDTO(
-            provider="openai",
-            model="gpt-5-nano",
-            name="Test",
-            instructions="Test",
+            provider='openai',
+            model='gpt-5-nano',
+            name='Test',
+            instructions='Test',
         )
-        input_dto.config = "invalid"
+        input_dto.config = 'invalid'
 
         with pytest.raises(InvalidAgentConfigException):
             use_case.execute(input_dto)
@@ -387,23 +387,25 @@ class TestCreateAgentUseCase:
     def test_execute_with_list_as_config_raises_error(self):
         use_case = CreateAgentUseCase()
         input_dto = CreateAgentInputDTO(
-            provider="openai",
-            model="gpt-5-nano",
-            name="Test",
-            instructions="Test",
+            provider='openai',
+            model='gpt-5-nano',
+            name='Test',
+            instructions='Test',
         )
-        input_dto.config = ["invalid"]
+        input_dto.config = ['invalid']
 
         with pytest.raises(InvalidAgentConfigException):
             use_case.execute(input_dto)
 
-    def test_execute_with_unsupported_provider_raises_invalid_provider_exception(self):
+    def test_execute_with_unsupported_provider_raises_invalid_provider_exception(
+        self,
+    ):
         use_case = CreateAgentUseCase()
         input_dto = CreateAgentInputDTO(
-            provider="unsupported_provider",
-            model="gpt-5-nano",
-            name="Test",
-            instructions="Test",
+            provider='unsupported_provider',
+            model='gpt-5-nano',
+            name='Test',
+            instructions='Test',
         )
 
         with pytest.raises(InvalidProviderException):
@@ -412,11 +414,11 @@ class TestCreateAgentUseCase:
     def test_execute_with_invalid_temperature_too_high_raises_error(self):
         use_case = CreateAgentUseCase()
         input_dto = CreateAgentInputDTO(
-            provider="openai",
-            model="gpt-5-nano",
-            name="Test",
-            instructions="Test",
-            config={"temperature": 2.5},
+            provider='openai',
+            model='gpt-5-nano',
+            name='Test',
+            instructions='Test',
+            config={'temperature': 2.5},
         )
 
         with pytest.raises(InvalidAgentConfigException):
@@ -425,11 +427,11 @@ class TestCreateAgentUseCase:
     def test_execute_with_invalid_temperature_negative_raises_error(self):
         use_case = CreateAgentUseCase()
         input_dto = CreateAgentInputDTO(
-            provider="openai",
-            model="gpt-5-nano",
-            name="Test",
-            instructions="Test",
-            config={"temperature": -0.5},
+            provider='openai',
+            model='gpt-5-nano',
+            name='Test',
+            instructions='Test',
+            config={'temperature': -0.5},
         )
 
         with pytest.raises(InvalidAgentConfigException):
@@ -438,33 +440,33 @@ class TestCreateAgentUseCase:
     def test_execute_with_valid_temperature_boundaries_succeeds(self):
         use_case = CreateAgentUseCase()
         input_dto = CreateAgentInputDTO(
-            provider="openai",
-            model="gpt-5-nano",
-            name="Test",
-            instructions="Test",
-            config={"temperature": 0.0},
+            provider='openai',
+            model='gpt-5-nano',
+            name='Test',
+            instructions='Test',
+            config={'temperature': 0.0},
         )
         agent = use_case.execute(input_dto)
-        assert agent.config["temperature"] == 0.0
+        assert agent.config['temperature'] == 0.0
 
         input_dto = CreateAgentInputDTO(
-            provider="openai",
-            model="gpt-5-nano",
-            name="Test",
-            instructions="Test",
-            config={"temperature": 2.0},
+            provider='openai',
+            model='gpt-5-nano',
+            name='Test',
+            instructions='Test',
+            config={'temperature': 2.0},
         )
         agent = use_case.execute(input_dto)
-        assert agent.config["temperature"] == 2.0
+        assert agent.config['temperature'] == 2.0
 
     def test_execute_with_invalid_max_tokens_zero_raises_error(self):
         use_case = CreateAgentUseCase()
         input_dto = CreateAgentInputDTO(
-            provider="openai",
-            model="gpt-5-nano",
-            name="Test",
-            instructions="Test",
-            config={"max_tokens": 0},
+            provider='openai',
+            model='gpt-5-nano',
+            name='Test',
+            instructions='Test',
+            config={'max_tokens': 0},
         )
 
         with pytest.raises(InvalidAgentConfigException):
@@ -473,11 +475,11 @@ class TestCreateAgentUseCase:
     def test_execute_with_invalid_max_tokens_negative_raises_error(self):
         use_case = CreateAgentUseCase()
         input_dto = CreateAgentInputDTO(
-            provider="openai",
-            model="gpt-5-nano",
-            name="Test",
-            instructions="Test",
-            config={"max_tokens": -100},
+            provider='openai',
+            model='gpt-5-nano',
+            name='Test',
+            instructions='Test',
+            config={'max_tokens': -100},
         )
 
         with pytest.raises(InvalidAgentConfigException):
@@ -486,11 +488,11 @@ class TestCreateAgentUseCase:
     def test_execute_with_invalid_max_tokens_float_raises_error(self):
         use_case = CreateAgentUseCase()
         input_dto = CreateAgentInputDTO(
-            provider="openai",
-            model="gpt-5-nano",
-            name="Test",
-            instructions="Test",
-            config={"max_tokens": 100.5},
+            provider='openai',
+            model='gpt-5-nano',
+            name='Test',
+            instructions='Test',
+            config={'max_tokens': 100.5},
         )
 
         with pytest.raises(InvalidAgentConfigException):
@@ -499,24 +501,24 @@ class TestCreateAgentUseCase:
     def test_execute_with_valid_max_tokens_succeeds(self):
         use_case = CreateAgentUseCase()
         input_dto = CreateAgentInputDTO(
-            provider="openai",
-            model="gpt-5-nano",
-            name="Test",
-            instructions="Test",
-            config={"max_tokens": 500},
+            provider='openai',
+            model='gpt-5-nano',
+            name='Test',
+            instructions='Test',
+            config={'max_tokens': 500},
         )
 
         agent = use_case.execute(input_dto)
-        assert agent.config["max_tokens"] == 500
+        assert agent.config['max_tokens'] == 500
 
     def test_execute_with_invalid_top_p_too_high_raises_error(self):
         use_case = CreateAgentUseCase()
         input_dto = CreateAgentInputDTO(
-            provider="openai",
-            model="gpt-5-nano",
-            name="Test",
-            instructions="Test",
-            config={"top_p": 1.5},
+            provider='openai',
+            model='gpt-5-nano',
+            name='Test',
+            instructions='Test',
+            config={'top_p': 1.5},
         )
 
         with pytest.raises(InvalidAgentConfigException):
@@ -525,11 +527,11 @@ class TestCreateAgentUseCase:
     def test_execute_with_invalid_top_p_negative_raises_error(self):
         use_case = CreateAgentUseCase()
         input_dto = CreateAgentInputDTO(
-            provider="openai",
-            model="gpt-5-nano",
-            name="Test",
-            instructions="Test",
-            config={"top_p": -0.5},
+            provider='openai',
+            model='gpt-5-nano',
+            name='Test',
+            instructions='Test',
+            config={'top_p': -0.5},
         )
 
         with pytest.raises(InvalidAgentConfigException):
@@ -539,33 +541,33 @@ class TestCreateAgentUseCase:
         use_case = CreateAgentUseCase()
 
         input_dto = CreateAgentInputDTO(
-            provider="openai",
-            model="gpt-5-nano",
-            name="Test",
-            instructions="Test",
-            config={"top_p": 0.0},
+            provider='openai',
+            model='gpt-5-nano',
+            name='Test',
+            instructions='Test',
+            config={'top_p': 0.0},
         )
         agent = use_case.execute(input_dto)
-        assert agent.config["top_p"] == 0.0
+        assert agent.config['top_p'] == 0.0
 
         input_dto = CreateAgentInputDTO(
-            provider="openai",
-            model="gpt-5-nano",
-            name="Test",
-            instructions="Test",
-            config={"top_p": 1.0},
+            provider='openai',
+            model='gpt-5-nano',
+            name='Test',
+            instructions='Test',
+            config={'top_p': 1.0},
         )
         agent = use_case.execute(input_dto)
-        assert agent.config["top_p"] == 1.0
+        assert agent.config['top_p'] == 1.0
 
     def test_execute_with_unsupported_config_key_raises_error(self):
         use_case = CreateAgentUseCase()
         input_dto = CreateAgentInputDTO(
-            provider="openai",
-            model="gpt-5-nano",
-            name="Test",
-            instructions="Test",
-            config={"unsupported_key": "value"},
+            provider='openai',
+            model='gpt-5-nano',
+            name='Test',
+            instructions='Test',
+            config={'unsupported_key': 'value'},
         )
 
         with pytest.raises(UnsupportedConfigException):
@@ -574,12 +576,12 @@ class TestCreateAgentUseCase:
     def test_execute_with_invalid_config_type_raises_error(self):
         use_case = CreateAgentUseCase()
         input_dto = CreateAgentInputDTO(
-            provider="openai",
-            model="gpt-5-nano",
-            name="Test",
-            instructions="Test",
+            provider='openai',
+            model='gpt-5-nano',
+            name='Test',
+            instructions='Test',
         )
-        input_dto.config = {"temperature": object()}
+        input_dto.config = {'temperature': object()}
 
         with pytest.raises(InvalidConfigTypeException):
             use_case.execute(input_dto)
@@ -587,26 +589,26 @@ class TestCreateAgentUseCase:
     def test_execute_with_all_valid_configs_combined(self):
         use_case = CreateAgentUseCase()
         input_dto = CreateAgentInputDTO(
-            provider="openai",
-            model="gpt-4",
-            name="Advanced Agent",
-            instructions="You are an advanced AI assistant",
+            provider='openai',
+            model='gpt-4',
+            name='Advanced Agent',
+            instructions='You are an advanced AI assistant',
             config={
-                "temperature": 0.8,
-                "max_tokens": 2000,
-                "top_p": 0.95,
+                'temperature': 0.8,
+                'max_tokens': 2000,
+                'top_p': 0.95,
             },
             history_max_size=50,
         )
 
         agent = use_case.execute(input_dto)
 
-        assert agent.provider == "openai"
-        assert agent.model == "gpt-4"
-        assert agent.name == "Advanced Agent"
-        assert agent.instructions == "You are an advanced AI assistant"
-        assert agent.config["temperature"] == 0.8
-        assert agent.config["max_tokens"] == 2000
-        assert agent.config["top_p"] == 0.95
+        assert agent.provider == 'openai'
+        assert agent.model == 'gpt-4'
+        assert agent.name == 'Advanced Agent'
+        assert agent.instructions == 'You are an advanced AI assistant'
+        assert agent.config['temperature'] == 0.8
+        assert agent.config['max_tokens'] == 2000
+        assert agent.config['top_p'] == 0.95
         assert agent.history.max_size == 50
         assert len(agent.history) == 0

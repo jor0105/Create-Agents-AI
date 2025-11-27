@@ -9,8 +9,8 @@ class TestSupportedProviders:
         providers = SupportedProviders.get_available_providers()
 
         assert isinstance(providers, set)
-        assert "openai" in providers
-        assert "ollama" in providers
+        assert 'openai' in providers
+        assert 'ollama' in providers
 
     def test_get_available_providers_returns_copy(self):
         providers1 = SupportedProviders.get_available_providers()
@@ -23,11 +23,11 @@ class TestSupportedProviders:
         providers = SupportedProviders.get_available_providers()
         original_size = len(providers)
 
-        providers.add("new_provider")
+        providers.add('new_provider')
 
         new_providers = SupportedProviders.get_available_providers()
         assert len(new_providers) == original_size
-        assert "new_provider" not in new_providers
+        assert 'new_provider' not in new_providers
 
     def test_providers_count(self):
         providers = SupportedProviders.get_available_providers()
@@ -44,7 +44,7 @@ class TestSupportedProviders:
         providers = SupportedProviders.get_available_providers()
 
         for provider in providers:
-            assert provider.strip() != ""
+            assert provider.strip() != ''
             assert len(provider) > 0
 
     def test_providers_are_strings(self):
@@ -56,8 +56,8 @@ class TestSupportedProviders:
     def test_specific_providers_exist(self):
         providers = SupportedProviders.get_available_providers()
 
-        assert "openai" in providers
-        assert "ollama" in providers
+        assert 'openai' in providers
+        assert 'ollama' in providers
 
     def test_providers_no_duplicates(self):
         providers = SupportedProviders.get_available_providers()

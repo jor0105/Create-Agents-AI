@@ -37,22 +37,26 @@ class ToolCallParser:
             True if tool calls are present, False otherwise.
         """
         try:
-            if not hasattr(response, "output") or not response.output:
+            if not hasattr(response, 'output') or not response.output:
                 ToolCallParser._logger.debug(
-                    "Response has no output attribute or output is empty"
+                    'Response has no output attribute or output is empty'
                 )
                 return False
 
             # Check if any item in output has type "function_call"
             for item in response.output:
-                if hasattr(item, "type") and item.type == "function_call":
-                    ToolCallParser._logger.debug("Tool calls detected in response")
+                if hasattr(item, 'type') and item.type == 'function_call':
+                    ToolCallParser._logger.debug(
+                        'Tool calls detected in response'
+                    )
                     return True
 
-            ToolCallParser._logger.debug("No tool calls found in response")
+            ToolCallParser._logger.debug('No tool calls found in response')
             return False
         except (AttributeError, TypeError) as e:
-            ToolCallParser._logger.warning(f"Error checking for tool calls: {str(e)}")
+            ToolCallParser._logger.warning(
+                f'Error checking for tool calls: {str(e)}'
+            )
             return False
 
     @staticmethod
@@ -78,14 +82,14 @@ class ToolCallParser:
             ```
         """
         if not ToolCallParser.has_tool_calls(response):
-            ToolCallParser._logger.debug("No tool calls to extract")
+            ToolCallParser._logger.debug('No tool calls to extract')
             return []
 
-        ToolCallParser._logger.debug("Extracting tool calls from response")
+        ToolCallParser._logger.debug('Extracting tool calls from response')
         tool_calls = []
 
         for item in response.output:
-            if not hasattr(item, "type") or item.type != "function_call":
+            if not hasattr(item, 'type') or item.type != 'function_call':
                 continue
 
             try:
@@ -97,23 +101,25 @@ class ToolCallParser:
                     arguments = arguments_str
 
                 tool_call = {
-                    "id": item.call_id,  # Responses API uses call_id
-                    "name": item.name,
-                    "arguments": arguments,
+                    'id': item.call_id,  # Responses API uses call_id
+                    'name': item.name,
+                    'arguments': arguments,
                 }
                 tool_calls.append(tool_call)
                 ToolCallParser._logger.debug(
-                    f"Extracted tool call: {item.name} with call_id: {item.call_id}"
+                    f'Extracted tool call: {item.name} with call_id: {item.call_id}'
                 )
 
             except (json.JSONDecodeError, AttributeError) as e:
                 # Log error but continue processing other tool calls
                 ToolCallParser._logger.error(
-                    f"Failed to parse tool call: {str(e)}", exc_info=True
+                    f'Failed to parse tool call: {str(e)}', exc_info=True
                 )
                 continue
 
-        ToolCallParser._logger.info(f"Extracted {len(tool_calls)} tool call(s)")
+        ToolCallParser._logger.info(
+            f'Extracted {len(tool_calls)} tool call(s)'
+        )
         return tool_calls
 
     @staticmethod
@@ -144,13 +150,13 @@ class ToolCallParser:
         )
 
         formatted = {
-            "type": "function_call_output",
-            "call_id": tool_call_id,
-            "output": str(result),
+            'type': 'function_call_output',
+            'call_id': tool_call_id,
+            'output': str(result),
         }
 
         ToolCallParser._logger.debug(
-            f"Formatted tool result (length: {len(str(result))} chars)"
+            f'Formatted tool result (length: {len(str(result))} chars)'
         )
         return formatted
 
@@ -171,44 +177,46 @@ class ToolCallParser:
         """
         if not ToolCallParser.has_tool_calls(response):
             ToolCallParser._logger.debug(
-                "No tool calls in response, skipping extraction"
+                'No tool calls in response, skipping extraction'
             )
             return None
 
         try:
-            if not hasattr(response, "output") or not response.output:
+            if not hasattr(response, 'output') or not response.output:
                 ToolCallParser._logger.warning(
-                    "Response has no output for assistant message"
+                    'Response has no output for assistant message'
                 )
                 return None
 
-            ToolCallParser._logger.debug("Extracting assistant message with tool calls")
+            ToolCallParser._logger.debug(
+                'Extracting assistant message with tool calls'
+            )
 
             # Convert to dict format for messages, keeping only necessary fields
             output_items = []
             for item in response.output:
-                item_type = getattr(item, "type", None)
+                item_type = getattr(item, 'type', None)
 
                 # Only include reasoning and function_call types
-                if item_type == "reasoning":
+                if item_type == 'reasoning':
                     output_items.append(
                         {
-                            "type": "reasoning",
-                            "id": getattr(item, "id", None),
-                            "summary": getattr(item, "summary", []),
+                            'type': 'reasoning',
+                            'id': getattr(item, 'id', None),
+                            'summary': getattr(item, 'summary', []),
                         }
                     )
                     ToolCallParser._logger.debug(
-                        "Included reasoning item in assistant message"
+                        'Included reasoning item in assistant message'
                     )
-                elif item_type == "function_call":
+                elif item_type == 'function_call':
                     output_items.append(
                         {
-                            "type": "function_call",
-                            "id": getattr(item, "id", None),
-                            "call_id": getattr(item, "call_id", None),
-                            "name": getattr(item, "name", None),
-                            "arguments": getattr(item, "arguments", None),
+                            'type': 'function_call',
+                            'id': getattr(item, 'id', None),
+                            'call_id': getattr(item, 'call_id', None),
+                            'name': getattr(item, 'name', None),
+                            'arguments': getattr(item, 'arguments', None),
                         }
                     )
                     ToolCallParser._logger.debug(
@@ -217,18 +225,18 @@ class ToolCallParser:
 
             if output_items:
                 ToolCallParser._logger.info(
-                    f"Extracted {len(output_items)} output item(s) for assistant message"
+                    f'Extracted {len(output_items)} output item(s) for assistant message'
                 )
             else:
                 ToolCallParser._logger.warning(
-                    "No valid output items found in response"
+                    'No valid output items found in response'
                 )
 
             return output_items if output_items else None
 
         except (AttributeError, TypeError) as e:
             ToolCallParser._logger.error(
-                f"Error extracting assistant message with tool calls: {str(e)}",
+                f'Error extracting assistant message with tool calls: {str(e)}',
                 exc_info=True,
             )
             return None

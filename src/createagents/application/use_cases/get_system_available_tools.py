@@ -22,7 +22,7 @@ class GetSystemAvailableToolsUseCase:
         Returns:
             Dict[str, str]: Dictionary mapping system tool names to descriptions.
         """
-        self.__logger.debug("Retrieving available system tools.")
+        self.__logger.debug('Retrieving available system tools.')
         system_tools: Dict[str, str] = AvailableTools.get_system_tools()
-        self.__logger.info(f"Retrieved {len(system_tools)} system tool(s).")
+        self.__logger.info(f'Retrieved {len(system_tools)} system tool(s).')
         return system_tools

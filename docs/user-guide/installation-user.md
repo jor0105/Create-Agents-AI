@@ -2,7 +2,7 @@
 
 > Siga este passo a passo para instalar e configurar o **Create Agents AI** com segurança e confiabilidade no seu ambiente.
 
-______________________________________________________________________
+---
 
 ## 📝 Pré-requisitos
 
@@ -11,7 +11,7 @@ ______________________________________________________________________
 
 > **Dica:** Recomenda-se usar ambientes virtuais para isolar as dependências do projeto.
 
-______________________________________________________________________
+---
 
 ## ⚡ Instalação Rápida
 
@@ -38,7 +38,7 @@ pip install createagents[file-tools]
 
 > **Nota:** A opção `[file-tools]` adiciona suporte para leitura de arquivos PDF, Excel, CSV e Parquet.
 
-______________________________________________________________________
+---
 
 ### 3. Configurar Variáveis de Ambiente
 
@@ -54,7 +54,7 @@ OPENAI_API_KEY=sk-proj-sua-chave
 # Adicione outras variáveis se necessário
 ```
 
-______________________________________________________________________
+---
 
 ### 4. Testar Instalação
 
@@ -73,7 +73,7 @@ print(response)
 
 Se o código acima rodar sem erros, a instalação está concluída!
 
-______________________________________________________________________
+---
 
 ## 🔑 Configuração OpenAI
 
@@ -87,7 +87,7 @@ OPENAI_API_KEY=sk-proj-sua-chave
 
 > **Atenção:** Nunca compartilhe sua chave em repositórios públicos.
 
-______________________________________________________________________
+---
 
 ## 🤖 Configuração Ollama (Opcional)
 
@@ -136,7 +136,7 @@ print(response)
 
 > **Dica:** Rode `ollama serve` antes de usar para garantir que o servidor está ativo.
 
-______________________________________________________________________
+---
 
 ## 🔒 Segurança e Boas Práticas
 
@@ -145,7 +145,7 @@ ______________________________________________________________________
 - Use ambientes virtuais para isolar dependências
 - Atualize dependências regularmente (`poetry update` ou `pip install -U`)
 
-______________________________________________________________________
+---
 
 ## 🛠️ Solução de Problemas
 
@@ -164,7 +164,7 @@ ______________________________________________________________________
 
 Se persistir, consulte a [FAQ](faq-user.md) ou abra uma issue no [GitHub](https://github.com/jor0105/Create-Agents-AI/issues).
 
-______________________________________________________________________
+---
 
 ## 👨‍💻 Instalação para Desenvolvimento (Contribuidores)
 
@@ -215,7 +215,7 @@ poetry run pre-commit run --all-files
 
 📖 **Mais informações:** [Guia de Contribuição](../dev-guide/contribute.md)
 
-______________________________________________________________________
+---
 
 ## 🚀 Próximos Passos
 
@@ -225,6 +225,6 @@ ______________________________________________________________________
 - [Referência de Ferramentas](../reference/tools.md)
 - [API Reference](../reference/api.md)
 
-______________________________________________________________________
+---
 
-**Versão:** 0.1.1 | **Atualização:** 25/11/2025
+**Versão:** 0.1.2 | **Atualização:** 25/11/2025

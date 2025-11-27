@@ -3,16 +3,18 @@ from createagents.infra import OllamaToolSchemaFormatter
 
 
 class MockTool(BaseTool):
-    name = "mock_tool"
-    description = "A mock tool for testing"
+    name = 'mock_tool'
+    description = 'A mock tool for testing'
     parameters = {
-        "type": "object",
-        "properties": {"param1": {"type": "string", "description": "First parameter"}},
-        "required": ["param1"],
+        'type': 'object',
+        'properties': {
+            'param1': {'type': 'string', 'description': 'First parameter'}
+        },
+        'required': ['param1'],
     }
 
     def execute(self, param1: str) -> str:
-        return f"Executed with {param1}"
+        return f'Executed with {param1}'
 
 
 def test_format_single_tool():
@@ -20,25 +22,25 @@ def test_format_single_tool():
     formatted = OllamaToolSchemaFormatter.format_tools_for_ollama([tool])
 
     assert len(formatted) == 1
-    assert formatted[0]["type"] == "function"
-    assert formatted[0]["function"]["name"] == "mock_tool"
-    assert formatted[0]["function"]["description"] == "A mock tool for testing"
-    assert "parameters" in formatted[0]["function"]
+    assert formatted[0]['type'] == 'function'
+    assert formatted[0]['function']['name'] == 'mock_tool'
+    assert formatted[0]['function']['description'] == 'A mock tool for testing'
+    assert 'parameters' in formatted[0]['function']
 
 
 def test_format_multiple_tools():
     class Tool1(BaseTool):
-        name = "tool1"
-        description = "First tool"
-        parameters = {"type": "object", "properties": {}}
+        name = 'tool1'
+        description = 'First tool'
+        parameters = {'type': 'object', 'properties': {}}
 
         def execute(self):
             pass
 
     class Tool2(BaseTool):
-        name = "tool2"
-        description = "Second tool"
-        parameters = {"type": "object", "properties": {}}
+        name = 'tool2'
+        description = 'Second tool'
+        parameters = {'type': 'object', 'properties': {}}
 
         def execute(self):
             pass
@@ -47,8 +49,8 @@ def test_format_multiple_tools():
     formatted = OllamaToolSchemaFormatter.format_tools_for_ollama(tools)
 
     assert len(formatted) == 2
-    assert formatted[0]["function"]["name"] == "tool1"
-    assert formatted[1]["function"]["name"] == "tool2"
+    assert formatted[0]['function']['name'] == 'tool1'
+    assert formatted[1]['function']['name'] == 'tool2'
 
 
 def test_format_empty_tools_list():
@@ -61,16 +63,19 @@ def test_tool_schema_structure():
     formatted = OllamaToolSchemaFormatter.format_tools_for_ollama([tool])
 
     expected_structure = {
-        "type": "function",
-        "function": {
-            "name": "mock_tool",
-            "description": "A mock tool for testing",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "param1": {"type": "string", "description": "First parameter"}
+        'type': 'function',
+        'function': {
+            'name': 'mock_tool',
+            'description': 'A mock tool for testing',
+            'parameters': {
+                'type': 'object',
+                'properties': {
+                    'param1': {
+                        'type': 'string',
+                        'description': 'First parameter',
+                    }
                 },
-                "required": ["param1"],
+                'required': ['param1'],
             },
         },
     }
@@ -82,9 +87,9 @@ def test_tool_parameters_preserved():
     tool = MockTool()
     formatted = OllamaToolSchemaFormatter.format_tools_for_ollama([tool])
 
-    params = formatted[0]["function"]["parameters"]
-    assert params["type"] == "object"
-    assert "param1" in params["properties"]
-    assert params["properties"]["param1"]["type"] == "string"
-    assert "required" in params
-    assert "param1" in params["required"]
+    params = formatted[0]['function']['parameters']
+    assert params['type'] == 'object'
+    assert 'param1' in params['properties']
+    assert params['properties']['param1']['type'] == 'string'
+    assert 'required' in params
+    assert 'param1' in params['required']

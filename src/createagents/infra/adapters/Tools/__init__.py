@@ -6,8 +6,8 @@ if TYPE_CHECKING:
     from .Read_Local_File_Tool import ReadLocalFileTool
 
 __all__ = [
-    "ReadLocalFileTool",
-    "CurrentDateTool",
+    'ReadLocalFileTool',
+    'CurrentDateTool',
 ]
 
 
@@ -28,16 +28,16 @@ def __getattr__(name: str):
         AttributeError: If the name doesn't exist.
         ImportError: If optional dependencies are not installed.
     """
-    if name == "ReadLocalFileTool":
+    if name == 'ReadLocalFileTool':
         try:
             from .Read_Local_File_Tool import ReadLocalFileTool
 
             return ReadLocalFileTool
         except ImportError as e:
             raise ImportError(
-                f"ReadLocalFileTool requires optional dependencies. "
-                f"Install with: pip install ai-agent[file-tools]\n"
-                f"Original error: {e}"
+                f'ReadLocalFileTool requires optional dependencies. '
+                f'Install with: pip install ai-agent[file-tools]\n'
+                f'Original error: {e}'
             ) from e
 
-    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+    raise AttributeError(f'module {__name__!r} has no attribute {name!r}')

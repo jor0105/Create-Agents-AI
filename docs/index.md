@@ -6,7 +6,7 @@
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
 [![Clean Architecture](https://img.shields.io/badge/Architecture-Clean-brightgreen.svg)](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html)
 
-______________________________________________________________________
+---
 
 ## 🎯 O que este sistema oferece?
 
@@ -18,7 +18,7 @@ ______________________________________________________________________
 ✅ **Métricas integradas**: Monitore performance em JSON ou Prometheus
 ✅ **Arquitetura limpa**: Código testável, manutenível e escalável seguindo SOLID
 
-______________________________________________________________________
+---
 
 ## 🚀 Quick Start
 
@@ -57,7 +57,7 @@ response = agent.chat("Olá!")
 print(response)
 ```
 
-______________________________________________________________________
+---
 
 ## ✨ Funcionalidades Principais
 
@@ -178,7 +178,7 @@ agent = CreateAgent(
 )
 ```
 
-______________________________________________________________________
+---
 
 ## 📚 Documentação
 
@@ -201,7 +201,7 @@ ______________________________________________________________________
 - **[Ferramentas](reference/tools.md)** - Guia completo das tools disponíveis
 - **[Comandos](reference/commands.md)** - Referência de comandos
 
-______________________________________________________________________
+---
 
 ## 🏗️ Por Que Usar Este Framework?
 
@@ -219,7 +219,7 @@ ______________________________________________________________________
 - ✅ **Type hints**: Suporte completo para IDEs
 - ✅ **CI/CD**: Quality checks automáticos com GitHub Actions
 
-______________________________________________________________________
+---
 
 ## 📊 Arquitetura
 
@@ -251,7 +251,7 @@ O projeto segue **Clean Architecture** e **SOLID principles**:
 
 [Saiba mais sobre a arquitetura →](dev-guide/architecture-developer.md)
 
-______________________________________________________________________
+---
 
 ## 🤝 Contribuindo
 
@@ -265,7 +265,7 @@ Quer adicionar um novo provedor ou criar uma ferramenta?
 
 [Guia completo de contribuição →](dev-guide/contribute.md)
 
-______________________________________________________________________
+---
 
 ## 📞 Suporte
 
@@ -273,13 +273,13 @@ ______________________________________________________________________
 - 🐛 **Bugs**: [GitHub Issues](https://github.com/jor0105/Create-Agents-AI/issues)
 - 💬 **Discussões**: [GitHub Discussions](https://github.com/jor0105/Create-Agents-AI/discussions)
 
-______________________________________________________________________
+---
 
 ## 📄 Licença
 
 MIT - Use livremente em seus projetos.
 
-______________________________________________________________________
+---
 
 ## 👨‍💻 Autor
 
@@ -288,8 +288,8 @@ ______________________________________________________________________
 - GitHub: [@jor0105](https://github.com/jor0105)
 - Email: estraliotojordan@gmail.com
 
-______________________________________________________________________
+---
 
-**Versão:** 0.1.1\
+**Versão:** 0.1.2\
 **Última atualização:** 25/11/2025\
 **Status:** 🚀 Projeto publicado! Aberto para contribuições e sugestões.

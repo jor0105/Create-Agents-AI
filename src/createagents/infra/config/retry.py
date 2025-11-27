@@ -50,23 +50,27 @@ def retry_with_backoff(
                     last_exception = e
 
                     if attempt == max_attempts:
-                        logger.error(f"Failure after {max_attempts} attempts: {str(e)}")
+                        logger.error(
+                            f'Failure after {max_attempts} attempts: {str(e)}'
+                        )
                         raise
 
                     if on_retry:
                         try:
                             on_retry(attempt, e)
                         except Exception as callback_error:
-                            logger.warning(f"Error in retry callback: {callback_error}")
+                            logger.warning(
+                                f'Error in retry callback: {callback_error}'
+                            )
 
                     actual_delay = delay
                     if jitter:
-                        jitter_factor = 1 + random.uniform(-0.1, 0.1)
+                        jitter_factor = 1 + random.uniform(-0.1, 0.1)  # nosec B311 - Non-cryptographic jitter
                         actual_delay = delay * jitter_factor
 
                     logger.warning(
-                        f"Attempt {attempt}/{max_attempts} failed: {str(e)}. "
-                        f"Waiting {actual_delay:.2f}s before retrying..."
+                        f'Attempt {attempt}/{max_attempts} failed: {str(e)}. '
+                        f'Waiting {actual_delay:.2f}s before retrying...'
                     )
 
                     time.sleep(actual_delay)

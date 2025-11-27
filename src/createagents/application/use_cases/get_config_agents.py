@@ -21,8 +21,8 @@ class GetAgentConfigUseCase:
             A DTO containing the agent's configurations.
         """
         self.__logger.debug(
-            f"Retrieving configuration for agent - Name: {agent.name}, "
-            f"Provider: {agent.provider}, Model: {agent.model}"
+            f'Retrieving configuration for agent - Name: {agent.name}, '
+            f'Provider: {agent.provider}, Model: {agent.model}'
         )
 
         config_dto = AgentConfigOutputDTO(
@@ -37,8 +37,8 @@ class GetAgentConfigUseCase:
         )
 
         self.__logger.debug(
-            f"Configuration retrieved - History size: {len(agent.history)}/{agent.history.max_size}, "
-            f"Tools: {len(agent.tools) if agent.tools else 0}"
+            f'Configuration retrieved - History size: {len(agent.history)}/{agent.history.max_size}, '
+            f'Tools: {len(agent.tools) if agent.tools else 0}'
         )
 
         return config_dto

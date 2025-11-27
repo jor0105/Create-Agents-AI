@@ -14,7 +14,7 @@
 
 </div>
 
-______________________________________________________________________
+---
 
 ## 🎯 Sobre
 
@@ -30,7 +30,7 @@ ______________________________________________________________________
 - ✅ **Type Safety**: Suporte completo a type hints
 - ✅ **CI/CD Profissional**: Quality checks automáticos com GitHub Actions
 
-______________________________________________________________________
+---
 
 ## ✨ Features
 
@@ -71,7 +71,7 @@ LoggingConfig.configure_for_development(level=logging.INFO)
 
 📖 [Guia completo de Logging](docs/dev-guide/logging_guide.md)
 
-______________________________________________________________________
+---
 
 ## 🚀 Instalação Rápida
 
@@ -122,7 +122,7 @@ cp .env.example .env
 
 📖 [Guia completo para contribuidores →](https://jor0105.github.io/Create-Agents-AI/dev-guide/contribute/)
 
-______________________________________________________________________
+---
 
 ## 💡 Quick Start
 
@@ -183,7 +183,7 @@ response = agent.chat("Explique Clean Architecture")
 print(response)
 ```
 
-______________________________________________________________________
+---
 
 ## 📋 Exemplos de Uso
 
@@ -290,7 +290,7 @@ agent.export_metrics_json("metrics.json")
 agent.export_metrics_prometheus("metrics.prom")
 ```
 
-______________________________________________________________________
+---
 
 ## 🏗️ Arquitetura
 
@@ -334,7 +334,7 @@ src/
 
 📖 [Documentação completa da arquitetura](https://jor0105.github.io/Create-Agents-AI/dev-guide/architecture-developer/)
 
-______________________________________________________________________
+---
 
 ## 📚 Documentação
 
@@ -364,7 +364,7 @@ poetry run mkdocs serve
 # Acesse: http://localhost:8000
 ```
 
-______________________________________________________________________
+---
 
 ## 🔧 Configuração
 
@@ -397,7 +397,7 @@ agent = CreateAgent(
 )
 ```
 
-______________________________________________________________________
+---
 
 ## 📊 API Reference
 
@@ -430,7 +430,7 @@ CreateAgent(
 
 📖 [Documentação completa da API](https://jor0105.github.io/Create-Agents-AI/reference/api/)
 
-______________________________________________________________________
+---
 
 ## 🤝 Contribuindo
 
@@ -477,7 +477,7 @@ class MeuAdapter(ChatRepository):
 
 📖 [Guia completo de contribuição](https://jor0105.github.io/Create-Agents-AI/dev-guide/contribute/)
 
-______________________________________________________________________
+---
 
 ## 🧪 CI/CD & Workflows
 
@@ -511,13 +511,13 @@ poetry run pre-commit install
 poetry run pre-commit run --all-files
 ```
 
-______________________________________________________________________
+---
 
 ## 📄 Licença
 
 Este projeto está licenciado sob a **MIT License** - veja o arquivo [LICENSE](LICENSE) para detalhes.
 
-______________________________________________________________________
+---
 
 ## 📞 Suporte
 
@@ -526,7 +526,7 @@ ______________________________________________________________________
 - 💬 [Discussões](https://github.com/jor0105/Create-Agents-AI/discussions)
 - 📧 Email: estraliotojordan@gmail.com
 
-______________________________________________________________________
+---
 
 ## 👨‍💻 Autor
 
@@ -535,7 +535,7 @@ ______________________________________________________________________
 - GitHub: [@jor0105](https://github.com/jor0105)
 - Email: estraliotojordan@gmail.com
 
-______________________________________________________________________
+---
 
 ## 📚 Referências
 
@@ -544,11 +544,11 @@ ______________________________________________________________________
 - [Ollama Documentation](https://github.com/ollama/ollama)
 - [SOLID Principles](https://en.wikipedia.org/wiki/SOLID)
 
-______________________________________________________________________
+---
 
 <div align="center">
 
-**Versão:** 0.1.1\
+**Versão:** 0.1.2\
 **Última atualização:** 25/11/2025\
 **Status:** 🚀 Projeto publicado! Aberto para contribuições e sugestões.
 

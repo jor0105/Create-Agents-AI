@@ -7,11 +7,11 @@ from createagents.application.interfaces.chat_repository import ChatRepository
 from createagents.domain.entities.agent_domain import Agent
 from createagents.domain.value_objects import History
 
-DEFAULT_PROVIDER = "openai"
-DEFAULT_MODEL = "gpt-5-nano"
-DEFAULT_TEST_AGENT_NAME = "Test Agent"
-DEFAULT_TEST_INSTRUCTIONS = "You are a test agent"
-MOCKED_AI_RESPONSE = "Mocked AI response"
+DEFAULT_PROVIDER = 'openai'
+DEFAULT_MODEL = 'gpt-5-nano'
+DEFAULT_TEST_AGENT_NAME = 'Test Agent'
+DEFAULT_TEST_INSTRUCTIONS = 'You are a test agent'
+MOCKED_AI_RESPONSE = 'Mocked AI response'
 
 
 @pytest.fixture(autouse=True)
@@ -50,9 +50,9 @@ def sample_agent():
 
 @pytest.fixture
 def sample_agent_with_history(sample_agent):
-    sample_agent.add_user_message("Hello")
-    sample_agent.add_assistant_message("Hi there!")
-    sample_agent.add_user_message("How are you?")
+    sample_agent.add_user_message('Hello')
+    sample_agent.add_assistant_message('Hi there!')
+    sample_agent.add_user_message('How are you?')
     sample_agent.add_assistant_message("I'm doing well!")
     return sample_agent
 
@@ -65,10 +65,10 @@ def empty_history():
 @pytest.fixture
 def populated_history():
     history = History()
-    history.add_user_message("Message 1")
-    history.add_assistant_message("Response 1")
-    history.add_user_message("Message 2")
-    history.add_assistant_message("Response 2")
+    history.add_user_message('Message 1')
+    history.add_assistant_message('Response 1')
+    history.add_user_message('Message 2')
+    history.add_assistant_message('Response 2')
     return history
 
 
@@ -85,18 +85,18 @@ def mock_openai_api_key(request):
     since they provide their own mocks.
     """
     # Only apply to unit tests, not integration tests
-    if "unit" in request.keywords:
+    if 'unit' in request.keywords:
         from unittest.mock import MagicMock
 
         # Skip if the test is in test_client_openai.py (those tests mock OpenAI themselves)
-        if "test_client_openai" in request.node.nodeid:
+        if 'test_client_openai' in request.node.nodeid:
             yield
             return
 
         with (
-            patch.dict(os.environ, {"OPENAI_API_KEY": "test-key-mock"}),
+            patch.dict(os.environ, {'OPENAI_API_KEY': 'test-key-mock'}),
             patch(
-                "createagents.infra.adapters.OpenAI.client_openai.ClientOpenAI.get_client"
+                'createagents.infra.adapters.OpenAI.client_openai.ClientOpenAI.get_client'
             ) as mock_get_client,
         ):
             # Create a mock OpenAI client
@@ -109,13 +109,15 @@ def mock_openai_api_key(request):
 
 def pytest_configure(config):
     markers = [
-        ("unit", "marks the test as unit - isolated component tests"),
+        ('unit', 'marks the test as unit - isolated component tests'),
         (
-            "integration",
-            "marks the test as integration - tests with multiple components",
+            'integration',
+            'marks the test as integration - tests with multiple components',
         ),
-        ("slow", "marks the test as slow - tests that take longer"),
+        ('slow', 'marks the test as slow - tests that take longer'),
     ]
 
     for marker_name, marker_description in markers:
-        config.addinivalue_line("markers", f"{marker_name}: {marker_description}")
+        config.addinivalue_line(
+            'markers', f'{marker_name}: {marker_description}'
+        )

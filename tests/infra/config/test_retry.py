@@ -9,7 +9,7 @@ from createagents.infra import retry_with_backoff
 @pytest.mark.unit
 class TestRetryWithBackoff:
     def test_successful_execution_no_retry(self):
-        mock_func = Mock(return_value="success")
+        mock_func = Mock(return_value='success')
 
         @retry_with_backoff(max_attempts=3)
         def test_func():
@@ -17,12 +17,12 @@ class TestRetryWithBackoff:
 
         result = test_func()
 
-        assert result == "success"
+        assert result == 'success'
         assert mock_func.call_count == 1
 
     def test_retry_on_exception(self):
         mock_func = Mock(
-            side_effect=[Exception("Error 1"), Exception("Error 2"), "success"]
+            side_effect=[Exception('Error 1'), Exception('Error 2'), 'success']
         )
 
         @retry_with_backoff(max_attempts=3, initial_delay=0.01)
@@ -31,17 +31,17 @@ class TestRetryWithBackoff:
 
         result = test_func()
 
-        assert result == "success"
+        assert result == 'success'
         assert mock_func.call_count == 3
 
     def test_max_attempts_reached_raises_exception(self):
-        mock_func = Mock(side_effect=Exception("Persistent error"))
+        mock_func = Mock(side_effect=Exception('Persistent error'))
 
         @retry_with_backoff(max_attempts=3, initial_delay=0.01)
         def test_func():
             return mock_func()
 
-        with pytest.raises(Exception, match="Persistent error"):
+        with pytest.raises(Exception, match='Persistent error'):
             test_func()
 
         assert mock_func.call_count == 3
@@ -52,16 +52,18 @@ class TestRetryWithBackoff:
         def failing_func():
             call_times.append(time.time())
             if len(call_times) < 3:
-                raise Exception("Error")
-            return "success"
+                raise Exception('Error')
+            return 'success'
 
-        @retry_with_backoff(max_attempts=3, initial_delay=0.1, backoff_factor=2.0)
+        @retry_with_backoff(
+            max_attempts=3, initial_delay=0.1, backoff_factor=2.0
+        )
         def test_func():
             return failing_func()
 
         result = test_func()
 
-        assert result == "success"
+        assert result == 'success'
         assert len(call_times) == 3
 
         if len(call_times) >= 2:
@@ -73,7 +75,7 @@ class TestRetryWithBackoff:
             assert delay2 >= 0.18
 
     def test_only_specified_exceptions_trigger_retry(self):
-        mock_func = Mock(side_effect=ValueError("Wrong exception"))
+        mock_func = Mock(side_effect=ValueError('Wrong exception'))
 
         @retry_with_backoff(
             max_attempts=3, initial_delay=0.01, exceptions=(ConnectionError,)
@@ -81,25 +83,31 @@ class TestRetryWithBackoff:
         def test_func():
             return mock_func()
 
-        with pytest.raises(ValueError, match="Wrong exception"):
+        with pytest.raises(ValueError, match='Wrong exception'):
             test_func()
 
         assert mock_func.call_count == 1
 
     def test_multiple_exception_types(self):
         mock_func = Mock(
-            side_effect=[ValueError("Error 1"), TypeError("Error 2"), "success"]
+            side_effect=[
+                ValueError('Error 1'),
+                TypeError('Error 2'),
+                'success',
+            ]
         )
 
         @retry_with_backoff(
-            max_attempts=3, initial_delay=0.01, exceptions=(ValueError, TypeError)
+            max_attempts=3,
+            initial_delay=0.01,
+            exceptions=(ValueError, TypeError),
         )
         def test_func():
             return mock_func()
 
         result = test_func()
 
-        assert result == "success"
+        assert result == 'success'
         assert mock_func.call_count == 3
 
     def test_default_parameters(self):
@@ -109,16 +117,16 @@ class TestRetryWithBackoff:
         def test_func():
             call_count[0] += 1
             if call_count[0] < 2:
-                raise Exception("Error")
-            return "success"
+                raise Exception('Error')
+            return 'success'
 
         result = test_func()
 
-        assert result == "success"
+        assert result == 'success'
         assert call_count[0] == 2
 
     def test_function_with_arguments(self):
-        mock_func = Mock(return_value="result")
+        mock_func = Mock(return_value='result')
 
         @retry_with_backoff(max_attempts=2, initial_delay=0.01)
         def test_func(a, b, c=None):
@@ -126,7 +134,7 @@ class TestRetryWithBackoff:
 
         result = test_func(1, 2, c=3)
 
-        assert result == "result"
+        assert result == 'result'
         mock_func.assert_called_once_with(1, 2, 3)
 
     def test_preserves_function_metadata(self):
@@ -135,14 +143,14 @@ class TestRetryWithBackoff:
             """Test docstring"""
             pass
 
-        assert test_func.__name__ == "test_func"
-        assert test_func.__doc__ == "Test docstring"
+        assert test_func.__name__ == 'test_func'
+        assert test_func.__doc__ == 'Test docstring'
 
     def test_logging_on_retry(self):
-        mock_func = Mock(side_effect=[Exception("Error"), "success"])
+        mock_func = Mock(side_effect=[Exception('Error'), 'success'])
 
         with patch(
-            "createagents.infra.config.retry.LoggingConfig.get_logger"
+            'createagents.infra.config.retry.LoggingConfig.get_logger'
         ) as mock_logger:
             mock_log_instance = Mock()
             mock_logger.return_value = mock_log_instance
@@ -153,14 +161,14 @@ class TestRetryWithBackoff:
 
             result = test_func()
 
-            assert result == "success"
+            assert result == 'success'
             assert mock_log_instance.warning.call_count == 1
 
     def test_logging_on_final_failure(self):
-        mock_func = Mock(side_effect=Exception("Persistent error"))
+        mock_func = Mock(side_effect=Exception('Persistent error'))
 
         with patch(
-            "createagents.infra.config.retry.LoggingConfig.get_logger"
+            'createagents.infra.config.retry.LoggingConfig.get_logger'
         ) as mock_logger:
             mock_log_instance = Mock()
             mock_logger.return_value = mock_log_instance
@@ -175,7 +183,7 @@ class TestRetryWithBackoff:
             assert mock_log_instance.error.call_count == 1
 
     def test_zero_initial_delay(self):
-        mock_func = Mock(side_effect=[Exception("Error"), "success"])
+        mock_func = Mock(side_effect=[Exception('Error'), 'success'])
 
         @retry_with_backoff(max_attempts=3, initial_delay=0.0)
         def test_func():
@@ -185,7 +193,7 @@ class TestRetryWithBackoff:
         result = test_func()
         elapsed = time.time() - start_time
 
-        assert result == "success"
+        assert result == 'success'
         assert elapsed < 0.1
 
     def test_custom_backoff_factor(self):
@@ -194,29 +202,31 @@ class TestRetryWithBackoff:
         def failing_func():
             call_times.append(time.time())
             if len(call_times) < 3:
-                raise Exception("Error")
-            return "success"
+                raise Exception('Error')
+            return 'success'
 
-        @retry_with_backoff(max_attempts=3, initial_delay=0.1, backoff_factor=3.0)
+        @retry_with_backoff(
+            max_attempts=3, initial_delay=0.1, backoff_factor=3.0
+        )
         def test_func():
             return failing_func()
 
         result = test_func()
 
-        assert result == "success"
+        assert result == 'success'
 
         if len(call_times) >= 3:
             delay2 = call_times[2] - call_times[1]
             assert 0.27 <= delay2 <= 0.35
 
     def test_single_attempt(self):
-        mock_func = Mock(side_effect=Exception("Error"))
+        mock_func = Mock(side_effect=Exception('Error'))
 
         @retry_with_backoff(max_attempts=1, initial_delay=0.01)
         def test_func():
             return mock_func()
 
-        with pytest.raises(Exception, match="Error"):
+        with pytest.raises(Exception, match='Error'):
             test_func()
 
         assert mock_func.call_count == 1
@@ -228,16 +238,16 @@ class TestRetryWithBackoff:
         def test_func():
             call_count[0] += 1
             if call_count[0] < 10:
-                raise Exception("Error")
-            return "success"
+                raise Exception('Error')
+            return 'success'
 
         result = test_func()
 
-        assert result == "success"
+        assert result == 'success'
         assert call_count[0] == 10
 
     def test_exception_message_preserved(self):
-        error_message = "Specific error message"
+        error_message = 'Specific error message'
         mock_func = Mock(side_effect=Exception(error_message))
 
         @retry_with_backoff(max_attempts=2, initial_delay=0.01)
@@ -248,8 +258,12 @@ class TestRetryWithBackoff:
             test_func()
 
     def test_different_exception_on_each_retry(self):
-        exceptions = [ValueError("Error 1"), TypeError("Error 2"), KeyError("Error 3")]
-        mock_func = Mock(side_effect=exceptions + ["success"])
+        exceptions = [
+            ValueError('Error 1'),
+            TypeError('Error 2'),
+            KeyError('Error 3'),
+        ]
+        mock_func = Mock(side_effect=exceptions + ['success'])
 
         @retry_with_backoff(
             max_attempts=4,
@@ -261,7 +275,7 @@ class TestRetryWithBackoff:
 
         result = test_func()
 
-        assert result == "success"
+        assert result == 'success'
         assert mock_func.call_count == 4
 
     def test_nested_retry_decorators(self):
@@ -272,20 +286,20 @@ class TestRetryWithBackoff:
         def test_func():
             call_count[0] += 1
             if call_count[0] < 2:
-                raise Exception("Error")
-            return "success"
+                raise Exception('Error')
+            return 'success'
 
         result = test_func()
 
-        assert result == "success"
+        assert result == 'success'
         assert call_count[0] >= 2
 
     def test_return_value_types(self):
         test_cases = [
             42,
-            "string",
+            'string',
             [1, 2, 3],
-            {"key": "value"},
+            {'key': 'value'},
             None,
             True,
         ]
@@ -306,8 +320,8 @@ class TestRetryWithBackoff:
         def failing_func():
             call_times.append(time.time())
             if len(call_times) < 2:
-                raise Exception("Error")
-            return "success"
+                raise Exception('Error')
+            return 'success'
 
         @retry_with_backoff(
             max_attempts=2, initial_delay=0.1, backoff_factor=1.0, jitter=False
@@ -317,7 +331,7 @@ class TestRetryWithBackoff:
 
         result = test_func()
 
-        assert result == "success"
+        assert result == 'success'
         if len(call_times) >= 2:
             delay = call_times[1] - call_times[0]
             assert 0.09 <= delay <= 0.11
@@ -327,20 +341,23 @@ class TestRetryWithBackoff:
 
         def failing_func():
             if len(delays) > 0:
-                return "success"
-            raise Exception("Error")
+                return 'success'
+            raise Exception('Error')
 
         for _ in range(5):
             call_times = []
 
             @retry_with_backoff(
-                max_attempts=2, initial_delay=0.1, backoff_factor=1.0, jitter=True
+                max_attempts=2,
+                initial_delay=0.1,
+                backoff_factor=1.0,
+                jitter=True,
             )
             def test_func():
                 call_times.append(time.time())
                 if len(call_times) < 2:
-                    raise Exception("Error")
-                return "success"
+                    raise Exception('Error')
+                return 'success'
 
             test_func()
 
@@ -356,7 +373,7 @@ class TestRetryWithBackoff:
             callback_calls.append((attempt, str(exception)))
 
         mock_func = Mock(
-            side_effect=[Exception("Error 1"), Exception("Error 2"), "success"]
+            side_effect=[Exception('Error 1'), Exception('Error 2'), 'success']
         )
 
         @retry_with_backoff(
@@ -367,10 +384,10 @@ class TestRetryWithBackoff:
 
         result = test_func()
 
-        assert result == "success"
+        assert result == 'success'
         assert len(callback_calls) == 2
-        assert callback_calls[0] == (1, "Error 1")
-        assert callback_calls[1] == (2, "Error 2")
+        assert callback_calls[0] == (1, 'Error 1')
+        assert callback_calls[1] == (2, 'Error 2')
 
     def test_callback_not_called_on_success(self):
         callback_calls = []
@@ -378,7 +395,7 @@ class TestRetryWithBackoff:
         def on_retry_callback(attempt, exception):
             callback_calls.append((attempt, str(exception)))
 
-        mock_func = Mock(return_value="success")
+        mock_func = Mock(return_value='success')
 
         @retry_with_backoff(
             max_attempts=3, initial_delay=0.01, on_retry=on_retry_callback
@@ -388,7 +405,7 @@ class TestRetryWithBackoff:
 
         result = test_func()
 
-        assert result == "success"
+        assert result == 'success'
         assert len(callback_calls) == 0
 
     def test_callback_receives_correct_attempt_number(self):
@@ -405,8 +422,8 @@ class TestRetryWithBackoff:
         def test_func():
             call_count[0] += 1
             if call_count[0] < 4:
-                raise Exception("Error")
-            return "success"
+                raise Exception('Error')
+            return 'success'
 
         test_func()
 
@@ -414,12 +431,12 @@ class TestRetryWithBackoff:
 
     def test_callback_exception_does_not_break_retry(self):
         def failing_callback(attempt, exception):
-            raise RuntimeError("Callback error")
+            raise RuntimeError('Callback error')
 
-        mock_func = Mock(side_effect=[Exception("Error"), "success"])
+        mock_func = Mock(side_effect=[Exception('Error'), 'success'])
 
         with patch(
-            "createagents.infra.config.retry.LoggingConfig.get_logger"
+            'createagents.infra.config.retry.LoggingConfig.get_logger'
         ) as mock_logger:
             mock_log_instance = Mock()
             mock_logger.return_value = mock_log_instance
@@ -432,11 +449,11 @@ class TestRetryWithBackoff:
 
             result = test_func()
 
-            assert result == "success"
+            assert result == 'success'
             assert mock_log_instance.warning.call_count >= 1
 
     def test_callback_with_none_does_not_error(self):
-        mock_func = Mock(side_effect=[Exception("Error"), "success"])
+        mock_func = Mock(side_effect=[Exception('Error'), 'success'])
 
         @retry_with_backoff(max_attempts=3, initial_delay=0.01, on_retry=None)
         def test_func():
@@ -444,7 +461,7 @@ class TestRetryWithBackoff:
 
         result = test_func()
 
-        assert result == "success"
+        assert result == 'success'
 
     def test_jitter_with_different_delays(self):
         for initial_delay in [0.05, 0.1, 0.2]:
@@ -456,8 +473,8 @@ class TestRetryWithBackoff:
             def test_func():
                 call_times.append(time.time())
                 if len(call_times) < 2:
-                    raise Exception("Error")
-                return "success"
+                    raise Exception('Error')
+                return 'success'
 
             test_func()
 
@@ -481,17 +498,17 @@ class TestRetryWithBackoff:
         )
         def test_func():
             if len(received_exceptions) == 0:
-                raise ValueError("First")
+                raise ValueError('First')
             elif len(received_exceptions) == 1:
-                raise TypeError("Second")
+                raise TypeError('Second')
             elif len(received_exceptions) == 2:
-                raise KeyError("Third")
-            return "success"
+                raise KeyError('Third')
+            return 'success'
 
         result = test_func()
 
-        assert result == "success"
-        assert received_exceptions == ["ValueError", "TypeError", "KeyError"]
+        assert result == 'success'
+        assert received_exceptions == ['ValueError', 'TypeError', 'KeyError']
 
     def test_jitter_and_callback_together(self):
         callback_calls = []
@@ -510,12 +527,12 @@ class TestRetryWithBackoff:
         def test_func():
             call_times.append(time.time())
             if len(call_times) < 3:
-                raise Exception(f"Error {len(call_times)}")
-            return "success"
+                raise Exception(f'Error {len(call_times)}')
+            return 'success'
 
         result = test_func()
 
-        assert result == "success"
+        assert result == 'success'
         assert len(callback_calls) == 2
         assert callback_calls == [1, 2]
         assert len(call_times) == 3
@@ -531,15 +548,15 @@ class TestRetryWithBackoff:
         )
         def test_func():
             if len(messages) == 0:
-                raise Exception("First error")
+                raise Exception('First error')
             elif len(messages) == 1:
-                raise Exception("Second error")
-            return "success"
+                raise Exception('Second error')
+            return 'success'
 
         result = test_func()
 
-        assert result == "success"
-        assert messages == ["First error", "Second error"]
+        assert result == 'success'
+        assert messages == ['First error', 'Second error']
 
     def test_jitter_default_is_true(self):
         delays = []
@@ -551,8 +568,8 @@ class TestRetryWithBackoff:
             def test_func():
                 call_times.append(time.time())
                 if len(call_times) < 2:
-                    raise Exception("Error")
-                return "success"
+                    raise Exception('Error')
+                return 'success'
 
             test_func()
 
@@ -569,13 +586,13 @@ class TestRetryWithBackoff:
         def test_func():
             attempt_count[0] += 1
             if attempt_count[0] == 1:
-                raise ValueError("First error")
+                raise ValueError('First error')
             elif attempt_count[0] == 2:
-                raise TypeError("Second error")
+                raise TypeError('Second error')
             else:
-                raise KeyError("Third error")
+                raise KeyError('Third error')
 
-        with pytest.raises(KeyError, match="Third error"):
+        with pytest.raises(KeyError, match='Third error'):
             test_func()
 
         assert attempt_count[0] == 3
@@ -586,8 +603,8 @@ class TestRetryWithBackoff:
             """Test function"""
             return a + b + c
 
-        assert func_with_args.__name__ == "func_with_args"
-        assert func_with_args.__doc__ == "Test function"
+        assert func_with_args.__name__ == 'func_with_args'
+        assert func_with_args.__doc__ == 'Test function'
 
         result = func_with_args(1, 2, c=3)
         assert result == 6
@@ -597,8 +614,8 @@ class TestRetryWithBackoff:
 
         def failing_func():
             if len(delays_recorded) < 3:
-                raise Exception("Error")
-            return "success"
+                raise Exception('Error')
+            return 'success'
 
         @retry_with_backoff(
             max_attempts=4, initial_delay=0.1, backoff_factor=2.0, jitter=False
@@ -627,9 +644,9 @@ class TestRetryWithBackoff:
         def tracking_callback(attempt, exception):
             callback_data.append(
                 {
-                    "attempt": attempt,
-                    "type": type(exception).__name__,
-                    "message": str(exception),
+                    'attempt': attempt,
+                    'type': type(exception).__name__,
+                    'message': str(exception),
                 }
             )
 
@@ -641,37 +658,39 @@ class TestRetryWithBackoff:
         def test_func():
             attempt[0] += 1
             if attempt[0] == 1:
-                raise ValueError("Value error")
+                raise ValueError('Value error')
             elif attempt[0] == 2:
-                raise TypeError("Type error")
+                raise TypeError('Type error')
             elif attempt[0] == 3:
-                raise KeyError("Key error")
-            return "success"
+                raise KeyError('Key error')
+            return 'success'
 
         result = test_func()
 
-        assert result == "success"
+        assert result == 'success'
         assert len(callback_data) == 3
-        assert callback_data[0]["type"] == "ValueError"
-        assert callback_data[1]["type"] == "TypeError"
-        assert callback_data[2]["type"] == "KeyError"
+        assert callback_data[0]['type'] == 'ValueError'
+        assert callback_data[1]['type'] == 'TypeError'
+        assert callback_data[2]['type'] == 'KeyError'
 
     def test_exception_not_in_exceptions_tuple_fails_immediately(self):
-        mock_func = Mock(side_effect=RuntimeError("Runtime error"))
+        mock_func = Mock(side_effect=RuntimeError('Runtime error'))
 
         @retry_with_backoff(
-            max_attempts=5, initial_delay=0.01, exceptions=(ValueError, TypeError)
+            max_attempts=5,
+            initial_delay=0.01,
+            exceptions=(ValueError, TypeError),
         )
         def test_func():
             return mock_func()
 
-        with pytest.raises(RuntimeError, match="Runtime error"):
+        with pytest.raises(RuntimeError, match='Runtime error'):
             test_func()
 
         assert mock_func.call_count == 1
 
     def test_zero_max_attempts_edge_case(self):
-        mock_func = Mock(return_value="success")
+        mock_func = Mock(return_value='success')
 
         @retry_with_backoff(max_attempts=0, initial_delay=0.01)
         def test_func():

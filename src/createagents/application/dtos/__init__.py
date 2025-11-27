@@ -6,8 +6,8 @@ from .agent_dtos import (
 )
 
 __all__ = [
-    "CreateAgentInputDTO",
-    "AgentConfigOutputDTO",
-    "ChatInputDTO",
-    "ChatOutputDTO",
+    'CreateAgentInputDTO',
+    'AgentConfigOutputDTO',
+    'ChatInputDTO',
+    'ChatOutputDTO',
 ]

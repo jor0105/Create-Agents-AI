@@ -25,11 +25,11 @@ class ToolExecutionResult:
 
     def to_dict(self) -> Dict[str, Any]:
         return {
-            "tool_name": self.tool_name,
-            "success": self.success,
-            "result": self.result,
-            "error": self.error,
-            "execution_time_ms": self.execution_time_ms,
+            'tool_name': self.tool_name,
+            'success': self.success,
+            'result': self.result,
+            'error': self.error,
+            'execution_time_ms': self.execution_time_ms,
         }
 
     def to_llm_message(self) -> str:
@@ -81,10 +81,10 @@ class ToolExecutor:
             self._tools_map[tool.name] = tool
 
         self.__logger.info(
-            f"ToolExecutor initialized with {len(self._tools_map)} tool(s): {list(self._tools_map.keys())}"
+            f'ToolExecutor initialized with {len(self._tools_map)} tool(s): {list(self._tools_map.keys())}'
         )
         self.__logger.debug(
-            f"Tool details: {[{'name': t.name, 'description': t.description[:50]} for t in tools]}"
+            f'Tool details: {[{"name": t.name, "description": t.description[:50]} for t in tools]}'
         )
 
     def get_available_tool_names(self) -> List[str]:
@@ -106,7 +106,9 @@ class ToolExecutor:
         """
         return tool_name in self._tools_map
 
-    def execute_tool(self, tool_name: str, **kwargs: Any) -> ToolExecutionResult:
+    def execute_tool(
+        self, tool_name: str, **kwargs: Any
+    ) -> ToolExecutionResult:
         """Execute a tool by name with given arguments.
 
         This method provides safe execution with comprehensive error handling,
@@ -132,13 +134,13 @@ class ToolExecutor:
         start_time = time.time()
 
         self.__logger.info(f"Attempting to execute tool: '{tool_name}'")
-        self.__logger.debug(f"Tool arguments: {kwargs}")
+        self.__logger.debug(f'Tool arguments: {kwargs}')
 
         if not self.has_tool(tool_name):
-            available = ", ".join(self.get_available_tool_names())
+            available = ', '.join(self.get_available_tool_names())
             error_msg = (
                 f"Tool '{tool_name}' not found. "
-                f"Available tools: {available if available else 'None'}"
+                f'Available tools: {available if available else "None"}'
             )
             self.__logger.error(error_msg)
             return ToolExecutionResult(
@@ -162,7 +164,7 @@ class ToolExecutor:
                 f"Tool '{tool_name}' executed successfully in {execution_time:.2f}ms"
             )
             self.__logger.debug(
-                f"Tool result (first 200 chars): {str(result)[:200]}..."
+                f'Tool result (first 200 chars): {str(result)[:200]}...'
             )
 
             return ToolExecutionResult(
@@ -220,16 +222,16 @@ class ToolExecutor:
             results = executor.execute_multiple_tools(tool_calls)
             ```
         """
-        self.__logger.info(f"Executing {len(tool_calls)} tool(s) in sequence")
+        self.__logger.info(f'Executing {len(tool_calls)} tool(s) in sequence')
         self.__logger.debug(
-            f"Tool calls: {[call.get('name', 'unknown') for call in tool_calls]}"
+            f'Tool calls: {[call.get("name", "unknown") for call in tool_calls]}'
         )
 
         results = []
 
         for idx, call in enumerate(tool_calls, 1):
-            tool_name = call.get("name", "")
-            arguments = call.get("arguments", {})
+            tool_name = call.get('name', '')
+            arguments = call.get('arguments', {})
 
             self.__logger.debug(
                 f"Processing tool call {idx}/{len(tool_calls)}: '{tool_name}'"
@@ -238,9 +240,11 @@ class ToolExecutor:
             if isinstance(arguments, str):
                 try:
                     arguments = json.loads(arguments)
-                    self.__logger.debug(f"Parsed JSON arguments for '{tool_name}'")
+                    self.__logger.debug(
+                        f"Parsed JSON arguments for '{tool_name}'"
+                    )
                 except json.JSONDecodeError as e:
-                    error_msg = f"Invalid JSON arguments: {arguments}"
+                    error_msg = f'Invalid JSON arguments: {arguments}'
                     self.__logger.error(
                         f"Failed to parse arguments for '{tool_name}': {str(e)}"
                     )
@@ -258,8 +262,8 @@ class ToolExecutor:
 
         successful = sum(1 for r in results if r.success)
         self.__logger.info(
-            f"Completed execution of {len(tool_calls)} tool(s): "
-            f"{successful} successful, {len(tool_calls) - successful} failed"
+            f'Completed execution of {len(tool_calls)} tool(s): '
+            f'{successful} successful, {len(tool_calls) - successful} failed'
         )
 
         return results

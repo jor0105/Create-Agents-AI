@@ -45,16 +45,16 @@ class AgentComposer:
             A new agent instance.
         """
         AgentComposer.__logger.info(
-            f"Composing agent creation - Provider: {provider}, Model: {model}, Name: {name}"
+            f'Composing agent creation - Provider: {provider}, Model: {model}, Name: {name}'
         )
 
         if config is None:
             config = {}
 
         AgentComposer.__logger.debug(
-            f"Agent parameters - Tools: {len(tools) if tools else 0}, "
-            f"History max size: {history_max_size}, "
-            f"Config keys: {list(config.keys()) if isinstance(config, dict) else 'invalid'}"
+            f'Agent parameters - Tools: {len(tools) if tools else 0}, '
+            f'History max size: {history_max_size}, '
+            f'Config keys: {list(config.keys()) if isinstance(config, dict) else "invalid"}'
         )
 
         input_dto = CreateAgentInputDTO(
@@ -70,7 +70,9 @@ class AgentComposer:
         use_case = CreateAgentUseCase()
         agent = use_case.execute(input_dto)
 
-        AgentComposer.__logger.info(f"Agent composed successfully - Name: {agent.name}")
+        AgentComposer.__logger.info(
+            f'Agent composed successfully - Name: {agent.name}'
+        )
         return agent
 
     @staticmethod
@@ -89,13 +91,13 @@ class AgentComposer:
             A configured ChatWithAgentUseCase.
         """
         AgentComposer.__logger.debug(
-            f"Composing chat use case - Provider: {provider}, Model: {model}"
+            f'Composing chat use case - Provider: {provider}, Model: {model}'
         )
 
         chat_adapter = ChatAdapterFactory.create(provider, model)
         use_case = ChatWithAgentUseCase(chat_repository=chat_adapter)
 
-        AgentComposer.__logger.debug("Chat use case composed successfully")
+        AgentComposer.__logger.debug('Chat use case composed successfully')
         return use_case
 
     @staticmethod
@@ -106,11 +108,13 @@ class AgentComposer:
         Returns:
             A configured GetAgentConfigUseCase.
         """
-        AgentComposer.__logger.debug("Composing get config use case")
+        AgentComposer.__logger.debug('Composing get config use case')
         return GetAgentConfigUseCase()
 
     @staticmethod
-    def create_get_all_available_tools_use_case() -> GetAllAvailableToolsUseCase:
+    def create_get_all_available_tools_use_case() -> (
+        GetAllAvailableToolsUseCase
+    ):
         """
         Creates the GetAllAvailableToolsUseCase.
 
@@ -119,11 +123,15 @@ class AgentComposer:
         Returns:
             A configured GetAllAvailableToolsUseCase.
         """
-        AgentComposer.__logger.debug("Composing get all available tools use case")
+        AgentComposer.__logger.debug(
+            'Composing get all available tools use case'
+        )
         return GetAllAvailableToolsUseCase()
 
     @staticmethod
-    def create_get_system_available_tools_use_case() -> GetSystemAvailableToolsUseCase:
+    def create_get_system_available_tools_use_case() -> (
+        GetSystemAvailableToolsUseCase
+    ):
         """
         Creates the GetSystemAvailableToolsUseCase.
 
@@ -132,5 +140,7 @@ class AgentComposer:
         Returns:
             A configured GetSystemAvailableToolsUseCase.
         """
-        AgentComposer.__logger.debug("Composing get system available tools use case")
+        AgentComposer.__logger.debug(
+            'Composing get system available tools use case'
+        )
         return GetSystemAvailableToolsUseCase()

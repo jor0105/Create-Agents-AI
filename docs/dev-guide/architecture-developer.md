@@ -2,7 +2,7 @@
 
 Documentação completa da arquitetura do **Create Agents AI**, baseada em **Clean Architecture** e **princípios SOLID**.
 
-______________________________________________________________________
+---
 
 ## 📐 Estrutura de Camadas
 
@@ -28,7 +28,7 @@ ______________________________________________________________________
 └─────────────────────────────────────┘
 ```
 
-______________________________________________________________________
+---
 
 ## 🎯 Camadas
 
@@ -45,7 +45,7 @@ ______________________________________________________________________
 - **Domain Services:** `ToolExecutor`, `ToolExecutionResult` (execução segura de ferramentas)
 - **Exceptions:** `domain.exceptions` (ex.: `AgentException`, `InvalidAgentConfigException`, `UnsupportedConfigException`)
 
-______________________________________________________________________
+---
 
 ### 2. Application (Aplicação)
 
@@ -64,7 +64,7 @@ ______________________________________________________________________
 - **DTOs (application/dtos):** Objetos de transferência como `CreateAgentInputDTO`, `ChatInputDTO`, `AgentConfigOutputDTO` usados para comunicação entre controller/use-cases.
 - **Interfaces (application/interfaces):** `ChatRepository` — contrato que os adapters (`OpenAIChatAdapter`, `OllamaChatAdapter`) implementam para manter a camada de aplicação independente das integrações.
 
-______________________________________________________________________
+---
 
 ### 3. Infrastructure (Infraestrutura)
 
@@ -83,7 +83,7 @@ ______________________________________________________________________
 - **Factory:** `ChatAdapterFactory` - Criação de adapters
 - **Config:** `EnvironmentConfig`, `LoggingConfig`, `MetricsCollector`
 
-______________________________________________________________________
+---
 
 ## 🎨 Princípios SOLID
 
@@ -139,7 +139,7 @@ class ChatWithAgentUseCase:
         self.__chat_repository = chat_repository
 ```
 
-______________________________________________________________________
+---
 
 ## 🔧 Padrões de Design
 
@@ -198,7 +198,7 @@ class Message:
     content: str
 ```
 
-______________________________________________________________________
+---
 
 ## 🔄 Fluxo de Dados
 
@@ -213,7 +213,7 @@ User → CreateAgent.chat()
     ← response: str
 ```
 
-______________________________________________________________________
+---
 
 ## 💡 Benefícios da Arquitetura
 
@@ -244,6 +244,6 @@ agent = CreateAgent(provider="ollama", model="llama2")
 - Responsabilidades claras
 - Fácil localizar e corrigir bugs
 
-______________________________________________________________________
+---
 
-**Versão:** 0.1.1 | **Atualização:** 25/11/2025
+**Versão:** 0.1.2 | **Atualização:** 25/11/2025

@@ -14,11 +14,11 @@ class SupportedConfigs:
     """
 
     __AVAILABLE_CONFIGS: Set[str] = {
-        "temperature",
-        "max_tokens",
-        "top_p",
-        "think",
-        "top_k",
+        'temperature',
+        'max_tokens',
+        'top_p',
+        'think',
+        'top_k',
     }
 
     @classmethod
@@ -43,9 +43,11 @@ class SupportedConfigs:
             InvalidAgentConfigException: If the value is outside the allowed range or of the wrong type.
         """
         if value is not None:
-            if not isinstance(value, (float, int)) or not (0.0 <= float(value) <= 2.0):
+            if not isinstance(value, (float, int)) or not (
+                0.0 <= float(value) <= 2.0
+            ):
                 raise InvalidAgentConfigException(
-                    "temperature", "must be a float between 0.0 and 2.0"
+                    'temperature', 'must be a float between 0.0 and 2.0'
                 )
 
     @staticmethod
@@ -61,7 +63,7 @@ class SupportedConfigs:
         """
         if value is not None and (not isinstance(value, int) or value <= 0):
             raise InvalidAgentConfigException(
-                "max_tokens", "must be an integer greater than zero"
+                'max_tokens', 'must be an integer greater than zero'
             )
 
     @staticmethod
@@ -76,9 +78,11 @@ class SupportedConfigs:
             InvalidAgentConfigException: If the value is outside the allowed range or of the wrong type.
         """
         if value is not None:
-            if not isinstance(value, (float, int)) or not (0.0 <= float(value) <= 1.0):
+            if not isinstance(value, (float, int)) or not (
+                0.0 <= float(value) <= 1.0
+            ):
                 raise InvalidAgentConfigException(
-                    "top_p", "must be a float between 0.0 and 1.0"
+                    'top_p', 'must be a float between 0.0 and 1.0'
                 )
 
     @staticmethod
@@ -105,17 +109,18 @@ class SupportedConfigs:
 
         if isinstance(value, dict):
             if not all(
-                isinstance(k, str) and isinstance(v, str) for k, v in value.items()
+                isinstance(k, str) and isinstance(v, str)
+                for k, v in value.items()
             ):
                 raise InvalidAgentConfigException(
-                    "think",
-                    "must be a boolean (for Ollama Provider) or a dict[str, str] (for OpenAI Provider)",
+                    'think',
+                    'must be a boolean (for Ollama Provider) or a dict[str, str] (for OpenAI Provider)',
                 )
             return
 
         raise InvalidAgentConfigException(
-            "think",
-            "must be a boolean (for Ollama Provider) or a dict[str, str] (for OpenAI Provider)",
+            'think',
+            'must be a boolean (for Ollama Provider) or a dict[str, str] (for OpenAI Provider)',
         )
 
     @staticmethod
@@ -131,7 +136,7 @@ class SupportedConfigs:
         """
         if value is not None and (not isinstance(value, int) or value <= 0):
             raise InvalidAgentConfigException(
-                "top_k", "must be an integer greater than zero"
+                'top_k', 'must be an integer greater than zero'
             )
 
     @classmethod
@@ -147,11 +152,11 @@ class SupportedConfigs:
             InvalidAgentConfigException: If the validation fails.
         """
         validators = {
-            "think": cls.validate_think,
-            "temperature": cls.validate_temperature,
-            "max_tokens": cls.validate_max_tokens,
-            "top_p": cls.validate_top_p,
-            "top_k": cls.validate_top_k,
+            'think': cls.validate_think,
+            'temperature': cls.validate_temperature,
+            'max_tokens': cls.validate_max_tokens,
+            'top_p': cls.validate_top_p,
+            'top_k': cls.validate_top_k,
         }
         validator = validators.get(key)
         if validator:

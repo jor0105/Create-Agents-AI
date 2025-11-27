@@ -34,36 +34,45 @@ class SensitiveDataFilter:
     DEFAULT_VISIBLE_CHARS = 4
 
     _PATTERNS: Dict[str, Pattern] = {
-        "jwt_token": re.compile(
-            r"eyJ[a-zA-Z0-9_-]*\.eyJ[a-zA-Z0-9_-]*\.[a-zA-Z0-9_-]*"
+        'jwt_token': re.compile(
+            r'eyJ[a-zA-Z0-9_-]*\.eyJ[a-zA-Z0-9_-]*\.[a-zA-Z0-9_-]*'
         ),
-        "api_key": re.compile(r'(api[_-]?key[\s:="\']*)[\w\-]{6,}', re.IGNORECASE),
-        "bearer_token": re.compile(r"(bearer[\s]+)[\w\-._]+", re.IGNORECASE),
-        "secret": re.compile(
+        'api_key': re.compile(
+            r'(api[_-]?key[\s:="\']*)[\w\-]{6,}', re.IGNORECASE
+        ),
+        'bearer_token': re.compile(r'(bearer[\s]+)[\w\-._]+', re.IGNORECASE),
+        'secret': re.compile(
             r'(secret|secret_key)[\s:="\']*([\w\-]{8,})', re.IGNORECASE
         ),
-        "auth_header": re.compile(
-            r"(authorization[\s:]+)(basic|bearer)[\s]+[\w\-._=]+", re.IGNORECASE
+        'auth_header': re.compile(
+            r'(authorization[\s:]+)(basic|bearer)[\s]+[\w\-._=]+',
+            re.IGNORECASE,
         ),
-        "url_with_password": re.compile(
-            r"(https?://[^:@\s]+):([^@\s]+)@", re.IGNORECASE
+        'url_with_password': re.compile(
+            r'(https?://[^:@\s]+):([^@\s]+)@', re.IGNORECASE
         ),
-        "password": re.compile(
-            r'(password|senha|pwd|pass)[\s:="\'\[]*([^\s,\]"\'}@]{3,})', re.IGNORECASE
+        'password': re.compile(
+            r'(password|senha|pwd|pass)[\s:="\'\[]*([^\s,\]"\'}@]{3,})',
+            re.IGNORECASE,
         ),
-        "email": re.compile(r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b"),
-        "cnpj": re.compile(r"\b\d{2}\.?\d{3}\.?\d{3}/?\d{4}-?\d{2}\b"),
-        "cpf": re.compile(r"\b\d{3}\.?\d{3}\.?\d{3}-?\d{2}\b"),
-        "rg": re.compile(r"\b\d{1,2}\.?\d{3}\.?\d{3}-?[0-9Xx]\b"),
-        "phone_br": re.compile(
-            r"\b(?:\+55[\s]?)?\(?[1-9]{2}\)?[\s]?9[\s]?\d{4}-?\d{4}\b"
+        'email': re.compile(
+            r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
         ),
-        "credit_card": re.compile(r"\b\d{4}[\s\-]?\d{4}[\s\-]?\d{4}[\s\-]?\d{4}\b"),
-        "cvv": re.compile(
-            r'\b(cvv|cvc|security[\s]?code)[\s:="\']*([\d]{3,4})\b', re.IGNORECASE
+        'cnpj': re.compile(r'\b\d{2}\.?\d{3}\.?\d{3}/?\d{4}-?\d{2}\b'),
+        'cpf': re.compile(r'\b\d{3}\.?\d{3}\.?\d{3}-?\d{2}\b'),
+        'rg': re.compile(r'\b\d{1,2}\.?\d{3}\.?\d{3}-?[0-9Xx]\b'),
+        'phone_br': re.compile(
+            r'\b(?:\+55[\s]?)?\(?[1-9]{2}\)?[\s]?9[\s]?\d{4}-?\d{4}\b'
         ),
-        "ipv4": re.compile(
-            r"\b(?:10|127|172\.(?:1[6-9]|2[0-9]|3[01])|192\.168)\.\d{1,3}\.\d{1,3}\b"
+        'credit_card': re.compile(
+            r'\b\d{4}[\s\-]?\d{4}[\s\-]?\d{4}[\s\-]?\d{4}\b'
+        ),
+        'cvv': re.compile(
+            r'\b(cvv|cvc|security[\s]?code)[\s:="\']*([\d]{3,4})\b',
+            re.IGNORECASE,
+        ),
+        'ipv4': re.compile(
+            r'\b(?:10|127|172\.(?:1[6-9]|2[0-9]|3[01])|192\.168)\.\d{1,3}\.\d{1,3}\b'
         ),
     }
 
@@ -83,21 +92,27 @@ class SensitiveDataFilter:
         filtered_text = text
 
         for pattern_name, pattern in cls._PATTERNS.items():
-            if pattern_name == "password":
-                filtered_text = pattern.sub(r"\1[PASSWORD_REDACTED]", filtered_text)
-            elif pattern_name == "secret":
-                filtered_text = pattern.sub(r"\1[SECRET_REDACTED]", filtered_text)
-            elif pattern_name == "cvv":
-                filtered_text = pattern.sub(r"\1[CVV_REDACTED]", filtered_text)
-            elif pattern_name == "url_with_password":
+            if pattern_name == 'password':
                 filtered_text = pattern.sub(
-                    r"\1:[CREDENTIALS_REDACTED]@", filtered_text
+                    r'\1[PASSWORD_REDACTED]', filtered_text
                 )
-            elif pattern_name == "auth_header":
-                filtered_text = pattern.sub(r"\1\2 [TOKEN_REDACTED]", filtered_text)
+            elif pattern_name == 'secret':
+                filtered_text = pattern.sub(
+                    r'\1[SECRET_REDACTED]', filtered_text
+                )
+            elif pattern_name == 'cvv':
+                filtered_text = pattern.sub(r'\1[CVV_REDACTED]', filtered_text)
+            elif pattern_name == 'url_with_password':
+                filtered_text = pattern.sub(
+                    r'\1:[CREDENTIALS_REDACTED]@', filtered_text
+                )
+            elif pattern_name == 'auth_header':
+                filtered_text = pattern.sub(
+                    r'\1\2 [TOKEN_REDACTED]', filtered_text
+                )
             else:
                 filtered_text = pattern.sub(
-                    f"[{pattern_name.upper()}_REDACTED]", filtered_text
+                    f'[{pattern_name.upper()}_REDACTED]', filtered_text
                 )
 
         return filtered_text
@@ -129,7 +144,9 @@ class SensitiveDataFilter:
         cls._filter_cached.cache_clear()
 
     @classmethod
-    def mask_partial(cls, text: str, visible_chars: int = DEFAULT_VISIBLE_CHARS) -> str:
+    def mask_partial(
+        cls, text: str, visible_chars: int = DEFAULT_VISIBLE_CHARS
+    ) -> str:
         """
         Partially masks a text, keeping a specified number of characters visible.
 
@@ -145,12 +162,12 @@ class SensitiveDataFilter:
             '****cdef'
         """
         if len(text) <= visible_chars:
-            return "*" * len(text)
+            return '*' * len(text)
 
         if visible_chars <= 0:
-            return "*" * len(text)
+            return '*' * len(text)
 
-        return "*" * (len(text) - visible_chars) + text[-visible_chars:]
+        return '*' * (len(text) - visible_chars) + text[-visible_chars:]
 
     @classmethod
     def is_sensitive(cls, text: str) -> bool:

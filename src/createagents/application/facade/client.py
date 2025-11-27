@@ -42,7 +42,7 @@ class CreateAgent:
         self.__logger = LoggingConfig.get_logger(__name__)
 
         self.__logger.info(
-            f"Initializing CreateAgent controller - Provider: {provider}, Model: {model}, Name: {name}"
+            f'Initializing CreateAgent controller - Provider: {provider}, Model: {model}, Name: {name}'
         )
 
         self.__agent: Agent = AgentComposer.create_agent(
@@ -55,23 +55,19 @@ class CreateAgent:
             history_max_size=history_max_size,
         )
 
-        self.__chat_use_case: ChatWithAgentUseCase = AgentComposer.create_chat_use_case(
-            provider=provider, model=model
+        self.__chat_use_case: ChatWithAgentUseCase = (
+            AgentComposer.create_chat_use_case(provider=provider, model=model)
         )
         self.__get_config_use_case: GetAgentConfigUseCase = (
             AgentComposer.create_get_config_use_case()
         )
 
-        self.__get_all_available_tools_use_case: GetAllAvailableToolsUseCase = (
-            AgentComposer.create_get_all_available_tools_use_case()
-        )
+        self.__get_all_available_tools_use_case: GetAllAvailableToolsUseCase = AgentComposer.create_get_all_available_tools_use_case()
 
-        self.__get_system_available_tools_use_case: GetSystemAvailableToolsUseCase = (
-            AgentComposer.create_get_system_available_tools_use_case()
-        )
+        self.__get_system_available_tools_use_case: GetSystemAvailableToolsUseCase = AgentComposer.create_get_system_available_tools_use_case()
 
         self.__logger.info(
-            f"CreateAgent controller initialized successfully - Agent: {self.__agent.name}"
+            f'CreateAgent controller initialized successfully - Agent: {self.__agent.name}'
         )
 
     def chat(
@@ -88,7 +84,7 @@ class CreateAgent:
             The agent's response.
         """
         self.__logger.debug(
-            f"Chat request received - Message length: {len(message)} chars"
+            f'Chat request received - Message length: {len(message)} chars'
         )
 
         input_dto = ChatInputDTO(
@@ -97,7 +93,7 @@ class CreateAgent:
         output_dto = self.__chat_use_case.execute(self.__agent, input_dto)
 
         self.__logger.debug(
-            f"Chat response generated - Response length: {len(output_dto.response)} chars"
+            f'Chat response generated - Response length: {len(output_dto.response)} chars'
         )
 
         response: str = output_dto.response
@@ -111,7 +107,7 @@ class CreateAgent:
         Returns:
             A dictionary containing the agent's configurations.
         """
-        self.__logger.debug("Retrieving agent configurations")
+        self.__logger.debug('Retrieving agent configurations')
         output_dto = self.__get_config_use_case.execute(self.__agent)
 
         output_dict: Dict[str, Any] = output_dto.to_dict()
@@ -134,11 +130,13 @@ class CreateAgent:
         from ...infra import AvailableTools
 
         self.__logger.debug(
-            "Retrieving all available tools for this agent (system + agent-specific)"
+            'Retrieving all available tools for this agent (system + agent-specific)'
         )
 
         # Get system tools
-        all_tools: Dict[str, str] = self.__get_system_available_tools_use_case.execute()
+        all_tools: Dict[str, str] = (
+            self.__get_system_available_tools_use_case.execute()
+        )
 
         # Get system tool names (registry keys) and tool instance names
         system_tool_registry_names = AvailableTools.get_system_tool_names()
@@ -152,7 +150,9 @@ class CreateAgent:
         }
 
         # Combine both sets to catch all variations
-        all_system_tool_names = system_tool_registry_names | system_tool_internal_names
+        all_system_tool_names = (
+            system_tool_registry_names | system_tool_internal_names
+        )
 
         # Add agent-specific tools (excluding system tools to avoid duplication)
         if self.__agent.tools:
@@ -176,7 +176,7 @@ class CreateAgent:
         Returns:
             A dict of system tool names and descriptions.
         """
-        self.__logger.debug("Retrieving system available tools")
+        self.__logger.debug('Retrieving system available tools')
         output_dto: Dict[str, str] = (
             self.__get_system_available_tools_use_case.execute()
         )
@@ -186,7 +186,9 @@ class CreateAgent:
         """Clears the agent's history."""
         history_size = len(self.__agent.history)
         self.__agent.clear_history()
-        self.__logger.info(f"Agent history cleared - Removed {history_size} message(s)")
+        self.__logger.info(
+            f'Agent history cleared - Removed {history_size} message(s)'
+        )
 
     def get_metrics(self) -> List[ChatMetrics]:
         """
@@ -196,7 +198,7 @@ class CreateAgent:
             A list of metrics collected during interactions.
         """
         metrics: List[ChatMetrics] = self.__chat_use_case.get_metrics()
-        self.__logger.debug(f"Retrieved {len(metrics)} metric(s)")
+        self.__logger.debug(f'Retrieved {len(metrics)} metric(s)')
         return metrics
 
     def export_metrics_json(self, filepath: Optional[str] = None) -> str:
@@ -212,7 +214,7 @@ class CreateAgent:
         from ...infra import MetricsCollector
 
         self.__logger.debug(
-            f"Exporting metrics to JSON - Filepath: {filepath or 'None (return string)'}"
+            f'Exporting metrics to JSON - Filepath: {filepath or "None (return string)"}'
         )
 
         collector = MetricsCollector()
@@ -222,9 +224,9 @@ class CreateAgent:
         json_result: str = collector.export_json(filepath)
 
         if filepath:
-            self.__logger.info(f"Metrics exported to JSON file: {filepath}")
+            self.__logger.info(f'Metrics exported to JSON file: {filepath}')
         else:
-            self.__logger.debug("Metrics exported as JSON string")
+            self.__logger.debug('Metrics exported as JSON string')
 
         return json_result
 
@@ -241,7 +243,7 @@ class CreateAgent:
         from ...infra import MetricsCollector
 
         self.__logger.debug(
-            f"Exporting metrics to Prometheus - Filepath: {filepath or 'None (return string)'}"
+            f'Exporting metrics to Prometheus - Filepath: {filepath or "None (return string)"}'
         )
 
         collector = MetricsCollector()
@@ -252,8 +254,10 @@ class CreateAgent:
 
         if filepath:
             collector.export_prometheus_to_file(filepath)
-            self.__logger.info(f"Metrics exported to Prometheus file: {filepath}")
+            self.__logger.info(
+                f'Metrics exported to Prometheus file: {filepath}'
+            )
         else:
-            self.__logger.debug("Metrics exported as Prometheus string")
+            self.__logger.debug('Metrics exported as Prometheus string')
 
         return prometheus_text

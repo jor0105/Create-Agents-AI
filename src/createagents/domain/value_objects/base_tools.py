@@ -42,11 +42,11 @@ class BaseTool(ABC):
         ```
     """
 
-    name: str = "base_tool"
-    description: str = "Base tool description (should be overridden)"
+    name: str = 'base_tool'
+    description: str = 'Base tool description (should be overridden)'
     parameters: Dict[str, Any] = {
-        "type": "object",
-        "properties": {},
+        'type': 'object',
+        'properties': {},
     }
 
     @abstractmethod
@@ -93,7 +93,7 @@ class BaseTool(ABC):
             ```
         """
         return {
-            "name": self.name,
-            "description": self.description,
-            "parameters": self.parameters,
+            'name': self.name,
+            'description': self.description,
+            'parameters': self.parameters,
         }

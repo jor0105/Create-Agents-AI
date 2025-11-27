@@ -52,15 +52,46 @@ jobs:
       - name: Install dependencies
         run: poetry install --no-interaction --no-ansi --with dev
 
-      - name: Run pre-commit (lint & format)
+      # --------------------------------------------------------------------------
+      # 1. Project Integrity Checks
+      # --------------------------------------------------------------------------
+      - name: Validate Poetry configuration
+        run: poetry check
+
+      - name: Verify Poetry lock file is up to date
+        run: poetry check --lock
+
+      # --------------------------------------------------------------------------
+      # 2. Security Checks
+      # --------------------------------------------------------------------------
+      - name: Security analysis with Bandit
+        run: |
+          poetry run bandit -c pyproject.toml -r src -ll
+          echo "✅ Security analysis passed"
+
+      - name: Check for vulnerable dependencies
+        run: |
+          poetry run pip-audit
+          echo "✅ No vulnerable dependencies found"
+
+      # --------------------------------------------------------------------------
+      # 3. Code Quality & Formatting
+      # --------------------------------------------------------------------------
+      - name: Run pre-commit (all hooks)
         run: poetry run pre-commit run --all-files --show-diff-on-failure
 
       - name: Type check with mypy
         run: poetry run mypy src --ignore-missing-imports --pretty
 
-      - name: Security check with bandit
-        run: poetry run bandit -r src -ll -q
+      - name: Docstring style check
+        run: |
+          poetry run pydocstyle src --convention=google --match-dir=^src \
+            --add-ignore=D104,D100,D101,D102,D103,D105,D107,D205,D212,D417,D415
+          echo "✅ Docstring style check passed"
 
+      # --------------------------------------------------------------------------
+      # 4. Tests
+      # --------------------------------------------------------------------------
       - name: Run tests (excluding integration and slow tests)
         env:
           PYTHONPATH: .

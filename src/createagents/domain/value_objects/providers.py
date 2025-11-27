@@ -10,7 +10,7 @@ class SupportedProviders:
     - Provide an interface for querying available providers.
     """
 
-    __AVAILABLE_PROVIDERS: Set[str] = {"openai", "ollama"}
+    __AVAILABLE_PROVIDERS: Set[str] = {'openai', 'ollama'}
 
     @classmethod
     def get_available_providers(cls) -> Set[str]:

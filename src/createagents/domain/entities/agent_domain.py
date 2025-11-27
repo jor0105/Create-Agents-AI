@@ -6,7 +6,12 @@ from ..exceptions import (
     InvalidProviderException,
     UnsupportedConfigException,
 )
-from ..value_objects import BaseTool, History, SupportedConfigs, SupportedProviders
+from ..value_objects import (
+    BaseTool,
+    History,
+    SupportedConfigs,
+    SupportedProviders,
+)
 
 
 @dataclass
@@ -43,32 +48,38 @@ class Agent:
         from ...infra import LoggingConfig
 
         # Initialize logger
-        object.__setattr__(self, "_logger", LoggingConfig.get_logger(__name__))
+        object.__setattr__(self, '_logger', LoggingConfig.get_logger(__name__))
 
         self._logger.debug(
-            f"Initializing Agent - Provider: {self.provider}, Model: {self.model}, Name: {self.name}"
+            f'Initializing Agent - Provider: {self.provider}, Model: {self.model}, Name: {self.name}'
         )
 
         if not isinstance(self.history, History):
-            object.__setattr__(self, "history", History())
+            object.__setattr__(self, 'history', History())
 
         available_providers = SupportedProviders.get_available_providers()
         if self.provider.lower() not in available_providers:
             self._logger.error(
-                f"Invalid provider: {self.provider}. Available: {available_providers}"
+                f'Invalid provider: {self.provider}. Available: {available_providers}'
             )
-            raise InvalidProviderException(self.provider, set(available_providers))
+            raise InvalidProviderException(
+                self.provider, set(available_providers)
+            )
 
-        self._logger.debug(f"Provider '{self.provider}' validated successfully")
+        self._logger.debug(
+            f"Provider '{self.provider}' validated successfully"
+        )
 
         if self.config:
             for key, value in self.config.items():
                 available_configs = SupportedConfigs.get_available_configs()
                 if key not in available_configs:
                     self._logger.error(
-                        f"Unsupported config key: {key}. Available: {available_configs}"
+                        f'Unsupported config key: {key}. Available: {available_configs}'
                     )
-                    raise UnsupportedConfigException(key, set(available_configs))
+                    raise UnsupportedConfigException(
+                        key, set(available_configs)
+                    )
 
                 if not isinstance(
                     value, (int, float, str, bool, list, dict, type(None))
@@ -81,33 +92,39 @@ class Agent:
                 SupportedConfigs.validate_config(key, value)
 
         self._logger.info(
-            f"Agent initialized - Name: {self.name}, Provider: {self.provider}, "
-            f"Model: {self.model}, Tools: {len(self.tools) if self.tools else 0}"
+            f'Agent initialized - Name: {self.name}, Provider: {self.provider}, '
+            f'Model: {self.model}, Tools: {len(self.tools) if self.tools else 0}'
         )
 
     def add_user_message(self, content: str) -> None:
         """Add a user message to history."""
         if self._logger:
-            self._logger.debug(f"Adding user message - Length: {len(content)} chars")
+            self._logger.debug(
+                f'Adding user message - Length: {len(content)} chars'
+            )
         self.history.add_user_message(content)
 
     def add_assistant_message(self, content: str) -> None:
         """Add an assistant message to history."""
         if self._logger:
             self._logger.debug(
-                f"Adding assistant message - Length: {len(content)} chars"
+                f'Adding assistant message - Length: {len(content)} chars'
             )
         self.history.add_assistant_message(content)
 
     def add_tool_message(self, content: str) -> None:
         """Add a tool message to history."""
         if self._logger:
-            self._logger.debug(f"Adding tool message - Length: {len(content)} chars")
+            self._logger.debug(
+                f'Adding tool message - Length: {len(content)} chars'
+            )
         self.history.add_tool_message(content)
 
     def clear_history(self) -> None:
         """Clear all messages from history."""
         if self._logger:
             history_size = len(self.history)
-            self._logger.debug(f"Clearing history - Removing {history_size} message(s)")
+            self._logger.debug(
+                f'Clearing history - Removing {history_size} message(s)'
+            )
         self.history.clear()
