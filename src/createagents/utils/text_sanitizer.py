@@ -93,21 +93,21 @@ class TextSanitizer:
         text = re.sub(r'(?<!\*)\*(?!\*)(.+?)\*(?!\*)', r'\1', text)
         text = re.sub(r'(?<!_)_(?!_)(.+?)_(?!_)', r'\1', text)
 
-        # Convert unordered lists
-        text = re.sub(r'^\s*[-*+]\s+', r'  • ', text, flags=re.MULTILINE)
+        # Convert unordered lists - preserve indentation
+        text = re.sub(r'^(\s*)[-*+]\s+', r'\1  • ', text, flags=re.MULTILINE)
 
-        # Convert ordered lists
-        text = re.sub(r'^\s*\d+\.\s+', r'  → ', text, flags=re.MULTILINE)
+        # Convert ordered lists - preserve indentation
+        text = re.sub(r'^(\s*)\d+\.\s+', r'\1  → ', text, flags=re.MULTILINE)
 
         # Remove markdown horizontal rules (---, ***, ___)
-        text = re.sub(r'^[\-\*_]{3,}\s*$', r'─' * 80, text, flags=re.MULTILINE)
+        text = re.sub(r'^[\-\*_]{3,}\s*$', r'─' * 70, text, flags=re.MULTILINE)
 
         # Convert simple tables (just remove pipes and adjust)
         # Detect table lines (|...|...|)
         lines = text.split('\n')
         formatted_lines = []
         in_table = False
-        max_line_width = 80
+        max_line_width = 70
 
         for _, line in enumerate(lines):
             # Detect if this is a table line

@@ -268,3 +268,24 @@ class CreateAgent:
             self.__logger.debug('Metrics exported as Prometheus string')
 
         return prometheus_text
+
+    def start_cli(self) -> None:
+        """Start interactive CLI chat session.
+
+        This method launches a terminal-based interactive chat interface
+        using the presentation layer's CLI application.
+
+        Example:
+            >>> agent = CreateAgent(provider="openai", model="gpt-4")
+            >>> agent.start_cli()  # Starts interactive chat
+        """
+        from ...presentation.cli import ChatCLIApplication  # pylint: disable=import-outside-toplevel
+
+        self.__logger.info(
+            'Starting CLI application for agent: %s', self.__agent.name
+        )
+
+        cli_app = ChatCLIApplication(agent=self)
+        cli_app.run()
+
+        self.__logger.info('CLI application ended')
