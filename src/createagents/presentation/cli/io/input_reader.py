@@ -15,11 +15,3 @@ class InputReader:
             The user's input as a string.
         """
         return input(prompt)
-
-    def read_line(self) -> str:
-        """Read a single line of input.
-
-        Returns:
-            The input line as a string.
-        """
-        return input()
