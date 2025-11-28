@@ -4,34 +4,27 @@ from typing import List
 
 
 class TextSanitizer:
-    @staticmethod
-    def _wrap_text(text: str, width: int) -> List[str]:
-        words = text.split()
-        lines: List[str] = []
-        current_line: List[str] = []
-        current_length = 0
+    """
+    A utility class for sanitizing and formatting text.
 
-        for word in words:
-            word_length = len(word)
-            if current_length + word_length + len(current_line) > width:
-                if current_line:
-                    lines.append(' '.join(current_line))
-                    current_line = [word]
-                    current_length = word_length
-                else:
-                    lines.append(word)
-                    current_length = 0
-            else:
-                current_line.append(word)
-                current_length += word_length
-
-        if current_line:
-            lines.append(' '.join(current_line))
-
-        return lines
+    This class provides methods to clean text by removing problematic unicode
+    characters and to format markdown text for better readability in a
+    terminal environment.
+    """
 
     @staticmethod
     def sanitize(text: str) -> str:
+        """
+        Sanitizes the input text by removing problematic unicode characters
+        and normalizing it.
+
+        Args:
+            text (str): The input text to be sanitized.
+
+        Returns:
+            str: The sanitized text with problematic characters removed or
+                 replaced, and unicode normalized to NFKC form.
+        """
         if not isinstance(text, str):
             return text
 
@@ -116,7 +109,7 @@ class TextSanitizer:
         in_table = False
         max_line_width = 80
 
-        for i, line in enumerate(lines):
+        for _, line in enumerate(lines):
             # Detect if this is a table line
             if '|' in line and line.strip().startswith('|'):
                 if not in_table:
@@ -169,3 +162,29 @@ class TextSanitizer:
         text = re.sub(r' +$', '', text, flags=re.MULTILINE)
 
         return text
+
+    @staticmethod
+    def _wrap_text(text: str, width: int) -> List[str]:
+        words = text.split()
+        lines: List[str] = []
+        current_line: List[str] = []
+        current_length = 0
+
+        for word in words:
+            word_length = len(word)
+            if current_length + word_length + len(current_line) > width:
+                if current_line:
+                    lines.append(' '.join(current_line))
+                    current_line = [word]
+                    current_length = word_length
+                else:
+                    lines.append(word)
+                    current_length = 0
+            else:
+                current_line.append(word)
+                current_length += word_length
+
+        if current_line:
+            lines.append(' '.join(current_line))
+
+        return lines

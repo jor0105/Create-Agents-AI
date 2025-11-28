@@ -23,6 +23,11 @@ class History:
     _lock: Lock = field(default_factory=Lock, init=False, repr=False)
 
     def __post_init__(self) -> None:
+        """Initialize the history with a deque and a lock.
+
+        Raises:
+            ValueError: If max_size is not positive.
+        """
         if not isinstance(self.max_size, int) or self.max_size <= 0:
             raise ValueError(
                 "The history's max size must be greater than zero."
@@ -134,9 +139,11 @@ class History:
         return history
 
     def __len__(self) -> int:
+        """Return the number of messages in the history."""
         with self._lock:
             return len(self._messages)
 
     def __bool__(self) -> bool:
+        """Return True if the history is not empty."""
         with self._lock:
             return bool(self._messages)

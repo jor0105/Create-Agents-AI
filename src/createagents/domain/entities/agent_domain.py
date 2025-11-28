@@ -1,5 +1,6 @@
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional
+import logging
 
 from ..exceptions import (
     InvalidConfigTypeException,
@@ -44,14 +45,14 @@ class Agent:
             UnsupportedConfigException: if a configuration key is unsupported.
             InvalidConfigTypeException: if a configuration value has an invalid type.
         """
-        # Import here to avoid circular dependency
-        from ...infra import LoggingConfig
-
         # Initialize logger
-        object.__setattr__(self, '_logger', LoggingConfig.get_logger(__name__))
+        object.__setattr__(self, '_logger', logging.getLogger(__name__))
 
         self._logger.debug(
-            f'Initializing Agent - Provider: {self.provider}, Model: {self.model}, Name: {self.name}'
+            'Initializing Agent - Provider: %s, Model: %s, Name: %s',
+            self.provider,
+            self.model,
+            self.name,
         )
 
         if not isinstance(self.history, History):
@@ -60,7 +61,8 @@ class Agent:
         available_providers = SupportedProviders.get_available_providers()
         if self.provider.lower() not in available_providers:
             self._logger.error(
-                f'Invalid provider: {self.provider}. Available: {available_providers}'
+                f'Invalid provider: {self.provider}. '
+                f'Available: {available_providers}'
             )
             raise InvalidProviderException(
                 self.provider, set(available_providers)
@@ -75,7 +77,8 @@ class Agent:
                 available_configs = SupportedConfigs.get_available_configs()
                 if key not in available_configs:
                     self._logger.error(
-                        f'Unsupported config key: {key}. Available: {available_configs}'
+                        f'Unsupported config key: {key}. '
+                        f'Available: {available_configs}'
                     )
                     raise UnsupportedConfigException(
                         key, set(available_configs)

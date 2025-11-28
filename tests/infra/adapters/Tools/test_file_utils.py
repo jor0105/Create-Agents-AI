@@ -141,7 +141,7 @@ class TestCountTokens:
 
     def test_count_tokens_fallback_on_error(self):
         encoding = Mock()
-        encoding.encode.side_effect = Exception('Encoding error')
+        encoding.encode.side_effect = ValueError('Encoding error')
 
         text = 'test text'
         count = count_tokens(text, encoding)
@@ -338,30 +338,6 @@ class TestReadFileByType:
             pass
         finally:
             filepath.unlink()
-
-
-@pytest.mark.skipif(
-    not DEPENDENCIES_AVAILABLE, reason='Optional dependencies not available'
-)
-@pytest.mark.unit
-class TestLazyImport:
-    def test_lazy_import_raises_on_missing_module(self):
-        from createagents.infra.adapters.Tools.Read_Local_File_Tool.file_utils import (
-            _lazy_import,
-        )
-
-        with pytest.raises(RuntimeError, match='Install it with'):
-            _lazy_import('nonexistent_module', 'nonexistent_module')
-
-    def test_lazy_import_returns_module(self):
-        import os
-
-        from createagents.infra.adapters.Tools.Read_Local_File_Tool.file_utils import (
-            _lazy_import,
-        )
-
-        imported = _lazy_import('os', 'os')
-        assert imported is os
 
 
 @pytest.mark.skipif(

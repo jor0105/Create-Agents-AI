@@ -24,5 +24,5 @@ class GetSystemAvailableToolsUseCase:
         """
         self.__logger.debug('Retrieving available system tools.')
         system_tools: Dict[str, str] = AvailableTools.get_system_tools()
-        self.__logger.info(f'Retrieved {len(system_tools)} system tool(s).')
+        self.__logger.info('Retrieved %s system tool(s).', len(system_tools))
         return system_tools

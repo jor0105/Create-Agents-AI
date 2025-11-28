@@ -89,13 +89,13 @@ class OllamaToolCallParser:
         matches = OllamaToolCallParser.TOOL_CALL_PATTERN.findall(response)
 
         OllamaToolCallParser._logger.debug(
-            f'Found {len(matches)} tool call pattern match(es)'
+            'Found %s tool call pattern match(es)', len(matches)
         )
 
         for idx, match in enumerate(matches, 1):
             try:
                 OllamaToolCallParser._logger.debug(
-                    f'Parsing tool call {idx}/{len(matches)}'
+                    'Parsing tool call %s/%s', idx, len(matches)
                 )
 
                 # Try parsing as XML first
@@ -103,7 +103,8 @@ class OllamaToolCallParser:
                 if tool_call:
                     tool_calls.append(tool_call)
                     OllamaToolCallParser._logger.debug(
-                        f'Successfully parsed XML tool call: {tool_call.get("name", "unknown")}'
+                        'Successfully parsed XML tool call: %s',
+                        tool_call.get('name', 'unknown'),
                     )
                     continue
 
@@ -112,22 +113,30 @@ class OllamaToolCallParser:
                 if tool_call:
                     tool_calls.append(tool_call)
                     OllamaToolCallParser._logger.debug(
-                        f'Successfully parsed JSON tool call: {tool_call.get("name", "unknown")}'
+                        'Successfully parsed JSON tool call: %s',
+                        tool_call.get('name', 'unknown'),
                     )
                 else:
                     OllamaToolCallParser._logger.warning(
-                        f'Failed to parse tool call {idx} as XML or JSON'
+                        'Failed to parse tool call %s as XML or JSON', idx
                     )
 
-            except Exception as e:
+            except (
+                KeyError,
+                AttributeError,
+                TypeError,
+                ValueError,
+                json.JSONDecodeError,
+                ET.ParseError,
+            ) as e:
                 # Log error but continue processing other tool calls
                 OllamaToolCallParser._logger.error(
-                    f'Failed to parse tool call {idx}: {str(e)}', exc_info=True
+                    'Failed to parse tool call %s: %s', idx, e, exc_info=True
                 )
                 continue
 
         OllamaToolCallParser._logger.info(
-            f'Extracted {len(tool_calls)} tool call(s) from Ollama response'
+            'Extracted %s tool call(s) from Ollama response', len(tool_calls)
         )
         return tool_calls
 
@@ -168,7 +177,7 @@ class OllamaToolCallParser:
             args_elem = root.find('arguments')
             if args_elem is None:
                 OllamaToolCallParser._logger.debug(
-                    f"XML tool call '{tool_name}' has no arguments"
+                    "XML tool call '%s' has no arguments", tool_name
                 )
                 return {'name': tool_name, 'arguments': {}}
 
@@ -184,16 +193,18 @@ class OllamaToolCallParser:
                 )
 
             OllamaToolCallParser._logger.debug(
-                f"Successfully parsed XML tool call '{tool_name}' with {len(arguments)} argument(s)"
+                "Successfully parsed XML tool call '%s' with %s argument(s)",
+                tool_name,
+                len(arguments),
             )
             return {'name': tool_name, 'arguments': arguments}
 
         except ET.ParseError as e:
-            OllamaToolCallParser._logger.debug(f'XML parse error: {str(e)}')
+            OllamaToolCallParser._logger.debug('XML parse error: %s', e)
             return None
-        except Exception as e:
+        except (AttributeError, TypeError, ValueError) as e:
             OllamaToolCallParser._logger.debug(
-                f'Unexpected error parsing XML: {str(e)}'
+                'Unexpected error parsing XML: %s', e
             )
             return None
 
@@ -239,16 +250,18 @@ class OllamaToolCallParser:
                 return None
 
             OllamaToolCallParser._logger.debug(
-                f"Successfully parsed JSON tool call '{tool_name}' with {len(arguments)} argument(s)"
+                "Successfully parsed JSON tool call '%s' with %s argument(s)",
+                tool_name,
+                len(arguments),
             )
             return {'name': tool_name, 'arguments': arguments}
 
         except json.JSONDecodeError as e:
-            OllamaToolCallParser._logger.debug(f'JSON decode error: {str(e)}')
+            OllamaToolCallParser._logger.debug('JSON decode error: %s', e)
             return None
-        except Exception as e:
+        except (AttributeError, TypeError, ValueError) as e:
             OllamaToolCallParser._logger.debug(
-                f'Unexpected error parsing JSON: {str(e)}'
+                'Unexpected error parsing JSON: %s', e
             )
             return None
 
@@ -321,7 +334,9 @@ class OllamaToolCallParser:
             Formatted text to add to the conversation.
         """
         OllamaToolCallParser._logger.debug(
-            f"Formatting tool result for '{tool_name}' (length: {len(result)} chars)"
+            "Formatting tool result for '%s' (length: %s chars)",
+            tool_name,
+            len(result),
         )
 
         formatted = f'<tool_result>\n<name>{tool_name}</name>\n<result>{result}</result>\n</tool_result>'

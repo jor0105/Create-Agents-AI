@@ -65,6 +65,7 @@ def _check_ollama_model_available(model: str):
 @pytest.mark.integration
 class TestCreateAgentInitializationErrors:
     def test_initialization_with_empty_model_raises_error(self):
+        _get_openai_api_key()
         with pytest.raises(InvalidAgentConfigException):
             CreateAgent(
                 provider='openai',
@@ -74,6 +75,7 @@ class TestCreateAgentInitializationErrors:
             )
 
     def test_initialization_with_empty_name_raises_error(self):
+        _get_openai_api_key()
         with pytest.raises(InvalidAgentConfigException):
             CreateAgent(
                 provider='openai',
@@ -83,6 +85,7 @@ class TestCreateAgentInitializationErrors:
             )
 
     def test_initialization_with_empty_instructions_raises_error(self):
+        _get_openai_api_key()
         with pytest.raises(InvalidAgentConfigException):
             CreateAgent(
                 provider='openai',
@@ -92,6 +95,7 @@ class TestCreateAgentInitializationErrors:
             )
 
     def test_initialization_with_none_name(self):
+        _get_openai_api_key()
         agent = CreateAgent(
             provider='openai',
             model='gpt-5-mini',
@@ -102,6 +106,7 @@ class TestCreateAgentInitializationErrors:
         assert configs['name'] is None
 
     def test_initialization_with_none_instructions(self):
+        _get_openai_api_key()
         agent = CreateAgent(
             provider='openai',
             model='gpt-5-mini',
@@ -112,6 +117,7 @@ class TestCreateAgentInitializationErrors:
         assert configs['instructions'] is None
 
     def test_initialization_with_both_none(self):
+        _get_openai_api_key()
         agent = CreateAgent(
             provider='openai',
             model='gpt-5-mini',
@@ -123,6 +129,7 @@ class TestCreateAgentInitializationErrors:
         assert configs['instructions'] is None
 
     def test_initialization_with_only_required_fields(self):
+        _get_openai_api_key()
         agent = CreateAgent(
             provider='openai',
             model='gpt-5-mini',
@@ -143,6 +150,7 @@ class TestCreateAgentInitializationErrors:
             )
 
     def test_initialization_with_zero_history_max_size_raises_error(self):
+        _get_openai_api_key()
         with pytest.raises(
             InvalidAgentConfigException, match='history_max_size'
         ):
@@ -155,6 +163,7 @@ class TestCreateAgentInitializationErrors:
             )
 
     def test_initialization_with_negative_history_max_size_raises_error(self):
+        _get_openai_api_key()
         with pytest.raises(
             InvalidAgentConfigException, match='history_max_size'
         ):

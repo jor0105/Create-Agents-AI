@@ -8,6 +8,15 @@ from ..interfaces import ChatRepository
 
 
 class ChatWithAgentUseCase:
+    """
+    Use case for handling chat interactions with an AI agent.
+
+    This class orchestrates the process of sending a user message to an agent,
+    receiving the response, sanitizing the output, and updating the agent's
+    conversation history. It also handles error management and logging during
+    the interaction.
+    """
+
     def __init__(self, chat_repository: ChatRepository):
         """
         Initializes the Use Case with its dependencies.
@@ -75,7 +84,7 @@ class ChatWithAgentUseCase:
                 'ChatException during chat execution', exc_info=True
             )
             raise
-        except (ValueError, TypeError, KeyError) as e:
+        except (ValueError, TypeError, KeyError, AttributeError) as e:
             error_map = {
                 ValueError: (
                     'Validation error',
@@ -91,13 +100,13 @@ class ChatWithAgentUseCase:
                 type(e), ('Error', 'Error during chat: {}')
             )
             self.__logger.error('%s: %s', msg, str(e), exc_info=True)
-            raise ChatException(user_msg.format(str(e)))
+            raise ChatException(user_msg.format(str(e))) from e
         except Exception as e:
             self.__logger.error('Unexpected error: %s', str(e), exc_info=True)
             raise ChatException(
                 f'Unexpected error during communication with AI: {str(e)}',
                 original_error=e,
-            )
+            ) from e
 
     def get_metrics(self) -> List[ChatMetrics]:
         """

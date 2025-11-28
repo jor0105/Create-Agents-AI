@@ -82,16 +82,15 @@ class OllamaToolSchemaFormatter:
 
                 formatted_tools.append(ollama_tool)
                 OllamaToolSchemaFormatter._logger.debug(
-                    f"Formatted tool '{schema['name']}' for Ollama"
+                    "Formatted tool '%s' for Ollama", schema['name']
                 )
-            except Exception as e:
+            except (KeyError, AttributeError, TypeError, ValueError) as e:
                 OllamaToolSchemaFormatter._logger.error(
-                    f'Error formatting tool {tool.name}: {str(e)}',
-                    exc_info=True,
+                    'Error formatting tool %s: %s', tool.name, e, exc_info=True
                 )
                 continue
 
         OllamaToolSchemaFormatter._logger.info(
-            f'Formatted {len(formatted_tools)} tool(s) for Ollama native API'
+            'Formatted %s tool(s) for Ollama native API', len(formatted_tools)
         )
         return formatted_tools

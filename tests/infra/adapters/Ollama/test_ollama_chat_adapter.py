@@ -207,7 +207,7 @@ class TestOllamaChatAdapter:
 
         with pytest.raises(
             ChatException,
-            match='An error occurred while communicating with Ollama',
+            match='A value or attribute error occurred while processing the Ollama response',
         ):
             adapter.chat(
                 model=IA_OLLAMA_TEST_2,
@@ -233,7 +233,7 @@ class TestOllamaChatAdapter:
 
         with pytest.raises(
             ChatException,
-            match='An error occurred while communicating with Ollama',
+            match='A value or attribute error occurred while processing the Ollama response',
         ):
             adapter.chat(
                 model=IA_OLLAMA_TEST_1,

@@ -55,7 +55,7 @@ class ToolCallParser:
             return False
         except (AttributeError, TypeError) as e:
             ToolCallParser._logger.warning(
-                f'Error checking for tool calls: {str(e)}'
+                'Error checking for tool calls: %s', e
             )
             return False
 
@@ -107,18 +107,20 @@ class ToolCallParser:
                 }
                 tool_calls.append(tool_call)
                 ToolCallParser._logger.debug(
-                    f'Extracted tool call: {item.name} with call_id: {item.call_id}'
+                    'Extracted tool call: %s with call_id: %s',
+                    item.name,
+                    item.call_id,
                 )
 
             except (json.JSONDecodeError, AttributeError) as e:
                 # Log error but continue processing other tool calls
                 ToolCallParser._logger.error(
-                    f'Failed to parse tool call: {str(e)}', exc_info=True
+                    'Failed to parse tool call: %s', e, exc_info=True
                 )
                 continue
 
         ToolCallParser._logger.info(
-            f'Extracted {len(tool_calls)} tool call(s)'
+            'Extracted %s tool call(s)', len(tool_calls)
         )
         return tool_calls
 
@@ -146,7 +148,9 @@ class ToolCallParser:
             ```
         """
         ToolCallParser._logger.debug(
-            f"Formatting tool result for '{tool_name}' with call_id '{tool_call_id}'"
+            "Formatting tool result for '%s' with call_id '%s'",
+            tool_name,
+            tool_call_id,
         )
 
         formatted = {
@@ -156,7 +160,7 @@ class ToolCallParser:
         }
 
         ToolCallParser._logger.debug(
-            f'Formatted tool result (length: {len(str(result))} chars)'
+            'Formatted tool result (length: %s chars)', len(str(result))
         )
         return formatted
 
@@ -167,7 +171,8 @@ class ToolCallParser:
         """Extract the output items from response for adding to input history.
 
         For Responses API, we need to append specific output items to maintain context.
-        We only include 'reasoning' and 'function_call' types, filtering out extra fields.
+        We only include 'reasoning' and 'function_call' types,
+        filtering out extra fields.
 
         Args:
             response: OpenAI Responses API response object.
@@ -193,6 +198,7 @@ class ToolCallParser:
             )
 
             # Convert to dict format for messages, keeping only necessary fields
+            # (broken into multiple lines for lint compliance)
             output_items = []
             for item in response.output:
                 item_type = getattr(item, 'type', None)
@@ -220,12 +226,14 @@ class ToolCallParser:
                         }
                     )
                     ToolCallParser._logger.debug(
-                        f"Included function_call item for '{getattr(item, 'name', 'unknown')}'"
+                        "Included function_call item for '%s'",
+                        getattr(item, 'name', 'unknown'),
                     )
 
             if output_items:
                 ToolCallParser._logger.info(
-                    f'Extracted {len(output_items)} output item(s) for assistant message'
+                    'Extracted %s output item(s) for assistant message',
+                    len(output_items),
                 )
             else:
                 ToolCallParser._logger.warning(
@@ -236,7 +244,8 @@ class ToolCallParser:
 
         except (AttributeError, TypeError) as e:
             ToolCallParser._logger.error(
-                f'Error extracting assistant message with tool calls: {str(e)}',
+                'Error extracting assistant message with tool calls: %s',
+                e,
                 exc_info=True,
             )
             return None

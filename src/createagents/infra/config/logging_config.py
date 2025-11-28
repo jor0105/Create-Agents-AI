@@ -102,11 +102,11 @@ class LoggingConfig:
         """Configures the application's logging.
 
         Args:
-            level: The logging level (e.g., DEBUG, INFO). If None, it is read from the LOG_LEVEL environment variable.
+            level: The logging level (e.g., DEBUG, INFO).
             format_string: A custom format string (optional).
             include_timestamp: Whether to include a timestamp in the logs.
             log_to_file: Whether to log to a file in addition to the console.
-            log_file_path: The path to the log file. If None, it uses the LOG_FILE_PATH environment variable.
+            log_file_path: The path to the log file.
             max_bytes: The maximum file size before rotation (default: 10MB).
             backup_count: The number of backup files to keep (default: 5).
             json_format: Whether to use a structured JSON format.
@@ -220,7 +220,7 @@ class LoggingConfig:
 
         try:
             return str(log_file_path)
-        except Exception:
+        except (ValueError, TypeError):
             return default_path
 
     @classmethod

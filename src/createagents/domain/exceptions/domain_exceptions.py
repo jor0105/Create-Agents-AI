@@ -74,7 +74,11 @@ class InvalidBaseToolException(AgentException):
     """Exception raised when a provided tool does not match the BaseTool interface."""
 
     def __init__(self, tool: Any):
-        message = f"Tool '{tool}' is invalid. It must inherit from BaseTool and implement the attributes 'name' (string type), 'description' (string type), and the 'execute' method."
+        message = (
+            f"Tool '{tool}' is invalid. It must inherit from BaseTool and "
+            "implement the attributes 'name' (string type), 'description' "
+            "(string type), and the 'execute' method."
+        )
         super().__init__(message)
 
 

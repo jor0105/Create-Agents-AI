@@ -45,16 +45,20 @@ class AgentComposer:
             A new agent instance.
         """
         AgentComposer.__logger.info(
-            f'Composing agent creation - Provider: {provider}, Model: {model}, Name: {name}'
+            'Composing agent creation - Provider: %s, Model: %s, Name: %s',
+            provider,
+            model,
+            name,
         )
 
         if config is None:
             config = {}
 
         AgentComposer.__logger.debug(
-            f'Agent parameters - Tools: {len(tools) if tools else 0}, '
-            f'History max size: {history_max_size}, '
-            f'Config keys: {list(config.keys()) if isinstance(config, dict) else "invalid"}'
+            'Agent parameters - Tools: %s, History max size: %s, Config keys: %s',
+            len(tools) if tools else 0,
+            history_max_size,
+            list(config.keys()) if isinstance(config, dict) else 'invalid',
         )
 
         input_dto = CreateAgentInputDTO(
@@ -71,7 +75,7 @@ class AgentComposer:
         agent = use_case.execute(input_dto)
 
         AgentComposer.__logger.info(
-            f'Agent composed successfully - Name: {agent.name}'
+            'Agent composed successfully - Name: %s', agent.name
         )
         return agent
 
@@ -91,7 +95,9 @@ class AgentComposer:
             A configured ChatWithAgentUseCase.
         """
         AgentComposer.__logger.debug(
-            f'Composing chat use case - Provider: {provider}, Model: {model}'
+            'Composing chat use case - Provider: %s, Model: %s',
+            provider,
+            model,
         )
 
         chat_adapter = ChatAdapterFactory.create(provider, model)

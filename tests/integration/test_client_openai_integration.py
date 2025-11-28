@@ -1014,11 +1014,13 @@ class TestOpenAIAdapterConfigsReais:
             pass
 
     def test_adapter_reads_timeout_from_environment(self):
+        _get_openai_api_key()
         adapter = OpenAIChatAdapter()
         assert adapter is not None
         assert hasattr(adapter, '_OpenAIChatAdapter__timeout')
 
     def test_adapter_reads_max_retries_from_environment(self):
+        _get_openai_api_key()
         adapter = OpenAIChatAdapter()
         assert adapter is not None
         assert hasattr(adapter, '_OpenAIChatAdapter__max_retries')

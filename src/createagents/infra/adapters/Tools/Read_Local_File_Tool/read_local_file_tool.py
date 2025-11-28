@@ -5,13 +5,15 @@ from .....domain import BaseTool, FileReadException
 from ....config import LoggingConfig
 from .constants import MAX_FILE_SIZE_BYTES
 
+IMPORT_ERROR = None
+
 try:
     from .file_utils import (
         count_tokens,
         determine_file_type,
         initialize_tiktoken,
         read_file_by_type,
-    )
+    )  # pylint: disable=import-outside-toplevel
 
     DEPENDENCIES_AVAILABLE = True
 except ImportError as e:
@@ -27,15 +29,18 @@ class ReadLocalFileTool(BaseTool):
     - File type validation
     - Comprehensive error handling
 
-    Supports formats: txt, csv, excel (xls/xlsx), pdf, parquet, and common text files.
+    Supports formats: txt, csv, excel (xls/xlsx), pdf, parquet,
+    and common text files.
     """
 
     name = 'readlocalfile'
-    description = """Use this tool to read local files from the system.
-    Supports text files (txt, md, py, etc.), CSV, Excel, PDF and Parquet formats.
-    The tool validates file size in tokens to prevent overload.
-    Input must include the absolute or relative file path and optionally the maximum number of tokens allowed (default: 30000).
-    """
+    description = (
+        'Use this tool to read local files from the system. '
+        'Supports text files (txt, md, py, etc.), CSV, Excel, PDF and '
+        'Parquet formats. The tool validates file size in tokens to prevent '
+        'overload. Input must include the absolute or relative file path and '
+        'optionally the maximum number of tokens allowed (default: 30000).'
+    )
     parameters: Dict[str, Any] = {
         'type': 'object',
         'properties': {
@@ -45,7 +50,10 @@ class ReadLocalFileTool(BaseTool):
             },
             'max_tokens': {
                 'type': 'integer',
-                'description': 'Maximum number of tokens allowed in the file content. Files exceeding this limit will be rejected.',
+                'description': (
+                    'Maximum number of tokens allowed in the file content. '
+                    'Files exceeding this limit will be rejected.'
+                ),
                 'default': 30000,
             },
         },
@@ -58,12 +66,14 @@ class ReadLocalFileTool(BaseTool):
         """Initialize the ReadLocalFileTool.
 
         Raises:
-            RuntimeError: If tiktoken encoder initialization fails or dependencies are missing.
+            RuntimeError: If tiktoken encoder initialization fails or
+                          dependencies are missing.
         """
         if not DEPENDENCIES_AVAILABLE:
             raise RuntimeError(
                 'ReadLocalFileTool requires optional dependencies. '
-                'Install with: pip install ai-agent[file-tools] or poetry install -E file-tools\n'
+                'Install with: pip install ai-agent[file-tools] or '
+                'poetry install -E file-tools\n'
                 f'Missing dependencies error: {IMPORT_ERROR}'
             )
 
@@ -92,7 +102,9 @@ class ReadLocalFileTool(BaseTool):
             - Various file-specific errors
         """
         self.__logger.info(
-            f"Executing file read: path='{path}', max_tokens={max_tokens}"
+            "Executing file read: path='%s', max_tokens=%s",
+            path,
+            max_tokens,
         )
 
         try:
@@ -116,13 +128,13 @@ class ReadLocalFileTool(BaseTool):
 
             # Determine file type and read content
             extension = file_path.suffix.lstrip('.').lower() or 'txt'
-            self.__logger.debug(f'Processing file as type: {extension}')
+            self.__logger.debug('Processing file as type: %s', extension)
 
             file_type = determine_file_type(extension)
             content = read_file_by_type(file_path, file_type)
 
             token_count = count_tokens(content, self.__encoding)
-            self.__logger.debug(f'File content has {token_count} tokens')
+            self.__logger.debug('File content has %s tokens', token_count)
 
             if token_count > max_tokens:
                 return self.__format_error(
@@ -132,7 +144,10 @@ class ReadLocalFileTool(BaseTool):
                 )
 
             self.__logger.info(
-                f"Successfully read file '{path}': {len(content)} characters, {token_count} tokens"
+                "Successfully read file '%s': %s characters, %s tokens",
+                path,
+                len(content),
+                token_count,
             )
             return content
 
@@ -145,8 +160,14 @@ class ReadLocalFileTool(BaseTool):
         except PermissionError:
             return self.__format_error('Permission denied', path)
 
+        except (OSError, RuntimeError, ValueError) as e:
+            return self.__format_error('File processing error', str(e))
+
         except Exception as e:
-            error_msg = f'[ReadLocalFileTool Error] Unexpected error: {type(e).__name__}: {e}'
+            error_msg = (
+                f'[ReadLocalFileTool Error] Unexpected error: '
+                f'{type(e).__name__}: {e}'
+            )
             self.__logger.error(error_msg, exc_info=True)
             return error_msg
 

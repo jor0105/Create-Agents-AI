@@ -56,7 +56,7 @@ class CreateAgentInputDTO:
             raise ValueError("The 'config' field must be a dictionary (dict).")
 
         if self.tools:
-            from ...infra import AvailableTools
+            from ...infra import AvailableTools  # pylint: disable=import-outside-toplevel
 
             validated_tools: List[BaseTool] = []
             for tool in self.tools:
@@ -110,6 +110,11 @@ class AgentConfigOutputDTO:
     history_max_size: int = 10
 
     def to_dict(self) -> Dict[str, Any]:
+        """Convert the DTO to a dictionary.
+
+        Returns:
+            Dict[str, Any]: The dictionary representation of the DTO.
+        """
         tool_names = None
         if self.tools:
             tool_names = [tool.name for tool in self.tools]
@@ -133,6 +138,11 @@ class ChatInputDTO:
     message: str
 
     def validate(self) -> None:
+        """Validate the DTO data.
+
+        Raises:
+            ValueError: If the message is invalid.
+        """
         if not isinstance(self.message, str) or not self.message.strip():
             raise ValueError(
                 "The 'message' field is required, must be a string, and cannot be empty."
@@ -146,6 +156,11 @@ class ChatOutputDTO:
     response: str
 
     def to_dict(self) -> Dict:
+        """Convert the DTO to a dictionary.
+
+        Returns:
+            Dict: The dictionary representation of the DTO.
+        """
         return {
             'response': self.response,
         }

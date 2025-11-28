@@ -30,7 +30,7 @@ def __getattr__(name: str):
     """
     if name == 'ReadLocalFileTool':
         try:
-            from .Read_Local_File_Tool import ReadLocalFileTool
+            from .Read_Local_File_Tool import ReadLocalFileTool  # pylint: disable=import-outside-toplevel
 
             return ReadLocalFileTool
         except ImportError as e:

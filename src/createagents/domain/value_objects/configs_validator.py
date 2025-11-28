@@ -40,7 +40,8 @@ class SupportedConfigs:
             value: The temperature value, which must be between 0.0 and 2.0.
 
         Raises:
-            InvalidAgentConfigException: If the value is outside the allowed range or of the wrong type.
+            InvalidAgentConfigException: If the value is outside the allowed
+                range or of the wrong type.
         """
         if value is not None:
             if not isinstance(value, (float, int)) or not (
@@ -75,7 +76,8 @@ class SupportedConfigs:
             value: The top_p value, which must be between 0.0 and 1.0.
 
         Raises:
-            InvalidAgentConfigException: If the value is outside the allowed range or of the wrong type.
+            InvalidAgentConfigException: If the value is outside the allowed
+                range or of the wrong type.
         """
         if value is not None:
             if not isinstance(value, (float, int)) or not (
@@ -114,13 +116,15 @@ class SupportedConfigs:
             ):
                 raise InvalidAgentConfigException(
                     'think',
-                    'must be a boolean (for Ollama Provider) or a dict[str, str] (for OpenAI Provider)',
+                    'must be a boolean (for Ollama Provider) or a '
+                    'dict[str, str] (for OpenAI Provider)',
                 )
             return
 
         raise InvalidAgentConfigException(
             'think',
-            'must be a boolean (for Ollama Provider) or a dict[str, str] (for OpenAI Provider)',
+            'must be a boolean (for Ollama Provider) or a '
+            'dict[str, str] (for OpenAI Provider)',
         )
 
     @staticmethod

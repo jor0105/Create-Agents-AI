@@ -62,7 +62,6 @@ class BaseTool(ABC):
         Returns:
             The result of the tool execution (typically a string).
         """
-        pass
 
     def get_schema(self) -> Dict[str, Any]:
         """Return a generic schema describing the tool.

@@ -10,6 +10,14 @@ from ....config import LoggingConfig
 
 @lru_cache(maxsize=32)
 def _get_zoneinfo(tz: str) -> ZoneInfo:
+    """Get a ZoneInfo object for the given timezone string.
+
+    Args:
+        tz: The timezone string.
+
+    Returns:
+        ZoneInfo: The ZoneInfo object.
+    """
     return ZoneInfo(tz)
 
 
@@ -24,7 +32,8 @@ class CurrentDateTool(BaseTool):
 
     Usage:
             execute(action: str, tz: str) -> str
-            where action is one of: 'date', 'time', 'datetime', 'timestamp', 'date_with_weekday'
+            where action is one of: 'date', 'time', 'datetime',
+            'timestamp', 'date_with_weekday'
             and tz is an IANA timezone string (e.g., 'UTC', 'America/New_York')
 
     Returns:
@@ -33,7 +42,10 @@ class CurrentDateTool(BaseTool):
     """
 
     name = 'currentdate'
-    description = "Get the current date and/or time in a specific timezone. Essential for answering 'What time is it?' or 'What day is it?' questions."
+    description = (
+        'Get the current date and/or time in a specific timezone. '
+        "Essential for answering 'What time is it?' or 'What day is it?' questions."
+    )
     parameters: Dict[str, Any] = {
         'type': 'object',
         'properties': {
@@ -46,11 +58,21 @@ class CurrentDateTool(BaseTool):
                     'timestamp',
                     'date_with_weekday',
                 ],
-                'description': "What information to return: 'date' (just the date), 'time' (just the time), 'datetime' (both), 'timestamp' (unix seconds), or 'date_with_weekday' (full date with weekday)",
+                'description': (
+                    "What information to return: 'date' (just the date), "
+                    "'time' (just the time), 'datetime' (both), "
+                    "'timestamp' (unix seconds), or 'date_with_weekday' "
+                    '(full date with weekday)'
+                ),
             },
             'tz': {
                 'type': 'string',
-                'description': "IANA timezone identifier. Examples: 'UTC', 'America/New_York' (New York), 'America/Los_Angeles' (California), 'America/Chicago' (Chicago), 'America/Sao_Paulo' (Brazil), 'Europe/Lisbon', etc.",
+                'description': (
+                    "IANA timezone identifier. Examples: 'UTC', "
+                    "'America/New_York' (New York), 'America/Los_Angeles' "
+                    "(California), 'America/Chicago' (Chicago), "
+                    "'America/Sao_Paulo' (Brazil), 'Europe/Lisbon', etc."
+                ),
             },
         },
         'required': ['action', 'tz'],
@@ -61,14 +83,26 @@ class CurrentDateTool(BaseTool):
     MAX_FORMAT_LENGTH = 200  # kept for potential future use
 
     def __init__(self) -> None:
+        """Initialize the CurrentDateTool."""
         self.__logger = LoggingConfig.get_logger(__name__)
 
     @staticmethod
     def __resolve_zone(tz: str) -> ZoneInfo:
+        """Resolve the timezone string to a ZoneInfo object.
+
+        Args:
+            tz: The timezone string.
+
+        Returns:
+            ZoneInfo: The resolved ZoneInfo object.
+
+        Raises:
+            ValueError: If the timezone is invalid.
+        """
         try:
             return _get_zoneinfo(tz.strip())
-        except ZoneInfoNotFoundError:
-            raise ValueError(f'Invalid timezone: {tz}')
+        except ZoneInfoNotFoundError as e:
+            raise ValueError(f'Invalid timezone: {tz}') from e
 
     def execute(
         self,
@@ -82,8 +116,8 @@ class CurrentDateTool(BaseTool):
                 tz: IANA timezone string (e.g., 'UTC', 'America/New_York')
 
         Returns:
-                A string with the requested date/time, or an error message starting with
-                "[CurrentDateTool Error]".
+                A string with the requested date/time, or an error message
+                starting with "[CurrentDateTool Error]".
         """
         self.__logger.info(
             'CurrentDateTool.execute called: action=%s, tz=%s',
@@ -106,7 +140,7 @@ class CurrentDateTool(BaseTool):
 
         try:
             zone = self.__resolve_zone(tz)
-        except Exception:
+        except ValueError:
             return self.__error(f"Invalid timezone '{tz}'")
 
         try:
@@ -136,6 +170,12 @@ class CurrentDateTool(BaseTool):
 
             return sanitized_response
 
+        except (ValueError, TypeError) as e:
+            self.__logger.error(
+                'Value/Type error in CurrentDateTool: %s', e, exc_info=True
+            )
+            return self.__error(f'Processing error: {type(e).__name__}: {e}')
+
         except Exception as e:
             self.__logger.error(
                 'Unexpected error in CurrentDateTool: %s', e, exc_info=True
@@ -143,6 +183,14 @@ class CurrentDateTool(BaseTool):
             return self.__error(f'Unexpected error: {type(e).__name__}: {e}')
 
     def __error(self, details: str) -> str:
+        """Format an error message.
+
+        Args:
+            details: The error details.
+
+        Returns:
+            str: The formatted error message.
+        """
         msg = f'[CurrentDateTool Error] {details}'
         self.__logger.warning(msg)
         return msg

@@ -31,7 +31,7 @@ class ToolSchemaFormatter:
         schema = tool.get_schema()
 
         ToolSchemaFormatter._logger.debug(
-            f"Formatting tool '{schema['name']}' for OpenAI Completions API"
+            "Formatting tool '%s' for OpenAI Completions API", schema['name']
         )
 
         return {
@@ -56,7 +56,7 @@ class ToolSchemaFormatter:
         schema = tool.get_schema()
 
         ToolSchemaFormatter._logger.debug(
-            f"Formatting tool '{schema['name']}' for OpenAI Responses API"
+            "Formatting tool '%s' for OpenAI Responses API", schema['name']
         )
 
         return {
@@ -77,7 +77,7 @@ class ToolSchemaFormatter:
             List of dictionaries formatted for OpenAI's tools parameter.
         """
         ToolSchemaFormatter._logger.info(
-            f'Formatting {len(tools)} tool(s) for OpenAI Completions API'
+            'Formatting %s tool(s) for OpenAI Completions API', len(tools)
         )
 
         formatted = [
@@ -85,7 +85,7 @@ class ToolSchemaFormatter:
         ]
 
         ToolSchemaFormatter._logger.debug(
-            f'Formatted tools: {[t["function"]["name"] for t in formatted]}'
+            'Formatted tools: %s', [t['function']['name'] for t in formatted]
         )
 
         return formatted
@@ -103,7 +103,7 @@ class ToolSchemaFormatter:
             List of dictionaries formatted for Responses API's tools parameter.
         """
         ToolSchemaFormatter._logger.info(
-            f'Formatting {len(tools)} tool(s) for OpenAI Responses API'
+            'Formatting %s tool(s) for OpenAI Responses API', len(tools)
         )
 
         formatted = [
@@ -112,7 +112,7 @@ class ToolSchemaFormatter:
         ]
 
         ToolSchemaFormatter._logger.debug(
-            f'Formatted tools: {[t["name"] for t in formatted]}'
+            'Formatted tools: %s', [t['name'] for t in formatted]
         )
 
         return formatted

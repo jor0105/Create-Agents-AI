@@ -46,7 +46,7 @@ def __getattr__(name: str):
         ImportError: If optional dependencies are not installed.
     """
     if name == 'ReadLocalFileTool':
-        from .Tools import ReadLocalFileTool
+        from .Tools import ReadLocalFileTool  # pylint: disable=import-outside-toplevel
 
         return ReadLocalFileTool
 

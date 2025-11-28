@@ -21,5 +21,5 @@ class GetAllAvailableToolsUseCase:
         """
         self.__logger.debug('Retrieving all available tools (system + agent).')
         all_tools: Dict[str, str] = AvailableTools.get_all_available_tools()
-        self.__logger.info(f'Retrieved {len(all_tools)} total tool(s).')
+        self.__logger.info('Retrieved %s total tool(s).', len(all_tools))
         return all_tools

@@ -27,20 +27,23 @@ class CreateAgentUseCase:
             InvalidConfigTypeException: If a configuration type is invalid.
         """
         self.__logger.info(
-            f'Creating new agent - Provider: {input_dto.provider}, Model: {input_dto.model}'
+            'Creating new agent - Provider: %s, Model: %s',
+            input_dto.provider,
+            input_dto.model,
         )
         self.__logger.debug(
-            f'Agent configuration - Name: {input_dto.name}, '
-            f'Tools: {len(input_dto.tools) if input_dto.tools else 0}, '
-            f'History max size: {input_dto.history_max_size}'
+            'Agent configuration - Name: %s, Tools: %s, History max size: %s',
+            input_dto.name,
+            len(input_dto.tools) if input_dto.tools else 0,
+            input_dto.history_max_size,
         )
 
         try:
             input_dto.validate()
             self.__logger.debug('Input DTO validated successfully')
         except ValueError as e:
-            self.__logger.error(f'Validation error in input DTO: {str(e)}')
-            raise InvalidAgentConfigException('input_dto', str(e))
+            self.__logger.error('Validation error in input DTO: %s', e)
+            raise InvalidAgentConfigException('input_dto', str(e)) from e
 
         agent = Agent(
             provider=input_dto.provider,
@@ -53,7 +56,10 @@ class CreateAgentUseCase:
         )
 
         self.__logger.info(
-            f'Agent created successfully - Name: {agent.name}, Provider: {agent.provider}, Model: {agent.model}'
+            'Agent created successfully - Name: %s, Provider: %s, Model: %s',
+            agent.name,
+            agent.provider,
+            agent.model,
         )
 
         return agent

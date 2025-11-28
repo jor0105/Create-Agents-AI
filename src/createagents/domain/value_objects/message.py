@@ -12,6 +12,7 @@ class MessageRole(str, Enum):
     TOOL = 'tool'  # For tool execution results
 
     def __str__(self) -> str:
+        """Return the string value of the role."""
         return self.value
 
 
@@ -63,9 +64,10 @@ class Message:
 
         try:
             role = MessageRole(data['role'])
-        except ValueError:
+        except ValueError as e:
             raise ValueError(
-                f"Invalid role: '{data['role']}'. Valid values are: {[r.value for r in MessageRole]}"
-            )
+                f"Invalid role: '{data['role']}'. "
+                f'Valid values are: {[r.value for r in MessageRole]}'
+            ) from e
 
         return cls(role=role, content=data['content'])

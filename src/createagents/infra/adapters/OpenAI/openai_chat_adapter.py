@@ -15,7 +15,14 @@ from .tool_schema_formatter import ToolSchemaFormatter
 
 
 class OpenAIChatAdapter(ChatRepository):
+    """Initialize the OpenAI adapter."""
+
     def __init__(self):
+        """Initialize the OpenAI adapter.
+
+        Raises:
+            ChatException: If the API key is missing or invalid.
+        """
         self.__logger = LoggingConfig.get_logger(__name__)
         self.__metrics: List[ChatMetrics] = []
 
@@ -33,12 +40,15 @@ class OpenAIChatAdapter(ChatRepository):
             )
             self.__client = ClientOpenAI.get_client(api_key)
             self.__logger.info(
-                f'OpenAI adapter initialized (timeout: {self.__timeout}s, '
-                f'max_retries: {self.__max_retries})'
+                'OpenAI adapter initialized (timeout: %ss, max_retries: %s)',
+                self.__timeout,
+                self.__max_retries,
             )
         except EnvironmentError as e:
-            self.__logger.error(f'Error configuring OpenAI: {str(e)}')
-            raise ChatException(f'Error configuring OpenAI: {str(e)}', e)
+            self.__logger.error('Error configuring OpenAI: %s', e)
+            raise ChatException(
+                f'Error configuring OpenAI: {str(e)}', e
+            ) from e
 
     @retry_with_backoff(
         max_attempts=3, initial_delay=1.0, exceptions=(Exception,)
@@ -124,7 +134,9 @@ class OpenAIChatAdapter(ChatRepository):
         start_time = time.time()
 
         try:
-            self.__logger.debug(f'Starting chat with model {model} on OpenAI.')
+            self.__logger.debug(
+                'Starting chat with model %s on OpenAI.', model
+            )
 
             messages = []
             if instructions and instructions.strip():
@@ -141,17 +153,19 @@ class OpenAIChatAdapter(ChatRepository):
                 )
                 tool_executor = ToolExecutor(tools)
                 self.__logger.debug(
-                    f'Tools enabled: {[tool.name for tool in tools]}'
+                    'Tools enabled: %s', [tool.name for tool in tools]
                 )
 
             iteration = 0
             while iteration < self.__max_tool_iterations:
                 iteration += 1
                 self.__logger.info(
-                    f'OpenAI tool calling iteration {iteration}/{self.__max_tool_iterations}'
+                    'OpenAI tool calling iteration %s/%s',
+                    iteration,
+                    self.__max_tool_iterations,
                 )
                 self.__logger.debug(
-                    f'Current message history size: {len(messages)}'
+                    'Current message history size: %s', len(messages)
                 )
 
                 # Call OpenAI API
@@ -167,7 +181,8 @@ class OpenAIChatAdapter(ChatRepository):
                             'Tool calls detected but no tools were provided'
                         )
                         raise ChatException(
-                            'Tool calls detected but no tools were provided to the agent'
+                            'Tool calls detected but no tools were provided '
+                            'to the agent'
                         )
 
                     # For Responses API, append output items to messages
@@ -182,7 +197,9 @@ class OpenAIChatAdapter(ChatRepository):
                     tool_calls = ToolCallParser.extract_tool_calls(
                         response_api
                     )
-                    self.__logger.debug(f'Executing {len(tool_calls)} tool(s)')
+                    self.__logger.debug(
+                        'Executing %s tool(s)', len(tool_calls)
+                    )
 
                     for tool_call in tool_calls:
                         tool_name = tool_call['name']
@@ -190,7 +207,9 @@ class OpenAIChatAdapter(ChatRepository):
                         tool_id = tool_call['id']
 
                         self.__logger.debug(
-                            f"Executing tool '{tool_name}' with args: {tool_args}"
+                            "Executing tool '%s' with args: %s",
+                            tool_name,
+                            tool_args,
                         )
 
                         execution_result = tool_executor.execute_tool(
@@ -241,22 +260,24 @@ class OpenAIChatAdapter(ChatRepository):
                 )
                 self.__metrics.append(metrics)
 
-                self.__logger.info(f'Chat completed: {metrics}')
+                self.__logger.info('Chat completed: %s', metrics)
                 self.__logger.debug(
-                    f'Response (first 100 chars): {content[:100]}...'
+                    'Response (first 100 chars): %s...', content[:100]
                 )
 
                 self.__logger.debug(
-                    f'Response after formatting (first 100 chars): {content[:100]}...'
+                    'Response after formatting (first 100 chars): %s...',
+                    content[:100],
                 )
 
                 return content
 
             self.__logger.warning(
-                f'Max tool iterations ({self.__max_tool_iterations}) reached'
+                'Max tool iterations (%s) reached', self.__max_tool_iterations
             )
             raise ChatException(
-                f'Max tool calling iterations ({self.__max_tool_iterations}) exceeded'
+                f'Max tool calling iterations '
+                f'({self.__max_tool_iterations}) exceeded'
             )
 
         except ChatException:
@@ -278,10 +299,10 @@ class OpenAIChatAdapter(ChatRepository):
                 error_message=f'Error accessing response: {str(e)}',
             )
             self.__metrics.append(metrics)
-            self.__logger.error(f'Error accessing OpenAI response: {str(e)}')
+            self.__logger.error('Error accessing OpenAI response: %s', e)
             raise ChatException(
                 f'Error accessing OpenAI response: {str(e)}', original_error=e
-            )
+            ) from e
         except IndexError as e:
             latency = (time.time() - start_time) * 1000
             metrics = ChatMetrics(
@@ -292,12 +313,26 @@ class OpenAIChatAdapter(ChatRepository):
             )
             self.__metrics.append(metrics)
             self.__logger.error(
-                f'OpenAI response has an unexpected format: {str(e)}'
+                'OpenAI response has an unexpected format: %s', e
             )
             raise ChatException(
                 f'OpenAI response has an unexpected format: {str(e)}',
                 original_error=e,
+            ) from e
+        except (ValueError, TypeError, KeyError) as e:
+            latency = (time.time() - start_time) * 1000
+            metrics = ChatMetrics(
+                model=model,
+                latency_ms=latency,
+                success=False,
+                error_message=f'Data error: {str(e)}',
             )
+            self.__metrics.append(metrics)
+            self.__logger.error('Data error communicating with OpenAI: %s', e)
+            raise ChatException(
+                f'Data error communicating with OpenAI: {str(e)}',
+                original_error=e,
+            ) from e
         except Exception as e:
             latency = (time.time() - start_time) * 1000
             metrics = ChatMetrics(
@@ -307,10 +342,15 @@ class OpenAIChatAdapter(ChatRepository):
                 error_message=str(e),
             )
             self.__metrics.append(metrics)
-            self.__logger.error(f'Error communicating with OpenAI: {str(e)}')
+            self.__logger.error('Error communicating with OpenAI: %s', e)
             raise ChatException(
                 f'Error communicating with OpenAI: {str(e)}', original_error=e
-            )
+            ) from e
 
     def get_metrics(self) -> List[ChatMetrics]:
+        """Return the list of collected metrics.
+
+        Returns:
+            List[ChatMetrics]: The list of metrics.
+        """
         return self.__metrics.copy()

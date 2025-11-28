@@ -24,6 +24,11 @@ class ToolExecutionResult:
     execution_time_ms: Optional[float] = None
 
     def to_dict(self) -> Dict[str, Any]:
+        """Convert the result to a dictionary.
+
+        Returns:
+            Dict[str, Any]: The dictionary representation of the result.
+        """
         return {
             'tool_name': self.tool_name,
             'success': self.success,
@@ -72,7 +77,7 @@ class ToolExecutor:
                    If None, no tools will be available.
         """
         # Import here to avoid circular dependency
-        from ...infra import LoggingConfig
+        from ...infra import LoggingConfig  # pylint: disable=import-outside-toplevel
 
         self._tools_map: Dict[str, BaseTool] = {}
         self.__logger = LoggingConfig.get_logger(__name__)
@@ -81,10 +86,16 @@ class ToolExecutor:
             self._tools_map[tool.name] = tool
 
         self.__logger.info(
-            f'ToolExecutor initialized with {len(self._tools_map)} tool(s): {list(self._tools_map.keys())}'
+            'ToolExecutor initialized with %s tool(s): %s',
+            len(self._tools_map),
+            list(self._tools_map.keys()),
         )
         self.__logger.debug(
-            f'Tool details: {[{"name": t.name, "description": t.description[:50]} for t in tools]}'
+            'Tool details: %s',
+            [
+                {'name': t.name, 'description': t.description[:50]}
+                for t in tools
+            ],
         )
 
     def get_available_tool_names(self) -> List[str]:
@@ -129,12 +140,12 @@ class ToolExecutor:
             )
             ```
         """
-        import time
+        import time  # pylint: disable=import-outside-toplevel
 
         start_time = time.time()
 
-        self.__logger.info(f"Attempting to execute tool: '{tool_name}'")
-        self.__logger.debug(f'Tool arguments: {kwargs}')
+        self.__logger.info("Attempting to execute tool: '%s'", tool_name)
+        self.__logger.debug('Tool arguments: %s', kwargs)
 
         if not self.has_tool(tool_name):
             available = ', '.join(self.get_available_tool_names())
@@ -153,7 +164,9 @@ class ToolExecutor:
         try:
             tool = self._tools_map[tool_name]
             self.__logger.debug(
-                f"Executing tool '{tool_name}' with {len(kwargs)} argument(s)"
+                "Executing tool '%s' with %s argument(s)",
+                tool_name,
+                len(kwargs),
             )
 
             result = tool.execute(**kwargs)
@@ -161,10 +174,12 @@ class ToolExecutor:
             execution_time = (time.time() - start_time) * 1000
 
             self.__logger.info(
-                f"Tool '{tool_name}' executed successfully in {execution_time:.2f}ms"
+                "Tool '%s' executed successfully in %.2fms",
+                tool_name,
+                execution_time,
             )
             self.__logger.debug(
-                f'Tool result (first 200 chars): {str(result)[:200]}...'
+                'Tool result (first 200 chars): %s...', str(result)[:200]
             )
 
             return ToolExecutionResult(
@@ -178,7 +193,27 @@ class ToolExecutor:
             error_msg = f"Invalid arguments for tool '{tool_name}': {str(e)}"
             execution_time = (time.time() - start_time) * 1000
             self.__logger.error(
-                f"TypeError executing tool '{tool_name}': {error_msg} (execution time: {execution_time:.2f}ms)",
+                "TypeError executing tool '%s': %s (execution time: %.2fms)",
+                tool_name,
+                error_msg,
+                execution_time,
+                exc_info=True,
+            )
+            return ToolExecutionResult(
+                tool_name=tool_name,
+                success=False,
+                error=error_msg,
+                execution_time_ms=execution_time,
+            )
+
+        except (ValueError, RuntimeError) as e:
+            error_msg = f"Error executing tool '{tool_name}': {str(e)}"
+            execution_time = (time.time() - start_time) * 1000
+            self.__logger.error(
+                "Runtime/Value error executing tool '%s': %s (execution time: %.2fms)",
+                tool_name,
+                error_msg,
+                execution_time,
                 exc_info=True,
             )
             return ToolExecutionResult(
@@ -192,7 +227,10 @@ class ToolExecutor:
             error_msg = f"Error executing tool '{tool_name}': {str(e)}"
             execution_time = (time.time() - start_time) * 1000
             self.__logger.error(
-                f"Exception executing tool '{tool_name}': {error_msg} (execution time: {execution_time:.2f}ms)",
+                "Exception executing tool '%s': %s (execution time: %.2fms)",
+                tool_name,
+                error_msg,
+                execution_time,
                 exc_info=True,
             )
             return ToolExecutionResult(
@@ -222,9 +260,10 @@ class ToolExecutor:
             results = executor.execute_multiple_tools(tool_calls)
             ```
         """
-        self.__logger.info(f'Executing {len(tool_calls)} tool(s) in sequence')
+        self.__logger.info('Executing %s tool(s) in sequence', len(tool_calls))
         self.__logger.debug(
-            f'Tool calls: {[call.get("name", "unknown") for call in tool_calls]}'
+            'Tool calls: %s',
+            [call.get('name', 'unknown') for call in tool_calls],
         )
 
         results = []
@@ -234,19 +273,22 @@ class ToolExecutor:
             arguments = call.get('arguments', {})
 
             self.__logger.debug(
-                f"Processing tool call {idx}/{len(tool_calls)}: '{tool_name}'"
+                "Processing tool call %s/%s: '%s'",
+                idx,
+                len(tool_calls),
+                tool_name,
             )
 
             if isinstance(arguments, str):
                 try:
                     arguments = json.loads(arguments)
                     self.__logger.debug(
-                        f"Parsed JSON arguments for '{tool_name}'"
+                        "Parsed JSON arguments for '%s'", tool_name
                     )
                 except json.JSONDecodeError as e:
                     error_msg = f'Invalid JSON arguments: {arguments}'
                     self.__logger.error(
-                        f"Failed to parse arguments for '{tool_name}': {str(e)}"
+                        "Failed to parse arguments for '%s': %s", tool_name, e
                     )
                     results.append(
                         ToolExecutionResult(
@@ -262,8 +304,10 @@ class ToolExecutor:
 
         successful = sum(1 for r in results if r.success)
         self.__logger.info(
-            f'Completed execution of {len(tool_calls)} tool(s): '
-            f'{successful} successful, {len(tool_calls) - successful} failed'
+            'Completed execution of %s tool(s): %s successful, %s failed',
+            len(tool_calls),
+            successful,
+            len(tool_calls) - successful,
         )
 
         return results

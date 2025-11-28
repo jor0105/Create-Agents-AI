@@ -13,34 +13,9 @@ from .constants import (
 )
 
 if TYPE_CHECKING:
-    import tiktoken
+    import tiktoken  # pylint: disable=import-outside-toplevel
 
 logger = LoggingConfig.get_logger(__name__)
-
-
-def _lazy_import(module_name: str, package_name: str):
-    """Import a module lazily with helpful error messages.
-
-    Args:
-        module_name: Name of the module to import (e.g., 'pandas')
-        package_name: Name used in pip install (e.g., 'pandas')
-
-    Returns:
-        The imported module
-
-    Raises:
-        RuntimeError: If module is not available with helpful installation message
-    """
-    try:
-        return __import__(module_name)
-    except ImportError as e:
-        error_msg = (
-            f"'{module_name}' is required for this operation. "
-            f'Install it with: pip install ai-agent[file-tools] '
-            f'or poetry install -E file-tools'
-        )
-        logger.error(error_msg)
-        raise RuntimeError(error_msg) from e
 
 
 def initialize_tiktoken() -> 'tiktoken.Encoding':
@@ -53,19 +28,23 @@ def initialize_tiktoken() -> 'tiktoken.Encoding':
         RuntimeError: If tiktoken is not installed or initialization fails.
     """
     try:
-        import tiktoken
+        import tiktoken  # pylint: disable=import-outside-toplevel
 
         encoding = tiktoken.get_encoding(TIKTOKEN_ENCODING)
-        logger.debug(f'Initialized tiktoken encoder: {TIKTOKEN_ENCODING}')
+        logger.debug('Initialized tiktoken encoder: %s', TIKTOKEN_ENCODING)
         return encoding
     except ImportError as e:
         raise RuntimeError(
             'tiktoken is required for token counting. '
             'Install with: pip install ai-agent[file-tools]'
         ) from e
-    except Exception as e:
+    except (ValueError, TypeError) as e:
         error_msg = f'Failed to initialize tiktoken encoder: {e}'
-        logger.error(error_msg)
+        logger.error('Failed to initialize tiktoken encoder: %s', e)
+        raise RuntimeError(error_msg) from e
+    except Exception as e:
+        error_msg = f'Unexpected error initializing tiktoken encoder: {e}'
+        logger.error('Unexpected error initializing tiktoken encoder: %s', e)
         raise RuntimeError(error_msg) from e
 
 
@@ -81,9 +60,10 @@ def count_tokens(text: str, encoding: 'tiktoken.Encoding') -> int:
     """
     try:
         return len(encoding.encode(text))
-    except Exception as e:
-        logger.error(f'Error counting tokens: {e}')
-        # Fallback to character-based estimation (rough approximation: ~4 chars per token)
+    except (ValueError, TypeError) as e:
+        logger.error('Error counting tokens: %s', e)
+        # Fallback to character-based estimation
+        # (rough approximation: ~4 chars per token)
         return len(text) // 4
 
 
@@ -97,7 +77,7 @@ def detect_encoding(file_path: Path) -> str:
         Detected encoding name, or 'utf-8' as fallback.
     """
     try:
-        import chardet
+        import chardet  # pylint: disable=import-outside-toplevel
 
         try:
             with open(file_path, 'rb') as file:
@@ -107,19 +87,23 @@ def detect_encoding(file_path: Path) -> str:
                 confidence = result.get('confidence', 0)
 
                 logger.debug(
-                    f'Detected encoding: {detected_encoding} (confidence: {confidence:.2f})'
+                    'Detected encoding: %s (confidence: %.2f)',
+                    detected_encoding,
+                    confidence,
                 )
 
                 # If confidence is low, fallback to utf-8
                 if confidence < 0.7:
                     logger.warning(
-                        f'Low confidence ({confidence:.2f}) in detected encoding, trying common encodings'
+                        'Low confidence (%.2f) in detected encoding, '
+                        'trying common encodings',
+                        confidence,
                     )
                     return 'utf-8'
 
                 return detected_encoding or 'utf-8'
-        except Exception as e:
-            logger.warning(f'Encoding detection failed: {e}, using utf-8')
+        except (OSError, ValueError) as e:
+            logger.warning('Encoding detection failed: %s, using utf-8', e)
             return 'utf-8'
 
     except ImportError:
@@ -152,11 +136,11 @@ def read_text_file(file_path: Path) -> str:
     for encoding in encodings_to_try:
         try:
             content = file_path.read_text(encoding=encoding, errors='strict')
-            logger.debug(f'Successfully read file with encoding: {encoding}')
+            logger.debug('Successfully read file with encoding: %s', encoding)
             return content
         except (UnicodeDecodeError, LookupError) as e:
             last_error = e
-            logger.debug(f'Failed to read with {encoding}: {e}')
+            logger.debug('Failed to read with %s: %s', encoding, e)
             continue
 
     # If all encodings fail, try UTF-8 with error replacement
@@ -166,10 +150,10 @@ def read_text_file(file_path: Path) -> str:
             'All encodings failed, using UTF-8 with character replacement'
         )
         return content
-    except Exception:
+    except (OSError, ValueError) as e:
         raise UnicodeDecodeError(
             'unknown', b'', 0, 0, f'Failed to decode file: {last_error}'
-        )
+        ) from e
 
 
 def read_csv_file(file_path: Path) -> str:
@@ -186,7 +170,7 @@ def read_csv_file(file_path: Path) -> str:
         RuntimeError: If pandas is not installed.
     """
     try:
-        import pandas as pd
+        import pandas as pd  # pylint: disable=import-outside-toplevel
     except ImportError as e:
         raise RuntimeError(
             'pandas is required for CSV reading. '
@@ -219,18 +203,23 @@ def read_csv_file(file_path: Path) -> str:
 
                 if not df.empty:
                     logger.debug(
-                        f'Read CSV file with encoding {encoding}, '
-                        f"delimiter '{delimiter}', shape: {df.shape}"
+                        "Read CSV file with encoding %s, delimiter '%s', shape: %s",
+                        encoding,
+                        delimiter,
+                        df.shape,
                     )
                     result: str = df.to_string(index=False)
                     return result
             except (UnicodeDecodeError, LookupError) as e:
                 last_error = e
                 logger.debug(
-                    f"Failed to read CSV with {encoding}, delimiter '{delimiter}': {e}"
+                    "Failed to read CSV with %s, delimiter '%s': %s",
+                    encoding,
+                    delimiter,
+                    e,
                 )
                 continue
-            except Exception as e:
+            except (ValueError, OSError) as e:
                 last_error = e
                 continue
 
@@ -249,11 +238,11 @@ def read_csv_file(file_path: Path) -> str:
         )
         result = df.to_string(index=False)
         return result
-    except Exception:
+    except (ValueError, OSError):
         raise FileReadException(
             str(file_path),
             f'Failed to read CSV with any strategy. Last error: {last_error}',
-        )
+        ) from last_error
 
 
 def read_excel_file(file_path: Path) -> str:
@@ -273,7 +262,7 @@ def read_excel_file(file_path: Path) -> str:
         RuntimeError: If pandas is not installed.
     """
     try:
-        import pandas as pd
+        import pandas as pd  # pylint: disable=import-outside-toplevel
     except ImportError as e:
         raise RuntimeError(
             'pandas is required for Excel reading. '
@@ -297,19 +286,19 @@ def read_excel_file(file_path: Path) -> str:
         try:
             df = pd.read_excel(file_path, sheet_name=0, engine=engine)
             logger.debug(
-                f'Read Excel file with engine {engine}, shape: {df.shape}'
+                'Read Excel file with engine %s, shape: %s', engine, df.shape
             )
             result: str = df.to_string(index=False)
             return result
-        except Exception as e:
+        except (ValueError, OSError) as e:
             last_error = e
-            logger.debug(f'Failed to read Excel with engine {engine}: {e}')
+            logger.debug('Failed to read Excel with engine %s: %s', engine, e)
             continue
 
     raise FileReadException(
         str(file_path),
         f'Failed to read Excel file with any engine. Last error: {last_error}',
-    )
+    ) from last_error
 
 
 def read_parquet_file(file_path: Path) -> str:
@@ -329,7 +318,7 @@ def read_parquet_file(file_path: Path) -> str:
         RuntimeError: If pandas is not installed.
     """
     try:
-        import pandas as pd
+        import pandas as pd  # pylint: disable=import-outside-toplevel
     except ImportError as e:
         raise RuntimeError(
             'pandas is required for Parquet reading. '
@@ -343,27 +332,29 @@ def read_parquet_file(file_path: Path) -> str:
         try:
             df = pd.read_parquet(file_path, engine=engine)
             logger.debug(
-                f'Read Parquet file with engine {engine}, shape: {df.shape}'
+                'Read Parquet file with engine %s, shape: %s', engine, df.shape
             )
             result: str = df.to_string(index=False)
             return result
-        except Exception as e:
+        except (ValueError, OSError) as e:
             last_error = e
-            logger.debug(f'Failed to read Parquet with engine {engine}: {e}')
+            logger.debug(
+                'Failed to read Parquet with engine %s: %s', engine, e
+            )
             continue
 
     raise FileReadException(
         str(file_path),
         f'Failed to read Parquet file with any engine. Last error: {last_error}',
-    )
+    ) from last_error
 
 
 def read_pdf_file(file_path: Path) -> str:
     """Read a PDF file and extract text from all pages with error handling.
 
     Uses unstructured library for robust PDF parsing that handles various formats,
-    including scanned PDFs with OCR capabilities. Supports additional document types
-    beyond basic PDFs.
+    including scanned PDFs with OCR capabilities. Supports additional
+    document types beyond basic PDFs.
 
     Args:
         file_path: Path to the PDF file.
@@ -376,7 +367,7 @@ def read_pdf_file(file_path: Path) -> str:
         RuntimeError: If unstructured is not installed.
     """
     try:
-        from unstructured.partition.pdf import partition_pdf
+        from unstructured.partition.pdf import partition_pdf  # pylint: disable=import-outside-toplevel
     except ImportError as e:
         raise RuntimeError(
             'unstructured is required for PDF reading. '
@@ -384,7 +375,7 @@ def read_pdf_file(file_path: Path) -> str:
         ) from e
 
     try:
-        logger.debug(f'Reading PDF file: {file_path}')
+        logger.debug('Reading PDF file: %s', file_path)
 
         # partition_pdf automatically handles:
         # - Text extraction from native PDFs
@@ -393,7 +384,7 @@ def read_pdf_file(file_path: Path) -> str:
         # - Tables, images, and other structured content
         elements = partition_pdf(
             filename=str(file_path),
-            strategy='auto',  # Automatically chooses best strategy (fast, hi_res, ocr_only)
+            strategy='auto',  # Auto chooses best strategy (fast, hi_res, ocr)
             infer_table_structure=True,  # Extract tables as structured data
         )
 
@@ -440,17 +431,22 @@ def read_pdf_file(file_path: Path) -> str:
 
         result = '\n\n'.join(content_parts)
         logger.debug(
-            f'Successfully extracted {len(elements)} elements from PDF'
+            'Successfully extracted %s elements from PDF', len(elements)
         )
         return result
 
     except FileReadException:
         raise
+    except (ValueError, OSError, RuntimeError) as e:
+        raise FileReadException(
+            str(file_path),
+            f'PDF processing failed: {type(e).__name__}: {e}',
+        ) from e
     except Exception as e:
         raise FileReadException(
             str(file_path),
             f'PDF processing failed: {type(e).__name__}: {e}',
-        )
+        ) from e
 
 
 def read_document_file(file_path: Path) -> str:
@@ -470,7 +466,7 @@ def read_document_file(file_path: Path) -> str:
         RuntimeError: If unstructured is not installed.
     """
     try:
-        from unstructured.partition.auto import partition
+        from unstructured.partition.auto import partition  # pylint: disable=import-outside-toplevel
     except ImportError as e:
         raise RuntimeError(
             'unstructured is required for document reading. '
@@ -478,7 +474,7 @@ def read_document_file(file_path: Path) -> str:
         ) from e
 
     try:
-        logger.debug(f'Reading document file: {file_path}')
+        logger.debug('Reading document file: %s', file_path)
 
         # partition automatically detects file type and uses appropriate parser
         elements = partition(
@@ -500,17 +496,22 @@ def read_document_file(file_path: Path) -> str:
 
         result = '\n\n'.join(content_parts)
         logger.debug(
-            f'Successfully extracted {len(elements)} elements from document'
+            'Successfully extracted %s elements from document', len(elements)
         )
         return result
 
     except FileReadException:
         raise
+    except (ValueError, OSError, RuntimeError) as e:
+        raise FileReadException(
+            str(file_path),
+            f'Document processing failed: {type(e).__name__}: {e}',
+        ) from e
     except Exception as e:
         raise FileReadException(
             str(file_path),
             f'Document processing failed: {type(e).__name__}: {e}',
-        )
+        ) from e
 
 
 def determine_file_type(extension: str) -> FileType:
@@ -569,18 +570,24 @@ def read_file_by_type(file_path: Path, file_type: FileType) -> str:
             try:
                 content = read_text_file(file_path)
                 logger.warning(
-                    f'Unknown file type, successfully read as text: {file_path.suffix}'
+                    'Unknown file type, successfully read as text: %s',
+                    file_path.suffix,
                 )
                 return content
             except UnicodeDecodeError as e:
                 raise FileReadException(
                     str(file_path),
                     f'Cannot decode file as text: {e.reason}',
-                )
+                ) from e
     except FileReadException:
         raise
+    except (ValueError, OSError, RuntimeError) as e:
+        raise FileReadException(
+            str(file_path),
+            f'{type(e).__name__}: {e}',
+        ) from e
     except Exception as e:
         raise FileReadException(
             str(file_path),
             f'{type(e).__name__}: {e}',
-        )
+        ) from e

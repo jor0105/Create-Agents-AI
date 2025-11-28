@@ -47,7 +47,19 @@ class TestChatAdapterFactoryIntegration:
             assert isinstance(adapter, OllamaChatAdapter)
             assert isinstance(adapter, ChatRepository)
 
-    def test_factory_provider_selection(self):
+    @patch(
+        'createagents.infra.adapters.OpenAI.openai_chat_adapter.EnvironmentConfig.get_api_key'
+    )
+    @patch(
+        'createagents.infra.adapters.OpenAI.openai_chat_adapter.ClientOpenAI.get_client'
+    )
+    def test_factory_provider_selection(
+        self, mock_get_client, mock_get_api_key
+    ):
+        mock_get_api_key.return_value = 'test-key'
+        mock_client = Mock()
+        mock_get_client.return_value = mock_client
+
         adapter_openai = ChatAdapterFactory.create(
             provider='openai', model='any-model'
         )

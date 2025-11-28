@@ -39,12 +39,16 @@ class ChatAdapterFactory:
 
         if cache_key in cls.__cache:
             cls.__logger.debug(
-                f"Returning cached adapter for provider '{provider}' and model '{model}'"
+                "Returning cached adapter for provider '%s' and model '%s'",
+                provider,
+                model,
             )
             return cls.__cache[cache_key]
 
         cls.__logger.info(
-            f'Creating new chat adapter - Provider: {provider}, Model: {model}'
+            'Creating new chat adapter - Provider: %s, Model: %s',
+            provider,
+            model,
         )
 
         provider_lower = provider.lower()
@@ -57,11 +61,11 @@ class ChatAdapterFactory:
             cls.__logger.debug('Creating Ollama chat adapter')
             adapter = OllamaChatAdapter()
         else:
-            cls.__logger.error(f'Invalid provider requested: {provider}')
+            cls.__logger.error('Invalid provider requested: %s', provider)
             raise ValueError(f'Invalid provider: {provider}.')
 
         cls.__cache[cache_key] = adapter
-        cls.__logger.debug(f'Adapter cached with key: {cache_key}')
+        cls.__logger.debug('Adapter cached with key: %s', cache_key)
 
         return adapter
 
@@ -71,5 +75,5 @@ class ChatAdapterFactory:
         cache_size = len(cls.__cache)
         cls.__cache.clear()
         cls.__logger.info(
-            f'Adapter cache cleared - Removed {cache_size} cached adapter(s)'
+            'Adapter cache cleared - Removed %s cached adapter(s)', cache_size
         )

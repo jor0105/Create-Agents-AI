@@ -1,17 +1,32 @@
 [project]
 name = "createagents"
 version = "0.1.2"
-description = "Enterprise-grade modular system for creating AI agents"
+description = "A powerful and accessible framework for creating AI agents and automation workflows"
 readme = "README.md"
 license = "MIT"
 license-files = ["LICENSE"]
 authors = [
     { name = "Jordan Estralioto", email = "estraliotojordan@gmail.com" }
 ]
-keywords = ["ai", "agents", "framework", "orchestration"]
+keywords = [
+    "ai",
+    "agents",
+    "framework",
+    "orchestration",
+    "llm",
+    "nlp",
+    "automation",
+    "multi-agent",
+    "openai",
+    "ollama",
+    "generative-ai",
+    "assistant",
+    "bot"
+]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
+    "Intended Audience :: End Users/Desktop",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: 3.14",
@@ -105,3 +120,6 @@ quote-style = "single"
 indent-style = "space"
 skip-magic-trailing-comma = false
 line-ending = "auto"
+
+[tool.pylint."MESSAGES CONTROL"]
+disable = ["missing-module-docstring", "C0114"]
