@@ -344,12 +344,35 @@ class OllamaChatAdapter(ChatRepository):
 
             # Record metrics
             latency = (time.time() - start_time) * 1000
-            tokens_info = response_api.get('eval_count', None)
+            # Extract detailed metrics from Ollama response
+            # Note: Ollama returns durations in nanoseconds
+            prompt_eval_count = response_api.get('prompt_eval_count', 0)
+            eval_count = response_api.get('eval_count', 0)
+            total_tokens = prompt_eval_count + eval_count
+            load_duration = response_api.get('load_duration', 0)
+            prompt_eval_duration = response_api.get('prompt_eval_duration', 0)
+            eval_duration = response_api.get('eval_duration', 0)
+            load_duration_ms = (
+                load_duration / 1_000_000 if load_duration else None
+            )
+            prompt_eval_duration_ms = (
+                prompt_eval_duration / 1_000_000
+                if prompt_eval_duration
+                else None
+            )
+            eval_duration_ms = (
+                eval_duration / 1_000_000 if eval_duration else None
+            )
 
             metrics = ChatMetrics(
                 model=model,
                 latency_ms=latency,
-                tokens_used=tokens_info,
+                tokens_used=total_tokens,
+                prompt_tokens=prompt_eval_count,
+                completion_tokens=eval_count,
+                load_duration_ms=load_duration_ms,
+                prompt_eval_duration_ms=prompt_eval_duration_ms,
+                eval_duration_ms=eval_duration_ms,
                 success=True,
             )
             self.__metrics.append(metrics)

@@ -2,7 +2,6 @@ from typing import List
 
 from ...domain import Agent, ChatException
 from ...infra import ChatMetrics, LoggingConfig
-from ...utils import TextSanitizer
 from ..dtos import ChatInputDTO, ChatOutputDTO
 from ..interfaces import ChatRepository
 
@@ -59,22 +58,18 @@ class ChatWithAgentUseCase:
                 user_ask=input_dto.message,
             )
 
-            final_response = TextSanitizer.format_markdown_for_terminal(
-                response
-            )
-
-            if not final_response:
+            if not response:
                 self.__logger.error('Empty response received from repository')
                 raise ChatException('Empty response received from repository')
 
-            output_dto = ChatOutputDTO(response=final_response)
+            output_dto = ChatOutputDTO(response=response)
 
             agent.add_user_message(input_dto.message)
-            agent.add_assistant_message(final_response)
+            agent.add_assistant_message(response)
 
             self.__logger.info('Chat executed successfully')
             self.__logger.debug(
-                'Response (first 100 chars): %s...', final_response[:100]
+                'Response (first 100 chars): %s...', response[:100]
             )
 
             return output_dto
