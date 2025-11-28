@@ -165,42 +165,38 @@ class TestThinkValidation:
     def test_validate_think_with_none(self):
         SupportedConfigs.validate_think(None)
 
-    def test_validate_think_with_valid_dict(self):
-        valid_dict = {'type': 'enabled', 'budget': 'medium'}
-        SupportedConfigs.validate_think(valid_dict)
+    def test_validate_think_with_valid_string_high(self):
+        SupportedConfigs.validate_think('high')
+        SupportedConfigs.validate_think('HIGH')
+        SupportedConfigs.validate_think('High')
 
-    def test_validate_think_with_empty_dict(self):
-        SupportedConfigs.validate_think({})
+    def test_validate_think_with_valid_string_low(self):
+        SupportedConfigs.validate_think('low')
+        SupportedConfigs.validate_think('LOW')
+        SupportedConfigs.validate_think('Low')
 
-    def test_validate_think_with_dict_string_keys_values(self):
-        valid_dict = {
-            'mode': 'reasoning',
-            'depth': 'deep',
-            'strategy': 'comprehensive',
-        }
-        SupportedConfigs.validate_think(valid_dict)
+    def test_validate_think_with_valid_string_medium(self):
+        SupportedConfigs.validate_think('medium')
+        SupportedConfigs.validate_think('MEDIUM')
+        SupportedConfigs.validate_think('Medium')
 
-    def test_validate_think_with_dict_non_string_key(self):
-        invalid_dict = {123: 'value'}
-
-        with pytest.raises(InvalidAgentConfigException, match='think'):
-            SupportedConfigs.validate_think(invalid_dict)
-
-    def test_validate_think_with_dict_non_string_value(self):
-        invalid_dict = {'key': 123}
-
-        with pytest.raises(InvalidAgentConfigException, match='think'):
-            SupportedConfigs.validate_think(invalid_dict)
-
-    def test_validate_think_with_dict_mixed_types(self):
-        invalid_dict = {'valid': 'string', 'invalid': 42}
-
-        with pytest.raises(InvalidAgentConfigException, match='think'):
-            SupportedConfigs.validate_think(invalid_dict)
-
-    def test_validate_think_with_invalid_type_string(self):
+    def test_validate_think_with_invalid_string(self):
         with pytest.raises(InvalidAgentConfigException, match='think'):
             SupportedConfigs.validate_think('enabled')
+
+    def test_validate_think_with_dict_should_fail(self):
+        # Dicts are no longer accepted
+        with pytest.raises(InvalidAgentConfigException, match='think'):
+            SupportedConfigs.validate_think({'type': 'enabled'})
+
+    def test_validate_think_with_empty_dict_should_fail(self):
+        # Empty dicts are no longer accepted
+        with pytest.raises(InvalidAgentConfigException, match='think'):
+            SupportedConfigs.validate_think({})
+
+    def test_validate_think_with_invalid_string_value(self):
+        with pytest.raises(InvalidAgentConfigException, match='think'):
+            SupportedConfigs.validate_think('true')
 
     def test_validate_think_with_invalid_type_int(self):
         with pytest.raises(InvalidAgentConfigException, match='think'):
@@ -219,8 +215,11 @@ class TestThinkValidation:
             SupportedConfigs.validate_think('invalid')
 
         error_msg = str(exc_info.value)
-        assert 'boolean' in error_msg.lower() or 'bool' in error_msg.lower()
-        assert 'dict' in error_msg.lower()
+        assert (
+            'high' in error_msg.lower()
+            or 'low' in error_msg.lower()
+            or 'medium' in error_msg.lower()
+        )
 
 
 @pytest.mark.unit
@@ -279,12 +278,14 @@ class TestValidateConfigExtended:
         SupportedConfigs.validate_config('think', True)
         SupportedConfigs.validate_config('think', False)
 
-    def test_validate_config_think_with_dict(self):
-        SupportedConfigs.validate_config('think', {'mode': 'enabled'})
+    def test_validate_config_think_with_valid_string(self):
+        SupportedConfigs.validate_config('think', 'low')
+        SupportedConfigs.validate_config('think', 'medium')
+        SupportedConfigs.validate_config('think', 'high')
 
-    def test_validate_config_think_with_invalid_type(self):
+    def test_validate_config_think_with_invalid_string(self):
         with pytest.raises(InvalidAgentConfigException):
-            SupportedConfigs.validate_config('think', 'string')
+            SupportedConfigs.validate_config('think', 'invalid')
 
     def test_validate_config_top_k_with_valid_value(self):
         SupportedConfigs.validate_config('top_k', 40)

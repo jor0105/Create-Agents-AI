@@ -1,4 +1,4 @@
-from typing import Dict, Optional, Set, Union
+from typing import Optional, Set, Union
 
 from ..exceptions import InvalidAgentConfigException
 
@@ -88,13 +88,13 @@ class SupportedConfigs:
                 )
 
     @staticmethod
-    def validate_think(value: Optional[Union[bool, Dict[str, str]]]) -> None:
+    def validate_think(value: Optional[Union[bool, str]]) -> None:
         """
         Validates the 'think' parameter.
 
-        The `think` option can be provided in two shapes depending on the provider:
-        - Ollama provider: a boolean (True/False)
-        - OpenAI provider: a dict with string keys and string values
+        The `think` option accepts:
+        - Ollama provider: a boolean (True/False) or string ("high", "low", "medium")
+        - OpenAI provider: a string ("high", "low", "medium")
 
         Args:
             value: The think value to validate (or None).
@@ -105,26 +105,24 @@ class SupportedConfigs:
         if value is None:
             return
 
-        # boolean is allowed
+        # boolean is allowed (Ollama)
         if isinstance(value, bool):
             return
 
-        if isinstance(value, dict):
-            if not all(
-                isinstance(k, str) and isinstance(v, str)
-                for k, v in value.items()
-            ):
+        # string is allowed for both Ollama and OpenAI (must be "high", "low", or "medium")
+        if isinstance(value, str):
+            if value.lower() not in {'high', 'low', 'medium'}:
                 raise InvalidAgentConfigException(
                     'think',
-                    'must be a boolean (for Ollama Provider) or a '
-                    'dict[str, str] (for OpenAI Provider)',
+                    'must be a boolean (for Ollama) or string "high"/"low"/"medium" '
+                    '(for both Ollama and OpenAI Providers)',
                 )
             return
 
         raise InvalidAgentConfigException(
             'think',
-            'must be a boolean (for Ollama Provider) or a '
-            'dict[str, str] (for OpenAI Provider)',
+            'must be a boolean (for Ollama) or string "high"/"low"/"medium" '
+            '(for both Ollama and OpenAI Providers)',
         )
 
     @staticmethod
