@@ -1,4 +1,4 @@
-from typing import Generator, List, Union
+from typing import AsyncGenerator, List, Union
 
 from ...domain import Agent, ChatException
 from ...infra import ChatMetrics, LoggingConfig
@@ -26,9 +26,9 @@ class ChatWithAgentUseCase:
         self.__chat_repository = chat_repository
         self.__logger = LoggingConfig.get_logger(__name__)
 
-    def execute(
+    async def execute(
         self, agent: Agent, input_dto: ChatInputDTO
-    ) -> Union[ChatOutputDTO, Generator[str, None, None]]:
+    ) -> Union[ChatOutputDTO, AsyncGenerator[str, None]]:
         """
         Sends a message to the agent and returns the response.
 
@@ -37,9 +37,9 @@ class ChatWithAgentUseCase:
             input_dto: DTO with the user's message.
 
         Returns:
-            Union[ChatOutputDTO, Generator[str, None, None]]: The agent's response.
+            Union[ChatOutputDTO, AsyncGenerator[str, None]]: The agent's response.
                 - ChatOutputDTO: Complete response (if stream=False)
-                - Generator: Token stream (if stream=True)
+                - AsyncGenerator: Token stream (if stream=True)
 
         Raises:
             ValueError: If the input data is invalid.
@@ -53,7 +53,7 @@ class ChatWithAgentUseCase:
         self.__logger.debug('User message: %s...', input_dto.message[:100])
 
         try:
-            response = self.__chat_repository.chat(
+            response = await self.__chat_repository.chat(
                 model=agent.model,
                 instructions=agent.instructions,
                 config=agent.config,
@@ -62,10 +62,7 @@ class ChatWithAgentUseCase:
                 user_ask=input_dto.message,
             )
 
-            # If response is a Generator (streaming mode), handle appropriately
-            from collections.abc import Generator  # pylint: disable=import-outside-toplevel
-
-            if isinstance(response, Generator):
+            if isinstance(response, AsyncGenerator):
                 return self.__handle_streaming(agent, input_dto, response)
 
             # Standard non-streaming response
@@ -114,12 +111,12 @@ class ChatWithAgentUseCase:
                 original_error=e,
             ) from e
 
-    def __handle_streaming(
+    async def __handle_streaming(
         self,
         agent: Agent,
         input_dto: ChatInputDTO,
-        stream: Generator[str, None, None],
-    ) -> Generator[str, None, None]:
+        stream: AsyncGenerator[str, None],
+    ) -> AsyncGenerator[str, None]:
         """
         Handles streaming responses by yielding tokens and preserving chat history.
 
@@ -145,7 +142,7 @@ class ChatWithAgentUseCase:
             self.__logger.info(
                 'Starting streaming response for agent: %s', agent.name
             )
-            for token in stream:
+            async for token in stream:
                 full_response.append(token)
                 yield token
 

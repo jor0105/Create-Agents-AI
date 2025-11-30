@@ -1,4 +1,4 @@
-from typing import Any, Dict, Generator, List, Optional, Union
+from typing import Any, Dict, AsyncGenerator, List, Optional, Union
 
 from ....application.interfaces import ChatRepository
 from ....domain import BaseTool, ChatException
@@ -22,7 +22,7 @@ class OpenAIChatAdapter(ChatRepository):
 
         self.__client = OpenAIClient()
 
-    def chat(
+    async def chat(
         self,
         model: str,
         instructions: Optional[str],
@@ -30,7 +30,7 @@ class OpenAIChatAdapter(ChatRepository):
         tools: Optional[List[BaseTool]],
         history: List[Dict[str, str]],
         user_ask: str,
-    ) -> Union[str, Generator[str, None, None]]:
+    ) -> Union[str, AsyncGenerator[str, None]]:
         """
         Sends a message to OpenAI and returns the response.
 
@@ -52,9 +52,9 @@ class OpenAIChatAdapter(ChatRepository):
             tools: Optional list of tools available to the agent.
 
         Returns:
-            Union[str, Generator[str, None, None]]:
+            Union[str, AsyncGenerator[str, None]]:
                 - str: Complete response (if stream=False or not specified)
-                - Generator[str, None, None]: Token stream (if stream=True)
+                - AsyncGenerator[str, None]: Token stream (if stream=True)
 
         Raises:
             ChatException: If a communication error occurs or if streaming
@@ -78,8 +78,9 @@ class OpenAIChatAdapter(ChatRepository):
                 )
 
                 return result_stream
+
             handler = OpenAIHandler(self.__client, self.__metrics)
-            result = handler.execute_tool_loop(
+            result = await handler.execute_tool_loop(
                 model, instructions, messages, config, tools
             )
 

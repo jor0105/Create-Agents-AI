@@ -1,5 +1,5 @@
 import time
-from typing import Any, Dict, Generator, List, Optional
+from typing import Any, Dict, AsyncGenerator, List, Optional
 
 from ....domain import ChatException, BaseTool
 from ...config import ChatMetrics, LoggingConfig
@@ -18,21 +18,29 @@ class OllamaStreamHandler:
         self.__logger = LoggingConfig.get_logger(__name__)
         self.__metrics = metrics_list if metrics_list is not None else []
 
-    def handle_stream(
+    async def handle_stream(
         self,
         model: str,
         messages: List[Dict[str, str]],
         config: Optional[Dict[str, Any]],
         tools: Optional[List[BaseTool]],
-    ) -> Generator[str, None, None]:
+    ) -> AsyncGenerator[str, None]:
+        from .ollama_tool_schema_formatter import OllamaToolSchemaFormatter
+
         """Yields tokens from the Ollama API as they arrive."""
         start_time = time.time()
         try:
-            stream_response = self.__client.call_api(
-                model, messages, config, tools
+            tool_schemas = None
+            if tools:
+                tool_schemas = (
+                    OllamaToolSchemaFormatter.format_tools_for_ollama(tools)
+                )
+
+            stream_response = await self.__client.call_api(
+                model, messages, config, tool_schemas
             )
 
-            for chunk in stream_response:
+            async for chunk in stream_response:
                 if hasattr(chunk, 'message') and hasattr(
                     chunk.message, 'content'
                 ):

@@ -61,17 +61,17 @@ class TerminalRenderer:
             message, ColorScheme.get_ai_color(), align='left'
         )
 
-    def render_ai_message_streaming(self, token_generator) -> None:
+    async def render_ai_message_streaming(self, token_generator) -> None:
         """Renders AI message tokens in real-time inside purple box.
 
         Args:
-            token_generator: Generator that yields tokens as strings.
+            token_generator: AsyncGenerator that yields tokens as strings.
         """
-        from rich.live import Live
-        from rich.text import Text
-        from rich.panel import Panel
-        from rich import box
-        from rich.console import Console
+        from rich.live import Live  # pylint: disable=import-outside-toplevel
+        from rich.text import Text  # pylint: disable=import-outside-toplevel
+        from rich.panel import Panel  # pylint: disable=import-outside-toplevel
+        from rich import box  # pylint: disable=import-outside-toplevel
+        from rich.console import Console  # pylint: disable=import-outside-toplevel
 
         # Initialize console if not already done (assuming it's not part of __init__ yet)
         if not hasattr(self, '_console'):
@@ -92,7 +92,7 @@ class TerminalRenderer:
 
         # Use Live display to update panel in real-time
         with Live(panel, console=self._console, refresh_per_second=20) as live:
-            for token in token_generator:
+            async for token in token_generator:
                 full_response += token
                 # Update the text and panel
                 text = Text(full_response)

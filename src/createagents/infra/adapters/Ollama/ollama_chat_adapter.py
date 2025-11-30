@@ -1,4 +1,4 @@
-from typing import Any, Dict, Generator, List, Optional, Union
+from typing import Any, Dict, AsyncGenerator, List, Optional, Union
 
 from ....application.interfaces import ChatRepository
 from ....domain import BaseTool, ChatException
@@ -29,7 +29,7 @@ class OllamaChatAdapter(ChatRepository):
 
         self.__logger.info('Ollama adapter initialized')
 
-    def chat(
+    async def chat(
         self,
         model: str,
         instructions: Optional[str],
@@ -37,7 +37,7 @@ class OllamaChatAdapter(ChatRepository):
         tools: Optional[List[BaseTool]],
         history: List[Dict[str, str]],
         user_ask: str,
-    ) -> Union[str, Generator[str, None, None]]:
+    ) -> Union[str, AsyncGenerator[str, None]]:
         """
         Sends a message to Ollama and returns the response.
 
@@ -50,9 +50,9 @@ class OllamaChatAdapter(ChatRepository):
             tools: Optional list of tools (native Ollama API).
 
         Returns:
-            Union[str, Generator[str, None, None]]:
+            Union[str, AsyncGenerator[str, None]]:
                 - str: Complete response (if stream=False or not specified)
-                - Generator[str, None, None]: Token stream (if stream=True)
+                - AsyncGenerator[str, None]: Token stream (if stream=True)
 
         Raises:
             ChatException: If a communication error occurs or if streaming
@@ -75,17 +75,14 @@ class OllamaChatAdapter(ChatRepository):
                     self.__client, self.__metrics
                 )
                 self.__logger.debug('Streaming mode enabled for Ollama')
-
-                result_stream: Generator[str, None, None] = (
-                    stream_handler.handle_stream(
-                        model, messages, config, tools
-                    )
+                result_stream = stream_handler.handle_stream(
+                    model, messages, config, tools
                 )
                 return result_stream
 
             # Non-streaming mode - Tool calling loop
             handler = OllamaHandler(self.__client, self.__metrics)
-            result: str = handler.execute_tool_loop(
+            result: str = await handler.execute_tool_loop(
                 model, messages, config, tools
             )
             return result

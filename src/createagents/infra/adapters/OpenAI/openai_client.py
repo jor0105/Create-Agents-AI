@@ -39,7 +39,7 @@ class OpenAIClient:
     @retry_with_backoff(
         max_attempts=3, initial_delay=1.0, exceptions=(Exception,)
     )
-    def call_api(
+    async def call_api(
         self,
         model: str,
         instructions: Optional[str],
@@ -87,6 +87,7 @@ class OpenAIClient:
                 else:
                     chat_kwargs[key] = config_data
 
-        response_api = self.__client.responses.create(**chat_kwargs)
+        # Using await with responses.create as requested
+        response_api = await self.__client.responses.create(**chat_kwargs)
 
         return response_api

@@ -1,7 +1,7 @@
 import subprocess  # nosec B404
-from typing import Any, Dict, List, Optional
+from typing import Any, AsyncIterator, Dict, List, Optional, Union
 
-from ollama import ChatResponse, chat
+from ollama import AsyncClient, ChatResponse
 
 from ...config import EnvironmentConfig, LoggingConfig, retry_with_backoff
 
@@ -21,13 +21,13 @@ class OllamaClient:
     @retry_with_backoff(
         max_attempts=3, initial_delay=1.0, exceptions=(Exception,)
     )
-    def call_api(
+    async def call_api(
         self,
         model: str,
         messages: List[Dict[str, str]],
         config: Optional[Dict[str, Any]],
         tools: Optional[List[Dict[str, Any]]] = None,
-    ) -> ChatResponse:
+    ) -> Union[ChatResponse, AsyncIterator[ChatResponse]]:
         """Calls the Ollama API with automatic retries."""
         try:
             chat_kwargs: Dict[str, Any] = {
@@ -46,7 +46,10 @@ class OllamaClient:
                     config_copy['num_predict'] = config_copy.pop('max_tokens')
                 chat_kwargs['options'] = config_copy
 
-            result: ChatResponse = chat(**chat_kwargs)
+            client = AsyncClient(host=self.__host)
+            result: Union[
+                ChatResponse, AsyncIterator[ChatResponse]
+            ] = await client.chat(**chat_kwargs)
             return result
         except Exception as e:
             self.__logger.error(

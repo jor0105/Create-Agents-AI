@@ -23,7 +23,7 @@ class OllamaHandler:
             or '100'
         )
 
-    def execute_tool_loop(
+    async def execute_tool_loop(
         self,
         model: str,
         messages: List[Dict[str, str]],
@@ -56,7 +56,7 @@ class OllamaHandler:
                     self.__max_tool_iterations,
                 )
 
-                response_api = self.__client.call_api(
+                response_api = await self.__client.call_api(
                     model, messages, config, tool_schemas
                 )
 
@@ -64,7 +64,7 @@ class OllamaHandler:
                     hasattr(response_api.message, 'tool_calls')
                     and response_api.message.tool_calls
                 ):
-                    self.__handle_tool_calls(
+                    await self.__handle_tool_calls(
                         response_api, messages, tool_executor
                     )
                     continue
@@ -94,7 +94,7 @@ class OllamaHandler:
                             ),
                         }
                     )
-                    response_api = self.__client.call_api(
+                    response_api = await self.__client.call_api(
                         model, retry_messages, config, None
                     )
                     content = response_api.message.content
@@ -121,7 +121,7 @@ class OllamaHandler:
         finally:
             self.__client.stop_model(model)
 
-    def __handle_tool_calls(
+    async def __handle_tool_calls(
         self, response_api, messages, tool_executor
     ) -> None:
         tool_calls = response_api.message.tool_calls
@@ -130,7 +130,7 @@ class OllamaHandler:
         for tool_call in tool_calls:
             tool_name = tool_call.function.name
             tool_args = tool_call.function.arguments
-            execution_result = tool_executor.execute_tool(
+            execution_result = await tool_executor.execute_tool(
                 tool_name, **tool_args
             )
             result_text = (

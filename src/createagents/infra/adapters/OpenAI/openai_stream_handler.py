@@ -1,5 +1,5 @@
 import time
-from typing import Any, Dict, Generator, List, Optional
+from typing import Any, Dict, AsyncGenerator, List, Optional
 
 from ....domain import BaseTool, ChatException
 from ...config import ChatMetrics, LoggingConfig
@@ -18,14 +18,14 @@ class OpenAIStreamHandler:
         self.__logger = LoggingConfig.get_logger(__name__)
         self.__metrics = metrics_list if metrics_list is not None else []
 
-    def handle_stream(
+    async def handle_stream(
         self,
         model: str,
         instructions: Optional[str],
         messages: List[Dict[str, str]],
         config: Optional[Dict[str, Any]],
         tools: Optional[List[BaseTool]],
-    ) -> Generator[str, None, None]:
+    ) -> AsyncGenerator[str, None]:
         """Yields tokens from the OpenAI API as they arrive."""
         start_time = time.time()
 
@@ -40,7 +40,7 @@ class OpenAIStreamHandler:
 
         try:
             # Call OpenAI API with streaming enabled
-            stream_response = self.__client.call_api(
+            stream_response = await self.__client.call_api(
                 model, instructions, messages, config, tools
             )
 
@@ -51,7 +51,7 @@ class OpenAIStreamHandler:
             # OpenAI Responses API returns structured EVENTS
             # Key event: ResponseTextDeltaEvent with type='response.output_text.delta'
             # The event.delta IS the token string itself (not an object)
-            for event in stream_response:
+            async for event in stream_response:
                 # Check event type attribute
                 event_type = getattr(event, 'type', None)
 

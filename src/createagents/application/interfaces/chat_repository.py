@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Any, Dict, Generator, List, Optional, Union
+from typing import Any, Dict, AsyncGenerator, List, Optional, Union
 
 from ...domain import BaseTool
 
@@ -8,7 +8,7 @@ class ChatRepository(ABC):
     """Interface for chat repositories."""
 
     @abstractmethod
-    def chat(
+    async def chat(
         self,
         model: str,
         instructions: Optional[str],
@@ -16,7 +16,7 @@ class ChatRepository(ABC):
         tools: Optional[List[BaseTool]],
         history: List[Dict[str, str]],
         user_ask: str,
-    ) -> Union[str, Generator[str, None, None]]:
+    ) -> Union[str, AsyncGenerator[str, None]]:
         """Send a message to the chat model and get a response.
 
         Args:
@@ -28,7 +28,7 @@ class ChatRepository(ABC):
             user_ask: The user's message.
 
         Returns:
-            Union[str, Generator[str, None, None]]: The model's response.
+            Union[str, AsyncGenerator[str, None]]: The model's response.
                 - str: Complete response (if stream=False)
-                - Generator: Token stream (if stream=True)
+                - AsyncGenerator: Token stream (if stream=True)
         """

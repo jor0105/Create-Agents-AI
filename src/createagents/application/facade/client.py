@@ -71,7 +71,7 @@ class CreateAgent:
             self.__agent.name,
         )
 
-    def chat(
+    async def chat(
         self,
         message: str,
     ) -> Union[str, StreamingResponseDTO]:
@@ -91,9 +91,9 @@ class CreateAgent:
 
         Example:
             >>> agent = CreateAgent(provider="openai", model="gpt-5-nano")
-            >>> print(agent.chat("Hello!"))  # Works seamlessly with or without streaming
+            >>> print(await agent.chat("Hello!"))  # Works seamlessly with or without streaming
         """
-        from collections.abc import Generator  # pylint: disable=import-outside-toplevel
+        from typing import AsyncGenerator  # pylint: disable=import-outside-toplevel
 
         self.__logger.debug(
             'Chat request received - Message length: %s chars', len(message)
@@ -102,11 +102,13 @@ class CreateAgent:
         input_dto = ChatInputDTO(
             message=message,
         )
-        result = self.__chat_use_case.execute(self.__agent, input_dto)
+        result = await self.__chat_use_case.execute(self.__agent, input_dto)
 
-        # If result is a Generator (streaming mode), wrap in StreamingResponseDTO
-        if isinstance(result, Generator):
-            self.__logger.debug('Chat response: streaming mode (Generator)')
+        # If result is an AsyncGenerator (streaming mode), wrap in StreamingResponseDTO
+        if isinstance(result, AsyncGenerator):
+            self.__logger.debug(
+                'Chat response: streaming mode (AsyncGenerator)'
+            )
             return StreamingResponseDTO(result)
 
         # Otherwise it's a ChatOutputDTO, extract the response

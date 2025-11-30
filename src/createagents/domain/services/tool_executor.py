@@ -117,7 +117,7 @@ class ToolExecutor:
         """
         return tool_name in self._tools_map
 
-    def execute_tool(
+    async def execute_tool(
         self, tool_name: str, **kwargs: Any
     ) -> ToolExecutionResult:
         """Execute a tool by name with given arguments.
@@ -134,7 +134,7 @@ class ToolExecutor:
 
         Example:
             ```python
-            result = executor.execute_tool(
+            result = await executor.execute_tool(
                 "web_search",
                 query="What is Clean Architecture?"
             )
@@ -169,7 +169,16 @@ class ToolExecutor:
                 len(kwargs),
             )
 
-            result = tool.execute(**kwargs)
+            import asyncio  # pylint: disable=import-outside-toplevel
+
+            if asyncio.iscoroutinefunction(tool.execute):
+                result = await tool.execute(**kwargs)
+            else:
+                # Run synchronous tools in a separate thread to avoid blocking
+                loop = asyncio.get_running_loop()
+                result = await loop.run_in_executor(
+                    None, lambda: tool.execute(**kwargs)
+                )
 
             execution_time = (time.time() - start_time) * 1000
 
@@ -240,10 +249,10 @@ class ToolExecutor:
                 execution_time_ms=execution_time,
             )
 
-    def execute_multiple_tools(
+    async def execute_multiple_tools(
         self, tool_calls: List[Dict[str, Any]]
     ) -> List[ToolExecutionResult]:
-        """Execute multiple tools in sequence.
+        """Execute multiple tools in sequence (or parallel in future).
 
         Args:
             tool_calls: List of tool call specifications.
@@ -257,7 +266,7 @@ class ToolExecutor:
             tool_calls = [
                 {"name": "web_search", "arguments": {"query": "Python"}},
             ]
-            results = executor.execute_multiple_tools(tool_calls)
+            results = await executor.execute_multiple_tools(tool_calls)
             ```
         """
         self.__logger.info('Executing %s tool(s) in sequence', len(tool_calls))
@@ -299,7 +308,7 @@ class ToolExecutor:
                     )
                     continue
 
-            result = self.execute_tool(tool_name, **arguments)
+            result = await self.execute_tool(tool_name, **arguments)
             results.append(result)
 
         successful = sum(1 for r in results if r.success)

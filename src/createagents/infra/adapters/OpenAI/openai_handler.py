@@ -24,7 +24,7 @@ class OpenAIHandler:
             or '100'
         )
 
-    def execute_tool_loop(
+    async def execute_tool_loop(
         self,
         model: str,
         instructions: Optional[str],
@@ -61,7 +61,7 @@ class OpenAIHandler:
                 )
 
                 # Call OpenAI API
-                response_api = self.__client.call_api(
+                response_api = await self.__client.call_api(
                     model, instructions, messages, config, tool_schemas
                 )
 
@@ -104,7 +104,7 @@ class OpenAIHandler:
                             tool_args,
                         )
 
-                        execution_result = tool_executor.execute_tool(
+                        execution_result = await tool_executor.execute_tool(
                             tool_name, **tool_args
                         )
 

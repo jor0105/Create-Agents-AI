@@ -1,4 +1,4 @@
-from openai import OpenAI
+from openai import AsyncOpenAI
 
 
 class ClientOpenAI:
@@ -7,14 +7,14 @@ class ClientOpenAI:
     API_OPENAI_NAME = 'OPENAI_API_KEY'
 
     @staticmethod
-    def get_client(api_key: str) -> OpenAI:
+    def get_client(api_key: str) -> AsyncOpenAI:
         """Create and return an OpenAI client instance.
 
         Args:
             api_key: The OpenAI API key.
 
         Returns:
-            OpenAI: The configured OpenAI client.
+            AsyncOpenAI: The configured OpenAI client.
         """
-        client = OpenAI(api_key=api_key)
+        client = AsyncOpenAI(api_key=api_key)
         return client
