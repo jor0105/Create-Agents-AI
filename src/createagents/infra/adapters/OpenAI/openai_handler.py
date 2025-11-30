@@ -21,11 +21,13 @@ class OpenAIHandler:
         self.__metrics = metrics_list if metrics_list is not None else []
         self.__max_tool_iterations = int(
             EnvironmentConfig.get_env('OPENAI_MAX_TOOL_ITERATIONS', '100')
+            or '100'
         )
 
     def execute_tool_loop(
         self,
         model: str,
+        instructions: Optional[str],
         messages: List[Dict[str, str]],
         config: Optional[Dict[str, Any]],
         tools: Optional[List[BaseTool]],
@@ -60,7 +62,7 @@ class OpenAIHandler:
 
                 # Call OpenAI API
                 response_api = self.__client.call_api(
-                    model, messages, config, tool_schemas
+                    model, instructions, messages, config, tool_schemas
                 )
 
                 if ToolCallParser.has_tool_calls(response_api):

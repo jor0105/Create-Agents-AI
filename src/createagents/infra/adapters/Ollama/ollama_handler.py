@@ -20,6 +20,7 @@ class OllamaHandler:
         self.__metrics = metrics_list if metrics_list is not None else []
         self.__max_tool_iterations = int(
             EnvironmentConfig.get_env('OLLAMA_MAX_TOOL_ITERATIONS', '100')
+            or '100'
         )
 
     def execute_tool_loop(
@@ -220,5 +221,5 @@ class OllamaHandler:
         self.__metrics.append(metrics)
 
     def get_metrics(self) -> List[ChatMetrics]:
-        "Return the list of collected metrics."
+        """Return the list of collected metrics."""
         return self.__metrics.copy()

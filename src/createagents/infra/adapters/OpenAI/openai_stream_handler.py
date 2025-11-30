@@ -21,6 +21,7 @@ class OpenAIStreamHandler:
     def handle_stream(
         self,
         model: str,
+        instructions: Optional[str],
         messages: List[Dict[str, str]],
         config: Optional[Dict[str, Any]],
         tools: Optional[List[BaseTool]],
@@ -40,7 +41,7 @@ class OpenAIStreamHandler:
         try:
             # Call OpenAI API with streaming enabled
             stream_response = self.__client.call_api(
-                model, messages, config, tools
+                model, instructions, messages, config, tools
             )
 
             self.__logger.debug(

@@ -42,6 +42,7 @@ class OpenAIClient:
     def call_api(
         self,
         model: str,
+        instructions: Optional[str],
         messages: List[Dict[str, str]],
         config: Optional[Dict[str, Any]],
         tools: Optional[List[Dict[str, Any]]] = None,
@@ -60,6 +61,7 @@ class OpenAIClient:
         """
         chat_kwargs: Dict[str, Any] = {
             'model': model,
+            'instructions': instructions,
             'input': messages,
         }
 

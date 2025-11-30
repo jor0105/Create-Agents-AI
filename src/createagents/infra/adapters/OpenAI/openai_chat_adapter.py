@@ -65,10 +65,7 @@ class OpenAIChatAdapter(ChatRepository):
                 'Starting chat with model %s on OpenAI.', model
             )
 
-            messages = []
-            if instructions and instructions.strip():
-                messages.append({'role': 'system', 'content': instructions})
-            messages.extend(history)
+            messages = history.copy()
             messages.append({'role': 'user', 'content': user_ask})
 
             # Check if streaming mode is enabled
@@ -77,12 +74,14 @@ class OpenAIChatAdapter(ChatRepository):
                     self.__client, self.__metrics
                 )
                 result_stream = stream_handler.handle_stream(
-                    model, messages, config, tools
+                    model, instructions, messages, config, tools
                 )
 
                 return result_stream
             handler = OpenAIHandler(self.__client, self.__metrics)
-            result = handler.execute_tool_loop(model, messages, config, tools)
+            result = handler.execute_tool_loop(
+                model, instructions, messages, config, tools
+            )
 
             return result
 
