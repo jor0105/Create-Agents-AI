@@ -28,6 +28,8 @@ class ChatCommandHandler(CommandHandler):
             agent: The CreateAgent instance.
             user_input: The user's input string.
         """
+        from ....application import StreamingResponseDTO  # pylint: disable=import-outside-toplevel
+
         # 1. Show User Message (Right aligned, Blue)
         self._renderer.render_user_message(user_input)
         self._renderer.render_spacer()
@@ -36,13 +38,25 @@ class ChatCommandHandler(CommandHandler):
         # Get Response
         try:
             response = agent.chat(user_input)
-            response = TextSanitizer.format_markdown_for_terminal(response)
+
+            # Clear thinking line
+            self._renderer.clear_thinking_indicator()
+
+            # Check if streaming (StreamingResponseDTO can be iterated)
+            if isinstance(response, StreamingResponseDTO):
+                # Streaming mode - render tokens in real-time inside purple box
+                self._renderer.render_ai_message_streaming(response)
+            else:
+                # Non-streaming mode - format and render in purple box
+                response = TextSanitizer.format_markdown_for_terminal(response)
+                self._renderer.render_ai_message(response)
+
         except Exception as e:
+            # Clear thinking line if there was an error
+            self._renderer.clear_thinking_indicator()
             response = f'Error: {str(e)}'
-        # Clear thinking line
-        self._renderer.clear_thinking_indicator()
-        # 3. Show AI Message (Left aligned, Purple)
-        self._renderer.render_ai_message(response)
+            self._renderer.render_ai_message(response)
+
         self._renderer.render_spacer()
 
     def get_aliases(self) -> List[str]:

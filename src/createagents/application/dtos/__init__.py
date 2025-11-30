@@ -4,10 +4,12 @@ from .agent_dtos import (
     ChatOutputDTO,
     CreateAgentInputDTO,
 )
+from .streaming_response_dto import StreamingResponseDTO
 
 __all__ = [
     'CreateAgentInputDTO',
     'AgentConfigOutputDTO',
     'ChatInputDTO',
     'ChatOutputDTO',
+    'StreamingResponseDTO',
 ]

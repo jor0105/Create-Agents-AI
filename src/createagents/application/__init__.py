@@ -3,6 +3,7 @@ from .dtos import (
     ChatInputDTO,
     ChatOutputDTO,
     CreateAgentInputDTO,
+    StreamingResponseDTO,
 )
 from .facade import CreateAgent
 from .interfaces import ChatRepository
@@ -28,6 +29,7 @@ __all__ = [
     'AgentConfigOutputDTO',
     'ChatInputDTO',
     'ChatOutputDTO',
+    'StreamingResponseDTO',
     # interfaces
     'ChatRepository',
 ]

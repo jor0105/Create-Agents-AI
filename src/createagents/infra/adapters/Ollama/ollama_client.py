@@ -1,0 +1,72 @@
+import subprocess  # nosec B404
+from typing import Any, Dict, List, Optional
+
+from ollama import ChatResponse, chat
+
+from ...config import EnvironmentConfig, LoggingConfig, retry_with_backoff
+
+
+class OllamaClient:
+    """Handles direct communication with the Ollama API."""
+
+    def __init__(self):
+        self.__logger = LoggingConfig.get_logger(__name__)
+        self.__host = EnvironmentConfig.get_env(
+            'OLLAMA_HOST', 'http://localhost:11434'
+        )
+        self.__max_retries = int(
+            EnvironmentConfig.get_env('OLLAMA_MAX_RETRIES', '3')
+        )
+
+    @retry_with_backoff(
+        max_attempts=3, initial_delay=1.0, exceptions=(Exception,)
+    )
+    def call_api(
+        self,
+        model: str,
+        messages: List[Dict[str, str]],
+        config: Optional[Dict[str, Any]],
+        tools: Optional[List[Dict[str, Any]]] = None,
+    ) -> ChatResponse:
+        """Calls the Ollama API with automatic retries."""
+        try:
+            chat_kwargs: Dict[str, Any] = {
+                'model': model,
+                'messages': messages,
+                'stream': config.get('stream', False) if config else False,
+            }
+
+            if tools:
+                chat_kwargs['tools'] = tools
+            if config:
+                config_copy = config.copy()
+                if 'think' in config_copy:
+                    chat_kwargs['think'] = config_copy.pop('think')
+                if 'max_tokens' in config_copy:
+                    config_copy['num_predict'] = config_copy.pop('max_tokens')
+                chat_kwargs['options'] = config_copy
+
+            result: ChatResponse = chat(**chat_kwargs)
+            return result
+        except Exception as e:
+            self.__logger.error(
+                "Error calling Ollama API for model '%s': %s", model, e
+            )
+            raise
+
+    def stop_model(self, model: str) -> None:
+        """Stops the Ollama model after use to free up memory."""
+        try:
+            subprocess.run(  # nosec B603 B607
+                ['ollama', 'stop', model],
+                capture_output=True,
+                timeout=10,
+                check=False,
+            )
+            self.__logger.debug('Model %s stopped successfully.', model)
+        except (FileNotFoundError, subprocess.TimeoutExpired, OSError) as e:
+            self.__logger.warning('Could not stop model %s: %s', model, e)
+        except Exception as e:
+            self.__logger.warning(
+                'Error trying to stop model %s: %s', model, e
+            )

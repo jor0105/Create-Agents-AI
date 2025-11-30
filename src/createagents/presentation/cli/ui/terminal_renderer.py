@@ -61,6 +61,50 @@ class TerminalRenderer:
             message, ColorScheme.get_ai_color(), align='left'
         )
 
+    def render_ai_message_streaming(self, token_generator) -> None:
+        """Renders AI message tokens in real-time inside purple box.
+
+        Args:
+            token_generator: Generator that yields tokens as strings.
+        """
+        from rich.live import Live
+        from rich.text import Text
+        from rich.panel import Panel
+        from rich import box
+        from rich.console import Console
+
+        # Initialize console if not already done (assuming it's not part of __init__ yet)
+        if not hasattr(self, '_console'):
+            self._console = Console()
+
+        # Accumulate tokens and update display in real-time
+        full_response = ''
+
+        # Create initial empty panel
+        text = Text(full_response)
+        panel = Panel(
+            text,
+            style='bold purple',
+            box=box.ROUNDED,
+            padding=(0, 1),
+            expand=False,
+        )
+
+        # Use Live display to update panel in real-time
+        with Live(panel, console=self._console, refresh_per_second=20) as live:
+            for token in token_generator:
+                full_response += token
+                # Update the text and panel
+                text = Text(full_response)
+                panel = Panel(
+                    text,
+                    style='bold purple',
+                    box=box.ROUNDED,
+                    padding=(0, 1),
+                    expand=False,
+                )
+                live.update(panel)
+
     def render_system_message(self, message: str) -> None:
         """Render a system message (left-aligned, yellow).
 

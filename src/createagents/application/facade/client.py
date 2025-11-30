@@ -3,7 +3,7 @@ from typing import Any, Dict, List, Optional, Sequence, Union
 from ...domain import Agent, BaseTool
 from ...infra import ChatMetrics, LoggingConfig
 from ...main import AgentComposer
-from ..dtos import ChatInputDTO
+from ..dtos import ChatInputDTO, StreamingResponseDTO
 from ..use_cases import (
     ChatWithAgentUseCase,
     GetAgentConfigUseCase,
@@ -74,16 +74,27 @@ class CreateAgent:
     def chat(
         self,
         message: str,
-    ) -> str:
+    ) -> Union[str, StreamingResponseDTO]:
         """
         Sends a message to the agent and returns the response.
+
+        The response appears token-by-token in real-time when stream=True is configured,
+        or as a complete response when stream=False (default).
 
         Args:
             message: The user's message.
 
         Returns:
-            The agent's response.
+            Union[str, StreamingResponseDTO]: The agent's response.
+                Returns str for normal responses, or StreamingResponseDTO for streaming
+                (which behaves like str when printed).
+
+        Example:
+            >>> agent = CreateAgent(provider="openai", model="gpt-5-nano")
+            >>> print(agent.chat("Hello!"))  # Works seamlessly with or without streaming
         """
+        from collections.abc import Generator  # pylint: disable=import-outside-toplevel
+
         self.__logger.debug(
             'Chat request received - Message length: %s chars', len(message)
         )
@@ -91,14 +102,20 @@ class CreateAgent:
         input_dto = ChatInputDTO(
             message=message,
         )
-        output_dto = self.__chat_use_case.execute(self.__agent, input_dto)
+        result = self.__chat_use_case.execute(self.__agent, input_dto)
 
+        # If result is a Generator (streaming mode), wrap in StreamingResponseDTO
+        if isinstance(result, Generator):
+            self.__logger.debug('Chat response: streaming mode (Generator)')
+            return StreamingResponseDTO(result)
+
+        # Otherwise it's a ChatOutputDTO, extract the response
         self.__logger.debug(
             'Chat response generated - Response length: %s chars',
-            len(output_dto.response),
+            len(result.response),
         )
 
-        response: str = output_dto.response
+        response: str = result.response
 
         return response
 

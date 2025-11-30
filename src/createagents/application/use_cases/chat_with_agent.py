@@ -1,4 +1,4 @@
-from typing import List
+from typing import Generator, List, Union
 
 from ...domain import Agent, ChatException
 from ...infra import ChatMetrics, LoggingConfig
@@ -26,7 +26,9 @@ class ChatWithAgentUseCase:
         self.__chat_repository = chat_repository
         self.__logger = LoggingConfig.get_logger(__name__)
 
-    def execute(self, agent: Agent, input_dto: ChatInputDTO) -> ChatOutputDTO:
+    def execute(
+        self, agent: Agent, input_dto: ChatInputDTO
+    ) -> Union[ChatOutputDTO, Generator[str, None, None]]:
         """
         Sends a message to the agent and returns the response.
 
@@ -35,7 +37,9 @@ class ChatWithAgentUseCase:
             input_dto: DTO with the user's message.
 
         Returns:
-            A DTO with the agent's response.
+            Union[ChatOutputDTO, Generator[str, None, None]]: The agent's response.
+                - ChatOutputDTO: Complete response (if stream=False)
+                - Generator: Token stream (if stream=True)
 
         Raises:
             ValueError: If the input data is invalid.
@@ -58,6 +62,13 @@ class ChatWithAgentUseCase:
                 user_ask=input_dto.message,
             )
 
+            # If response is a Generator (streaming mode), handle appropriately
+            from collections.abc import Generator  # pylint: disable=import-outside-toplevel
+
+            if isinstance(response, Generator):
+                return self.__handle_streaming(agent, input_dto, response)
+
+            # Standard non-streaming response
             if not response:
                 self.__logger.error('Empty response received from repository')
                 raise ChatException('Empty response received from repository')
@@ -100,6 +111,70 @@ class ChatWithAgentUseCase:
             self.__logger.error('Unexpected error: %s', str(e), exc_info=True)
             raise ChatException(
                 f'Unexpected error during communication with AI: {str(e)}',
+                original_error=e,
+            ) from e
+
+    def __handle_streaming(
+        self,
+        agent: Agent,
+        input_dto: ChatInputDTO,
+        stream: Generator[str, None, None],
+    ) -> Generator[str, None, None]:
+        """
+        Handles streaming responses by yielding tokens and preserving chat history.
+
+        This method creates a wrapper generator that:
+        1. Yields tokens as they arrive from the underlying stream
+        2. Accumulates the complete response
+        3. Updates the agent's conversation history after streaming completes
+
+        Args:
+            agent: The agent instance.
+            input_dto: DTO with the user's message.
+            stream: The token generator from the repository.
+
+        Yields:
+            str: Individual tokens from the model's response.
+
+        Raises:
+            ChatException: If an error occurs during streaming.
+        """
+        full_response = []
+
+        try:
+            self.__logger.info(
+                'Starting streaming response for agent: %s', agent.name
+            )
+            for token in stream:
+                full_response.append(token)
+                yield token
+
+            # Streaming completed successfully
+            complete_text = ''.join(full_response)
+            if not complete_text:
+                self.__logger.error('Empty response received from stream')
+                raise ChatException('Empty response received from stream')
+
+            # Update agent's conversation history
+            agent.add_user_message(input_dto.message)
+            agent.add_assistant_message(complete_text)
+            self.__logger.info('Streaming chat executed successfully')
+            self.__logger.debug(
+                'Complete response (first 100 chars): %s...',
+                complete_text[:100] if complete_text else '',
+            )
+
+        except ChatException:
+            self.__logger.error(
+                'ChatException during streaming', exc_info=True
+            )
+            raise
+        except Exception as e:
+            self.__logger.error(
+                'Error during streaming: %s', str(e), exc_info=True
+            )
+            raise ChatException(
+                f'Error during streaming: {str(e)}',
                 original_error=e,
             ) from e
 
