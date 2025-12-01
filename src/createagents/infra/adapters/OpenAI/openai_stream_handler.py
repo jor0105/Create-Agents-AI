@@ -1,13 +1,15 @@
 import time
 from typing import Any, Dict, AsyncGenerator, List, Optional
 
-from ....domain import BaseTool, ChatException
-from ...config import ChatMetrics, LoggingConfig
+from ....domain import BaseTool, ChatException, ToolExecutor
+from ...config import ChatMetrics, EnvironmentConfig, LoggingConfig
 from .openai_client import OpenAIClient
+from .tool_call_parser import ToolCallParser
+from .tool_schema_formatter import ToolSchemaFormatter
 
 
 class OpenAIStreamHandler:
-    """Handles streaming responses from OpenAI."""
+    """Handles streaming responses from OpenAI with tool calling support."""
 
     def __init__(
         self,
@@ -17,6 +19,10 @@ class OpenAIStreamHandler:
         self.__client = client
         self.__logger = LoggingConfig.get_logger(__name__)
         self.__metrics = metrics_list if metrics_list is not None else []
+        self.__max_tool_iterations = int(
+            EnvironmentConfig.get_env('OPENAI_MAX_TOOL_ITERATIONS', '100')
+            or '100'
+        )
 
     async def handle_stream(
         self,
@@ -26,51 +32,172 @@ class OpenAIStreamHandler:
         config: Optional[Dict[str, Any]],
         tools: Optional[List[BaseTool]],
     ) -> AsyncGenerator[str, None]:
-        """Yields tokens from the OpenAI API as they arrive."""
+        """Yields tokens from the OpenAI API as they arrive.
+
+        Supports tool calling with interrupted streaming: when tools are
+        called during streaming, token yield is paused, tools are executed,
+        and streaming resumes with the tool results.
+        """
         start_time = time.time()
 
-        # Streaming mode is not compatible with tool calling
+        # Prepare tool schemas and executor if tools are provided
+        tool_schemas = None
+        tool_executor = None
         if tools:
-            raise ChatException(
-                'Streaming mode is not supported with tool calling. '
-                'Please use either stream=True OR tools, not both.'
+            tool_schemas = ToolSchemaFormatter.format_tools_for_responses_api(
+                tools
+            )
+            tool_executor = ToolExecutor(tools)
+            self.__logger.debug(
+                'Streaming with tools enabled: %s',
+                [tool.name for tool in tools],
             )
 
         self.__logger.debug('Streaming mode enabled for OpenAI')
 
+        iteration = 0
         try:
-            # Call OpenAI API with streaming enabled
-            stream_response = await self.__client.call_api(
-                model, instructions, messages, config, tools
-            )
+            while iteration < self.__max_tool_iterations:
+                iteration += 1
+                self.__logger.info(
+                    'OpenAI streaming iteration %s/%s',
+                    iteration,
+                    self.__max_tool_iterations,
+                )
 
-            self.__logger.debug(
-                'Streaming response received, iterating events'
-            )
+                # Call OpenAI API with streaming enabled
+                stream_response = await self.__client.call_api(
+                    model, instructions, messages, config, tool_schemas
+                )
 
-            # OpenAI Responses API returns structured EVENTS
-            # Key event: ResponseTextDeltaEvent with type='response.output_text.delta'
-            # The event.delta IS the token string itself (not an object)
-            async for event in stream_response:
-                # Check event type attribute
-                event_type = getattr(event, 'type', None)
+                self.__logger.debug(
+                    'Streaming response received, iterating events'
+                )
 
-                # The main streaming event is 'response.output_text.delta'
-                # event.delta contains the incremental text directly as a string
-                if event_type == 'response.output_text.delta':
-                    if hasattr(event, 'delta'):
-                        token = event.delta  # Delta IS the string token
-                        if token:
-                            yield token
+                # Track tool calls detected during streaming
+                full_response = None
+                has_yielded_content = False
+                tool_call_detected = False
 
-                # Also handle content_part.added events if they exist
-                elif event_type == 'response.content_part.added':
-                    if hasattr(event, 'content_part'):
-                        content_part = event.content_part
-                        if hasattr(content_part, 'text'):
-                            token = content_part.text
+                # OpenAI Responses API returns structured EVENTS
+                async for event in stream_response:
+                    event_type = getattr(event, 'type', None)
+
+                    # OPTIMIZATION: Detect function calls EARLY
+                    # Break streaming immediately when tool calls are detected
+                    if event_type == 'response.function_call_arguments.delta':
+                        tool_call_detected = True
+                        self.__logger.debug(
+                            'Function call detected early, will process after stream'
+                        )
+                        # Don't break yet - let stream finish to get full response
+                        # but we know tools will be needed
+
+                    # Yield text tokens as they arrive
+                    elif event_type == 'response.output_text.delta':
+                        if hasattr(event, 'delta'):
+                            token = event.delta
                             if token:
                                 yield token
+                                has_yielded_content = True
+
+                    elif event_type == 'response.content_part.added':
+                        if hasattr(event, 'content_part'):
+                            content_part = event.content_part
+                            if hasattr(content_part, 'text'):
+                                token = content_part.text
+                                if token:
+                                    yield token
+                                    has_yielded_content = True
+
+                    # Capture the done event with full response
+                    elif event_type == 'response.done':
+                        full_response = getattr(event, 'response', None)
+                        # If we detected tool calls, break immediately
+                        if tool_call_detected:
+                            break
+
+                # Check if we have tool calls to execute
+                if full_response and tool_executor:
+                    if ToolCallParser.has_tool_calls(full_response):
+                        self.__logger.info(
+                            'Tool calls detected, executing tools'
+                        )
+
+                        # Add output items to messages for context
+                        output_items = ToolCallParser.get_assistant_message_with_tool_calls(
+                            full_response
+                        )
+                        if output_items:
+                            messages.extend(output_items)
+
+                        # Extract and execute tool calls
+                        tool_calls = ToolCallParser.extract_tool_calls(
+                            full_response
+                        )
+                        self.__logger.debug(
+                            'Executing %s tool(s)', len(tool_calls)
+                        )
+
+                        for tool_call in tool_calls:
+                            tool_name = tool_call['name']
+                            tool_args = tool_call['arguments']
+                            tool_id = tool_call['id']
+
+                            self.__logger.debug(
+                                "Executing tool '%s' with args: %s",
+                                tool_name,
+                                tool_args,
+                            )
+
+                            execution_result = (
+                                await tool_executor.execute_tool(
+                                    tool_name, **tool_args
+                                )
+                            )
+
+                            tool_result_msg = (
+                                ToolCallParser.format_tool_results_for_llm(
+                                    tool_call_id=tool_id,
+                                    tool_name=tool_name,
+                                    result=(
+                                        str(execution_result.result)
+                                        if execution_result.success
+                                        else str(execution_result.error)
+                                    ),
+                                )
+                            )
+                            messages.append(tool_result_msg)
+
+                        # Continue to next iteration to get final response
+                        # Reset has_yielded_content since we're starting a new stream
+                        has_yielded_content = False
+                        continue
+
+                # If we yielded content and no tool calls, we're done
+                if has_yielded_content:
+                    break
+
+                # If this was a tool-only iteration (no content), continue to next iteration
+                # The next iteration will have the final response after tool execution
+                if tool_call_detected and not has_yielded_content:
+                    self.__logger.debug(
+                        'Tool-only iteration, continuing to next'
+                    )
+                    continue
+
+                # If we didn't yield anything and no tool calls, something's wrong
+                if not has_yielded_content and not tool_call_detected:
+                    self.__logger.warning(
+                        'No content yielded in streaming response'
+                    )
+                    break
+
+            if iteration >= self.__max_tool_iterations:
+                self.__logger.warning(
+                    'Max tool iterations (%s) reached during streaming',
+                    self.__max_tool_iterations,
+                )
 
             # Record metrics after streaming completes
             latency = (time.time() - start_time) * 1000

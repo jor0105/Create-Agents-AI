@@ -1,4 +1,7 @@
 from pathlib import Path
+import warnings
+import sys
+import io
 from typing import TYPE_CHECKING, Optional
 
 from .....domain import FileReadException
@@ -382,11 +385,54 @@ def read_pdf_file(file_path: Path) -> str:
         # - OCR for scanned PDFs (if pytesseract is available)
         # - Layout detection and element classification
         # - Tables, images, and other structured content
-        elements = partition_pdf(
-            filename=str(file_path),
-            strategy='auto',  # Auto chooses best strategy (fast, hi_res, ocr)
-            infer_table_structure=True,  # Extract tables as structured data
-        )
+        # Redirect stderr to capture warnings from C libraries
+        stderr_capture = io.StringIO()
+        old_stderr = sys.stderr
+
+        try:
+            sys.stderr = stderr_capture
+
+            with warnings.catch_warnings(record=True) as w:
+                # Suppress specific deprecation warnings from dependencies FIRST
+                warnings.filterwarnings(
+                    'ignore', message='.*max_size.*deprecated.*'
+                )
+                warnings.filterwarnings(
+                    'ignore',
+                    category=DeprecationWarning,
+                    module='.*unstructured.*',
+                )
+                # Then enable all other warnings
+                warnings.simplefilter('always')
+
+                elements = partition_pdf(
+                    filename=str(file_path),
+                    strategy='auto',  # Auto chooses best strategy (fast, hi_res, ocr)
+                    infer_table_structure=True,  # Extract tables as structured data
+                    languages=[
+                        'eng'
+                    ],  # Suppress "No languages specified" warning
+                )
+
+            # Restore stderr
+            sys.stderr = old_stderr
+
+            # Log stderr warnings that aren't about max_size
+            stderr_output = stderr_capture.getvalue()
+            if stderr_output:
+                for line in stderr_output.strip().split('\n'):
+                    if line and 'max_size' not in line.lower():
+                        logger.warning('PDF processing stderr: %s', line)
+
+            # Log any Python warnings that weren't filtered
+            for warning in w:
+                if 'max_size' not in str(warning.message).lower():
+                    logger.warning(
+                        'Warning during PDF processing: %s', warning.message
+                    )
+        finally:
+            # Ensure stderr is always restored
+            sys.stderr = old_stderr
 
         if not elements:
             raise FileReadException(
@@ -477,11 +523,56 @@ def read_document_file(file_path: Path) -> str:
         logger.debug('Reading document file: %s', file_path)
 
         # partition automatically detects file type and uses appropriate parser
-        elements = partition(
-            filename=str(file_path),
-            strategy='auto',
-            infer_table_structure=True,
-        )
+
+        # Redirect stderr to capture warnings from C libraries
+        stderr_capture = io.StringIO()
+        old_stderr = sys.stderr
+
+        try:
+            sys.stderr = stderr_capture
+
+            with warnings.catch_warnings(record=True) as w:
+                # Suppress specific deprecation warnings from dependencies FIRST
+                warnings.filterwarnings(
+                    'ignore', message='.*max_size.*deprecated.*'
+                )
+                warnings.filterwarnings(
+                    'ignore',
+                    category=DeprecationWarning,
+                    module='.*unstructured.*',
+                )
+                # Then enable all other warnings
+                warnings.simplefilter('always')
+
+                elements = partition(
+                    filename=str(file_path),
+                    strategy='auto',
+                    infer_table_structure=True,
+                    languages=[
+                        'eng'
+                    ],  # Suppress "No languages specified" warning
+                )
+
+            # Restore stderr
+            sys.stderr = old_stderr
+
+            # Log stderr warnings that aren't about max_size
+            stderr_output = stderr_capture.getvalue()
+            if stderr_output:
+                for line in stderr_output.strip().split('\n'):
+                    if line and 'max_size' not in line.lower():
+                        logger.warning('Document processing stderr: %s', line)
+
+            # Log any Python warnings that weren't filtered
+            for warning in w:
+                if 'max_size' not in str(warning.message).lower():
+                    logger.warning(
+                        'Warning during document processing: %s',
+                        warning.message,
+                    )
+        finally:
+            # Ensure stderr is always restored
+            sys.stderr = old_stderr
 
         if not elements:
             raise FileReadException(
