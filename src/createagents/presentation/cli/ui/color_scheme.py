@@ -5,17 +5,22 @@ class ColorScheme:
     This follows SRP by having a single reason to change: updating color scheme.
     """
 
-    # Colors
-    BLUE: str = '\033[38;5;39m'  # Bright Blue
-    PURPLE: str = '\033[38;5;135m'  # Lavender/Purple
-    GREEN: str = '\033[38;5;82m'  # Bright Green
-    YELLOW: str = '\033[38;5;226m'  # Bright Yellow
-    GRAY: str = '\033[90m'
+    # Modern color palette - vibrant and professional
+    BLUE: str = '\033[38;5;75m'  # Sky Blue (modern, softer than bright blue)
+    PURPLE: str = '\033[38;5;141m'  # Medium Purple (elegant, not too bright)
+    GREEN: str = '\033[38;5;84m'  # Mint Green (fresh, easy on eyes)
+    YELLOW: str = '\033[38;5;221m'  # Soft Yellow (warm, readable)
+    RED: str = '\033[38;5;204m'  # Soft Red (error messages)
+    CYAN: str = '\033[38;5;87m'  # Bright Cyan (accents)
+    GRAY: str = '\033[38;5;245m'  # Medium Gray (subtle text)
+    DARK_GRAY: str = '\033[38;5;240m'  # Dark Gray (timestamps, metadata)
 
     # Styles
     RESET: str = '\033[0m'
     BOLD: str = '\033[1m'
+    DIM: str = '\033[2m'
     ITALIC: str = '\033[3m'
+    UNDERLINE: str = '\033[4m'
 
     # Control sequences
     CLEAR_SCREEN: str = '\033[2J\033[H'
@@ -35,7 +40,7 @@ class ColorScheme:
     @classmethod
     def get_system_color(cls) -> str:
         """Get color for system messages."""
-        return cls.YELLOW
+        return cls.CYAN
 
     @classmethod
     def get_success_color(cls) -> str:
@@ -46,3 +51,13 @@ class ColorScheme:
     def get_info_color(cls) -> str:
         """Get color for info messages."""
         return cls.GRAY
+
+    @classmethod
+    def get_error_color(cls) -> str:
+        """Get color for error messages."""
+        return cls.RED
+
+    @classmethod
+    def get_timestamp_color(cls) -> str:
+        """Get color for timestamps."""
+        return cls.DARK_GRAY

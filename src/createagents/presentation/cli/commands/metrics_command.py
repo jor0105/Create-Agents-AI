@@ -28,10 +28,12 @@ class MetricsCommandHandler(CommandHandler):
         """
         metrics = agent.get_metrics()
         if not metrics:
-            self._renderer.render_system_message('No metrics available yet.')
+            self._renderer.render_system_message(
+                'No metrics available yet. Start chatting to collect data!'
+            )
             return
         # Format metrics nicely
-        metrics_str = '### 📊 Agent Metrics\n\n'
+        metrics_str = '## Performance Metrics\n\n'
         metrics_str += '| Model | Duration | Tokens (In/Out/Total) |\n'
         metrics_str += '|-------|----------|-----------------------|\n'
         for m in metrics:

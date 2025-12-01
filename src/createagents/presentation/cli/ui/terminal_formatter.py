@@ -77,21 +77,36 @@ class TerminalFormatter:
         )
 
     @staticmethod
-    def format_rounded_box(text: str, color: str, align: str = 'left') -> str:
+    def format_rounded_box(
+        text: str,
+        color: str,
+        align: str = 'left',
+        icon: str = '',
+        timestamp: str = '',
+    ) -> str:
         """Format text inside a rounded box with specified color and alignment.
 
-        Simulates a modern chat bubble.
+        Simulates a modern chat bubble with optional icon and timestamp.
 
         Args:
             text: The text to display in the box.
             color: ANSI color code for the box.
             align: Alignment ('left' or 'right').
+            icon: Optional icon to display.
+            timestamp: Optional timestamp string (already formatted with color).
 
         Returns:
             Formatted text with rounded box borders.
         """
         terminal_width = TerminalFormatter.get_terminal_width()
         max_content_width = min(100, terminal_width - 10)
+
+        # Add icon to first line if provided
+        text_lines = text.split('\n')
+        if icon and text_lines:
+            text_lines[0] = f'{icon}  {text_lines[0]}'
+        text = '\n'.join(text_lines)
+
         wrapped_lines = []
         for line in text.split('\n'):
             # Handle empty lines
@@ -130,10 +145,20 @@ class TerminalFormatter:
             indent = ''
         # Build the box
         lines = []
-        # Draw Top
-        lines.append(
-            f'{indent}{color}{TL}{H * box_width}{TR}{ColorScheme.RESET}'
-        )
+        # Draw Top with optional timestamp
+        top_line = f'{indent}{color}{TL}{H * box_width}{TR}{ColorScheme.RESET}'
+        if timestamp and align == 'left':
+            top_line = f'{indent}{timestamp}{color}{TL}{H * box_width}{TR}{ColorScheme.RESET}'
+        elif timestamp and align == 'right':
+            # For right-aligned, timestamp goes before the indent
+            timestamp_offset = TerminalFormatter.get_display_width(
+                timestamp.replace(
+                    ColorScheme.get_timestamp_color(), ''
+                ).replace(ColorScheme.RESET, '')
+            )
+            indent_adjusted = ' ' * max(0, len(indent) - timestamp_offset - 1)
+            top_line = f'{indent_adjusted}{timestamp}{color}{TL}{H * box_width}{TR}{ColorScheme.RESET}'
+        lines.append(top_line)
         # Draw Content
         for line in wrapped_lines:
             # Pad the line to fill the box using display width

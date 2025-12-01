@@ -27,13 +27,15 @@ class HelpCommandHandler(CommandHandler):
             user_input: The user's input string.
         """
         help_text = """
-        Available Commands:
-        • /metrics  - Show agent performance metrics
-        • /configs  - Show agent configurations
-        • /tools    - List available tools
-        • /clear    - Clear chat history
-        • /help     - Show this help message
-        • exit/quit - Exit the application
+Available Commands:
+
+• /metrics  → Show agent performance metrics and statistics
+• /configs  → Display current agent configuration settings
+• /tools    → List all available tools and their descriptions
+• /clear    → Clear conversation history and start fresh
+• /help     → Show this help message
+
+Type 'exit' or 'quit' to close the application.
         """
         formatted_help = TextSanitizer.format_markdown_for_terminal(help_text)
         self._renderer.render_system_message(formatted_help)

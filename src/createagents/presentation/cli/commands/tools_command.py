@@ -27,12 +27,12 @@ class ToolsCommandHandler(CommandHandler):
             user_input: The user's input string.
         """
         tools = agent.get_all_available_tools()
-        tools_str = '### 🛠️ Available Tools\n\n\n'
+        tools_str = '## Available Tools\n\n'
         if not tools:
-            tools_str += '_No tools available._'
+            tools_str += '_No tools configured for this agent._'
         else:
             for name, desc in tools.items():
-                tools_str += f'- **{name}**: {desc}\n'
+                tools_str += f'**{name}**\n{desc}\n\n'
         formatted_tools = TextSanitizer.format_markdown_for_terminal(tools_str)
         self._renderer.render_system_message(formatted_tools)
 

@@ -26,7 +26,9 @@ class ClearCommandHandler(CommandHandler):
             user_input: The user's input string.
         """
         agent.clear_history()
-        self._renderer.render_success_message('🧹 Chat history cleared.')
+        self._renderer.render_success_message(
+            'Chat history cleared successfully!'
+        )
 
     def get_aliases(self) -> List[str]:
         """Get clear command aliases."""

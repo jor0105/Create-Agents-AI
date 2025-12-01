@@ -27,25 +27,25 @@ class ConfigsCommandHandler(CommandHandler):
             user_input: The user's input string.
         """
         configs = agent.get_configs()
-        config_str = '### ⚙️ Agent Configurations\n\n\n'
+        config_str = '## Agent Configuration\n\n'
         for k, v in configs.items():
             if k == 'history' and isinstance(v, list):
-                config_str += f'- **{k}:** ({len(v)} messages)\n\n'
+                config_str += f'**{k}:** {len(v)} messages in history\n\n'
                 for msg in v:
                     role = msg.get('role', 'unknown')
                     content = str(msg.get('content', ''))
                     # Create a preview of the content
                     preview = (
-                        (content[:60] + '...')
-                        if len(content) > 60
+                        (content[:50] + '...')
+                        if len(content) > 50
                         else content
                     )
                     preview = preview.replace('\n', ' ')
                     # Use indented bullets for better visual hierarchy
-                    config_str += f'    - **{role}**: {preview}\n'
+                    config_str += f'  - **{role}**: {preview}\n'
                 config_str += '\n'
             else:
-                config_str += f'- **{k}:** {v}\n'
+                config_str += f'**{k}:** {v}\n'
         formatted_config = TextSanitizer.format_markdown_for_terminal(
             config_str
         )
