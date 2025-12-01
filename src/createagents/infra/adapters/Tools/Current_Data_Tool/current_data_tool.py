@@ -78,10 +78,6 @@ class CurrentDateTool(BaseTool):
         'required': ['action', 'tz'],
     }
 
-    # Limits / security constants
-    MAX_OFFSET_DAYS = 3650  # 10 years (kept for potential future use)
-    MAX_FORMAT_LENGTH = 200  # kept for potential future use
-
     def __init__(self) -> None:
         """Initialize the CurrentDateTool."""
         self.__logger = LoggingConfig.get_logger(__name__)

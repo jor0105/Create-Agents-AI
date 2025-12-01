@@ -43,7 +43,7 @@ class ChatResponse:
         return len(self.tool_calls) > 0
 
     def to_dict(self) -> dict:
-        """Convert to dictionary reapplication.
+        """Convert to dictionary representation.
 
         Returns:
             Dictionary with content and tool_calls.

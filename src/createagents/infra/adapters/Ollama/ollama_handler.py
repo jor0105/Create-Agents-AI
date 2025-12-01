@@ -3,6 +3,7 @@ from typing import Any, Dict, List, Optional
 
 from ....domain import BaseTool, ChatException, ToolExecutor
 from ...config import ChatMetrics, EnvironmentConfig, LoggingConfig
+from ..Common import MetricsRecorder
 from .ollama_client import OllamaClient
 from .ollama_tool_schema_formatter import OllamaToolSchemaFormatter
 
@@ -17,7 +18,7 @@ class OllamaHandler:
     ):
         self.__client = client
         self.__logger = LoggingConfig.get_logger(__name__)
-        self.__metrics = metrics_list if metrics_list is not None else []
+        self.__metrics_recorder = MetricsRecorder(metrics_list)
         self.__max_tool_iterations = int(
             EnvironmentConfig.get_env('OLLAMA_MAX_TOOL_ITERATIONS', '100')
             or '100'
@@ -112,11 +113,13 @@ class OllamaHandler:
                     f'({self.__max_tool_iterations}) exceeded'
                 )
 
-            self.__record_success_metrics(model, start_time, response_api)
+            self.__metrics_recorder.record_success_metrics(
+                model, start_time, response_api, provider_type='ollama'
+            )
             return final_response
 
         except Exception as e:
-            self.__record_error_metrics(model, start_time, e)
+            self.__metrics_recorder.record_error_metrics(model, start_time, e)
             raise
         finally:
             self.__client.stop_model(model)
@@ -169,57 +172,6 @@ class OllamaHandler:
         except Exception:
             return None
 
-    def __record_success_metrics(
-        self, model: str, start_time: float, response_api: Any
-    ) -> None:
-        latency = (time.time() - start_time) * 1000
-        prompt_eval_count = response_api.get('prompt_eval_count', 0)
-        eval_count = response_api.get('eval_count', 0)
-        total_tokens = prompt_eval_count + eval_count
-
-        # Fix for the bug found in tests: check for None before division
-        load_duration = response_api.get('load_duration')
-        load_duration_ms = (
-            load_duration / 1_000_000 if load_duration is not None else None
-        )
-
-        prompt_eval_duration = response_api.get('prompt_eval_duration')
-        prompt_eval_duration_ms = (
-            prompt_eval_duration / 1_000_000
-            if prompt_eval_duration is not None
-            else None
-        )
-
-        eval_duration = response_api.get('eval_duration')
-        eval_duration_ms = (
-            eval_duration / 1_000_000 if eval_duration is not None else None
-        )
-
-        metrics = ChatMetrics(
-            model=model,
-            latency_ms=latency,
-            tokens_used=total_tokens,
-            prompt_tokens=prompt_eval_count,
-            completion_tokens=eval_count,
-            load_duration_ms=load_duration_ms,
-            prompt_eval_duration_ms=prompt_eval_duration_ms,
-            eval_duration_ms=eval_duration_ms,
-            success=True,
-        )
-        self.__metrics.append(metrics)
-
-    def __record_error_metrics(
-        self, model: str, start_time: float, error: Exception
-    ) -> None:
-        latency = (time.time() - start_time) * 1000
-        metrics = ChatMetrics(
-            model=model,
-            latency_ms=latency,
-            success=False,
-            error_message=str(error),
-        )
-        self.__metrics.append(metrics)
-
     def get_metrics(self) -> List[ChatMetrics]:
         """Return the list of collected metrics."""
-        return self.__metrics.copy()
+        return self.__metrics_recorder.get_metrics()

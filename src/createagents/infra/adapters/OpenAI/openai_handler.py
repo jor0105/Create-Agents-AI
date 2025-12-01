@@ -3,6 +3,7 @@ from typing import Any, Dict, List, Optional
 
 from ....domain import BaseTool, ChatException, ToolExecutor
 from ...config import ChatMetrics, EnvironmentConfig, LoggingConfig
+from ..Common import MetricsRecorder
 from .openai_client import OpenAIClient
 from .tool_call_parser import ToolCallParser
 from .tool_schema_formatter import ToolSchemaFormatter
@@ -18,7 +19,7 @@ class OpenAIHandler:
     ):
         self.__client = client
         self.__logger = LoggingConfig.get_logger(__name__)
-        self.__metrics = metrics_list if metrics_list is not None else []
+        self.__metrics_recorder = MetricsRecorder(metrics_list)
         self.__max_tool_iterations = int(
             EnvironmentConfig.get_env('OPENAI_MAX_TOOL_ITERATIONS', '100')
             or '100'
@@ -129,7 +130,9 @@ class OpenAIHandler:
                     raise ChatException('OpenAI returned an empty response.')
 
                 # Record metrics
-                self.__record_success_metrics(model, start_time, response_api)
+                self.__metrics_recorder.record_success_metrics(
+                    model, start_time, response_api, provider_type='openai'
+                )
 
                 self.__logger.debug(
                     'Response (first 100 chars): %s...', content[:100]
@@ -151,10 +154,12 @@ class OpenAIHandler:
             )
 
         except ChatException:
-            self.__record_error_metrics(model, start_time, 'OpenAI chat error')
+            self.__metrics_recorder.record_error_metrics(
+                model, start_time, 'OpenAI chat error'
+            )
             raise
         except AttributeError as e:
-            self.__record_error_metrics(
+            self.__metrics_recorder.record_error_metrics(
                 model, start_time, f'Error accessing response: {str(e)}'
             )
             self.__logger.error('Error accessing OpenAI response: %s', e)
@@ -162,7 +167,7 @@ class OpenAIHandler:
                 f'Error accessing OpenAI response: {str(e)}', original_error=e
             ) from e
         except IndexError as e:
-            self.__record_error_metrics(
+            self.__metrics_recorder.record_error_metrics(
                 model, start_time, f'Unexpected format: {str(e)}'
             )
             self.__logger.error(
@@ -173,7 +178,7 @@ class OpenAIHandler:
                 original_error=e,
             ) from e
         except (ValueError, TypeError, KeyError) as e:
-            self.__record_error_metrics(
+            self.__metrics_recorder.record_error_metrics(
                 model, start_time, f'Data error: {str(e)}'
             )
             self.__logger.error('Data error communicating with OpenAI: %s', e)
@@ -182,49 +187,14 @@ class OpenAIHandler:
                 original_error=e,
             ) from e
         except Exception as e:
-            self.__record_error_metrics(model, start_time, str(e))
+            self.__metrics_recorder.record_error_metrics(
+                model, start_time, str(e)
+            )
             self.__logger.error('Error communicating with OpenAI: %s', e)
             raise ChatException(
                 f'Error communicating with OpenAI: {str(e)}', original_error=e
             ) from e
 
-    def __record_success_metrics(
-        self, model: str, start_time: float, response_api: Any
-    ) -> None:
-        latency = (time.time() - start_time) * 1000
-        usage = getattr(response_api, 'usage', None)
-        if usage:
-            tokens_used = getattr(usage, 'total_tokens', None)
-            prompt_tokens = getattr(usage, 'prompt_tokens', None)
-            completion_tokens = getattr(usage, 'completion_tokens', None)
-        else:
-            tokens_used = None
-            prompt_tokens = None
-            completion_tokens = None
-
-        metrics = ChatMetrics(
-            model=model,
-            latency_ms=latency,
-            tokens_used=tokens_used,
-            prompt_tokens=prompt_tokens,
-            completion_tokens=completion_tokens,
-            success=True,
-        )
-        self.__metrics.append(metrics)
-        self.__logger.info('Chat completed: %s', metrics)
-
-    def __record_error_metrics(
-        self, model: str, start_time: float, error_message: str
-    ) -> None:
-        latency = (time.time() - start_time) * 1000
-        metrics = ChatMetrics(
-            model=model,
-            latency_ms=latency,
-            success=False,
-            error_message=error_message,
-        )
-        self.__metrics.append(metrics)
-
     def get_metrics(self) -> List[ChatMetrics]:
         """Return the list of collected metrics."""
-        return self.__metrics.copy()
+        return self.__metrics_recorder.get_metrics()

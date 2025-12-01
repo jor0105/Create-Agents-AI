@@ -98,6 +98,49 @@ class AvailableTools:
         }
 
     @classmethod
+    def add_agent_tool(cls, tool_name: str, tool: BaseTool) -> None:
+        """Add a new agent tool to the registry.
+
+        This method allows dynamic registration of agent tools at runtime.
+        Useful for adding custom tools created by users.
+
+        Args:
+            tool_name: The unique identifier for the tool (case-insensitive).
+            tool: The BaseTool instance to register.
+
+        Raises:
+            ValueError: If a tool with the same name already exists.
+        """
+        tool_key = tool_name.lower()
+
+        # Check if tool already exists (in both system and agent tools)
+        if tool_key in cls.__AGENT_TOOLS:
+            raise ValueError(
+                f"Agent tool '{tool_name}' is already registered. "
+                f'Use a different name or remove the existing tool first.'
+            )
+
+        # Also check system tools to avoid conflicts
+        cls._ensure_system_tools_loaded()
+        all_system_tools = cls.__get_all_system_tool_instances()
+        if tool_key in all_system_tools:
+            raise ValueError(
+                f"'{tool_name}' conflicts with a system tool. "
+                f'Please use a different name for your custom agent tool.'
+            )
+
+        cls.__AGENT_TOOLS[tool_key] = tool
+
+    @classmethod
+    def clear_agent_tools(cls) -> None:
+        """Clear all agent tools from the registry.
+
+        This is useful for testing or resetting the agent tools state.
+        System tools are not affected by this operation.
+        """
+        cls.__AGENT_TOOLS.clear()
+
+    @classmethod
     def get_all_available_tools(cls) -> Dict[str, str]:
         """Return a dict of ALL available tool descriptions (system + agent).
 

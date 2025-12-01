@@ -6,7 +6,6 @@ from .Ollama import (
     OllamaToolSchemaFormatter,
 )
 from .OpenAI import (
-    ClientOpenAI,
     OpenAIChatAdapter,
     ToolCallParser,
     ToolSchemaFormatter,
@@ -23,7 +22,6 @@ __all__ = [
     'OllamaToolSchemaFormatter',
     # openai
     'OpenAIChatAdapter',
-    'ClientOpenAI',
     'ToolCallParser',
     'ToolSchemaFormatter',
     # tools

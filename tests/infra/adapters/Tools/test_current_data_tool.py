@@ -257,13 +257,6 @@ class TestCurrentDateTool:
         assert not result.startswith('[CurrentDateTool Error]')
         assert '-03:00' in result or '-02:00' in result
 
-    def test_constants_defined(self):
-        tool = CurrentDateTool()
-        assert hasattr(tool, 'MAX_OFFSET_DAYS')
-        assert hasattr(tool, 'MAX_FORMAT_LENGTH')
-        assert tool.MAX_OFFSET_DAYS == 3650
-        assert tool.MAX_FORMAT_LENGTH == 200
-
     def test_error_message_format_consistency(self):
         tool = CurrentDateTool()
 

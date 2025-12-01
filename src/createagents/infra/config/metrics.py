@@ -63,7 +63,7 @@ class ChatMetrics:
         }
 
     def __str__(self) -> str:
-        """Returns a string reapplication of the metrics."""
+        """Returns a string representation of the metrics."""
         tokens_info = (
             f', tokens={self.tokens_used}' if self.tokens_used else ''
         )
