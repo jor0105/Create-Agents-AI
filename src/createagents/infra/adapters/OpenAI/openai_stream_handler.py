@@ -74,27 +74,16 @@ class OpenAIStreamHandler:
                     'Streaming response received, iterating events'
                 )
 
-                # Track tool calls detected during streaming
+                # Track response state
                 full_response = None
                 has_yielded_content = False
-                tool_call_detected = False
 
-                # OpenAI Responses API returns structured EVENTS
+                # Process streaming events from OpenAI Responses API
                 async for event in stream_response:
                     event_type = getattr(event, 'type', None)
 
-                    # OPTIMIZATION: Detect function calls EARLY
-                    # Break streaming immediately when tool calls are detected
-                    if event_type == 'response.function_call_arguments.delta':
-                        tool_call_detected = True
-                        self.__logger.debug(
-                            'Function call detected early, will process after stream'
-                        )
-                        # Don't break yet - let stream finish to get full response
-                        # but we know tools will be needed
-
                     # Yield text tokens as they arrive
-                    elif event_type == 'response.output_text.delta':
+                    if event_type == 'response.output_text.delta':
                         if hasattr(event, 'delta'):
                             token = event.delta
                             if token:
@@ -110,88 +99,79 @@ class OpenAIStreamHandler:
                                     yield token
                                     has_yielded_content = True
 
-                    # Capture the done event with full response
-                    elif event_type == 'response.done':
+                    # Capture the completed event with full response
+                    elif event_type == 'response.completed':
                         full_response = getattr(event, 'response', None)
-                        # If we detected tool calls, break immediately
-                        if tool_call_detected:
-                            break
 
-                # Check if we have tool calls to execute
-                if full_response and tool_executor:
-                    if ToolCallParser.has_tool_calls(full_response):
-                        self.__logger.info(
-                            'Tool calls detected, executing tools'
-                        )
-
-                        # Add output items to messages for context
-                        output_items = ToolCallParser.get_assistant_message_with_tool_calls(
-                            full_response
-                        )
-                        if output_items:
-                            messages.extend(output_items)
-
-                        # Extract and execute tool calls
-                        tool_calls = ToolCallParser.extract_tool_calls(
-                            full_response
-                        )
-                        self.__logger.debug(
-                            'Executing %s tool(s)', len(tool_calls)
-                        )
-
-                        for tool_call in tool_calls:
-                            tool_name = tool_call['name']
-                            tool_args = tool_call['arguments']
-                            tool_id = tool_call['id']
-
-                            self.__logger.debug(
-                                "Executing tool '%s' with args: %s",
-                                tool_name,
-                                tool_args,
-                            )
-
-                            execution_result = (
-                                await tool_executor.execute_tool(
-                                    tool_name, **tool_args
-                                )
-                            )
-
-                            tool_result_msg = (
-                                ToolCallParser.format_tool_results_for_llm(
-                                    tool_call_id=tool_id,
-                                    tool_name=tool_name,
-                                    result=(
-                                        str(execution_result.result)
-                                        if execution_result.success
-                                        else str(execution_result.error)
-                                    ),
-                                )
-                            )
-                            messages.append(tool_result_msg)
-
-                        # Continue to next iteration to get final response
-                        # Reset has_yielded_content since we're starting a new stream
-                        has_yielded_content = False
-                        continue
-
-                # If we yielded content and no tool calls, we're done
-                if has_yielded_content:
+                # Check if we have a valid response
+                if not full_response:
+                    self.__logger.warning(
+                        'No response object received from stream'
+                    )
                     break
 
-                # If this was a tool-only iteration (no content), continue to next iteration
-                # The next iteration will have the final response after tool execution
-                if tool_call_detected and not has_yielded_content:
-                    self.__logger.debug(
-                        'Tool-only iteration, continuing to next'
+                # Extract text from full response if no deltas were streamed
+                if not has_yielded_content:
+                    if (
+                        hasattr(full_response, 'output')
+                        and full_response.output
+                    ):
+                        for item in full_response.output:
+                            item_type = getattr(item, 'type', None)
+                            if item_type == 'text':
+                                text_content = getattr(item, 'text', None)
+                                if text_content:
+                                    yield text_content
+                                    has_yielded_content = True
+
+                # Execute tool calls if present
+                if tool_executor and ToolCallParser.has_tool_calls(
+                    full_response
+                ):
+                    # Add output items to messages for context
+                    output_items = (
+                        ToolCallParser.get_assistant_message_with_tool_calls(
+                            full_response
+                        )
                     )
+                    if output_items:
+                        messages.extend(output_items)
+
+                    # Extract and execute tool calls
+                    tool_calls = ToolCallParser.extract_tool_calls(
+                        full_response
+                    )
+                    self.__logger.info('Executing %s tool(s)', len(tool_calls))
+
+                    for tool_call in tool_calls:
+                        tool_name = tool_call['name']
+                        tool_args = tool_call['arguments']
+                        tool_id = tool_call['id']
+
+                        self.__logger.debug("Executing tool '%s'", tool_name)
+
+                        execution_result = await tool_executor.execute_tool(
+                            tool_name, **tool_args
+                        )
+
+                        tool_result_msg = (
+                            ToolCallParser.format_tool_results_for_llm(
+                                tool_call_id=tool_id,
+                                tool_name=tool_name,
+                                result=(
+                                    str(execution_result.result)
+                                    if execution_result.success
+                                    else str(execution_result.error)
+                                ),
+                            )
+                        )
+                        messages.append(tool_result_msg)
+
+                    # Continue to next iteration for final response
                     continue
 
-                # If we didn't yield anything and no tool calls, something's wrong
-                if not has_yielded_content and not tool_call_detected:
-                    self.__logger.warning(
-                        'No content yielded in streaming response'
-                    )
-                    break
+                # Response complete, no tool calls - end stream
+                break
 
             if iteration >= self.__max_tool_iterations:
                 self.__logger.warning(
