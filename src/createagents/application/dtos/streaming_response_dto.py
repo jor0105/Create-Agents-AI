@@ -5,6 +5,7 @@ class StreamingResponseDTO:
     """Data Transfer Object for streaming chat responses.
 
     Wraps an async generator to provide a clean interface for async iteration.
+    Can be awaited to get the complete response string automatically.
     """
 
     def __init__(self, generator: AsyncGenerator[str, None]):
@@ -33,6 +34,39 @@ class StreamingResponseDTO:
         except StopAsyncIteration:
             self._consumed = True
             raise
+
+    def __await__(self):
+        """Allow awaiting to get complete response string.
+
+        This method enables transparent usage:
+            response = await agent.chat("message")  # Returns StreamingResponseDTO
+            text = await response  # Auto-consumes and returns complete string
+
+        The CLI can still use async for without awaiting again.
+        """
+
+        async def _consume():
+            """Consume all tokens and return complete response."""
+            if self._consumed:
+                return self._full_response
+
+            # Consume all tokens from the generator
+            async for _ in self:
+                pass  # Tokens are accumulated in _full_response by __anext__
+
+            return self._full_response
+
+        return _consume().__await__()
+
+    def __str__(self) -> str:
+        """Return string representation.
+
+        Returns the full response if consumed, otherwise a placeholder.
+        For unconsumed streams, await the response first to get the text.
+        """
+        if self._consumed:
+            return self._full_response
+        return 'StreamingResponseDTO(not consumed - use "await response")'
 
     def __repr__(self) -> str:
         """Return representation."""

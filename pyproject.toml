@@ -78,6 +78,7 @@ packages = [{ include = "createagents", from = "src" }]
 pre-commit = "^4.3.0"
 pytest = "^8.4.2"
 pytest-cov = "^5.0.0"
+pytest-asyncio = "^0.23.0"
 mypy = "^1.11.0"
 bandit = "^1.7.9"
 pydocstyle = "^6.3.0"
