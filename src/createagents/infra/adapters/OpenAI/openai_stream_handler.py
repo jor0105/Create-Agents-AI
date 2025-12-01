@@ -62,6 +62,10 @@ class OpenAIStreamHandler:
 
         self.__logger.debug('Streaming mode enabled for OpenAI')
 
+        # Accumulate token counts across all iterations (for tool calls)
+        total_prompt_tokens = 0
+        total_completion_tokens = 0
+
         iteration = 0
         try:
             while iteration < self.__max_tool_iterations:
@@ -131,6 +135,22 @@ class OpenAIStreamHandler:
                                     yield text_content
                                     has_yielded_content = True
 
+                # Extract and accumulate token usage from this iteration
+                usage = getattr(full_response, 'usage', None)
+                if usage:
+                    prompt_tokens = getattr(usage, 'input_tokens', None)
+                    completion_tokens = getattr(usage, 'output_tokens', None)
+                    if prompt_tokens:
+                        total_prompt_tokens += prompt_tokens
+                    if completion_tokens:
+                        total_completion_tokens += completion_tokens
+                    self.__logger.debug(
+                        'Iteration %s tokens - prompt: %s, completion: %s',
+                        iteration,
+                        prompt_tokens,
+                        completion_tokens,
+                    )
+
                 # Execute tool calls if present
                 if tool_executor and ToolCallParser.has_tool_calls(
                     full_response
@@ -186,18 +206,31 @@ class OpenAIStreamHandler:
                     self.__max_tool_iterations,
                 )
 
-            # Record metrics after streaming completes
+            # Record metrics after streaming completes with accumulated tokens
             latency = (time.time() - start_time) * 1000
+            total_tokens = (
+                total_prompt_tokens + total_completion_tokens
+                if total_prompt_tokens or total_completion_tokens
+                else None
+            )
             metrics = ChatMetrics(
                 model=model,
                 latency_ms=latency,
-                tokens_used=None,  # Token count not available in streaming
-                prompt_tokens=None,
-                completion_tokens=None,
+                tokens_used=total_tokens,
+                prompt_tokens=total_prompt_tokens
+                if total_prompt_tokens
+                else None,
+                completion_tokens=total_completion_tokens
+                if total_completion_tokens
+                else None,
                 success=True,
             )
             self.__metrics.append(metrics)
-            self.__logger.info('Streaming chat completed: %s', metrics)
+            self.__logger.info(
+                'Streaming chat completed: %s (accumulated over %s iteration(s))',
+                metrics,
+                iteration,
+            )
 
         except Exception as e:
             latency = (time.time() - start_time) * 1000

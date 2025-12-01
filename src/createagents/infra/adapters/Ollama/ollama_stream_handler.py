@@ -58,6 +58,13 @@ class OllamaStreamHandler:
                 [tool.name for tool in tools],
             )
 
+        # Accumulate metrics across all iterations (for tool calls)
+        total_prompt_tokens = 0
+        total_completion_tokens = 0
+        last_load_duration_ms: Optional[float] = None
+        last_prompt_eval_duration_ms: Optional[float] = None
+        last_eval_duration_ms: Optional[float] = None
+
         iteration = 0
         try:
             while iteration < self.__max_tool_iterations:
@@ -102,6 +109,42 @@ class OllamaStreamHandler:
                         if token:
                             yield token
                             has_yielded_content = True
+
+                # Extract metrics from the last chunk (Ollama sends metrics in final chunk)
+                if last_chunk:
+                    # Token counts
+                    prompt_eval_count = getattr(
+                        last_chunk, 'prompt_eval_count', None
+                    )
+                    eval_count = getattr(last_chunk, 'eval_count', None)
+                    if prompt_eval_count:
+                        total_prompt_tokens += prompt_eval_count
+                    if eval_count:
+                        total_completion_tokens += eval_count
+
+                    # Duration metrics (use last values, not accumulated)
+                    load_duration = getattr(last_chunk, 'load_duration', None)
+                    if load_duration is not None:
+                        last_load_duration_ms = load_duration / 1_000_000
+
+                    prompt_eval_duration = getattr(
+                        last_chunk, 'prompt_eval_duration', None
+                    )
+                    if prompt_eval_duration is not None:
+                        last_prompt_eval_duration_ms = (
+                            prompt_eval_duration / 1_000_000
+                        )
+
+                    eval_duration = getattr(last_chunk, 'eval_duration', None)
+                    if eval_duration is not None:
+                        last_eval_duration_ms = eval_duration / 1_000_000
+
+                    self.__logger.debug(
+                        'Iteration %s tokens - prompt: %s, completion: %s',
+                        iteration,
+                        prompt_eval_count,
+                        eval_count,
+                    )
 
                 # Process tool calls if detected
                 if tool_call_detected and last_chunk and tool_executor:
@@ -174,17 +217,36 @@ class OllamaStreamHandler:
                     self.__max_tool_iterations,
                 )
 
+            # Record metrics after streaming completes with accumulated tokens
             latency = (time.time() - start_time) * 1000
+            total_tokens = (
+                total_prompt_tokens + total_completion_tokens
+                if total_prompt_tokens or total_completion_tokens
+                else None
+            )
             metrics = ChatMetrics(
                 model=model,
                 latency_ms=latency,
-                tokens_used=None,
-                prompt_tokens=None,
-                completion_tokens=None,
+                tokens_used=total_tokens,
+                prompt_tokens=(
+                    total_prompt_tokens if total_prompt_tokens else None
+                ),
+                completion_tokens=(
+                    total_completion_tokens
+                    if total_completion_tokens
+                    else None
+                ),
+                load_duration_ms=last_load_duration_ms,
+                prompt_eval_duration_ms=last_prompt_eval_duration_ms,
+                eval_duration_ms=last_eval_duration_ms,
                 success=True,
             )
             self.__metrics.append(metrics)
-            self.__logger.info('Streaming chat completed: %s', metrics)
+            self.__logger.info(
+                'Streaming chat completed: %s (accumulated over %s iteration(s))',
+                metrics,
+                iteration,
+            )
 
         except Exception as e:
             latency = (time.time() - start_time) * 1000
