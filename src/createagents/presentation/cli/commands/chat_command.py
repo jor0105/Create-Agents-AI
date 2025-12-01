@@ -41,15 +41,14 @@ class ChatCommandHandler(CommandHandler):
             try:
                 response = await agent.chat(user_input)
 
-                # Clear thinking line
-                self._renderer.clear_thinking_indicator()
-
                 # Check if streaming (StreamingResponseDTO can be iterated)
                 if isinstance(response, StreamingResponseDTO):
                     # Streaming mode - render tokens in real-time inside purple box
+                    # The renderer will clear the thinking indicator when first token arrives
                     await self._renderer.render_ai_message_streaming(response)
                 else:
-                    # Non-streaming mode - format and render in purple box
+                    # Non-streaming mode - clear thinking and format response
+                    self._renderer.clear_thinking_indicator()
                     response = TextSanitizer.format_markdown_for_terminal(
                         response
                     )

@@ -77,24 +77,19 @@ class TerminalRenderer:
         if not hasattr(self, '_console'):
             self._console = Console()
 
-        # Accumulate tokens and update display in real-time
+        # Wait for the first token before creating the panel
+        # This keeps "AI thinking..." visible until AI actually starts responding
         full_response = ''
+        first_token_received = False
 
-        # Create initial empty panel
-        text = Text(full_response)
-        panel = Panel(
-            text,
-            style='bold purple',
-            box=box.ROUNDED,
-            padding=(0, 1),
-            expand=False,
-        )
+        async for token in token_generator:
+            # On first token: clear thinking indicator and start the Live display
+            if not first_token_received:
+                self.clear_thinking_indicator()
+                first_token_received = True
+                full_response = token
 
-        # Use Live display to update panel in real-time
-        with Live(panel, console=self._console, refresh_per_second=20) as live:
-            async for token in token_generator:
-                full_response += token
-                # Update the text and panel
+                # Create initial panel with first token
                 text = Text(full_response)
                 panel = Panel(
                     text,
@@ -103,7 +98,25 @@ class TerminalRenderer:
                     padding=(0, 1),
                     expand=False,
                 )
-                live.update(panel)
+
+                # Start Live display and continue with remaining tokens
+                with Live(
+                    panel, console=self._console, refresh_per_second=20
+                ) as live:
+                    # Continue consuming remaining tokens
+                    async for next_token in token_generator:
+                        full_response += next_token
+                        # Update the text and panel
+                        text = Text(full_response)
+                        panel = Panel(
+                            text,
+                            style='bold purple',
+                            box=box.ROUNDED,
+                            padding=(0, 1),
+                            expand=False,
+                        )
+                        live.update(panel)
+                break  # Exit outer loop after Live context completes
 
     def render_system_message(self, message: str) -> None:
         """Render a system message (left-aligned, yellow).
