@@ -2,6 +2,7 @@ import json
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional
 
+from ..interfaces import LoggerInterface
 from ..value_objects import BaseTool
 
 
@@ -69,18 +70,16 @@ class ToolExecutor:
         ```
     """
 
-    def __init__(self, tools: List[BaseTool]):
-        """Initialize the executor with available tools.
+    def __init__(self, tools: List[BaseTool], logger: LoggerInterface):
+        """Initialize the executor with available tools and logger.
 
         Args:
             tools: List of tool instances available for execution.
                    If None, no tools will be available.
+            logger: Logger instance for logging tool execution events.
         """
-        # Import here to avoid circular dependency
-        from ...infra import LoggingConfig  # pylint: disable=import-outside-toplevel
-
         self._tools_map: Dict[str, BaseTool] = {}
-        self.__logger = LoggingConfig.get_logger(__name__)
+        self.__logger = logger
 
         for tool in tools:
             self._tools_map[tool.name] = tool
@@ -250,13 +249,17 @@ class ToolExecutor:
             )
 
     async def execute_multiple_tools(
-        self, tool_calls: List[Dict[str, Any]]
+        self, tool_calls: List[Dict[str, Any]], parallel: bool = False
     ) -> List[ToolExecutionResult]:
-        """Execute multiple tools in sequence (or parallel in future).
+        """Execute multiple tools in sequence or parallel.
 
         Args:
             tool_calls: List of tool call specifications.
                        Each dict should have 'name' and 'arguments' keys.
+            parallel: If True, execute tools in parallel using asyncio.gather().
+                     If False (default), execute tools sequentially.
+                     Use parallel execution with caution as it may cause
+                     race conditions if tools have side effects.
 
         Returns:
             List of ToolExecutionResult objects.
@@ -266,15 +269,38 @@ class ToolExecutor:
             tool_calls = [
                 {"name": "web_search", "arguments": {"query": "Python"}},
             ]
+            # Sequential execution (default)
             results = await executor.execute_multiple_tools(tool_calls)
+
+            # Parallel execution
+            results = await executor.execute_multiple_tools(tool_calls, parallel=True)
             ```
         """
-        self.__logger.info('Executing %s tool(s) in sequence', len(tool_calls))
+        execution_mode = 'parallel' if parallel else 'sequence'
+        self.__logger.info(
+            'Executing %s tool(s) in %s', len(tool_calls), execution_mode
+        )
         self.__logger.debug(
             'Tool calls: %s',
             [call.get('name', 'unknown') for call in tool_calls],
         )
 
+        if parallel:
+            return await self._execute_parallel(tool_calls)
+        else:
+            return await self._execute_sequential(tool_calls)
+
+    async def _execute_sequential(
+        self, tool_calls: List[Dict[str, Any]]
+    ) -> List[ToolExecutionResult]:
+        """Execute tools sequentially.
+
+        Args:
+            tool_calls: List of tool call specifications.
+
+        Returns:
+            List of ToolExecutionResult objects.
+        """
         results = []
 
         for idx, call in enumerate(tool_calls, 1):
@@ -313,10 +339,80 @@ class ToolExecutor:
 
         successful = sum(1 for r in results if r.success)
         self.__logger.info(
-            'Completed execution of %s tool(s): %s successful, %s failed',
+            'Completed sequential execution of %s tool(s): %s successful, %s failed',
             len(tool_calls),
             successful,
             len(tool_calls) - successful,
         )
 
         return results
+
+    async def _execute_parallel(
+        self, tool_calls: List[Dict[str, Any]]
+    ) -> List[ToolExecutionResult]:
+        """Execute tools in parallel using asyncio.gather().
+
+        WARNING: Parallel execution may cause race conditions if tools
+        have side effects or depend on each other's results.
+
+        Args:
+            tool_calls: List of tool call specifications.
+
+        Returns:
+            List of ToolExecutionResult objects.
+        """
+        import asyncio  # pylint: disable=import-outside-toplevel
+
+        tasks = []
+
+        for idx, call in enumerate(tool_calls, 1):
+            tool_name = call.get('name', '')
+            arguments = call.get('arguments', {})
+
+            self.__logger.debug(
+                "Preparing parallel tool call %s/%s: '%s'",
+                idx,
+                len(tool_calls),
+                tool_name,
+            )
+
+            # Parse JSON arguments if needed
+            if isinstance(arguments, str):
+                try:
+                    arguments = json.loads(arguments)
+                    self.__logger.debug(
+                        "Parsed JSON arguments for '%s'", tool_name
+                    )
+                except json.JSONDecodeError as e:
+                    error_msg = f'Invalid JSON arguments: {arguments}'
+                    self.__logger.error(
+                        "Failed to parse arguments for '%s': %s", tool_name, e
+                    )
+
+                    # Create a coroutine that returns the error result
+                    async def error_result():
+                        return ToolExecutionResult(
+                            tool_name=tool_name,
+                            success=False,
+                            error=error_msg,
+                        )
+
+                    tasks.append(error_result())
+                    continue
+
+            # Create task for this tool execution
+            task = self.execute_tool(tool_name, **arguments)
+            tasks.append(task)
+
+        # Execute all tasks in parallel
+        results = await asyncio.gather(*tasks, return_exceptions=False)
+
+        successful = sum(1 for r in results if r.success)
+        self.__logger.info(
+            'Completed parallel execution of %s tool(s): %s successful, %s failed',
+            len(tool_calls),
+            successful,
+            len(tool_calls) - successful,
+        )
+
+        return list(results)

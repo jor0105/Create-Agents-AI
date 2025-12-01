@@ -139,6 +139,7 @@ class TestValidateConfig:
             'top_p',
             'think',
             'top_k',
+            'stream',
         }
         assert configs == expected_configs
 
@@ -312,6 +313,13 @@ class TestValidateConfigExtended:
 
     def test_get_available_configs_complete_set(self):
         configs = SupportedConfigs.get_available_configs()
-        expected = {'temperature', 'max_tokens', 'top_p', 'think', 'top_k'}
+        expected = {
+            'temperature',
+            'max_tokens',
+            'top_p',
+            'think',
+            'top_k',
+            'stream',
+        }
 
         assert configs == expected

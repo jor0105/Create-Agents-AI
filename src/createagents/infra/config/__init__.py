@@ -8,6 +8,7 @@ from .logging_config import (
 from .metrics import ChatMetrics, MetricsCollector
 from .retry import retry_with_backoff
 from .sensitive_data_filter import SensitiveDataFilter
+from .standard_logger import create_logger
 
 __all__ = [
     'EnvironmentConfig',
@@ -19,4 +20,5 @@ __all__ = [
     'retry_with_backoff',
     'SensitiveDataFilter',
     'AvailableTools',
+    'create_logger',
 ]

@@ -2,7 +2,12 @@ import time
 from typing import Any, Dict, List, Optional
 
 from ....domain import BaseTool, ChatException, ToolExecutor
-from ...config import ChatMetrics, EnvironmentConfig, LoggingConfig
+from ...config import (
+    ChatMetrics,
+    EnvironmentConfig,
+    LoggingConfig,
+    create_logger,
+)
 from ..Common import MetricsRecorder
 from .openai_client import OpenAIClient
 from .tool_call_parser import ToolCallParser
@@ -43,7 +48,9 @@ class OpenAIHandler:
             tool_schemas = ToolSchemaFormatter.format_tools_for_responses_api(
                 tools
             )
-            tool_executor = ToolExecutor(tools)
+            tool_executor = ToolExecutor(
+                tools, create_logger(f'{__name__}.ToolExecutor')
+            )
             self.__logger.debug(
                 'Tools enabled: %s', [tool.name for tool in tools]
             )

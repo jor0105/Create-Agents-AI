@@ -2,7 +2,12 @@ import time
 from typing import Any, Dict, List, Optional
 
 from ....domain import BaseTool, ChatException, ToolExecutor
-from ...config import ChatMetrics, EnvironmentConfig, LoggingConfig
+from ...config import (
+    ChatMetrics,
+    EnvironmentConfig,
+    LoggingConfig,
+    create_logger,
+)
 from ..Common import MetricsRecorder
 from .ollama_client import OllamaClient
 from .ollama_tool_schema_formatter import OllamaToolSchemaFormatter
@@ -37,7 +42,9 @@ class OllamaHandler:
         tool_executor = None
         tool_schemas = None
         if tools:
-            tool_executor = ToolExecutor(tools)
+            tool_executor = ToolExecutor(
+                tools, create_logger(f'{__name__}.ToolExecutor')
+            )
             tool_schemas = OllamaToolSchemaFormatter.format_tools_for_ollama(
                 tools
             )

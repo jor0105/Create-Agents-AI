@@ -2,7 +2,12 @@ import time
 from typing import Any, Dict, AsyncGenerator, List, Optional
 
 from ....domain import ChatException, BaseTool, ToolExecutor
-from ...config import ChatMetrics, EnvironmentConfig, LoggingConfig
+from ...config import (
+    ChatMetrics,
+    EnvironmentConfig,
+    LoggingConfig,
+    create_logger,
+)
 from .ollama_client import OllamaClient
 from .ollama_tool_schema_formatter import OllamaToolSchemaFormatter
 
@@ -45,7 +50,9 @@ class OllamaStreamHandler:
             tool_schemas = OllamaToolSchemaFormatter.format_tools_for_ollama(
                 tools
             )
-            tool_executor = ToolExecutor(tools)
+            tool_executor = ToolExecutor(
+                tools, create_logger(f'{__name__}.ToolExecutor')
+            )
             self.__logger.debug(
                 'Streaming with tools enabled: %s',
                 [tool.name for tool in tools],

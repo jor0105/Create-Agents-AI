@@ -2,7 +2,12 @@ import time
 from typing import Any, Dict, AsyncGenerator, List, Optional
 
 from ....domain import BaseTool, ChatException, ToolExecutor
-from ...config import ChatMetrics, EnvironmentConfig, LoggingConfig
+from ...config import (
+    ChatMetrics,
+    EnvironmentConfig,
+    LoggingConfig,
+    create_logger,
+)
 from .openai_client import OpenAIClient
 from .tool_call_parser import ToolCallParser
 from .tool_schema_formatter import ToolSchemaFormatter
@@ -47,7 +52,9 @@ class OpenAIStreamHandler:
             tool_schemas = ToolSchemaFormatter.format_tools_for_responses_api(
                 tools
             )
-            tool_executor = ToolExecutor(tools)
+            tool_executor = ToolExecutor(
+                tools, create_logger(f'{__name__}.ToolExecutor')
+            )
             self.__logger.debug(
                 'Streaming with tools enabled: %s',
                 [tool.name for tool in tools],
