@@ -2,13 +2,13 @@
 
 Este guia explica as ferramentas disponíveis para seus agentes de IA e como usá-las.
 
-______________________________________________________________________
+---
 
 ## 📦 Visão Geral
 
 Ferramentas são **capacidades adicionais** que seus agentes podem usar para executar tarefas específicas. Para manter o sistema leve, algumas ferramentas com dependências pesadas são **opcionais**.
 
-______________________________________________________________________
+---
 
 ## 🎯 Ferramentas Disponíveis
 
@@ -21,16 +21,20 @@ Obtém data e hora atuais em qualquer timezone.
 **Uso:**
 
 ```python
+import asyncio
 from createagents import CreateAgent
 
-agent = CreateAgent(
-    provider="openai",
-    model="gpt-4",
-    tools=["currentdate"]
-)
+async def main():
+    agent = CreateAgent(
+        provider="openai",
+        model="gpt-4",
+        tools=["currentdate"]
+    )
 
-response = agent.chat("Que dia é hoje?")
-print(response)
+    resposta = await agent.chat("Que dia é hoje?")
+    print(resposta)
+
+asyncio.run(main())
 ```
 
 **Ações suportadas:**
@@ -41,7 +45,7 @@ print(response)
 - `timestamp` - Unix timestamp
 - `date_with_weekday` - Data com dia da semana
 
-______________________________________________________________________
+---
 
 ### 🔧 ReadLocalFileTool (Opcional)
 
@@ -60,16 +64,20 @@ pip install createagents[file-tools]
 **Uso:**
 
 ```python
+import asyncio
 from createagents import CreateAgent
 
-agent = CreateAgent(
-    provider="openai",
-    model="gpt-4",
-    tools=["readlocalfile"]
-)
+async def main():
+    agent = CreateAgent(
+        provider="openai",
+        model="gpt-4",
+        tools=["readlocalfile"]
+    )
 
-response = agent.chat("Leia o arquivo report.pdf e resuma")
-print(response)
+    resposta = await agent.chat("Leia o arquivo report.pdf e resuma")
+    print(resposta)
+
+asyncio.run(main())
 ```
 
 **Limites:**
@@ -84,54 +92,73 @@ print(response)
 - ✅ Suporte a múltiplos formatos
 - ✅ Tratamento robusto de erros
 
-______________________________________________________________________
+---
 
 ## 🚀 Uso com Agentes
 
 ### Exemplo 1: Ferramenta de Data
 
 ```python
-agent = CreateAgent(
-    provider="openai",
-    model="gpt-4",
-    instructions="Você pode verificar data/hora quando necessário",
-    tools=["currentdate"]
-)
+import asyncio
 
-# O agente usa a ferramenta automaticamente
-response = agent.chat("Que dia da semana é hoje?")
+async def main():
+    agent = CreateAgent(
+        provider="openai",
+        model="gpt-4",
+        instructions="Você pode verificar data/hora quando necessário",
+        tools=["currentdate"]
+    )
+
+    # O agente usa a ferramenta automaticamente
+    resposta = await agent.chat("Que dia da semana é hoje?")
+    print(resposta)
+
+asyncio.run(main())
 ```
 
 ### Exemplo 2: Leitura de Arquivos
 
 ```python
-# Certifique-se que instalou: pip install createagents[file-tools]
+import asyncio
 
-agent = CreateAgent(
-    provider="openai",
-    model="gpt-4",
-    instructions="Você pode ler arquivos locais",
-    tools=["readlocalfile"]
-)
+async def main():
+    # Certifique-se que instalou: pip install createagents[file-tools]
+    agent = CreateAgent(
+        provider="openai",
+        model="gpt-4",
+        instructions="Você pode ler arquivos locais",
+        tools=["readlocalfile"]
+    )
 
-response = agent.chat("Resuma o documento relatorio.pdf")
+    resposta = await agent.chat("Resuma o documento relatorio.pdf")
+    print(resposta)
+
+asyncio.run(main())
 ```
 
 ### Exemplo 3: Múltiplas Ferramentas
 
 ```python
-agent = CreateAgent(
-    provider="openai",
-    model="gpt-4",
-    tools=["currentdate", "readlocalfile"]
-)
+import asyncio
 
-# O agente escolhe qual ferramenta usar
-agent.chat("Que dia é hoje?")  # Usa currentdate
-agent.chat("Leia notas.txt")   # Usa readlocalfile
+async def main():
+    agent = CreateAgent(
+        provider="openai",
+        model="gpt-4",
+        tools=["currentdate", "readlocalfile"]
+    )
+
+    # O agente escolhe qual ferramenta usar
+    resposta1 = await agent.chat("Que dia é hoje?")  # Usa currentdate
+    print(resposta1)
+
+    resposta2 = await agent.chat("Leia notas.txt")   # Usa readlocalfile
+    print(resposta2)
+
+asyncio.run(main())
 ```
 
-______________________________________________________________________
+---
 
 ## 📋 Checklist de Instalação
 
@@ -160,7 +187,7 @@ Inclui:
 - [x] ReadLocalFileTool
 - [x] Suporte para PDF, Excel, CSV, Parquet
 
-______________________________________________________________________
+---
 
 ## 🔍 Verificar Ferramentas Disponíveis
 
@@ -291,7 +318,7 @@ tools = agent.get_all_available_tools()
 print(list(tools.keys()))  # ['currentdate', 'readlocalfile']
 ```
 
-______________________________________________________________________
+---
 
 ## ⚡ Performance
 
@@ -302,7 +329,7 @@ ______________________________________________________________________
 | Básica         | ~50MB        | N/A                   |
 | Com file-tools | ~50MB        | ~200MB (quando usada) |
 
-______________________________________________________________________
+---
 
 ## 🎨 Criar Suas Próprias Ferramentas
 
@@ -326,7 +353,7 @@ class CalculatorTool(BaseTool):
         return str(eval(expression))
 ```
 
-______________________________________________________________________
+---
 
 ## 🤔 FAQ
 
@@ -342,6 +369,6 @@ R: Você receberá erro claro: `pip install createagents[file-tools]`
 **P: Posso criar minhas próprias ferramentas?**
 R: Sim! Siga o padrão de ferramentas próprias e estenda `BaseTool`.
 
-______________________________________________________________________
+---
 
-**Última atualização:** 25/11/2025
+**Última atualização:** 02/12/2025

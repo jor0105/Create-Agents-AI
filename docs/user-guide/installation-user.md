@@ -59,16 +59,19 @@ OPENAI_API_KEY=sk-proj-sua-chave
 ### 4. Testar Instalação
 
 ```python
+import asyncio
 from createagents import CreateAgent
 
-agent = CreateAgent(
-	provider="openai",
-	model="gpt-4",
-	instructions="Você é um assistente útil"
-)
+async def main():
+    agent = CreateAgent(
+        provider="openai",
+        model="gpt-4",
+        instructions="Você é um assistente útil."
+    )
+    response = await agent.chat("Olá! Teste de instalação.")
+    print(response)
 
-response = agent.chat("Olá! Teste de instalação.")
-print(response)
+asyncio.run(main())
 ```
 
 Se o código acima rodar sem erros, a instalação está concluída!
@@ -122,16 +125,19 @@ ollama list             # Ver modelos disponíveis
 ### Usar no Código
 
 ```python
+import asyncio
 from createagents import CreateAgent
 
-agent = CreateAgent(
-	provider="ollama",
-	model="llama2",
-	instructions="Você é um assistente local"
-)
+async def main():
+    agent = CreateAgent(
+        provider="ollama",
+        model="llama3.2",
+        instructions="Você é um assistente local."
+    )
+    response = await agent.chat("Explique machine learning")
+    print(response)
 
-response = agent.chat("Explique machine learning")
-print(response)
+asyncio.run(main())
 ```
 
 > **Dica:** Rode `ollama serve` antes de usar para garantir que o servidor está ativo.
@@ -227,4 +233,4 @@ poetry run pre-commit run --all-files
 
 ---
 
-**Versão:** 0.1.2 | **Atualização:** 25/11/2025
+**Versão:** 0.2.0 | **Atualização:** 02/12/2025

@@ -129,35 +129,43 @@ cp .env.example .env
 ### Exemplo Básico
 
 ```python
+import asyncio
 from createagents import CreateAgent
 
-# Criar agente
-agent = CreateAgent(
-    provider="openai",
-    model="gpt-4",
-    instructions="Você é um assistente técnico especializado em Python"
-)
+async def main():
+    # Criar agente
+    agent = CreateAgent(
+        provider="openai",
+        model="gpt-4",
+        instructions="Você é um assistente técnico especializado em Python"
+    )
 
-# Conversar
-response = agent.chat("Como criar uma função recursiva?")
-print(response)
+    # Conversar
+    response = await agent.chat("Como criar uma função recursiva?")
+    print(response)
+
+asyncio.run(main())
 ```
 
 ### Com Ferramentas
 
 ```python
+import asyncio
 from createagents import CreateAgent
 
-# Agente com ferramentas
-agent = CreateAgent(
-    provider="openai",
-    model="gpt-4",
-    tools=["currentdate", "readlocalfile"]
-)
+async def main():
+    # Agente com ferramentas
+    agent = CreateAgent(
+        provider="openai",
+        model="gpt-4",
+        tools=["currentdate"]
+    )
 
-# O agente usa ferramentas automaticamente
-agent.chat("Que dia é hoje?")  # Usa CurrentDateTool
-agent.chat("Leia o arquivo report.pdf")  # Usa ReadLocalFileTool
+    # O agente usa ferramentas automaticamente
+    response = await agent.chat("Que dia é hoje?")  # Usa CurrentDateTool
+    print(response)
+
+asyncio.run(main())
 ```
 
 ### Ollama (Local)
@@ -171,16 +179,23 @@ ollama pull llama3.2:latest
 ollama serve
 ```
 
-```python
-# Usar modelo local
-agent = CreateAgent(
-    provider="ollama",
-    model="llama3.2",
-    instructions="Você é um assistente local"
-)
+### Agente Local com Ollama
 
-response = agent.chat("Explique Clean Architecture")
-print(response)
+```python
+import asyncio
+from createagents import CreateAgent
+
+async def main():
+    agent = CreateAgent(
+        provider="ollama",
+        model="llama3.2",
+        instructions="Você é um assistente local"
+    )
+
+    response = await agent.chat("Explique Clean Architecture")
+    print(response)
+
+asyncio.run(main())
 ```
 
 ---
@@ -190,54 +205,65 @@ print(response)
 ### Exemplo 1: Assistente de Programação
 
 ```python
+import asyncio
 from createagents import CreateAgent
 
-assistant = CreateAgent(
-    provider="openai",
-    model="gpt-4",
-    name="Code Assistant",
-    instructions="Você é um especialista em programação Python. Sempre forneça exemplos de código.",
-    config={"temperature": 0.3}  # Menos criatividade para código
-)
+async def main():
+    assistant = CreateAgent(
+        provider="openai",
+        model="gpt-4",
+        name="Code Assistant",
+        instructions="Você é um especialista em programação Python. Sempre forneça exemplos de código.",
+        config={"temperature": 0.3}  # Menos criatividade para código
+    )
 
-# Conversar
-response = assistant.chat("Como ordenar uma lista de dicionários por chave?")
-print(response)
+    # Conversar
+    resposta = await assistant.chat("Como ordenar uma lista de dicionários por chave?")
+    print(resposta)
 
-# Ver histórico
-config = assistant.get_configs()
-print(f"Histórico: {len(config['history'])} mensagens")
+    # Ver histórico
+    config = assistant.get_configs()
+    print(f"Histórico: {len(config['history'])} mensagens")
 
-# Limpar e começar novo diálogo
-assistant.clear_history()
+    # Limpar e começar novo diálogo
+    assistant.clear_history()
+
+asyncio.run(main())
 ```
 
 ### Exemplo 2: Múltiplos Agentes
 
 ```python
-# Um para análise
-analyzer = CreateAgent(
-    provider="openai",
-    model="gpt-4",
-    instructions="Você analisa código e fornece feedback crítico",
-    config={"temperature": 0.5}
-)
+import asyncio
+from createagents import CreateAgent
 
-# Outro para documentação
-documentor = CreateAgent(
-    provider="openai",
-    model="gpt-4",
-    instructions="Você escreve documentação clara e profissional",
-    config={"temperature": 0.3}
-)
+async def main():
+    # Um para análise
+    analyzer = CreateAgent(
+        provider="openai",
+        model="gpt-4",
+        instructions="Você analisa código e fornece feedback crítico",
+        config={"temperature": 0.5}
+    )
 
-# Usar ambos
-code = "def sum(a,b): return a+b"
-feedback = analyzer.chat(f"Revise este código:\n{code}")
-docs = documentor.chat(f"Documente este código:\n{code}")
+    # Outro para documentação
+    documentor = CreateAgent(
+        provider="openai",
+        model="gpt-4",
+        instructions="Você escreve documentação clara e profissional",
+        config={"temperature": 0.3}
+    )
 
-print("Feedback:", feedback)
-print("Documentação:", docs)
+    # Usar ambos
+    code = "def sum(a,b): return a+b"
+
+    analise = await analyzer.chat(f"Analise este código: {code}")
+    print("Análise:", analise)
+
+    docs = await documentor.chat(f"Documente esta função: {code}")
+    print("\nDocumentação:", docs)
+
+asyncio.run(main())
 ```
 
 ### Exemplo 3: Ferramenta Customizada
@@ -548,8 +574,8 @@ Este projeto está licenciado sob a **MIT License** - veja o arquivo [LICENSE](L
 
 <div align="center">
 
-**Versão:** 0.1.2\
-**Última atualização:** 25/11/2025\
+**Versão:** 0.2.0
+**Última atualização:** 02/12/2025
 **Status:** 🚀 Projeto publicado! Aberto para contribuições e sugestões.
 
 ⭐ Se este projeto foi útil, considere dar uma estrela no GitHub!

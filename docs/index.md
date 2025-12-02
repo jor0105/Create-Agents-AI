@@ -45,16 +45,20 @@ echo "OPENAI_API_KEY=sk-proj-sua-chave" > .env
 ### Primeiro Agente em 3 Linhas
 
 ```python
+import asyncio
 from createagents import CreateAgent
 
-agent = CreateAgent(
-    provider="openai",
-    model="gpt-4",
-    instructions="Você é um assistente útil"
-)
+async def main():
+    agent = CreateAgent(
+        provider="openai",
+        model="gpt-4",
+        instructions="Você é um assistente útil"
+    )
 
-response = agent.chat("Olá!")
-print(response)
+    response = await agent.chat("Olá!")
+    print(response)
+
+asyncio.run(main())
 ```
 
 ---
@@ -76,24 +80,32 @@ agent_local = CreateAgent(provider="ollama", model="llama2")
 Adicione capacidades aos seus agentes com ferramentas prontas:
 
 ```python
-agent = CreateAgent(
-    provider="openai",
-    model="gpt-4",
-    tools=["currentdate", "readlocalfile"]  # Ferramentas disponíveis
-)
+import asyncio
 
-# O agente usa automaticamente as ferramentas quando necessário
-agent.chat("Que dia é hoje?")  # Usa CurrentDateTool
-agent.chat("Leia o arquivo report.pdf")  # Usa ReadLocalFileTool
+async def main():
+    agent = CreateAgent(
+        provider="openai",
+        model="gpt-4",
+        tools=["currentdate", "readlocalfile"]  # Ferramentas disponíveis
+    )
 
-# Verificar ferramentas disponíveis
-all_tools = agent.get_all_available_tools()
-print(f"Total de ferramentas: {len(all_tools)}")
+    # O agente usa automaticamente as ferramentas quando necessário
+    response1 = await agent.chat("Que dia é hoje?")  # Usa CurrentDateTool
+    print(response1)
 
-# Ver apenas ferramentas do sistema
-system_tools = agent.get_system_available_tools()
-for name in system_tools.keys():
-    print(f"  • {name}")
+    response2 = await agent.chat("Leia o arquivo report.pdf")  # Usa ReadLocalFileTool
+    print(response2)
+
+    # Verificar ferramentas disponíveis
+    all_tools = agent.get_all_available_tools()
+    print(f"Total de ferramentas: {len(all_tools)}")
+
+    # Ver apenas ferramentas do sistema
+    system_tools = agent.get_system_available_tools()
+    for name in system_tools.keys():
+        print(f"  • {name}")
+
+asyncio.run(main())
 ```
 
 **Ferramentas Disponíveis:**
@@ -140,16 +152,23 @@ print(agent.get_all_available_tools().keys())
 ### 💬 Histórico Contextual
 
 ```python
-agent.chat("Olá!")
-agent.chat("Qual é a capital do Brasil?") # Mantém contexto
-agent.chat("E a população?")              # Usa contexto anterior
+import asyncio
 
-# Ver histórico
-config = agent.get_configs()
-print(f"Histórico: {len(config['history'])} mensagens")
+async def main():
+    agent = CreateAgent(provider="openai", model="gpt-4")
 
-# Limpar quando necessário
-agent.clear_history()
+    await agent.chat("Olá!")
+    await agent.chat("Qual é a capital do Brasil?")  # Mantém contexto
+    await agent.chat("E a população?")              # Usa contexto anterior
+
+    # Ver histórico
+    config = agent.get_configs()
+    print(f"Histórico: {len(config['history'])} mensagens")
+
+    # Limpar quando necessário
+    agent.clear_history()
+
+asyncio.run(main())
 ```
 
 ### 📊 Métricas e Monitoramento
@@ -290,6 +309,6 @@ MIT - Use livremente em seus projetos.
 
 ---
 
-**Versão:** 0.1.2\
-**Última atualização:** 25/11/2025\
+**Versão:** 0.2.0
+**Última atualização:** 02/12/2025
 **Status:** 🚀 Projeto publicado! Aberto para contribuições e sugestões.

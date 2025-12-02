@@ -1,6 +1,6 @@
 [project]
 name = "createagents"
-version = "0.1.2"
+version = "0.2.0"
 description = "A powerful and accessible framework for creating AI agents and automation workflows"
 readme = "README.md"
 license = "MIT"
