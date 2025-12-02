@@ -822,6 +822,62 @@
   
   
     <li class="md-nav__item">
+      <a href="user-guide/cli-usage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Uso da CLI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="user-guide/streaming-guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Guia de Streaming
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="user-guide/examples-user/" class="md-nav__link">
         
   
@@ -945,6 +1001,90 @@
     
   
     Arquitetura
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="dev-guide/cli-architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Arquitetura CLI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="dev-guide/async-guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Guia Async
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="dev-guide/logging_guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Logging
   
 
     
@@ -1108,6 +1248,62 @@
   
   
     <li class="md-nav__item">
+      <a href="reference/streaming-api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API de Streaming
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="reference/metrics-api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API de Métricas
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="reference/tools/" class="md-nav__link">
         
   
@@ -1143,7 +1339,7 @@
   <span class="md-ellipsis">
     
   
-    Comandos
+    Comandos CLI
   
 
     
@@ -1216,16 +1412,20 @@ pip<span class="w"> </span>install<span class="w"> </span>createagents<span clas
 <span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;OPENAI_API_KEY=sk-proj-sua-chave&quot;</span><span class="w"> </span>&gt;<span class="w"> </span>.env
 </code></pre></div>
 <h3 id="primeiro-agente-em-3-linhas">Primeiro Agente em 3 Linhas<a class="headerlink" href="#primeiro-agente-em-3-linhas" title="Link para esta seção">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">createagents</span><span class="w"> </span><span class="kn">import</span> <span class="n">CreateAgent</span>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">createagents</span><span class="w"> </span><span class="kn">import</span> <span class="n">CreateAgent</span>
 
-<span class="n">agent</span> <span class="o">=</span> <span class="n">CreateAgent</span><span class="p">(</span>
-    <span class="n">provider</span><span class="o">=</span><span class="s2">&quot;openai&quot;</span><span class="p">,</span>
-    <span class="n">model</span><span class="o">=</span><span class="s2">&quot;gpt-4&quot;</span><span class="p">,</span>
-    <span class="n">instructions</span><span class="o">=</span><span class="s2">&quot;Você é um assistente útil&quot;</span>
-<span class="p">)</span>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">():</span>
+    <span class="n">agent</span> <span class="o">=</span> <span class="n">CreateAgent</span><span class="p">(</span>
+        <span class="n">provider</span><span class="o">=</span><span class="s2">&quot;openai&quot;</span><span class="p">,</span>
+        <span class="n">model</span><span class="o">=</span><span class="s2">&quot;gpt-4&quot;</span><span class="p">,</span>
+        <span class="n">instructions</span><span class="o">=</span><span class="s2">&quot;Você é um assistente útil&quot;</span>
+    <span class="p">)</span>
 
-<span class="n">response</span> <span class="o">=</span> <span class="n">agent</span><span class="o">.</span><span class="n">chat</span><span class="p">(</span><span class="s2">&quot;Olá!&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="k">await</span> <span class="n">agent</span><span class="o">.</span><span class="n">chat</span><span class="p">(</span><span class="s2">&quot;Olá!&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+
+<span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">())</span>
 </code></pre></div>
 <hr />
 <h2 id="funcionalidades-principais">✨ Funcionalidades Principais<a class="headerlink" href="#funcionalidades-principais" title="Link para esta seção">&para;</a></h2>
@@ -1238,24 +1438,32 @@ pip<span class="w"> </span>install<span class="w"> </span>createagents<span clas
 </code></pre></div>
 <h3 id="ferramentas-integradas">🔧 Ferramentas Integradas<a class="headerlink" href="#ferramentas-integradas" title="Link para esta seção">&para;</a></h3>
 <p>Adicione capacidades aos seus agentes com ferramentas prontas:</p>
-<div class="highlight"><pre><span></span><code><span class="n">agent</span> <span class="o">=</span> <span class="n">CreateAgent</span><span class="p">(</span>
-    <span class="n">provider</span><span class="o">=</span><span class="s2">&quot;openai&quot;</span><span class="p">,</span>
-    <span class="n">model</span><span class="o">=</span><span class="s2">&quot;gpt-4&quot;</span><span class="p">,</span>
-    <span class="n">tools</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;currentdate&quot;</span><span class="p">,</span> <span class="s2">&quot;readlocalfile&quot;</span><span class="p">]</span>  <span class="c1"># Ferramentas disponíveis</span>
-<span class="p">)</span>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
 
-<span class="c1"># O agente usa automaticamente as ferramentas quando necessário</span>
-<span class="n">agent</span><span class="o">.</span><span class="n">chat</span><span class="p">(</span><span class="s2">&quot;Que dia é hoje?&quot;</span><span class="p">)</span>  <span class="c1"># Usa CurrentDateTool</span>
-<span class="n">agent</span><span class="o">.</span><span class="n">chat</span><span class="p">(</span><span class="s2">&quot;Leia o arquivo report.pdf&quot;</span><span class="p">)</span>  <span class="c1"># Usa ReadLocalFileTool</span>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">():</span>
+    <span class="n">agent</span> <span class="o">=</span> <span class="n">CreateAgent</span><span class="p">(</span>
+        <span class="n">provider</span><span class="o">=</span><span class="s2">&quot;openai&quot;</span><span class="p">,</span>
+        <span class="n">model</span><span class="o">=</span><span class="s2">&quot;gpt-4&quot;</span><span class="p">,</span>
+        <span class="n">tools</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;currentdate&quot;</span><span class="p">,</span> <span class="s2">&quot;readlocalfile&quot;</span><span class="p">]</span>  <span class="c1"># Ferramentas disponíveis</span>
+    <span class="p">)</span>
 
-<span class="c1"># Verificar ferramentas disponíveis</span>
-<span class="n">all_tools</span> <span class="o">=</span> <span class="n">agent</span><span class="o">.</span><span class="n">get_all_available_tools</span><span class="p">()</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Total de ferramentas: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">all_tools</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="c1"># O agente usa automaticamente as ferramentas quando necessário</span>
+    <span class="n">response1</span> <span class="o">=</span> <span class="k">await</span> <span class="n">agent</span><span class="o">.</span><span class="n">chat</span><span class="p">(</span><span class="s2">&quot;Que dia é hoje?&quot;</span><span class="p">)</span>  <span class="c1"># Usa CurrentDateTool</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">response1</span><span class="p">)</span>
 
-<span class="c1"># Ver apenas ferramentas do sistema</span>
-<span class="n">system_tools</span> <span class="o">=</span> <span class="n">agent</span><span class="o">.</span><span class="n">get_system_available_tools</span><span class="p">()</span>
-<span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">system_tools</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  • </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">response2</span> <span class="o">=</span> <span class="k">await</span> <span class="n">agent</span><span class="o">.</span><span class="n">chat</span><span class="p">(</span><span class="s2">&quot;Leia o arquivo report.pdf&quot;</span><span class="p">)</span>  <span class="c1"># Usa ReadLocalFileTool</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">response2</span><span class="p">)</span>
+
+    <span class="c1"># Verificar ferramentas disponíveis</span>
+    <span class="n">all_tools</span> <span class="o">=</span> <span class="n">agent</span><span class="o">.</span><span class="n">get_all_available_tools</span><span class="p">()</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Total de ferramentas: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">all_tools</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Ver apenas ferramentas do sistema</span>
+    <span class="n">system_tools</span> <span class="o">=</span> <span class="n">agent</span><span class="o">.</span><span class="n">get_system_available_tools</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">system_tools</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  • </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">())</span>
 </code></pre></div>
 <p><strong>Ferramentas Disponíveis:</strong></p>
 <ul>
@@ -1296,16 +1504,23 @@ pip<span class="w"> </span>install<span class="w"> </span>createagents<span clas
 <span class="c1"># Saída: dict_keys([&#39;currentdate&#39;, &#39;readlocalfile&#39;, &#39;my_tool&#39;])</span>
 </code></pre></div>
 <h3 id="historico-contextual">💬 Histórico Contextual<a class="headerlink" href="#historico-contextual" title="Link para esta seção">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><span class="n">agent</span><span class="o">.</span><span class="n">chat</span><span class="p">(</span><span class="s2">&quot;Olá!&quot;</span><span class="p">)</span>
-<span class="n">agent</span><span class="o">.</span><span class="n">chat</span><span class="p">(</span><span class="s2">&quot;Qual é a capital do Brasil?&quot;</span><span class="p">)</span> <span class="c1"># Mantém contexto</span>
-<span class="n">agent</span><span class="o">.</span><span class="n">chat</span><span class="p">(</span><span class="s2">&quot;E a população?&quot;</span><span class="p">)</span>              <span class="c1"># Usa contexto anterior</span>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
 
-<span class="c1"># Ver histórico</span>
-<span class="n">config</span> <span class="o">=</span> <span class="n">agent</span><span class="o">.</span><span class="n">get_configs</span><span class="p">()</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Histórico: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;history&#39;</span><span class="p">])</span><span class="si">}</span><span class="s2"> mensagens&quot;</span><span class="p">)</span>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">():</span>
+    <span class="n">agent</span> <span class="o">=</span> <span class="n">CreateAgent</span><span class="p">(</span><span class="n">provider</span><span class="o">=</span><span class="s2">&quot;openai&quot;</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s2">&quot;gpt-4&quot;</span><span class="p">)</span>
 
-<span class="c1"># Limpar quando necessário</span>
-<span class="n">agent</span><span class="o">.</span><span class="n">clear_history</span><span class="p">()</span>
+    <span class="k">await</span> <span class="n">agent</span><span class="o">.</span><span class="n">chat</span><span class="p">(</span><span class="s2">&quot;Olá!&quot;</span><span class="p">)</span>
+    <span class="k">await</span> <span class="n">agent</span><span class="o">.</span><span class="n">chat</span><span class="p">(</span><span class="s2">&quot;Qual é a capital do Brasil?&quot;</span><span class="p">)</span>  <span class="c1"># Mantém contexto</span>
+    <span class="k">await</span> <span class="n">agent</span><span class="o">.</span><span class="n">chat</span><span class="p">(</span><span class="s2">&quot;E a população?&quot;</span><span class="p">)</span>              <span class="c1"># Usa contexto anterior</span>
+
+    <span class="c1"># Ver histórico</span>
+    <span class="n">config</span> <span class="o">=</span> <span class="n">agent</span><span class="o">.</span><span class="n">get_configs</span><span class="p">()</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Histórico: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;history&#39;</span><span class="p">])</span><span class="si">}</span><span class="s2"> mensagens&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Limpar quando necessário</span>
+    <span class="n">agent</span><span class="o">.</span><span class="n">clear_history</span><span class="p">()</span>
+
+<span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">())</span>
 </code></pre></div>
 <h3 id="metricas-e-monitoramento">📊 Métricas e Monitoramento<a class="headerlink" href="#metricas-e-monitoramento" title="Link para esta seção">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><span class="c1"># Coletar métricas</span>
@@ -1418,8 +1633,8 @@ pip<span class="w"> </span>install<span class="w"> </span>createagents<span clas
 <li>Email: <a href="&#109;&#97;&#105;&#108;&#116;&#111;&#58;&#101;&#115;&#116;&#114;&#97;&#108;&#105;&#111;&#116;&#111;&#106;&#111;&#114;&#100;&#97;&#110;&#64;&#103;&#109;&#97;&#105;&#108;&#46;&#99;&#111;&#109;">&#101;&#115;&#116;&#114;&#97;&#108;&#105;&#111;&#116;&#111;&#106;&#111;&#114;&#100;&#97;&#110;&#64;&#103;&#109;&#97;&#105;&#108;&#46;&#99;&#111;&#109;</a></li>
 </ul>
 <hr />
-<p><strong>Versão:</strong> 0.1.2\<br />
-<strong>Última atualização:</strong> 25/11/2025\<br />
+<p><strong>Versão:</strong> 0.2.0<br />
+<strong>Última atualização:</strong> 02/12/2025<br />
 <strong>Status:</strong> 🚀 Projeto publicado! Aberto para contribuições e sugestões.</p>
 
 

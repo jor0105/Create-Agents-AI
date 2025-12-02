@@ -12,13 +12,13 @@
         <meta name="author" content="Jordan Estralioto">
       
       
-        <link rel="canonical" href="https://jor0105.github.io/Create-Agents-AI/user-guide/faq-user/">
+        <link rel="canonical" href="https://jor0105.github.io/Create-Agents-AI/user-guide/cli-usage/">
       
       
-        <link rel="prev" href="../examples-user/">
+        <link rel="prev" href="../basic-usage-user/">
       
       
-        <link rel="next" href="../../dev-guide/architecture-developer/">
+        <link rel="next" href="../streaming-guide/">
       
       
         
@@ -29,7 +29,7 @@
     
     
       
-        <title>FAQ - Create Agents AI</title>
+        <title>Uso da CLI - Create Agents AI</title>
       
     
     
@@ -84,7 +84,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#faq-do-usuario" class="md-skip">
+        <a href="#guia-de-uso-da-cli-interativa" class="md-skip">
           Ir para o conteúdo
         </a>
       
@@ -118,7 +118,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              FAQ
+              Uso da CLI
             
           </span>
         </div>
@@ -502,10 +502,37 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../cli-usage/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Uso da CLI
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -521,6 +548,331 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Índice">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Índice
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#inicio-rapido" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🚀 Início Rápido
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#recursos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ✨ Recursos
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#comandos-disponiveis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📋 Comandos Disponíveis
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="📋 Comandos Disponíveis">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#help-ajuda" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        /help - Ajuda
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#metrics-metricas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        /metrics - Métricas
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#configs-configuracoes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        /configs - Configurações
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tools-ferramentas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        /tools - Ferramentas
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#clear-limpar-historico" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        /clear - Limpar Histórico
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#chat-normal" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Chat Normal
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#exit-quit-sair" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        exit / quit - Sair
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#interface-e-formatacao" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🎨 Interface e Formatação
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🎨 Interface e Formatação">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#cores-e-destaque" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cores e Destaque
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#formatacao-markdown" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Formatação Markdown
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#indicadores-de-status" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Indicadores de Status
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#exemplos-de-uso" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        💡 Exemplos de Uso
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="💡 Exemplos de Uso">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#exemplo-1-assistente-de-programacao" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Exemplo 1: Assistente de Programação
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#exemplo-2-agente-com-ferramentas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Exemplo 2: Agente com Ferramentas
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#exemplo-3-ollama-local" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Exemplo 3: Ollama Local
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#personalizacao" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🔧 Personalização
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🔧 Personalização">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#usando-a-cli-programaticamente" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Usando a CLI Programaticamente
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#troubleshooting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🐛 Troubleshooting
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🐛 Troubleshooting">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#cli-nao-inicia" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CLI não inicia
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#caracteres-especiais-nao-aparecem" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Caracteres especiais não aparecem
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#streaming-muito-lento" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Streaming muito lento
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#proximos-passos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📚 Próximos Passos
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -586,37 +938,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    FAQ
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../faq-user/" class="md-nav__link">
         
   
   
@@ -632,191 +957,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Índice">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Índice
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#1-por-que-algumas-ferramentas-sao-opcionais" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        1. Por que algumas ferramentas são opcionais?
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#2-como-sei-quais-ferramentas-estao-disponiveis" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        2. Como sei quais ferramentas estão disponíveis?
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#3-o-que-acontece-se-eu-tentar-usar-uma-ferramenta-nao-instalada" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        3. O que acontece se eu tentar usar uma ferramenta não instalada?
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#4-posso-criar-minhas-proprias-ferramentas" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        4. Posso criar minhas próprias ferramentas?
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#5-como-garantir-privacidade-dos-meus-dados" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        5. Como garantir privacidade dos meus dados?
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#6-como-exportar-metricas" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        6. Como exportar métricas?
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#7-como-limpar-o-historico" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        7. Como limpar o histórico?
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#8-como-reportar-bugs-ou-pedir-suporte" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        8. Como reportar bugs ou pedir suporte?
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#9-como-atualizar-o-framework" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        9. Como atualizar o framework?
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#10-onde-encontrar-exemplos-avancados" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        10. Onde encontrar exemplos avançados?
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#11-como-usar-a-cli-interativa" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        11. Como usar a CLI interativa?
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#12-como-funciona-o-streaming" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        12. Como funciona o streaming?
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#13-posso-desabilitar-o-streaming" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        13. Posso desabilitar o streaming?
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#14-quais-comandos-estao-disponiveis-na-cli" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        14. Quais comandos estão disponíveis na CLI?
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#15-como-contribuir-com-o-projeto" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        15. Como contribuir com o projeto?
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -1275,77 +1415,242 @@
   
 
 
-<h1 id="faq-do-usuario">FAQ do Usuário<a class="headerlink" href="#faq-do-usuario" title="Link para esta seção">&para;</a></h1>
-<h2 id="1-por-que-algumas-ferramentas-sao-opcionais">1. Por que algumas ferramentas são opcionais?<a class="headerlink" href="#1-por-que-algumas-ferramentas-sao-opcionais" title="Link para esta seção">&para;</a></h2>
-<p>Para manter o sistema leve. Instale apenas se precisar de leitura de arquivos (PDF, Excel, etc).</p>
-<h2 id="2-como-sei-quais-ferramentas-estao-disponiveis">2. Como sei quais ferramentas estão disponíveis?<a class="headerlink" href="#2-como-sei-quais-ferramentas-estao-disponiveis" title="Link para esta seção">&para;</a></h2>
-<p>Use <code>agent.get_all_available_tools()</code> para listar.</p>
-<h2 id="3-o-que-acontece-se-eu-tentar-usar-uma-ferramenta-nao-instalada">3. O que acontece se eu tentar usar uma ferramenta não instalada?<a class="headerlink" href="#3-o-que-acontece-se-eu-tentar-usar-uma-ferramenta-nao-instalada" title="Link para esta seção">&para;</a></h2>
-<p>Você receberá um erro claro indicando como instalar.</p>
-<h2 id="4-posso-criar-minhas-proprias-ferramentas">4. Posso criar minhas próprias ferramentas?<a class="headerlink" href="#4-posso-criar-minhas-proprias-ferramentas" title="Link para esta seção">&para;</a></h2>
-<p>Sim! Basta estender <code>BaseTool</code> e seguir o padrão dos exemplos.</p>
-<h2 id="5-como-garantir-privacidade-dos-meus-dados">5. Como garantir privacidade dos meus dados?<a class="headerlink" href="#5-como-garantir-privacidade-dos-meus-dados" title="Link para esta seção">&para;</a></h2>
-<p>Use modelos locais (Ollama) para que nada saia da sua máquina.</p>
-<h2 id="6-como-exportar-metricas">6. Como exportar métricas?<a class="headerlink" href="#6-como-exportar-metricas" title="Link para esta seção">&para;</a></h2>
-<p>Use <code>agent.export_metrics_json()</code> ou <code>agent.export_metrics_prometheus()</code>.</p>
-<h2 id="7-como-limpar-o-historico">7. Como limpar o histórico?<a class="headerlink" href="#7-como-limpar-o-historico" title="Link para esta seção">&para;</a></h2>
-<p>Chame <code>agent.clear_history()</code>.</p>
-<h2 id="8-como-reportar-bugs-ou-pedir-suporte">8. Como reportar bugs ou pedir suporte?<a class="headerlink" href="#8-como-reportar-bugs-ou-pedir-suporte" title="Link para esta seção">&para;</a></h2>
-<p>Abra uma issue no GitHub ou envie email para <a href="&#109;&#97;&#105;&#108;&#116;&#111;&#58;&#101;&#115;&#116;&#114;&#97;&#108;&#105;&#111;&#116;&#111;&#106;&#111;&#114;&#100;&#97;&#110;&#64;&#103;&#109;&#97;&#105;&#108;&#46;&#99;&#111;&#109;">&#101;&#115;&#116;&#114;&#97;&#108;&#105;&#111;&#116;&#111;&#106;&#111;&#114;&#100;&#97;&#110;&#64;&#103;&#109;&#97;&#105;&#108;&#46;&#99;&#111;&#109;</a>.</p>
-<h2 id="9-como-atualizar-o-framework">9. Como atualizar o framework?<a class="headerlink" href="#9-como-atualizar-o-framework" title="Link para esta seção">&para;</a></h2>
-<p>Atualize via pip:</p>
-<div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>--upgrade<span class="w"> </span>createagents
-<span class="c1"># OU com file-tools</span>
-pip<span class="w"> </span>install<span class="w"> </span>--upgrade<span class="w"> </span>createagents<span class="o">[</span>file-tools<span class="o">]</span>
+<h1 id="guia-de-uso-da-cli-interativa">Guia de Uso da CLI Interativa<a class="headerlink" href="#guia-de-uso-da-cli-interativa" title="Link para esta seção">&para;</a></h1>
+<p>A CLI (Command-Line Interface) do CreateAgents AI oferece uma interface interativa profissional para conversar com seus agentes de IA.</p>
+<hr />
+<h2 id="inicio-rapido">🚀 Início Rápido<a class="headerlink" href="#inicio-rapido" title="Link para esta seção">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">createagents</span><span class="w"> </span><span class="kn">import</span> <span class="n">CreateAgent</span>
+
+<span class="c1"># Criar agente</span>
+<span class="n">agent</span> <span class="o">=</span> <span class="n">CreateAgent</span><span class="p">(</span>
+    <span class="n">provider</span><span class="o">=</span><span class="s2">&quot;openai&quot;</span><span class="p">,</span>
+    <span class="n">model</span><span class="o">=</span><span class="s2">&quot;gpt-4&quot;</span><span class="p">,</span>
+    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Assistente&quot;</span><span class="p">,</span>
+    <span class="n">instructions</span><span class="o">=</span><span class="s2">&quot;Você é um assistente prestativo&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="c1"># Iniciar CLI interativa</span>
+<span class="n">agent</span><span class="o">.</span><span class="n">start_cli</span><span class="p">()</span>
 </code></pre></div>
-<h2 id="10-onde-encontrar-exemplos-avancados">10. Onde encontrar exemplos avançados?<a class="headerlink" href="#10-onde-encontrar-exemplos-avancados" title="Link para esta seção">&para;</a></h2>
-<p>Veja <a href="../examples-user/">Exemplos</a> e a documentação avançada.</p>
-<h2 id="11-como-usar-a-cli-interativa">11. Como usar a CLI interativa?<a class="headerlink" href="#11-como-usar-a-cli-interativa" title="Link para esta seção">&para;</a></h2>
-<p>Basta chamar o método <code>start_cli()</code> do agente:</p>
+<hr />
+<h2 id="recursos">✨ Recursos<a class="headerlink" href="#recursos" title="Link para esta seção">&para;</a></h2>
+<ul>
+<li><strong>🎨 Interface Colorida</strong>: Sintaxe highlight e formatação markdown</li>
+<li><strong>⚡ Streaming em Tempo Real</strong>: Respostas aparecem token por token</li>
+<li><strong>🎯 Comandos Integrados</strong>: 7 comandos para controle total</li>
+<li><strong>🔧 Indicadores de Status</strong>: Mostra quando o agente está pensando</li>
+<li><strong>📊 Métricas em Tempo Real</strong>: Visualize performance instantaneamente</li>
+</ul>
+<hr />
+<h2 id="comandos-disponiveis">📋 Comandos Disponíveis<a class="headerlink" href="#comandos-disponiveis" title="Link para esta seção">&para;</a></h2>
+<h3 id="help-ajuda"><code>/help</code> - Ajuda<a class="headerlink" href="#help-ajuda" title="Link para esta seção">&para;</a></h3>
+<p>Exibe lista de comandos disponíveis.</p>
+<div class="highlight"><pre><span></span><code>Você: /help
+</code></pre></div>
+<p><strong>Aliases</strong>: <code>/help</code>, <code>help</code></p>
+<h3 id="metrics-metricas"><code>/metrics</code> - Métricas<a class="headerlink" href="#metrics-metricas" title="Link para esta seção">&para;</a></h3>
+<p>Mostra estatísticas de performance do agente:</p>
+<ul>
+<li>Número de chamadas</li>
+<li>Tokens usados (prompt + completion)</li>
+<li>Latência média</li>
+<li>Taxa de sucesso</li>
+<li>Métricas Ollama: load_duration, prompt_eval_duration, eval_duration</li>
+</ul>
+<div class="highlight"><pre><span></span><code>Você: /metrics
+</code></pre></div>
+<p><strong>Aliases</strong>: <code>/metrics</code>, <code>metrics</code></p>
+<p><strong>Exemplo de saída</strong>:</p>
+<div class="highlight"><pre><span></span><code>📊 Métricas de Performance
+
+Chamada #1 | ✅ Sucesso
+  └─ Modelo: gpt-4
+  └─ Latência: 1,245ms
+  └─ Tokens: 150 (prompt: 45, completion: 105)
+
+Chamada #2 | ✅ Sucesso
+  └─ Modelo: gpt-4
+  └─ Latência: 982ms
+  └─ Tokens: 230 (prompt: 110, completion: 120)
+
+📈 Estatísticas Gerais
+  Total de chamadas: 2
+  Taxa de sucesso: 100%
+  Latência média: 1,113ms
+  Total de tokens: 380
+</code></pre></div>
+<h3 id="configs-configuracoes"><code>/configs</code> - Configurações<a class="headerlink" href="#configs-configuracoes" title="Link para esta seção">&para;</a></h3>
+<p>Mostra configurações atuais do agente:</p>
+<ul>
+<li>Nome</li>
+<li>Provider e modelo</li>
+<li>Instruções</li>
+<li>Parâmetros de configuração</li>
+<li>Ferramentas disponíveis</li>
+<li>Tamanho do histórico</li>
+</ul>
+<div class="highlight"><pre><span></span><code>Você: /configs
+</code></pre></div>
+<p><strong>Aliases</strong>: <code>/configs</code>, <code>configs</code></p>
+<h3 id="tools-ferramentas"><code>/tools</code> - Ferramentas<a class="headerlink" href="#tools-ferramentas" title="Link para esta seção">&para;</a></h3>
+<p>Lista todas as ferramentas disponíveis para o agente.</p>
+<div class="highlight"><pre><span></span><code>Você: /tools
+</code></pre></div>
+<p><strong>Aliases</strong>: <code>/tools</code>, <code>tools</code></p>
+<p><strong>Exemplo de saída</strong>:</p>
+<div class="highlight"><pre><span></span><code>🛠️ Ferramentas Disponíveis
+
+• currentdate
+  └─ Retorna a data e hora atual em qualquer timezone
+
+• readlocalfile
+  └─ Lê e extrai conteúdo de arquivos locais (PDF, Excel, CSV, etc)
+</code></pre></div>
+<h3 id="clear-limpar-historico"><code>/clear</code> - Limpar Histórico<a class="headerlink" href="#clear-limpar-historico" title="Link para esta seção">&para;</a></h3>
+<p>Limpa todo o histórico de conversação e inicia uma nova sessão.</p>
+<div class="highlight"><pre><span></span><code>Você: /clear
+</code></pre></div>
+<p><strong>Aliases</strong>: <code>/clear</code>, <code>clear</code></p>
+<h3 id="chat-normal">Chat Normal<a class="headerlink" href="#chat-normal" title="Link para esta seção">&para;</a></h3>
+<p>Qualquer texto que não seja um comando é enviado como mensagem ao agente.</p>
+<div class="highlight"><pre><span></span><code>Você: Explique Clean Architecture
+</code></pre></div>
+<p>O agente responderá com streaming em tempo real.</p>
+<h3 id="exit-quit-sair"><code>exit</code> / <code>quit</code> - Sair<a class="headerlink" href="#exit-quit-sair" title="Link para esta seção">&para;</a></h3>
+<p>Encerra a aplicação CLI.</p>
+<div class="highlight"><pre><span></span><code>Você: exit
+</code></pre></div>
+<p>ou</p>
+<div class="highlight"><pre><span></span><code>Você: quit
+</code></pre></div>
+<hr />
+<h2 id="interface-e-formatacao">🎨 Interface e Formatação<a class="headerlink" href="#interface-e-formatacao" title="Link para esta seção">&para;</a></h2>
+<h3 id="cores-e-destaque">Cores e Destaque<a class="headerlink" href="#cores-e-destaque" title="Link para esta seção">&para;</a></h3>
+<p>A CLI usa um esquema de cores profissional:</p>
+<ul>
+<li><strong>Prompts</strong>: Cor primária (cyan)</li>
+<li><strong>Respostas do Agente</strong>: Verde</li>
+<li><strong>Mensagens do Sistema</strong>: Amarelo</li>
+<li><strong>Erros</strong>: Vermelho</li>
+<li><strong>Comandos</strong>: Magenta</li>
+</ul>
+<h3 id="formatacao-markdown">Formatação Markdown<a class="headerlink" href="#formatacao-markdown" title="Link para esta seção">&para;</a></h3>
+<p>A renderização suporta:</p>
+<ul>
+<li><strong>Negrito</strong>: <code>**texto**</code></li>
+<li><em>Itálico</em>: <code>*texto*</code></li>
+<li><code>Código inline</code>: <code>`código`</code></li>
+<li>Blocos de código com syntax highlighting</li>
+<li>Listas e cabeçalhos</li>
+</ul>
+<h3 id="indicadores-de-status">Indicadores de Status<a class="headerlink" href="#indicadores-de-status" title="Link para esta seção">&para;</a></h3>
+<p>Durante o processamento:</p>
+<div class="highlight"><pre><span></span><code>⏳ Processando...
+</code></pre></div>
+<p>Durante streaming:</p>
+<div class="highlight"><pre><span></span><code>✨ [Agente está digitando...]
+</code></pre></div>
+<hr />
+<h2 id="exemplos-de-uso">💡 Exemplos de Uso<a class="headerlink" href="#exemplos-de-uso" title="Link para esta seção">&para;</a></h2>
+<h3 id="exemplo-1-assistente-de-programacao">Exemplo 1: Assistente de Programação<a class="headerlink" href="#exemplo-1-assistente-de-programacao" title="Link para esta seção">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">createagents</span><span class="w"> </span><span class="kn">import</span> <span class="n">CreateAgent</span>
+
+<span class="n">code_assistant</span> <span class="o">=</span> <span class="n">CreateAgent</span><span class="p">(</span>
+    <span class="n">provider</span><span class="o">=</span><span class="s2">&quot;openai&quot;</span><span class="p">,</span>
+    <span class="n">model</span><span class="o">=</span><span class="s2">&quot;gpt-4&quot;</span><span class="p">,</span>
+    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Code Expert&quot;</span><span class="p">,</span>
+    <span class="n">instructions</span><span class="o">=</span><span class="s2">&quot;Você é um especialista em Python. Sempre forneça exemplos.&quot;</span>
+<span class="p">)</span>
+
+<span class="c1"># Iniciar CLI interativa</span>
+<span class="n">code_assistant</span><span class="o">.</span><span class="n">start_cli</span><span class="p">()</span>
+</code></pre></div>
+<p><strong>Interação</strong>:</p>
+<div class="highlight"><pre><span></span><code>Você: Como criar um decorator em Python?
+[Resposta em streaming...]
+
+Você: /metrics
+[Exibe estatísticas da chamada]
+
+Você: /clear
+[Limpa histórico para novo tópico]
+</code></pre></div>
+<h3 id="exemplo-2-agente-com-ferramentas">Exemplo 2: Agente com Ferramentas<a class="headerlink" href="#exemplo-2-agente-com-ferramentas" title="Link para esta seção">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">createagents</span><span class="w"> </span><span class="kn">import</span> <span class="n">CreateAgent</span>
+
+<span class="n">agent_with_tools</span> <span class="o">=</span> <span class="n">CreateAgent</span><span class="p">(</span>
+    <span class="n">provider</span><span class="o">=</span><span class="s2">&quot;openai&quot;</span><span class="p">,</span>
+    <span class="n">model</span><span class="o">=</span><span class="s2">&quot;gpt-4&quot;</span><span class="p">,</span>
+    <span class="n">tools</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;currentdate&quot;</span><span class="p">,</span> <span class="s2">&quot;readlocalfile&quot;</span><span class="p">]</span>
+<span class="p">)</span>
+
+<span class="c1"># Iniciar CLI</span>
+<span class="n">agent_with_tools</span><span class="o">.</span><span class="n">start_cli</span><span class="p">()</span>
+</code></pre></div>
+<p><strong>Interação</strong>:</p>
+<div class="highlight"><pre><span></span><code>Você: /tools
+[Lista ferramentas disponíveis]
+
+Você: Que dia é hoje?
+[Agente usa CurrentDateTool automaticamente]
+
+Você: Leia o arquivo report.pdf
+[Agente usa ReadLocalFileTool]
+</code></pre></div>
+<h3 id="exemplo-3-ollama-local">Exemplo 3: Ollama Local<a class="headerlink" href="#exemplo-3-ollama-local" title="Link para esta seção">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">createagents</span><span class="w"> </span><span class="kn">import</span> <span class="n">CreateAgent</span>
+
+<span class="n">local_agent</span> <span class="o">=</span> <span class="n">CreateAgent</span><span class="p">(</span>
+    <span class="n">provider</span><span class="o">=</span><span class="s2">&quot;ollama&quot;</span><span class="p">,</span>
+    <span class="n">model</span><span class="o">=</span><span class="s2">&quot;llama3.2&quot;</span><span class="p">,</span>
+    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Assistente Local&quot;</span>
+<span class="p">)</span>
+
+<span class="c1"># Iniciar CLI</span>
+<span class="n">local_agent</span><span class="o">.</span><span class="n">start_cli</span><span class="p">()</span>
+</code></pre></div>
+<hr />
+<h2 id="personalizacao">🔧 Personalização<a class="headerlink" href="#personalizacao" title="Link para esta seção">&para;</a></h2>
+<h3 id="usando-a-cli-programaticamente">Usando a CLI Programaticamente<a class="headerlink" href="#usando-a-cli-programaticamente" title="Link para esta seção">&para;</a></h3>
+<p>A CLI é iniciada através do método <code>start_cli()</code> da facade <code>CreateAgent</code>:</p>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">createagents</span><span class="w"> </span><span class="kn">import</span> <span class="n">CreateAgent</span>
 
 <span class="n">agent</span> <span class="o">=</span> <span class="n">CreateAgent</span><span class="p">(</span><span class="n">provider</span><span class="o">=</span><span class="s2">&quot;openai&quot;</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s2">&quot;gpt-4&quot;</span><span class="p">)</span>
-<span class="n">agent</span><span class="o">.</span><span class="n">start_cli</span><span class="p">()</span>  <span class="c1"># Inicia CLI interativa</span>
+<span class="n">agent</span><span class="o">.</span><span class="n">start_cli</span><span class="p">()</span>  <span class="c1"># Inicia loop interativo</span>
 </code></pre></div>
-<p>ℹ️ <a href="../cli-usage/">Guia completo da CLI</a></p>
-<h2 id="12-como-funciona-o-streaming">12. Como funciona o streaming?<a class="headerlink" href="#12-como-funciona-o-streaming" title="Link para esta seção">&para;</a></h2>
-<p>O método <code>chat()</code> retorna um <code>StreamingResponseDTO</code> que pode ser:</p>
+<p>Internamente, este método:</p>
+<ol>
+<li>Importa <code>ChatCLIApplication</code> da camada de apresentação</li>
+<li>Instancia a aplicação CLI com o agente</li>
+<li>Executa o loop principal</li>
+</ol>
+<hr />
+<h2 id="troubleshooting">🐛 Troubleshooting<a class="headerlink" href="#troubleshooting" title="Link para esta seção">&para;</a></h2>
+<h3 id="cli-nao-inicia">CLI não inicia<a class="headerlink" href="#cli-nao-inicia" title="Link para esta seção">&para;</a></h3>
+<p><strong>Problema</strong>: Erro ao chamar <code>agent.start_cli()</code></p>
+<p><strong>Solução</strong>: Certifique-se de que está na versão mais recente:</p>
+<div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>--upgrade<span class="w"> </span>createagents
+</code></pre></div>
+<h3 id="caracteres-especiais-nao-aparecem">Caracteres especiais não aparecem<a class="headerlink" href="#caracteres-especiais-nao-aparecem" title="Link para esta seção">&para;</a></h3>
+<p><strong>Problema</strong>: Emojis ou caracteres Unicode não renderizam</p>
+<p><strong>Solução</strong>: Use um terminal com suporte UTF-8 (Windows Terminal, iTerm2, etc.)</p>
+<h3 id="streaming-muito-lento">Streaming muito lento<a class="headerlink" href="#streaming-muito-lento" title="Link para esta seção">&para;</a></h3>
+<p><strong>Problema</strong>: Tokens aparecem muito devagar</p>
+<p><strong>Solução</strong>:</p>
+<ol>
+<li>Verifique sua conexão de internet (para OpenAI)</li>
+<li>Para Ollama, verifique se o modelo está carregado</li>
+<li>Considere usar um modelo menor/mais rápido</li>
+</ol>
+<hr />
+<h2 id="proximos-passos">📚 Próximos Passos<a class="headerlink" href="#proximos-passos" title="Link para esta seção">&para;</a></h2>
 <ul>
-<li><strong>Awaited</strong>: <code>response_text = await agent.chat("mensagem")</code></li>
-<li><strong>Iterado</strong>: <code>async for token in await agent.chat("mensagem"): ...</code></li>
+<li><a href="../streaming-guide/">Guia de Streaming</a></li>
+<li><a href="../../dev-guide/cli-architecture/">Arquitetura CLI (Desenvolvedores)</a></li>
+<li><a href="../../reference/commands/">API Reference</a></li>
 </ul>
-<p>O streaming é controlado pelo parâmetro <code>stream</code> na configuração:</p>
-<div class="highlight"><pre><span></span><code><span class="c1"># Habilitar streaming (padrão)</span>
-<span class="n">agent</span> <span class="o">=</span> <span class="n">CreateAgent</span><span class="p">(</span><span class="n">provider</span><span class="o">=</span><span class="s2">&quot;openai&quot;</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s2">&quot;gpt-4&quot;</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;stream&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">})</span>
-
-<span class="c1"># Desabilitar streaming</span>
-<span class="n">agent</span> <span class="o">=</span> <span class="n">CreateAgent</span><span class="p">(</span><span class="n">provider</span><span class="o">=</span><span class="s2">&quot;openai&quot;</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s2">&quot;gpt-4&quot;</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;stream&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">})</span>
-</code></pre></div>
-<p>ℹ️ <a href="../streaming-guide/">Guia de Streaming</a></p>
-<h2 id="13-posso-desabilitar-o-streaming">13. Posso desabilitar o streaming?<a class="headerlink" href="#13-posso-desabilitar-o-streaming" title="Link para esta seção">&para;</a></h2>
-<p>Sim! Configure <code>stream: False</code> ao criar o agente:</p>
-<div class="highlight"><pre><span></span><code><span class="n">agent</span> <span class="o">=</span> <span class="n">CreateAgent</span><span class="p">(</span>
-    <span class="n">provider</span><span class="o">=</span><span class="s2">&quot;openai&quot;</span><span class="p">,</span>
-    <span class="n">model</span><span class="o">=</span><span class="s2">&quot;gpt-4&quot;</span><span class="p">,</span>
-    <span class="n">config</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;stream&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">}</span>  <span class="c1"># Desabilita streaming</span>
-<span class="p">)</span>
-
-<span class="c1"># Resposta completa sem streaming token-por-token</span>
-<span class="n">response</span> <span class="o">=</span> <span class="k">await</span> <span class="n">agent</span><span class="o">.</span><span class="n">chat</span><span class="p">(</span><span class="s2">&quot;mensagem&quot;</span><span class="p">)</span>
-<span class="n">text</span> <span class="o">=</span> <span class="k">await</span> <span class="n">response</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
-</code></pre></div>
-<h2 id="14-quais-comandos-estao-disponiveis-na-cli">14. Quais comandos estão disponíveis na CLI?<a class="headerlink" href="#14-quais-comandos-estao-disponiveis-na-cli" title="Link para esta seção">&para;</a></h2>
-<ul>
-<li><code>/help</code> - Ajuda</li>
-<li><code>/metrics</code> - Métricas de performance</li>
-<li><code>/configs</code> - Configurações do agente</li>
-<li><code>/tools</code> - Listar ferramentas</li>
-<li><code>/clear</code> - Limpar histórico</li>
-<li><code>exit</code> ou <code>quit</code> - Sair</li>
-</ul>
-<h2 id="15-como-contribuir-com-o-projeto">15. Como contribuir com o projeto?<a class="headerlink" href="#15-como-contribuir-com-o-projeto" title="Link para esta seção">&para;</a></h2>
-<p>Veja o <a href="../../dev-guide/contribute/">guia de contribuição</a>.</p>
+<hr />
+<p><strong>Versão:</strong> 0.1.3 | <strong>Atualização:</strong> 01/12/2025</p>
 
 
 

@@ -15,7 +15,7 @@
         <link rel="canonical" href="https://jor0105.github.io/Create-Agents-AI/user-guide/examples-user/">
       
       
-        <link rel="prev" href="../basic-usage-user/">
+        <link rel="prev" href="../streaming-guide/">
       
       
         <link rel="next" href="../faq-user/">
@@ -502,6 +502,62 @@
                 
   
   
+  
+  
+    <li class="md-nav__item">
+      <a href="../cli-usage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Uso da CLI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../streaming-guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Guia de Streaming
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
     
   
   
@@ -587,10 +643,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#code-assistant" class="md-nav__link">
+  <a href="#assistente-de-programacao" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Code Assistant
+        Assistente de Programação
       
     </span>
   </a>
@@ -620,13 +676,30 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#chatbot-interativo-completo" class="md-nav__link">
+  <a href="#chatbot-interativo-use-a-cli" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Chatbot Interativo Completo
+        Chatbot Interativo (Use a CLI!)
       
     </span>
   </a>
+  
+    <nav class="md-nav" aria-label="Chatbot Interativo (Use a CLI!)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#chat-simples-loop-manual" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Chat Simples (Loop Manual)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -642,10 +715,21 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#monitoramento-com-metricas" class="md-nav__link">
+  <a href="#streaming-em-tempo-real" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Monitoramento com Métricas
+        Streaming em Tempo Real
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#streaming-com-ollama" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Streaming com Ollama
       
     </span>
   </a>
@@ -774,6 +858,90 @@
     
   
     Arquitetura
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../dev-guide/cli-architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Arquitetura CLI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../dev-guide/async-guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Guia Async
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../dev-guide/logging_guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Logging
   
 
     
@@ -937,6 +1105,62 @@
   
   
     <li class="md-nav__item">
+      <a href="../../reference/streaming-api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API de Streaming
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/metrics-api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API de Métricas
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../reference/tools/" class="md-nav__link">
         
   
@@ -972,7 +1196,7 @@
   <span class="md-ellipsis">
     
   
-    Comandos
+    Comandos CLI
   
 
     
@@ -1016,97 +1240,197 @@
 <h1 id="exemplos-praticos-de-uso">Exemplos Práticos de Uso<a class="headerlink" href="#exemplos-praticos-de-uso" title="Link para esta seção">&para;</a></h1>
 <p>Veja casos reais de uso do Create Agents AI.</p>
 <h2 id="assistente-educacional">Assistente Educacional<a class="headerlink" href="#assistente-educacional" title="Link para esta seção">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><span class="n">professor</span> <span class="o">=</span> <span class="n">CreateAgent</span><span class="p">(</span>
-    <span class="n">provider</span><span class="o">=</span><span class="s2">&quot;openai&quot;</span><span class="p">,</span>
-    <span class="n">model</span><span class="o">=</span><span class="s2">&quot;gpt-5-nano&quot;</span><span class="p">,</span>
-    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Professor Virtual&quot;</span><span class="p">,</span>
-    <span class="n">instructions</span><span class="o">=</span><span class="s2">&quot;Você é um professor didático.&quot;</span>
-<span class="p">)</span>
-<span class="n">response</span> <span class="o">=</span> <span class="n">professor</span><span class="o">.</span><span class="n">chat</span><span class="p">(</span><span class="s2">&quot;Explique recursão em programação&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">createagents</span><span class="w"> </span><span class="kn">import</span> <span class="n">CreateAgent</span>
+
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">():</span>
+    <span class="n">professor</span> <span class="o">=</span> <span class="n">CreateAgent</span><span class="p">(</span>
+        <span class="n">provider</span><span class="o">=</span><span class="s2">&quot;openai&quot;</span><span class="p">,</span>
+        <span class="n">model</span><span class="o">=</span><span class="s2">&quot;gpt-4&quot;</span><span class="p">,</span>
+        <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Professor Virtual&quot;</span><span class="p">,</span>
+        <span class="n">instructions</span><span class="o">=</span><span class="s2">&quot;Você é um professor didático.&quot;</span>
+    <span class="p">)</span>
+
+    <span class="n">resposta</span> <span class="o">=</span> <span class="k">await</span> <span class="n">professor</span><span class="o">.</span><span class="n">chat</span><span class="p">(</span><span class="s2">&quot;Explique recursão em programação&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">resposta</span><span class="p">)</span>
+
+<span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">())</span>
 </code></pre></div>
 <h2 id="assistente-corporativo">Assistente Corporativo<a class="headerlink" href="#assistente-corporativo" title="Link para esta seção">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><span class="n">assistente</span> <span class="o">=</span> <span class="n">CreateAgent</span><span class="p">(</span>
-    <span class="n">provider</span><span class="o">=</span><span class="s2">&quot;openai&quot;</span><span class="p">,</span>
-    <span class="n">model</span><span class="o">=</span><span class="s2">&quot;gpt-5&quot;</span><span class="p">,</span>
-    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Assistente Executivo&quot;</span><span class="p">,</span>
-    <span class="n">instructions</span><span class="o">=</span><span class="s2">&quot;Use linguagem formal.&quot;</span><span class="p">,</span>
-    <span class="n">tools</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;currentdate&quot;</span><span class="p">]</span>
-<span class="p">)</span>
-<span class="n">response</span> <span class="o">=</span> <span class="n">assistente</span><span class="o">.</span><span class="n">chat</span><span class="p">(</span><span class="s2">&quot;Que dia é hoje? Preciso agendar uma reunião&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">createagents</span><span class="w"> </span><span class="kn">import</span> <span class="n">CreateAgent</span>
+
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">():</span>
+    <span class="n">assistente</span> <span class="o">=</span> <span class="n">CreateAgent</span><span class="p">(</span>
+        <span class="n">provider</span><span class="o">=</span><span class="s2">&quot;openai&quot;</span><span class="p">,</span>
+        <span class="n">model</span><span class="o">=</span><span class="s2">&quot;gpt-4&quot;</span><span class="p">,</span>
+        <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Assistente Executivo&quot;</span><span class="p">,</span>
+        <span class="n">instructions</span><span class="o">=</span><span class="s2">&quot;Use linguagem formal.&quot;</span><span class="p">,</span>
+        <span class="n">tools</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;currentdate&quot;</span><span class="p">]</span>
+    <span class="p">)</span>
+
+    <span class="n">resposta</span> <span class="o">=</span> <span class="k">await</span> <span class="n">assistente</span><span class="o">.</span><span class="n">chat</span><span class="p">(</span><span class="s2">&quot;Que dia é hoje? Preciso agendar uma reunião&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">resposta</span><span class="p">)</span>
+
+<span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">())</span>
 </code></pre></div>
-<h2 id="code-assistant">Code Assistant<a class="headerlink" href="#code-assistant" title="Link para esta seção">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><span class="n">code_expert</span> <span class="o">=</span> <span class="n">CreateAgent</span><span class="p">(</span>
-    <span class="n">provider</span><span class="o">=</span><span class="s2">&quot;openai&quot;</span><span class="p">,</span>
-    <span class="n">model</span><span class="o">=</span><span class="s2">&quot;gpt-4.1-mini&quot;</span><span class="p">,</span>
-    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Python Expert&quot;</span><span class="p">,</span>
-    <span class="n">instructions</span><span class="o">=</span><span class="s2">&quot;Especialista em Python.&quot;</span>
-<span class="p">)</span>
-<span class="n">codigo</span> <span class="o">=</span> <span class="n">code_expert</span><span class="o">.</span><span class="n">chat</span><span class="p">(</span><span class="s2">&quot;Crie uma função que valida CPF brasileiro.&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">codigo</span><span class="p">)</span>
+<h2 id="assistente-de-programacao">Assistente de Programação<a class="headerlink" href="#assistente-de-programacao" title="Link para esta seção">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">createagents</span><span class="w"> </span><span class="kn">import</span> <span class="n">CreateAgent</span>
+
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">():</span>
+    <span class="n">code_expert</span> <span class="o">=</span> <span class="n">CreateAgent</span><span class="p">(</span>
+        <span class="n">provider</span><span class="o">=</span><span class="s2">&quot;openai&quot;</span><span class="p">,</span>
+        <span class="n">model</span><span class="o">=</span><span class="s2">&quot;gpt-4&quot;</span><span class="p">,</span>
+        <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Python Expert&quot;</span><span class="p">,</span>
+        <span class="n">instructions</span><span class="o">=</span><span class="s2">&quot;Especialista em Python.&quot;</span>
+    <span class="p">)</span>
+
+    <span class="n">codigo</span> <span class="o">=</span> <span class="k">await</span> <span class="n">code_expert</span><span class="o">.</span><span class="n">chat</span><span class="p">(</span><span class="s2">&quot;Crie uma função que valida CPF brasileiro.&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">codigo</span><span class="p">)</span>
+
+<span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">())</span>
 </code></pre></div>
 <h2 id="tradutor-profissional">Tradutor Profissional<a class="headerlink" href="#tradutor-profissional" title="Link para esta seção">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><span class="n">tradutor</span> <span class="o">=</span> <span class="n">CreateAgent</span><span class="p">(</span>
-    <span class="n">provider</span><span class="o">=</span><span class="s2">&quot;openai&quot;</span><span class="p">,</span>
-    <span class="n">model</span><span class="o">=</span><span class="s2">&quot;gpt-4o&quot;</span><span class="p">,</span>
-    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Tradutor Especializado&quot;</span><span class="p">,</span>
-    <span class="n">instructions</span><span class="o">=</span><span class="s2">&quot;Você é um tradutor profissional.&quot;</span>
-<span class="p">)</span>
-<span class="n">response</span> <span class="o">=</span> <span class="n">tradutor</span><span class="o">.</span><span class="n">chat</span><span class="p">(</span>
-    <span class="s2">&quot;Traduza para inglês: &#39;A arquitetura clean separa as regras de negócio da infraestrutura.&#39;&quot;</span>
-<span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">createagents</span><span class="w"> </span><span class="kn">import</span> <span class="n">CreateAgent</span>
+
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">():</span>
+    <span class="n">tradutor</span> <span class="o">=</span> <span class="n">CreateAgent</span><span class="p">(</span>
+        <span class="n">provider</span><span class="o">=</span><span class="s2">&quot;openai&quot;</span><span class="p">,</span>
+        <span class="n">model</span><span class="o">=</span><span class="s2">&quot;gpt-4&quot;</span><span class="p">,</span>
+        <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Tradutor Especializado&quot;</span><span class="p">,</span>
+        <span class="n">instructions</span><span class="o">=</span><span class="s2">&quot;Você é um tradutor profissional.&quot;</span>
+    <span class="p">)</span>
+
+    <span class="n">resposta</span> <span class="o">=</span> <span class="k">await</span> <span class="n">tradutor</span><span class="o">.</span><span class="n">chat</span><span class="p">(</span>
+        <span class="s2">&quot;Traduza para inglês: &#39;A arquitetura clean separa as regras de negócio da infraestrutura.&#39;&quot;</span>
+    <span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">resposta</span><span class="p">)</span>
+
+<span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">())</span>
 </code></pre></div>
 <h2 id="analista-de-dados">Analista de Dados<a class="headerlink" href="#analista-de-dados" title="Link para esta seção">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><span class="n">analista</span> <span class="o">=</span> <span class="n">CreateAgent</span><span class="p">(</span>
-    <span class="n">provider</span><span class="o">=</span><span class="s2">&quot;ollama&quot;</span><span class="p">,</span>
-    <span class="n">model</span><span class="o">=</span><span class="s2">&quot;granite4:latest&quot;</span><span class="p">,</span>
-    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Data Analyst&quot;</span><span class="p">,</span>
-    <span class="n">instructions</span><span class="o">=</span><span class="s2">&quot;Forneça insights acionáveis.&quot;</span>
-<span class="p">)</span>
-<span class="n">dados</span> <span class="o">=</span> <span class="s2">&quot;Vendas Q1: Jan=100k, Fev=150k, Mar=120k&quot;</span>
-<span class="n">response</span> <span class="o">=</span> <span class="n">analista</span><span class="o">.</span><span class="n">chat</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Analise estes dados: </span><span class="si">{</span><span class="n">dados</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">createagents</span><span class="w"> </span><span class="kn">import</span> <span class="n">CreateAgent</span>
+
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">():</span>
+    <span class="n">analista</span> <span class="o">=</span> <span class="n">CreateAgent</span><span class="p">(</span>
+        <span class="n">provider</span><span class="o">=</span><span class="s2">&quot;ollama&quot;</span><span class="p">,</span>
+        <span class="n">model</span><span class="o">=</span><span class="s2">&quot;llama3.2&quot;</span><span class="p">,</span>
+        <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Data Analyst&quot;</span><span class="p">,</span>
+        <span class="n">instructions</span><span class="o">=</span><span class="s2">&quot;Forneça insights acionáveis.&quot;</span>
+    <span class="p">)</span>
+
+    <span class="n">dados</span> <span class="o">=</span> <span class="s2">&quot;Vendas Q1: Jan=100k, Fev=150k, Mar=120k&quot;</span>
+    <span class="n">resposta</span> <span class="o">=</span> <span class="k">await</span> <span class="n">analista</span><span class="o">.</span><span class="n">chat</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Analise estes dados: </span><span class="si">{</span><span class="n">dados</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">resposta</span><span class="p">)</span>
+
+<span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">())</span>
 </code></pre></div>
-<h2 id="chatbot-interativo-completo">Chatbot Interativo Completo<a class="headerlink" href="#chatbot-interativo-completo" title="Link para esta seção">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><span class="n">chatbot</span> <span class="o">=</span> <span class="n">CreateAgent</span><span class="p">(</span>
+<h2 id="chatbot-interativo-use-a-cli">Chatbot Interativo (Use a CLI!)<a class="headerlink" href="#chatbot-interativo-use-a-cli" title="Link para esta seção">&para;</a></h2>
+<p><strong>Recomendado</strong>: Para chatbots interativos, use a <strong>CLI integrada</strong>:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">createagents</span><span class="w"> </span><span class="kn">import</span> <span class="n">CreateAgent</span>
+
+<span class="n">agent</span> <span class="o">=</span> <span class="n">CreateAgent</span><span class="p">(</span>
     <span class="n">provider</span><span class="o">=</span><span class="s2">&quot;openai&quot;</span><span class="p">,</span>
     <span class="n">model</span><span class="o">=</span><span class="s2">&quot;gpt-4&quot;</span><span class="p">,</span>
-    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Chatbot Amigável&quot;</span><span class="p">,</span>
-    <span class="n">instructions</span><span class="o">=</span><span class="s2">&quot;Use emojis quando apropriado.&quot;</span>
+    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Assistente Amigável&quot;</span><span class="p">,</span>
 <span class="p">)</span>
-<span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
-    <span class="n">user_input</span> <span class="o">=</span> <span class="nb">input</span><span class="p">(</span><span class="s2">&quot;Você: &quot;</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">user_input</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;sair&quot;</span><span class="p">,</span> <span class="s2">&quot;exit&quot;</span><span class="p">,</span> <span class="s2">&quot;quit&quot;</span><span class="p">]:</span>
-        <span class="k">break</span>
-    <span class="n">response</span> <span class="o">=</span> <span class="n">chatbot</span><span class="o">.</span><span class="n">chat</span><span class="p">(</span><span class="n">user_input</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Bot: </span><span class="si">{</span><span class="n">response</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># Inicia CLI interativa</span>
+<span class="n">agent</span><span class="o">.</span><span class="n">start_cli</span><span class="p">()</span>
+</code></pre></div>
+<p>A CLI oferece:</p>
+<ul>
+<li>Interface colorida e formatada</li>
+<li>Comandos <code>/help</code>, <code>/metrics</code>, <code>/configs</code>, <code>/tools</code>, <code>/clear</code></li>
+<li>Streaming em tempo real</li>
+<li>Indicadores de status</li>
+</ul>
+<p>📖 <a href="../cli-usage/">Guia completo da CLI</a></p>
+<h3 id="chat-simples-loop-manual">Chat Simples (Loop Manual)<a class="headerlink" href="#chat-simples-loop-manual" title="Link para esta seção">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">():</span>
+    <span class="n">chatbot</span> <span class="o">=</span> <span class="n">CreateAgent</span><span class="p">(</span>
+        <span class="n">provider</span><span class="o">=</span><span class="s2">&quot;openai&quot;</span><span class="p">,</span>
+        <span class="n">model</span><span class="o">=</span><span class="s2">&quot;gpt-4&quot;</span><span class="p">,</span>
+        <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Chatbot Simples&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Digite &#39;sair&#39; para encerrar.</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="n">user_input</span> <span class="o">=</span> <span class="nb">input</span><span class="p">(</span><span class="s2">&quot;Você: &quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">user_input</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;sair&quot;</span><span class="p">,</span> <span class="s2">&quot;exit&quot;</span><span class="p">,</span> <span class="s2">&quot;quit&quot;</span><span class="p">]:</span>
+            <span class="k">break</span>
+
+        <span class="c1"># Streaming</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="k">await</span> <span class="n">chatbot</span><span class="o">.</span><span class="n">chat</span><span class="p">(</span><span class="n">user_input</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Bot: &quot;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">async</span> <span class="k">for</span> <span class="n">token</span> <span class="ow">in</span> <span class="n">response</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">token</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">())</span>
 </code></pre></div>
 <h2 id="agente-local-com-ollama">Agente Local com Ollama<a class="headerlink" href="#agente-local-com-ollama" title="Link para esta seção">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><span class="n">agente_local</span> <span class="o">=</span> <span class="n">CreateAgent</span><span class="p">(</span>
-    <span class="n">provider</span><span class="o">=</span><span class="s2">&quot;ollama&quot;</span><span class="p">,</span>
-    <span class="n">model</span><span class="o">=</span><span class="s2">&quot;llama2&quot;</span><span class="p">,</span>
-    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Assistente Privado&quot;</span><span class="p">,</span>
-    <span class="n">instructions</span><span class="o">=</span><span class="s2">&quot;Você é um assistente local.&quot;</span>
-<span class="p">)</span>
-<span class="n">response</span> <span class="o">=</span> <span class="n">agente_local</span><span class="o">.</span><span class="n">chat</span><span class="p">(</span><span class="s2">&quot;Explique machine learning em termos simples&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">createagents</span><span class="w"> </span><span class="kn">import</span> <span class="n">CreateAgent</span>
+
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">():</span>
+    <span class="n">agente_local</span> <span class="o">=</span> <span class="n">CreateAgent</span><span class="p">(</span>
+        <span class="n">provider</span><span class="o">=</span><span class="s2">&quot;ollama&quot;</span><span class="p">,</span>
+        <span class="n">model</span><span class="o">=</span><span class="s2">&quot;llama3.2&quot;</span><span class="p">,</span>
+        <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Assistente Privado&quot;</span><span class="p">,</span>
+        <span class="n">instructions</span><span class="o">=</span><span class="s2">&quot;Você é um assistente local.&quot;</span>
+    <span class="p">)</span>
+
+    <span class="n">resposta</span> <span class="o">=</span> <span class="k">await</span> <span class="n">agente_local</span><span class="o">.</span><span class="n">chat</span><span class="p">(</span><span class="s2">&quot;Explique machine learning em termos simples&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">resposta</span><span class="p">)</span>
+
+<span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">())</span>
 </code></pre></div>
-<h2 id="monitoramento-com-metricas">Monitoramento com Métricas<a class="headerlink" href="#monitoramento-com-metricas" title="Link para esta seção">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><span class="n">agente</span> <span class="o">=</span> <span class="n">CreateAgent</span><span class="p">(</span>
-    <span class="n">provider</span><span class="o">=</span><span class="s2">&quot;openai&quot;</span><span class="p">,</span>
-    <span class="n">model</span><span class="o">=</span><span class="s2">&quot;gpt-4&quot;</span><span class="p">,</span>
-    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Agente Monitorado&quot;</span><span class="p">,</span>
-    <span class="n">tools</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;currentdate&quot;</span><span class="p">]</span>
-<span class="p">)</span>
-<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">):</span>
-    <span class="n">agente</span><span class="o">.</span><span class="n">chat</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Mensagem de teste </span><span class="si">{</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<span class="n">metrics</span> <span class="o">=</span> <span class="n">agente</span><span class="o">.</span><span class="n">get_metrics</span><span class="p">()</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">metrics</span><span class="p">)</span>
+<h2 id="streaming-em-tempo-real">Streaming em Tempo Real<a class="headerlink" href="#streaming-em-tempo-real" title="Link para esta seção">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">streaming_example</span><span class="p">():</span>
+    <span class="n">agent</span> <span class="o">=</span> <span class="n">CreateAgent</span><span class="p">(</span>
+        <span class="n">provider</span><span class="o">=</span><span class="s2">&quot;openai&quot;</span><span class="p">,</span>
+        <span class="n">model</span><span class="o">=</span><span class="s2">&quot;gpt-4&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Escrevendo artigo em tempo real:</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="k">await</span> <span class="n">agent</span><span class="o">.</span><span class="n">chat</span><span class="p">(</span><span class="s2">&quot;Escreva um artigo sobre Clean Architecture&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Exibe token por token</span>
+    <span class="k">async</span> <span class="k">for</span> <span class="n">token</span> <span class="ow">in</span> <span class="n">response</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">token</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">--- Finalizado ---&quot;</span><span class="p">)</span>
+
+<span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">streaming_example</span><span class="p">())</span>
+</code></pre></div>
+<h2 id="streaming-com-ollama">Streaming com Ollama<a class="headerlink" href="#streaming-com-ollama" title="Link para esta seção">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">ollama_streaming</span><span class="p">():</span>
+    <span class="n">local_agent</span> <span class="o">=</span> <span class="n">CreateAgent</span><span class="p">(</span>
+        <span class="n">provider</span><span class="o">=</span><span class="s2">&quot;ollama&quot;</span><span class="p">,</span>
+        <span class="n">model</span><span class="o">=</span><span class="s2">&quot;llama3.2&quot;</span><span class="p">,</span>
+        <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Assistente Local&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">response</span> <span class="o">=</span> <span class="k">await</span> <span class="n">local_agent</span><span class="o">.</span><span class="n">chat</span><span class="p">(</span><span class="s2">&quot;Explique o que é LLM&quot;</span><span class="p">)</span>
+    <span class="k">async</span> <span class="k">for</span> <span class="n">chunk</span> <span class="ow">in</span> <span class="n">response</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">chunk</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">()</span>
+
+<span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">ollama_streaming</span><span class="p">())</span>
 </code></pre></div>
 <h2 id="proximos-passos">Próximos Passos<a class="headerlink" href="#proximos-passos" title="Link para esta seção">&para;</a></h2>
 <ul>
+<li><a href="../streaming-guide/">Guia de Streaming</a></li>
+<li><a href="../cli-usage/">Uso da CLI</a></li>
 <li><a href="../faq-user/">FAQ</a></li>
 </ul>
 

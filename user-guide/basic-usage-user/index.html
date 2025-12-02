@@ -18,7 +18,7 @@
         <link rel="prev" href="../installation-user/">
       
       
-        <link rel="next" href="../examples-user/">
+        <link rel="next" href="../cli-usage/">
       
       
         
@@ -581,6 +581,45 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#streaming-respostas-em-tempo-real" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Streaming (Respostas em Tempo Real)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Streaming (Respostas em Tempo Real)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#opcao-1-await-receber-resposta-completa" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Opção 1: Await (Receber resposta completa)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#opcao-2-async-for-streaming-token-por-token" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Opção 2: Async For (Streaming token por token)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#personalizando" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -661,6 +700,62 @@
   
 </nav>
       
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cli-usage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Uso da CLI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../streaming-guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Guia de Streaming
+  
+
+    
+  </span>
+  
+  
+
+      </a>
     </li>
   
 
@@ -796,6 +891,90 @@
     
   
     Arquitetura
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../dev-guide/cli-architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Arquitetura CLI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../dev-guide/async-guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Guia Async
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../dev-guide/logging_guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Logging
   
 
     
@@ -959,6 +1138,62 @@
   
   
     <li class="md-nav__item">
+      <a href="../../reference/streaming-api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API de Streaming
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/metrics-api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API de Métricas
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../reference/tools/" class="md-nav__link">
         
   
@@ -994,7 +1229,7 @@
   <span class="md-ellipsis">
     
   
-    Comandos
+    Comandos CLI
   
 
     
@@ -1046,11 +1281,17 @@
 <span class="p">)</span>
 </code></pre></div>
 <h2 id="conversando">Conversando<a class="headerlink" href="#conversando" title="Link para esta seção">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><span class="n">response1</span> <span class="o">=</span> <span class="n">agent</span><span class="o">.</span><span class="n">chat</span><span class="p">(</span><span class="s2">&quot;Olá! Como você está?&quot;</span><span class="p">)</span>
-<span class="n">response2</span> <span class="o">=</span> <span class="n">agent</span><span class="o">.</span><span class="n">chat</span><span class="p">(</span><span class="s2">&quot;Qual é a capital do Brasil?&quot;</span><span class="p">)</span>
-<span class="n">response3</span> <span class="o">=</span> <span class="n">agent</span><span class="o">.</span><span class="n">chat</span><span class="p">(</span><span class="s2">&quot;E a população?&quot;</span><span class="p">)</span>
-<span class="k">for</span> <span class="n">response</span> <span class="ow">in</span> <span class="p">[</span><span class="n">response1</span><span class="p">,</span> <span class="n">response2</span><span class="p">,</span> <span class="n">response3</span><span class="p">]:</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">():</span>
+    <span class="n">response1</span> <span class="o">=</span> <span class="k">await</span> <span class="n">agent</span><span class="o">.</span><span class="n">chat</span><span class="p">(</span><span class="s2">&quot;Olá! Como você está?&quot;</span><span class="p">)</span>
+    <span class="n">response2</span> <span class="o">=</span> <span class="k">await</span> <span class="n">agent</span><span class="o">.</span><span class="n">chat</span><span class="p">(</span><span class="s2">&quot;Qual é a capital do Brasil?&quot;</span><span class="p">)</span>
+    <span class="n">response3</span> <span class="o">=</span> <span class="k">await</span> <span class="n">agent</span><span class="o">.</span><span class="n">chat</span><span class="p">(</span><span class="s2">&quot;E a população?&quot;</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">response</span> <span class="ow">in</span> <span class="p">[</span><span class="n">response1</span><span class="p">,</span> <span class="n">response2</span><span class="p">,</span> <span class="n">response3</span><span class="p">]:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+
+<span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">())</span>
 </code></pre></div>
 <h2 id="configuracoes">Configurações<a class="headerlink" href="#configuracoes" title="Link para esta seção">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><span class="n">config</span> <span class="o">=</span> <span class="n">agent</span><span class="o">.</span><span class="n">get_configs</span><span class="p">()</span>
@@ -1060,6 +1301,40 @@
 <h2 id="limpar-historico">Limpar Histórico<a class="headerlink" href="#limpar-historico" title="Link para esta seção">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><span class="n">agent</span><span class="o">.</span><span class="n">clear_history</span><span class="p">()</span>
 </code></pre></div>
+<h2 id="streaming-respostas-em-tempo-real">Streaming (Respostas em Tempo Real)<a class="headerlink" href="#streaming-respostas-em-tempo-real" title="Link para esta seção">&para;</a></h2>
+<h3 id="opcao-1-await-receber-resposta-completa">Opção 1: Await (Receber resposta completa)<a class="headerlink" href="#opcao-1-await-receber-resposta-completa" title="Link para esta seção">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">():</span>
+    <span class="n">agent</span> <span class="o">=</span> <span class="n">CreateAgent</span><span class="p">(</span>
+        <span class="n">provider</span><span class="o">=</span><span class="s2">&quot;openai&quot;</span><span class="p">,</span>
+        <span class="n">model</span><span class="o">=</span><span class="s2">&quot;gpt-4&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="c1"># Recebe a resposta completa</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="k">await</span> <span class="n">agent</span><span class="o">.</span><span class="n">chat</span><span class="p">(</span><span class="s2">&quot;Escreva um poema&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+
+<span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">())</span>
+</code></pre></div>
+<h3 id="opcao-2-async-for-streaming-token-por-token">Opção 2: Async For (Streaming token por token)<a class="headerlink" href="#opcao-2-async-for-streaming-token-por-token" title="Link para esta seção">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">():</span>
+    <span class="n">agent</span> <span class="o">=</span> <span class="n">CreateAgent</span><span class="p">(</span>
+        <span class="n">provider</span><span class="o">=</span><span class="s2">&quot;openai&quot;</span><span class="p">,</span>
+        <span class="n">model</span><span class="o">=</span><span class="s2">&quot;gpt-4&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="c1"># Recebe tokens em tempo real</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="k">await</span> <span class="n">agent</span><span class="o">.</span><span class="n">chat</span><span class="p">(</span><span class="s2">&quot;Conte uma história&quot;</span><span class="p">)</span>
+    <span class="k">async</span> <span class="k">for</span> <span class="n">token</span> <span class="ow">in</span> <span class="n">response</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">token</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">()</span>  <span class="c1"># Nova linha no final</span>
+
+<span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">())</span>
+</code></pre></div>
+<blockquote>
+<p>ℹ️ <strong>Nota</strong>: Streaming é controlado pelo parâmetro <code>stream</code> em <code>config</code> (padrão: <code>True</code>). Ambos os providers (OpenAI e Ollama) suportam streaming.</p>
+</blockquote>
 <h2 id="personalizando">Personalizando<a class="headerlink" href="#personalizando" title="Link para esta seção">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><span class="n">agent_formal</span> <span class="o">=</span> <span class="n">CreateAgent</span><span class="p">(</span>
     <span class="n">provider</span><span class="o">=</span><span class="s2">&quot;openai&quot;</span><span class="p">,</span>
@@ -1081,12 +1356,18 @@
 <span class="p">)</span>
 </code></pre></div>
 <h2 id="ferramentas">Ferramentas<a class="headerlink" href="#ferramentas" title="Link para esta seção">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><span class="n">agent</span> <span class="o">=</span> <span class="n">CreateAgent</span><span class="p">(</span>
-    <span class="n">provider</span><span class="o">=</span><span class="s2">&quot;openai&quot;</span><span class="p">,</span>
-    <span class="n">model</span><span class="o">=</span><span class="s2">&quot;gpt-4&quot;</span><span class="p">,</span>
-    <span class="n">tools</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;currentdate&quot;</span><span class="p">]</span>
-<span class="p">)</span>
-<span class="n">response</span> <span class="o">=</span> <span class="n">agent</span><span class="o">.</span><span class="n">chat</span><span class="p">(</span><span class="s2">&quot;Que dia é hoje?&quot;</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">():</span>
+    <span class="n">agent</span> <span class="o">=</span> <span class="n">CreateAgent</span><span class="p">(</span>
+        <span class="n">provider</span><span class="o">=</span><span class="s2">&quot;openai&quot;</span><span class="p">,</span>
+        <span class="n">model</span><span class="o">=</span><span class="s2">&quot;gpt-4&quot;</span><span class="p">,</span>
+        <span class="n">tools</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;currentdate&quot;</span><span class="p">]</span>
+    <span class="p">)</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="k">await</span> <span class="n">agent</span><span class="o">.</span><span class="n">chat</span><span class="p">(</span><span class="s2">&quot;Que dia é hoje?&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+
+<span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">())</span>
 </code></pre></div>
 <h2 id="verificar-ferramentas-disponiveis">Verificar Ferramentas Disponíveis<a class="headerlink" href="#verificar-ferramentas-disponiveis" title="Link para esta seção">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><span class="n">all_tools</span> <span class="o">=</span> <span class="n">agent</span><span class="o">.</span><span class="n">get_all_available_tools</span><span class="p">()</span>

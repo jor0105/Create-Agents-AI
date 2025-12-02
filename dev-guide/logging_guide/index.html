@@ -15,6 +15,10 @@
         <link rel="canonical" href="https://jor0105.github.io/Create-Agents-AI/dev-guide/logging_guide/">
       
       
+        <link rel="prev" href="../async-guide/">
+      
+      
+        <link rel="next" href="../technical-examples/">
       
       
         
@@ -25,7 +29,7 @@
     
     
       
-        <title>📝 Guia de Logging - Create Agents AI</title>
+        <title>Logging - Create Agents AI</title>
       
     
     
@@ -114,7 +118,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              📝 Guia de Logging
+              Logging
             
           </span>
         </div>
@@ -269,10 +273,12 @@
   
   
   
+    
+  
   
     
     
-      <li class="md-tabs__item">
+      <li class="md-tabs__item md-tabs__item--active">
         <a href="../architecture-developer/" class="md-tabs__link">
           
   
@@ -494,6 +500,62 @@
   
   
     <li class="md-nav__item">
+      <a href="../../user-guide/cli-usage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Uso da CLI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/streaming-guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Guia de Streaming
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../user-guide/examples-user/" class="md-nav__link">
         
   
@@ -554,26 +616,31 @@
       
   
   
+    
   
   
+  
     
     
     
     
+      
+        
+        
       
       
         
       
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
         
           
-          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
             
   
   
@@ -591,7 +658,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_3">
             <span class="md-nav__icon md-icon"></span>
             
@@ -625,6 +692,370 @@
   
 
       </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cli-architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Arquitetura CLI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../async-guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Guia Async
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Logging
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Logging
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Índice">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Índice
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#arquitetura-de-logging" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🏗️ Arquitetura de Logging
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🏗️ Arquitetura de Logging">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#loggerinterface-dominio" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        LoggerInterface (Domínio)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#standardlogger-infraestrutura" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        StandardLogger (Infraestrutura)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#comportamento-padrao" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🔇 Comportamento Padrão
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#como-ativar-logs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🛠️ Como Ativar Logs
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🛠️ Como Ativar Logs">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#opcao-1-configuracao-rapida-desenvolvimento" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Opção 1: Configuração Rápida (Desenvolvimento)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#opcao-2-configuracao-padrao-do-python" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Opção 2: Configuração Padrão do Python
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#opcao-3-configuracao-avancada" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Opção 3: Configuração Avançada
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#uso-em-componentes-customizados" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🎯 Uso em Componentes Customizados
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🎯 Uso em Componentes Customizados">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#exemplo-ferramenta-customizada-com-logging" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Exemplo: Ferramenta Customizada com Logging
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#injecao-de-dependencia" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Injeção de Dependência
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#seguranca-e-privacidade" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🔒 Segurança e Privacidade
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#variaveis-de-ambiente" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ⚙️ Variáveis de Ambiente
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#logs-em-json-producao" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📊 Logs em JSON (Produção)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#componentes-que-usam-logging" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🔍 Componentes que Usam Logging
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🔍 Componentes que Usam Logging">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#agentservice" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        AgentService
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#toolexecutor" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ToolExecutor
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#handlers-openaiollama" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Handlers (OpenAI/Ollama)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        💡 Best Practices
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -780,6 +1211,62 @@
   
   
     <li class="md-nav__item">
+      <a href="../../reference/streaming-api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API de Streaming
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/metrics-api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API de Métricas
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../reference/tools/" class="md-nav__link">
         
   
@@ -815,7 +1302,7 @@
   <span class="md-ellipsis">
     
   
-    Comandos
+    Comandos CLI
   
 
     
@@ -857,7 +1344,49 @@
 
 
 <h1 id="guia-de-logging">📝 Guia de Logging<a class="headerlink" href="#guia-de-logging" title="Link para esta seção">&para;</a></h1>
-<p>Este guia explica como configurar e utilizar o sistema de logging da biblioteca <code>CreateAgentsAI</code>. Seguindo as melhores práticas para bibliotecas Python, o logging é <strong>silencioso por padrão</strong> para não poluir a saída da sua aplicação.</p>
+<p>Este guia explica como configurar e utilizar o sistema de logging da biblioteca <code>CreateAgentsAI</code>, que agora segue <strong>Clean Architecture</strong> com interfaces de logging no domínio e implementações na infraestrutura.</p>
+<hr />
+<h2 id="arquitetura-de-logging">🏗️ Arquitetura de Logging<a class="headerlink" href="#arquitetura-de-logging" title="Link para esta seção">&para;</a></h2>
+<h3 id="loggerinterface-dominio">LoggerInterface (Domínio)<a class="headerlink" href="#loggerinterface-dominio" title="Link para esta seção">&para;</a></h3>
+<p>A biblioteca define uma <strong><code>LoggerInterface</code></strong> abstrata no domínio (<code>src/createagents/domain/interfaces/</code>), permitindo que as camadas de domínio e aplicação usem logging <strong>sem depender</strong> de implementações concretas de infraestrutura.</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">abstractmethod</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">LoggerInterface</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Interface abstrata para logging.&quot;&quot;&quot;</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">debug</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">pass</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">pass</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">warning</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">pass</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">error</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">pass</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">critical</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">pass</span>
+</code></pre></div>
+<h3 id="standardlogger-infraestrutura">StandardLogger (Infraestrutura)<a class="headerlink" href="#standardlogger-infraestrutura" title="Link para esta seção">&para;</a></h3>
+<p>A implementação concreta está na camada de infraestrutura (<code>src/createagents/infra/config/</code>):</p>
+<div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">StandardLogger</span><span class="p">(</span><span class="n">LoggerInterface</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Implementação padrão do LoggerInterface usando Python logging.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logger</span><span class="p">:</span> <span class="n">logging</span><span class="o">.</span><span class="n">Logger</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span> <span class="o">=</span> <span class="n">logger</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">debug</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="c1"># ...outros métodos</span>
+</code></pre></div>
 <hr />
 <h2 id="comportamento-padrao">🔇 Comportamento Padrão<a class="headerlink" href="#comportamento-padrao" title="Link para esta seção">&para;</a></h2>
 <p>Ao importar e usar a biblioteca, nenhum log será exibido no console ou salvo em arquivo, a menos que você configure explicitamente o sistema de logging.</p>
@@ -896,6 +1425,41 @@
 <span class="n">logger</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">StreamHandler</span><span class="p">())</span>
 </code></pre></div>
 <hr />
+<h2 id="uso-em-componentes-customizados">🎯 Uso em Componentes Customizados<a class="headerlink" href="#uso-em-componentes-customizados" title="Link para esta seção">&para;</a></h2>
+<p>Se você estiver <strong>estendendo a biblioteca</strong> (ex.: criando ferramentas customizadas ou handlers), pode usar a <code>LoggerInterface</code>:</p>
+<h3 id="exemplo-ferramenta-customizada-com-logging">Exemplo: Ferramenta Customizada com Logging<a class="headerlink" href="#exemplo-ferramenta-customizada-com-logging" title="Link para esta seção">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">createagents</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseTool</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">createagents.domain.interfaces</span><span class="w"> </span><span class="kn">import</span> <span class="n">LoggerInterface</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">MyCustomTool</span><span class="p">(</span><span class="n">BaseTool</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;my_tool&quot;</span>
+    <span class="n">description</span> <span class="o">=</span> <span class="s2">&quot;Minha ferramenta customizada&quot;</span>
+    <span class="n">parameters</span> <span class="o">=</span> <span class="p">{</span><span class="o">...</span><span class="p">}</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logger</span><span class="p">:</span> <span class="n">LoggerInterface</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span> <span class="o">=</span> <span class="n">logger</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Executando MyCustomTool com: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_do_something</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Resultado: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">result</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">result</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Erro em MyCustomTool: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
+            <span class="k">raise</span>
+</code></pre></div>
+<h3 id="injecao-de-dependencia">Injeção de Dependência<a class="headerlink" href="#injecao-de-dependencia" title="Link para esta seção">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">createagents.infra.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">LoggingConfig</span><span class="p">,</span> <span class="n">StandardLogger</span>
+
+<span class="c1"># Criar logger</span>
+<span class="n">python_logger</span> <span class="o">=</span> <span class="n">LoggingConfig</span><span class="o">.</span><span class="n">get_logger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+<span class="n">logger_interface</span> <span class="o">=</span> <span class="n">StandardLogger</span><span class="p">(</span><span class="n">python_logger</span><span class="p">)</span>
+
+<span class="c1"># Injetar na ferramenta</span>
+<span class="n">my_tool</span> <span class="o">=</span> <span class="n">MyCustomTool</span><span class="p">(</span><span class="n">logger</span><span class="o">=</span><span class="n">logger_interface</span><span class="p">)</span>
+</code></pre></div>
+<hr />
 <h2 id="seguranca-e-privacidade">🔒 Segurança e Privacidade<a class="headerlink" href="#seguranca-e-privacidade" title="Link para esta seção">&para;</a></h2>
 <p>A biblioteca inclui recursos automáticos de segurança nos logs:</p>
 <ul>
@@ -904,7 +1468,7 @@
 </ul>
 <hr />
 <h2 id="variaveis-de-ambiente">⚙️ Variáveis de Ambiente<a class="headerlink" href="#variaveis-de-ambiente" title="Link para esta seção">&para;</a></h2>
-<p>Você pode controlar o logging através de variáveis de ambiente (se usar <code>LoggingConfig.configure()</code>):</p>
+<p>Você pode controlar o logging através de variáveis de ambiente:</p>
 <table>
 <thead>
 <tr>
@@ -954,6 +1518,77 @@
 <span class="w">  </span><span class="nt">&quot;line&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">42</span>
 <span class="p">}</span>
 </code></pre></div>
+<hr />
+<h2 id="componentes-que-usam-logging">🔍 Componentes que Usam Logging<a class="headerlink" href="#componentes-que-usam-logging" title="Link para esta seção">&para;</a></h2>
+<h3 id="agentservice">AgentService<a class="headerlink" href="#agentservice" title="Link para esta seção">&para;</a></h3>
+<p>O <code>AgentService</code> usa <code>LoggerInterface</code> para logar operações de agente:</p>
+<div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">AgentService</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">agent</span><span class="p">:</span> <span class="n">Agent</span><span class="p">,</span> <span class="n">logger</span><span class="p">:</span> <span class="n">LoggerInterface</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_agent</span> <span class="o">=</span> <span class="n">agent</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span> <span class="o">=</span> <span class="n">logger</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+            <span class="s2">&quot;AgentService initialized - Name: </span><span class="si">%s</span><span class="s2">, Provider: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="n">agent</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+            <span class="n">agent</span><span class="o">.</span><span class="n">provider</span>
+        <span class="p">)</span>
+</code></pre></div>
+<h3 id="toolexecutor">ToolExecutor<a class="headerlink" href="#toolexecutor" title="Link para esta seção">&para;</a></h3>
+<p>O <code>ToolExecutor</code> no domínio usa <code>LoggerInterface</code> para logar execuções de ferramentas:</p>
+<div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">ToolExecutor</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logger</span><span class="p">:</span> <span class="n">LoggerInterface</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span> <span class="o">=</span> <span class="n">logger</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tool</span><span class="p">:</span> <span class="n">BaseTool</span><span class="p">,</span> <span class="n">arguments</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Executing tool: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">tool</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="c1"># ...</span>
+</code></pre></div>
+<h3 id="handlers-openaiollama">Handlers (OpenAI/Ollama)<a class="headerlink" href="#handlers-openaiollama" title="Link para esta seção">&para;</a></h3>
+<p>Os handlers de streaming usam logging para métricas e debugging:</p>
+<div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">OpenAIStreamHandler</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">...</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span> <span class="o">=</span> <span class="n">LoggingConfig</span><span class="o">.</span><span class="n">get_logger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">handle_streaming</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">...</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Starting streaming response&quot;</span><span class="p">)</span>
+        <span class="c1"># ...</span>
+</code></pre></div>
+<hr />
+<h2 id="best-practices">💡 Best Practices<a class="headerlink" href="#best-practices" title="Link para esta seção">&para;</a></h2>
+<ol>
+<li><strong>Use níveis apropriados</strong>:</li>
+</ol>
+<ul>
+<li><code>DEBUG</code>: Detalhes de execução, valores de variáveis</li>
+<li><code>INFO</code>: Eventos normais (agent criado, ferramenta executada)</li>
+<li><code>WARNING</code>: Situações incomuns mas recuperáveis</li>
+<li><code>ERROR</code>: Erros que impedem operação</li>
+<li><code>CRITICAL</code>: Falhas graves do sistema</li>
+</ul>
+<ol start="2">
+<li><strong>Nunca logue dados sensíveis</strong>:</li>
+</ol>
+<ul>
+<li>A biblioteca sanitiza automaticamente, mas evite logar explicitamente senhas, tokens, etc.</li>
+</ul>
+<ol start="3">
+<li><strong>Use formatação lazy</strong>:</li>
+</ol>
+<div class="highlight"><pre><span></span><code><span class="c1"># BOM - formatação lazy (não executa se log desabilitado)</span>
+<span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Processing </span><span class="si">%s</span><span class="s2"> items&quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">items</span><span class="p">))</span>
+
+<span class="c1"># RUIM - formatação eager</span>
+<span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Processing </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">items</span><span class="p">)</span><span class="si">}</span><span class="s2"> items&quot;</span><span class="p">)</span>
+</code></pre></div>
+<ol start="4">
+<li><strong>Contextualize com extra</strong>:<br />
+   <div class="highlight"><pre><span></span><code><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+    <span class="s2">&quot;Tool executed successfully&quot;</span><span class="p">,</span>
+    <span class="n">extra</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;tool_name&quot;</span><span class="p">:</span> <span class="n">tool</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="s2">&quot;duration_ms&quot;</span><span class="p">:</span> <span class="n">duration</span><span class="p">}</span>
+<span class="p">)</span>
+</code></pre></div></li>
+</ol>
+<hr />
+<p><strong>Versão:</strong> 0.1.3 | <strong>Atualização:</strong> 01/12/2025</p>
 
 
 

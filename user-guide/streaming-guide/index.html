@@ -12,13 +12,13 @@
         <meta name="author" content="Jordan Estralioto">
       
       
-        <link rel="canonical" href="https://jor0105.github.io/Create-Agents-AI/user-guide/faq-user/">
+        <link rel="canonical" href="https://jor0105.github.io/Create-Agents-AI/user-guide/streaming-guide/">
       
       
-        <link rel="prev" href="../examples-user/">
+        <link rel="prev" href="../cli-usage/">
       
       
-        <link rel="next" href="../../dev-guide/architecture-developer/">
+        <link rel="next" href="../examples-user/">
       
       
         
@@ -29,7 +29,7 @@
     
     
       
-        <title>FAQ - Create Agents AI</title>
+        <title>Guia de Streaming - Create Agents AI</title>
       
     
     
@@ -84,7 +84,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#faq-do-usuario" class="md-skip">
+        <a href="#guia-de-streaming" class="md-skip">
           Ir para o conteúdo
         </a>
       
@@ -118,7 +118,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              FAQ
+              Guia de Streaming
             
           </span>
         </div>
@@ -530,10 +530,37 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../streaming-guide/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Guia de Streaming
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -549,6 +576,259 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Índice">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Índice
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#o-que-e-streaming" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        💡 O que é Streaming?
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#como-usar" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🚀 Como Usar
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🚀 Como Usar">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-receber-a-resposta-completa-mais-simples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1️⃣ Receber a Resposta Completa (Mais Simples)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-ver-palavra-por-palavra-streaming-em-tempo-real" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2️⃣ Ver Palavra por Palavra (Streaming em Tempo Real)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#exemplos-praticos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📚 Exemplos Práticos
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="📚 Exemplos Práticos">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#exemplo-1-chatbot-interativo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Exemplo 1: Chatbot Interativo
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#exemplo-2-perguntas-simples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Exemplo 2: Perguntas Simples
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ativando-e-desativando-streaming" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ⚙️ Ativando e Desativando Streaming
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="⚙️ Ativando e Desativando Streaming">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ativar-streaming-padrao" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Ativar Streaming (Padrão)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#desativar-streaming" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Desativar Streaming
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#usar-com-ollama-modelos-locais" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Usar com Ollama (Modelos Locais)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#usando-ferramentas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🛠️ Usando Ferramentas
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#streaming-e-metricas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📊 Streaming e Métricas
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#dicas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        � Dicas
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="� Dicas">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-para-perguntas-rapidas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Para Perguntas Rápidas
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-para-chatbots-e-interfaces" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Para Chatbots e Interfaces
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-lembre-se-do-await" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Lembre-se do await
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-use-asynciorun" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Use asyncio.run()
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#proximos-passos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📚 Próximos Passos
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -586,37 +866,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    FAQ
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../faq-user/" class="md-nav__link">
         
   
   
@@ -632,191 +885,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Índice">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Índice
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#1-por-que-algumas-ferramentas-sao-opcionais" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        1. Por que algumas ferramentas são opcionais?
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#2-como-sei-quais-ferramentas-estao-disponiveis" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        2. Como sei quais ferramentas estão disponíveis?
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#3-o-que-acontece-se-eu-tentar-usar-uma-ferramenta-nao-instalada" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        3. O que acontece se eu tentar usar uma ferramenta não instalada?
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#4-posso-criar-minhas-proprias-ferramentas" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        4. Posso criar minhas próprias ferramentas?
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#5-como-garantir-privacidade-dos-meus-dados" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        5. Como garantir privacidade dos meus dados?
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#6-como-exportar-metricas" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        6. Como exportar métricas?
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#7-como-limpar-o-historico" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        7. Como limpar o histórico?
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#8-como-reportar-bugs-ou-pedir-suporte" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        8. Como reportar bugs ou pedir suporte?
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#9-como-atualizar-o-framework" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        9. Como atualizar o framework?
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#10-onde-encontrar-exemplos-avancados" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        10. Onde encontrar exemplos avançados?
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#11-como-usar-a-cli-interativa" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        11. Como usar a CLI interativa?
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#12-como-funciona-o-streaming" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        12. Como funciona o streaming?
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#13-posso-desabilitar-o-streaming" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        13. Posso desabilitar o streaming?
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#14-quais-comandos-estao-disponiveis-na-cli" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        14. Quais comandos estão disponíveis na CLI?
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#15-como-contribuir-com-o-projeto" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        15. Como contribuir com o projeto?
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -1275,77 +1343,224 @@
   
 
 
-<h1 id="faq-do-usuario">FAQ do Usuário<a class="headerlink" href="#faq-do-usuario" title="Link para esta seção">&para;</a></h1>
-<h2 id="1-por-que-algumas-ferramentas-sao-opcionais">1. Por que algumas ferramentas são opcionais?<a class="headerlink" href="#1-por-que-algumas-ferramentas-sao-opcionais" title="Link para esta seção">&para;</a></h2>
-<p>Para manter o sistema leve. Instale apenas se precisar de leitura de arquivos (PDF, Excel, etc).</p>
-<h2 id="2-como-sei-quais-ferramentas-estao-disponiveis">2. Como sei quais ferramentas estão disponíveis?<a class="headerlink" href="#2-como-sei-quais-ferramentas-estao-disponiveis" title="Link para esta seção">&para;</a></h2>
-<p>Use <code>agent.get_all_available_tools()</code> para listar.</p>
-<h2 id="3-o-que-acontece-se-eu-tentar-usar-uma-ferramenta-nao-instalada">3. O que acontece se eu tentar usar uma ferramenta não instalada?<a class="headerlink" href="#3-o-que-acontece-se-eu-tentar-usar-uma-ferramenta-nao-instalada" title="Link para esta seção">&para;</a></h2>
-<p>Você receberá um erro claro indicando como instalar.</p>
-<h2 id="4-posso-criar-minhas-proprias-ferramentas">4. Posso criar minhas próprias ferramentas?<a class="headerlink" href="#4-posso-criar-minhas-proprias-ferramentas" title="Link para esta seção">&para;</a></h2>
-<p>Sim! Basta estender <code>BaseTool</code> e seguir o padrão dos exemplos.</p>
-<h2 id="5-como-garantir-privacidade-dos-meus-dados">5. Como garantir privacidade dos meus dados?<a class="headerlink" href="#5-como-garantir-privacidade-dos-meus-dados" title="Link para esta seção">&para;</a></h2>
-<p>Use modelos locais (Ollama) para que nada saia da sua máquina.</p>
-<h2 id="6-como-exportar-metricas">6. Como exportar métricas?<a class="headerlink" href="#6-como-exportar-metricas" title="Link para esta seção">&para;</a></h2>
-<p>Use <code>agent.export_metrics_json()</code> ou <code>agent.export_metrics_prometheus()</code>.</p>
-<h2 id="7-como-limpar-o-historico">7. Como limpar o histórico?<a class="headerlink" href="#7-como-limpar-o-historico" title="Link para esta seção">&para;</a></h2>
-<p>Chame <code>agent.clear_history()</code>.</p>
-<h2 id="8-como-reportar-bugs-ou-pedir-suporte">8. Como reportar bugs ou pedir suporte?<a class="headerlink" href="#8-como-reportar-bugs-ou-pedir-suporte" title="Link para esta seção">&para;</a></h2>
-<p>Abra uma issue no GitHub ou envie email para <a href="&#109;&#97;&#105;&#108;&#116;&#111;&#58;&#101;&#115;&#116;&#114;&#97;&#108;&#105;&#111;&#116;&#111;&#106;&#111;&#114;&#100;&#97;&#110;&#64;&#103;&#109;&#97;&#105;&#108;&#46;&#99;&#111;&#109;">&#101;&#115;&#116;&#114;&#97;&#108;&#105;&#111;&#116;&#111;&#106;&#111;&#114;&#100;&#97;&#110;&#64;&#103;&#109;&#97;&#105;&#108;&#46;&#99;&#111;&#109;</a>.</p>
-<h2 id="9-como-atualizar-o-framework">9. Como atualizar o framework?<a class="headerlink" href="#9-como-atualizar-o-framework" title="Link para esta seção">&para;</a></h2>
-<p>Atualize via pip:</p>
-<div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>--upgrade<span class="w"> </span>createagents
-<span class="c1"># OU com file-tools</span>
-pip<span class="w"> </span>install<span class="w"> </span>--upgrade<span class="w"> </span>createagents<span class="o">[</span>file-tools<span class="o">]</span>
-</code></pre></div>
-<h2 id="10-onde-encontrar-exemplos-avancados">10. Onde encontrar exemplos avançados?<a class="headerlink" href="#10-onde-encontrar-exemplos-avancados" title="Link para esta seção">&para;</a></h2>
-<p>Veja <a href="../examples-user/">Exemplos</a> e a documentação avançada.</p>
-<h2 id="11-como-usar-a-cli-interativa">11. Como usar a CLI interativa?<a class="headerlink" href="#11-como-usar-a-cli-interativa" title="Link para esta seção">&para;</a></h2>
-<p>Basta chamar o método <code>start_cli()</code> do agente:</p>
-<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">createagents</span><span class="w"> </span><span class="kn">import</span> <span class="n">CreateAgent</span>
+<h1 id="guia-de-streaming">Guia de Streaming<a class="headerlink" href="#guia-de-streaming" title="Link para esta seção">&para;</a></h1>
+<p>Este guia explica como receber respostas do agente em tempo real.</p>
+<hr />
+<h2 id="o-que-e-streaming">💡 O que é Streaming?<a class="headerlink" href="#o-que-e-streaming" title="Link para esta seção">&para;</a></h2>
+<p>Streaming permite que você veja a resposta aparecendo <strong>palavra por palavra</strong> em tempo real, como se o agente estivesse digitando. Isso deixa a experiência mais natural e interativa.</p>
+<p><strong>Sem streaming</strong>: Você espera 5 segundos e recebe a resposta completa de uma vez.<br />
+<strong>Com streaming</strong>: As palavras aparecem imediatamente, conforme o agente gera a resposta.</p>
+<hr />
+<h2 id="como-usar">🚀 Como Usar<a class="headerlink" href="#como-usar" title="Link para esta seção">&para;</a></h2>
+<p>Existem duas formas de receber respostas do agente:</p>
+<h3 id="1-receber-a-resposta-completa-mais-simples">1️⃣ Receber a Resposta Completa (Mais Simples)<a class="headerlink" href="#1-receber-a-resposta-completa-mais-simples" title="Link para esta seção">&para;</a></h3>
+<p>Use <code>await</code> para esperar a resposta completa:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">createagents</span><span class="w"> </span><span class="kn">import</span> <span class="n">CreateAgent</span>
 
-<span class="n">agent</span> <span class="o">=</span> <span class="n">CreateAgent</span><span class="p">(</span><span class="n">provider</span><span class="o">=</span><span class="s2">&quot;openai&quot;</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s2">&quot;gpt-4&quot;</span><span class="p">)</span>
-<span class="n">agent</span><span class="o">.</span><span class="n">start_cli</span><span class="p">()</span>  <span class="c1"># Inicia CLI interativa</span>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">():</span>
+    <span class="n">agent</span> <span class="o">=</span> <span class="n">CreateAgent</span><span class="p">(</span><span class="n">provider</span><span class="o">=</span><span class="s2">&quot;openai&quot;</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s2">&quot;gpt-4&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Espera a resposta completa</span>
+    <span class="n">resposta</span> <span class="o">=</span> <span class="k">await</span> <span class="n">agent</span><span class="o">.</span><span class="n">chat</span><span class="p">(</span><span class="s2">&quot;Escreva um poema&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">resposta</span><span class="p">)</span>
+
+<span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">())</span>
 </code></pre></div>
-<p>ℹ️ <a href="../cli-usage/">Guia completo da CLI</a></p>
-<h2 id="12-como-funciona-o-streaming">12. Como funciona o streaming?<a class="headerlink" href="#12-como-funciona-o-streaming" title="Link para esta seção">&para;</a></h2>
-<p>O método <code>chat()</code> retorna um <code>StreamingResponseDTO</code> que pode ser:</p>
+<h3 id="2-ver-palavra-por-palavra-streaming-em-tempo-real">2️⃣ Ver Palavra por Palavra (Streaming em Tempo Real)<a class="headerlink" href="#2-ver-palavra-por-palavra-streaming-em-tempo-real" title="Link para esta seção">&para;</a></h3>
+<p>Use <code>async for</code> para ver cada palavra aparecer:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">createagents</span><span class="w"> </span><span class="kn">import</span> <span class="n">CreateAgent</span>
+
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">():</span>
+    <span class="n">agent</span> <span class="o">=</span> <span class="n">CreateAgent</span><span class="p">(</span><span class="n">provider</span><span class="o">=</span><span class="s2">&quot;openai&quot;</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s2">&quot;gpt-4&quot;</span><span class="p">)</span>
+
+    <span class="n">resposta</span> <span class="o">=</span> <span class="k">await</span> <span class="n">agent</span><span class="o">.</span><span class="n">chat</span><span class="p">(</span><span class="s2">&quot;Conte uma história&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Mostra palavra por palavra</span>
+    <span class="k">async</span> <span class="k">for</span> <span class="n">palavra</span> <span class="ow">in</span> <span class="n">resposta</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">palavra</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">()</span>  <span class="c1"># Nova linha no final</span>
+
+<span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">())</span>
+</code></pre></div>
+<blockquote>
+<p>💡 <strong>Dica</strong>: Use a opção 2 para chatbots ou interfaces onde você quer mostrar o agente &ldquo;pensando&rdquo;.</p>
+</blockquote>
+<hr />
+<h2 id="exemplos-praticos">📚 Exemplos Práticos<a class="headerlink" href="#exemplos-praticos" title="Link para esta seção">&para;</a></h2>
+<h3 id="exemplo-1-chatbot-interativo">Exemplo 1: Chatbot Interativo<a class="headerlink" href="#exemplo-1-chatbot-interativo" title="Link para esta seção">&para;</a></h3>
+<p>Crie um chatbot que mostra as palavras aparecendo:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">createagents</span><span class="w"> </span><span class="kn">import</span> <span class="n">CreateAgent</span>
+
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">chat_interface</span><span class="p">():</span>
+    <span class="n">agent</span> <span class="o">=</span> <span class="n">CreateAgent</span><span class="p">(</span><span class="n">provider</span><span class="o">=</span><span class="s2">&quot;openai&quot;</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s2">&quot;gpt-4&quot;</span><span class="p">)</span>
+
+    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="n">user_input</span> <span class="o">=</span> <span class="nb">input</span><span class="p">(</span><span class="s2">&quot;Você: &quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">user_input</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;sair&#39;</span><span class="p">,</span> <span class="s1">&#39;exit&#39;</span><span class="p">]:</span>
+            <span class="k">break</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Agente: &quot;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">resposta</span> <span class="o">=</span> <span class="k">await</span> <span class="n">agent</span><span class="o">.</span><span class="n">chat</span><span class="p">(</span><span class="n">user_input</span><span class="p">)</span>
+
+        <span class="c1"># Mostra palavra por palavra</span>
+        <span class="k">async</span> <span class="k">for</span> <span class="n">palavra</span> <span class="ow">in</span> <span class="n">resposta</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">palavra</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">chat_interface</span><span class="p">())</span>
+</code></pre></div>
+<h3 id="exemplo-2-perguntas-simples">Exemplo 2: Perguntas Simples<a class="headerlink" href="#exemplo-2-perguntas-simples" title="Link para esta seção">&para;</a></h3>
+<p>Para perguntas diretas, use <code>await</code> (mais simples):</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">createagents</span><span class="w"> </span><span class="kn">import</span> <span class="n">CreateAgent</span>
+
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">perguntas_simples</span><span class="p">():</span>
+    <span class="n">agent</span> <span class="o">=</span> <span class="n">CreateAgent</span><span class="p">(</span><span class="n">provider</span><span class="o">=</span><span class="s2">&quot;openai&quot;</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s2">&quot;gpt-4&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Pergunta direta</span>
+    <span class="n">resposta</span> <span class="o">=</span> <span class="k">await</span> <span class="n">agent</span><span class="o">.</span><span class="n">chat</span><span class="p">(</span><span class="s2">&quot;Qual a capital do Brasil?&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Resposta: </span><span class="si">{</span><span class="n">resposta</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">perguntas_simples</span><span class="p">())</span>
+</code></pre></div>
+<hr />
+<h2 id="ativando-e-desativando-streaming">⚙️ Ativando e Desativando Streaming<a class="headerlink" href="#ativando-e-desativando-streaming" title="Link para esta seção">&para;</a></h2>
+<h3 id="ativar-streaming-padrao">Ativar Streaming (Padrão)<a class="headerlink" href="#ativar-streaming-padrao" title="Link para esta seção">&para;</a></h3>
+<p>Por padrão, o streaming já vem ativado. Você não precisa fazer nada!</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">createagents</span><span class="w"> </span><span class="kn">import</span> <span class="n">CreateAgent</span>
+
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">():</span>
+    <span class="c1"># Streaming já está ativo</span>
+    <span class="n">agent</span> <span class="o">=</span> <span class="n">CreateAgent</span><span class="p">(</span><span class="n">provider</span><span class="o">=</span><span class="s2">&quot;openai&quot;</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s2">&quot;gpt-4&quot;</span><span class="p">)</span>
+
+    <span class="n">resposta</span> <span class="o">=</span> <span class="k">await</span> <span class="n">agent</span><span class="o">.</span><span class="n">chat</span><span class="p">(</span><span class="s2">&quot;Conte uma história&quot;</span><span class="p">)</span>
+    <span class="k">async</span> <span class="k">for</span> <span class="n">palavra</span> <span class="ow">in</span> <span class="n">resposta</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">palavra</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">())</span>
+</code></pre></div>
+<h3 id="desativar-streaming">Desativar Streaming<a class="headerlink" href="#desativar-streaming" title="Link para esta seção">&para;</a></h3>
+<p>Se preferir esperar a resposta completa, desative o streaming:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">():</span>
+    <span class="c1"># Desabilita streaming</span>
+    <span class="n">agent</span> <span class="o">=</span> <span class="n">CreateAgent</span><span class="p">(</span>
+        <span class="n">provider</span><span class="o">=</span><span class="s2">&quot;openai&quot;</span><span class="p">,</span>
+        <span class="n">model</span><span class="o">=</span><span class="s2">&quot;gpt-4&quot;</span><span class="p">,</span>
+        <span class="n">config</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;stream&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">}</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Recebe tudo de uma vez</span>
+    <span class="n">resposta</span> <span class="o">=</span> <span class="k">await</span> <span class="n">agent</span><span class="o">.</span><span class="n">chat</span><span class="p">(</span><span class="s2">&quot;Olá&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">resposta</span><span class="p">)</span>
+
+<span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">())</span>
+</code></pre></div>
+<hr />
+<h3 id="usar-com-ollama-modelos-locais">Usar com Ollama (Modelos Locais)<a class="headerlink" href="#usar-com-ollama-modelos-locais" title="Link para esta seção">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">ollama_streaming</span><span class="p">():</span>
+    <span class="n">agent</span> <span class="o">=</span> <span class="n">CreateAgent</span><span class="p">(</span><span class="n">provider</span><span class="o">=</span><span class="s2">&quot;ollama&quot;</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s2">&quot;llama3.2&quot;</span><span class="p">)</span>
+
+    <span class="n">resposta</span> <span class="o">=</span> <span class="k">await</span> <span class="n">agent</span><span class="o">.</span><span class="n">chat</span><span class="p">(</span><span class="s2">&quot;Explique machine learning&quot;</span><span class="p">)</span>
+    <span class="k">async</span> <span class="k">for</span> <span class="n">palavra</span> <span class="ow">in</span> <span class="n">resposta</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">palavra</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">()</span>
+
+<span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">ollama_streaming</span><span class="p">())</span>
+</code></pre></div>
+<p><strong>Funciona igual!</strong> Não importa se usa OpenAI ou Ollama, o streaming funciona da mesma forma.</p>
+<hr />
+<h2 id="usando-ferramentas">🛠️ Usando Ferramentas<a class="headerlink" href="#usando-ferramentas" title="Link para esta seção">&para;</a></h2>
+<p>O streaming funciona normalmente mesmo quando o agente usa ferramentas:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">exemplo_com_ferramentas</span><span class="p">():</span>
+    <span class="n">agent</span> <span class="o">=</span> <span class="n">CreateAgent</span><span class="p">(</span>
+        <span class="n">provider</span><span class="o">=</span><span class="s2">&quot;openai&quot;</span><span class="p">,</span>
+        <span class="n">model</span><span class="o">=</span><span class="s2">&quot;gpt-4&quot;</span><span class="p">,</span>
+        <span class="n">tools</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;currentdate&quot;</span><span class="p">]</span>
+    <span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Perguntando sobre datas...</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">resposta</span> <span class="o">=</span> <span class="k">await</span> <span class="n">agent</span><span class="o">.</span><span class="n">chat</span><span class="p">(</span><span class="s2">&quot;Que dia é hoje?&quot;</span><span class="p">)</span>
+
+    <span class="c1"># O agente usa a ferramenta e responde em streaming</span>
+    <span class="k">async</span> <span class="k">for</span> <span class="n">palavra</span> <span class="ow">in</span> <span class="n">resposta</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">palavra</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">()</span>
+
+<span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">exemplo_com_ferramentas</span><span class="p">())</span>
+</code></pre></div>
+<hr />
+<h2 id="streaming-e-metricas">📊 Streaming e Métricas<a class="headerlink" href="#streaming-e-metricas" title="Link para esta seção">&para;</a></h2>
+<p>Métricas são coletadas automaticamente, independentemente do modo de consumo:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">streaming_with_metrics</span><span class="p">():</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">createagents</span><span class="w"> </span><span class="kn">import</span> <span class="n">CreateAgent</span>
+
+    <span class="n">agent</span> <span class="o">=</span> <span class="n">CreateAgent</span><span class="p">(</span><span class="n">provider</span><span class="o">=</span><span class="s2">&quot;openai&quot;</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s2">&quot;gpt-4&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Streaming</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="k">await</span> <span class="n">agent</span><span class="o">.</span><span class="n">chat</span><span class="p">(</span><span class="s2">&quot;Conte uma piada&quot;</span><span class="p">)</span>
+    <span class="k">async</span> <span class="k">for</span> <span class="n">token</span> <span class="ow">in</span> <span class="n">response</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">token</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Métricas ainda são gravadas</span>
+    <span class="n">metrics</span> <span class="o">=</span> <span class="n">agent</span><span class="o">.</span><span class="n">get_metrics</span><span class="p">()</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Latência: </span><span class="si">{</span><span class="n">metrics</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">latency_ms</span><span class="si">}</span><span class="s2">ms&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Tokens: </span><span class="si">{</span><span class="n">metrics</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">tokens_used</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">streaming_with_metrics</span><span class="p">())</span>
+</code></pre></div>
+<hr />
+<h2 id="dicas">� Dicas<a class="headerlink" href="#dicas" title="Link para esta seção">&para;</a></h2>
+<h3 id="1-para-perguntas-rapidas">1. Para Perguntas Rápidas<a class="headerlink" href="#1-para-perguntas-rapidas" title="Link para esta seção">&para;</a></h3>
+<p>Use <code>await</code> para receber a resposta completa:</p>
+<div class="highlight"><pre><span></span><code><span class="n">resposta</span> <span class="o">=</span> <span class="k">await</span> <span class="n">agent</span><span class="o">.</span><span class="n">chat</span><span class="p">(</span><span class="s2">&quot;Qual a capital da França?&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">resposta</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="2-para-chatbots-e-interfaces">2. Para Chatbots e Interfaces<a class="headerlink" href="#2-para-chatbots-e-interfaces" title="Link para esta seção">&para;</a></h3>
+<p>Use <code>async for</code> para mostrar palavra por palavra:</p>
+<div class="highlight"><pre><span></span><code><span class="n">resposta</span> <span class="o">=</span> <span class="k">await</span> <span class="n">agent</span><span class="o">.</span><span class="n">chat</span><span class="p">(</span><span class="s2">&quot;Escreva um artigo&quot;</span><span class="p">)</span>
+<span class="k">async</span> <span class="k">for</span> <span class="n">palavra</span> <span class="ow">in</span> <span class="n">resposta</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">palavra</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="3-lembre-se-do-await">3. Lembre-se do <code>await</code><a class="headerlink" href="#3-lembre-se-do-await" title="Link para esta seção">&para;</a></h3>
+<p>Sempre use <code>await</code> ao chamar <code>agent.chat()</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># ❌ Errado</span>
+<span class="n">resposta</span> <span class="o">=</span> <span class="n">agent</span><span class="o">.</span><span class="n">chat</span><span class="p">(</span><span class="s2">&quot;mensagem&quot;</span><span class="p">)</span>  <span class="c1"># Não funciona!</span>
+
+<span class="c1"># ✅ Correto</span>
+<span class="n">resposta</span> <span class="o">=</span> <span class="k">await</span> <span class="n">agent</span><span class="o">.</span><span class="n">chat</span><span class="p">(</span><span class="s2">&quot;mensagem&quot;</span><span class="p">)</span>  <span class="c1"># Funciona!</span>
+</code></pre></div>
+<h3 id="4-use-asynciorun">4. Use <code>asyncio.run()</code><a class="headerlink" href="#4-use-asynciorun" title="Link para esta seção">&para;</a></h3>
+<p>Sempre envolva seu código em uma função <code>async</code> e execute com <code>asyncio.run()</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">():</span>
+    <span class="n">resposta</span> <span class="o">=</span> <span class="k">await</span> <span class="n">agent</span><span class="o">.</span><span class="n">chat</span><span class="p">(</span><span class="s2">&quot;mensagem&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">resposta</span><span class="p">)</span>
+
+<span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">())</span>
+</code></pre></div>
+<hr />
+<h2 id="proximos-passos">📚 Próximos Passos<a class="headerlink" href="#proximos-passos" title="Link para esta seção">&para;</a></h2>
 <ul>
-<li><strong>Awaited</strong>: <code>response_text = await agent.chat("mensagem")</code></li>
-<li><strong>Iterado</strong>: <code>async for token in await agent.chat("mensagem"): ...</code></li>
+<li><a href="../cli-usage/">Uso da CLI</a> - Interface interativa</li>
+<li><a href="../examples-user/">Exemplos Práticos</a> - Mais exemplos de uso</li>
+<li><a href="../faq-user/">FAQ</a> - Perguntas frequentes</li>
 </ul>
-<p>O streaming é controlado pelo parâmetro <code>stream</code> na configuração:</p>
-<div class="highlight"><pre><span></span><code><span class="c1"># Habilitar streaming (padrão)</span>
-<span class="n">agent</span> <span class="o">=</span> <span class="n">CreateAgent</span><span class="p">(</span><span class="n">provider</span><span class="o">=</span><span class="s2">&quot;openai&quot;</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s2">&quot;gpt-4&quot;</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;stream&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">})</span>
-
-<span class="c1"># Desabilitar streaming</span>
-<span class="n">agent</span> <span class="o">=</span> <span class="n">CreateAgent</span><span class="p">(</span><span class="n">provider</span><span class="o">=</span><span class="s2">&quot;openai&quot;</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s2">&quot;gpt-4&quot;</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;stream&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">})</span>
-</code></pre></div>
-<p>ℹ️ <a href="../streaming-guide/">Guia de Streaming</a></p>
-<h2 id="13-posso-desabilitar-o-streaming">13. Posso desabilitar o streaming?<a class="headerlink" href="#13-posso-desabilitar-o-streaming" title="Link para esta seção">&para;</a></h2>
-<p>Sim! Configure <code>stream: False</code> ao criar o agente:</p>
-<div class="highlight"><pre><span></span><code><span class="n">agent</span> <span class="o">=</span> <span class="n">CreateAgent</span><span class="p">(</span>
-    <span class="n">provider</span><span class="o">=</span><span class="s2">&quot;openai&quot;</span><span class="p">,</span>
-    <span class="n">model</span><span class="o">=</span><span class="s2">&quot;gpt-4&quot;</span><span class="p">,</span>
-    <span class="n">config</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;stream&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">}</span>  <span class="c1"># Desabilita streaming</span>
-<span class="p">)</span>
-
-<span class="c1"># Resposta completa sem streaming token-por-token</span>
-<span class="n">response</span> <span class="o">=</span> <span class="k">await</span> <span class="n">agent</span><span class="o">.</span><span class="n">chat</span><span class="p">(</span><span class="s2">&quot;mensagem&quot;</span><span class="p">)</span>
-<span class="n">text</span> <span class="o">=</span> <span class="k">await</span> <span class="n">response</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
-</code></pre></div>
-<h2 id="14-quais-comandos-estao-disponiveis-na-cli">14. Quais comandos estão disponíveis na CLI?<a class="headerlink" href="#14-quais-comandos-estao-disponiveis-na-cli" title="Link para esta seção">&para;</a></h2>
-<ul>
-<li><code>/help</code> - Ajuda</li>
-<li><code>/metrics</code> - Métricas de performance</li>
-<li><code>/configs</code> - Configurações do agente</li>
-<li><code>/tools</code> - Listar ferramentas</li>
-<li><code>/clear</code> - Limpar histórico</li>
-<li><code>exit</code> ou <code>quit</code> - Sair</li>
-</ul>
-<h2 id="15-como-contribuir-com-o-projeto">15. Como contribuir com o projeto?<a class="headerlink" href="#15-como-contribuir-com-o-projeto" title="Link para esta seção">&para;</a></h2>
-<p>Veja o <a href="../../dev-guide/contribute/">guia de contribuição</a>.</p>
+<hr />
+<p><strong>Versão:</strong> 0.1.3 | <strong>Atualização:</strong> 01/12/2025</p>
 
 
 
