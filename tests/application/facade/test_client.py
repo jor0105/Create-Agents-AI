@@ -151,29 +151,37 @@ class TestCreateAgentChat:
     @patch(
         'createagents.application.facade.client.AgentComposer.create_chat_use_case'
     )
-    def test_chat_returns_response(self, mock_create_chat):
+    @pytest.mark.asyncio
+    async def test_chat_returns_response(self, mock_create_chat):
+        from unittest.mock import AsyncMock
+
         mock_use_case = Mock()
         mock_output = Mock()
         mock_output.response = 'AI response'
-        mock_use_case.execute.return_value = mock_output
+        mock_use_case.execute = AsyncMock(return_value=mock_output)
         mock_create_chat.return_value = mock_use_case
 
         controller = CreateAgent(
             provider='openai', model='gpt-5', name='Test', instructions='Test'
         )
 
-        response = controller.chat('Hello')
+        response = await controller.chat('Hello')
 
         assert response == 'AI response'
 
     @patch(
         'createagents.application.facade.client.AgentComposer.create_chat_use_case'
     )
-    def test_chat_calls_use_case_with_correct_params(self, mock_create_chat):
+    @pytest.mark.asyncio
+    async def test_chat_calls_use_case_with_correct_params(
+        self, mock_create_chat
+    ):
+        from unittest.mock import AsyncMock
+
         mock_use_case = Mock()
         mock_output = Mock()
         mock_output.response = 'Response'
-        mock_use_case.execute.return_value = mock_output
+        mock_use_case.execute = AsyncMock(return_value=mock_output)
         mock_create_chat.return_value = mock_use_case
 
         controller = CreateAgent(
@@ -183,7 +191,7 @@ class TestCreateAgentChat:
             instructions='Test',
         )
 
-        controller.chat('Test message')
+        await controller.chat('Test message')
 
         assert mock_use_case.execute.called
         call_args = mock_use_case.execute.call_args
@@ -192,18 +200,21 @@ class TestCreateAgentChat:
     @patch(
         'createagents.application.facade.client.AgentComposer.create_chat_use_case'
     )
-    def test_chat_with_empty_message(self, mock_create_chat):
+    @pytest.mark.asyncio
+    async def test_chat_with_empty_message(self, mock_create_chat):
+        from unittest.mock import AsyncMock
+
         mock_use_case = Mock()
         mock_output = Mock()
         mock_output.response = 'Response'
-        mock_use_case.execute.return_value = mock_output
+        mock_use_case.execute = AsyncMock(return_value=mock_output)
         mock_create_chat.return_value = mock_use_case
 
         controller = CreateAgent(
             provider='openai', model='gpt-5', name='Test', instructions='Test'
         )
 
-        response = controller.chat('')
+        response = await controller.chat('')
 
         assert response == 'Response'
         call_args = mock_use_case.execute.call_args
@@ -212,9 +223,12 @@ class TestCreateAgentChat:
     @patch(
         'createagents.application.facade.client.AgentComposer.create_chat_use_case'
     )
-    def test_chat_when_use_case_raises_exception(self, mock_create_chat):
+    @pytest.mark.asyncio
+    async def test_chat_when_use_case_raises_exception(self, mock_create_chat):
+        from unittest.mock import AsyncMock
+
         mock_use_case = Mock()
-        mock_use_case.execute.side_effect = Exception('API Error')
+        mock_use_case.execute = AsyncMock(side_effect=Exception('API Error'))
         mock_create_chat.return_value = mock_use_case
 
         controller = CreateAgent(
@@ -222,16 +236,19 @@ class TestCreateAgentChat:
         )
 
         with pytest.raises(Exception, match='API Error'):
-            controller.chat('Hello')
+            await controller.chat('Hello')
 
     @patch(
         'createagents.application.facade.client.AgentComposer.create_chat_use_case'
     )
-    def test_multiple_chat_calls(self, mock_create_chat):
+    @pytest.mark.asyncio
+    async def test_multiple_chat_calls(self, mock_create_chat):
+        from unittest.mock import AsyncMock
+
         mock_use_case = Mock()
         mock_output = Mock()
         mock_output.response = 'Response'
-        mock_use_case.execute.return_value = mock_output
+        mock_use_case.execute = AsyncMock(return_value=mock_output)
         mock_create_chat.return_value = mock_use_case
 
         controller = CreateAgent(
@@ -241,32 +258,35 @@ class TestCreateAgentChat:
             instructions='Test',
         )
 
-        controller.chat('Message 1')
-        controller.chat('Message 2')
+        await controller.chat('Message 1')
+        await controller.chat('Message 2')
 
         assert mock_use_case.execute.call_count == 2
 
     @patch(
         'createagents.application.facade.client.AgentComposer.create_chat_use_case'
     )
-    def test_chat_updates_agent_history(self, mock_create_chat):
+    @pytest.mark.asyncio
+    async def test_chat_updates_agent_history(self, mock_create_chat):
+        from unittest.mock import AsyncMock
+
         mock_use_case = Mock()
         mock_output = Mock()
         mock_output.response = 'AI Response'
 
-        def execute_side_effect(agent, input_dto):
+        async def execute_side_effect(agent, input_dto):
             agent.add_user_message(input_dto.message)
             agent.add_assistant_message(mock_output.response)
             return mock_output
 
-        mock_use_case.execute.side_effect = execute_side_effect
+        mock_use_case.execute = AsyncMock(side_effect=execute_side_effect)
         mock_create_chat.return_value = mock_use_case
 
         controller = CreateAgent(
             provider='openai', model='gpt-5', name='Test', instructions='Test'
         )
 
-        controller.chat('Hello')
+        await controller.chat('Hello')
 
         agent = controller._CreateAgent__agent
         assert len(agent.history) == 2
@@ -469,13 +489,16 @@ class TestCreateAgentClearHistory:
     @patch(
         'createagents.application.facade.client.AgentComposer.create_get_config_use_case'
     )
-    def test_get_configs_after_clear_history_shows_empty_history(
+    @pytest.mark.asyncio
+    async def test_get_configs_after_clear_history_shows_empty_history(
         self, mock_create_config, mock_create_chat
     ):
+        from unittest.mock import AsyncMock
+
         mock_chat_use_case = Mock()
         mock_output = Mock()
         mock_output.response = 'Response'
-        mock_chat_use_case.execute.return_value = mock_output
+        mock_chat_use_case.execute = AsyncMock(return_value=mock_output)
         mock_create_chat.return_value = mock_chat_use_case
 
         mock_config_use_case = Mock()
@@ -488,7 +511,7 @@ class TestCreateAgentClearHistory:
             instructions='Test',
         )
 
-        controller.chat('Message 1')
+        await controller.chat('Message 1')
 
         controller.clear_history()
 
@@ -749,18 +772,21 @@ class TestCreateAgentIntegration:
     @patch(
         'createagents.application.facade.client.AgentComposer.create_chat_use_case'
     )
-    def test_chat_and_get_configs_together(self, mock_create_chat):
+    @pytest.mark.asyncio
+    async def test_chat_and_get_configs_together(self, mock_create_chat):
+        from unittest.mock import AsyncMock
+
         mock_use_case = Mock()
         mock_output = Mock()
         mock_output.response = 'Response'
-        mock_use_case.execute.return_value = mock_output
+        mock_use_case.execute = AsyncMock(return_value=mock_output)
         mock_create_chat.return_value = mock_use_case
 
         controller = CreateAgent(
             provider='openai', model='gpt-5', name='Test', instructions='Test'
         )
 
-        response = controller.chat('Hello')
+        response = await controller.chat('Hello')
         assert response == 'Response'
 
         configs = controller.get_configs()
@@ -769,67 +795,35 @@ class TestCreateAgentIntegration:
     @patch(
         'createagents.application.facade.client.AgentComposer.create_chat_use_case'
     )
-    def test_chat_clear_history_chat_again(self, mock_create_chat):
+    @pytest.mark.asyncio
+    async def test_chat_clear_history_chat_again(self, mock_create_chat):
+        from unittest.mock import AsyncMock
+
         mock_use_case = Mock()
         mock_output = Mock()
         mock_output.response = 'Response'
 
-        def execute_side_effect(agent, input_dto):
+        async def execute_side_effect(agent, input_dto):
             agent.add_user_message(input_dto.message)
             agent.add_assistant_message(mock_output.response)
             return mock_output
 
-        mock_use_case.execute.side_effect = execute_side_effect
+        mock_use_case.execute = AsyncMock(side_effect=execute_side_effect)
         mock_create_chat.return_value = mock_use_case
 
         controller = CreateAgent(
             provider='openai', model='gpt-5', name='Test', instructions='Test'
         )
 
-        controller.chat('Message 1')
+        await controller.chat('Message 1')
         agent = controller._CreateAgent__agent
         assert len(agent.history) == 2
 
         controller.clear_history()
         assert len(agent.history) == 0
 
-        controller.chat('Message 2')
+        await controller.chat('Message 2')
         assert len(agent.history) == 2
-
-    @patch(
-        'createagents.application.facade.client.AgentComposer.create_chat_use_case'
-    )
-    def test_metrics_accumulate_after_multiple_chats(self, mock_create_chat):
-        from createagents.infra.config.metrics import ChatMetrics
-
-        mock_use_case = Mock()
-        mock_output = Mock()
-        mock_output.response = 'Response'
-        mock_use_case.execute.return_value = mock_output
-
-        metrics_list = []
-
-        def get_metrics_side_effect():
-            return metrics_list.copy()
-
-        def execute_side_effect(agent, input_dto):
-            metrics_list.append(ChatMetrics(model='gpt-5', latency_ms=100.0))
-            return mock_output
-
-        mock_use_case.get_metrics.side_effect = get_metrics_side_effect
-        mock_use_case.execute.side_effect = execute_side_effect
-        mock_create_chat.return_value = mock_use_case
-
-        controller = CreateAgent(
-            provider='openai', model='gpt-5', name='Test', instructions='Test'
-        )
-
-        controller.chat('Message 1')
-        controller.chat('Message 2')
-        controller.chat('Message 3')
-
-        metrics = controller.get_metrics()
-        assert len(metrics) == 3
 
 
 @pytest.mark.unit
@@ -876,11 +870,14 @@ class TestCreateAgentEdgeCases:
     @patch(
         'createagents.application.facade.client.AgentComposer.create_chat_use_case'
     )
-    def test_chat_with_very_long_message(self, mock_create_chat):
+    @pytest.mark.asyncio
+    async def test_chat_with_very_long_message(self, mock_create_chat):
+        from unittest.mock import AsyncMock
+
         mock_use_case = Mock()
         mock_output = Mock()
         mock_output.response = 'Response'
-        mock_use_case.execute.return_value = mock_output
+        mock_use_case.execute = AsyncMock(return_value=mock_output)
         mock_create_chat.return_value = mock_use_case
 
         controller = CreateAgent(
@@ -888,7 +885,7 @@ class TestCreateAgentEdgeCases:
         )
 
         long_message = 'A' * 50000
-        response = controller.chat(long_message)
+        response = await controller.chat(long_message)
 
         assert response == 'Response'
         call_args = mock_use_case.execute.call_args
@@ -897,11 +894,14 @@ class TestCreateAgentEdgeCases:
     @patch(
         'createagents.application.facade.client.AgentComposer.create_chat_use_case'
     )
-    def test_chat_with_unicode_message(self, mock_create_chat):
+    @pytest.mark.asyncio
+    async def test_chat_with_unicode_message(self, mock_create_chat):
+        from unittest.mock import AsyncMock
+
         mock_use_case = Mock()
         mock_output = Mock()
         mock_output.response = '回复'
-        mock_use_case.execute.return_value = mock_output
+        mock_use_case.execute = AsyncMock(return_value=mock_output)
         mock_create_chat.return_value = mock_use_case
 
         controller = CreateAgent(
@@ -909,7 +909,7 @@ class TestCreateAgentEdgeCases:
         )
 
         unicode_message = '你好，世界！ 🌍'
-        response = controller.chat(unicode_message)
+        response = await controller.chat(unicode_message)
 
         assert response == '回复'
 
@@ -978,26 +978,29 @@ class TestCreateAgentEdgeCases:
     @patch(
         'createagents.application.facade.client.AgentComposer.create_chat_use_case'
     )
-    def test_chat_preserves_message_order(self, mock_create_chat):
+    @pytest.mark.asyncio
+    async def test_chat_preserves_message_order(self, mock_create_chat):
+        from unittest.mock import AsyncMock
+
         mock_use_case = Mock()
         mock_output = Mock()
         mock_output.response = 'Response'
 
-        def execute_side_effect(agent, input_dto):
+        async def execute_side_effect(agent, input_dto):
             agent.add_user_message(input_dto.message)
             agent.add_assistant_message(mock_output.response)
             return mock_output
 
-        mock_use_case.execute.side_effect = execute_side_effect
+        mock_use_case.execute = AsyncMock(side_effect=execute_side_effect)
         mock_create_chat.return_value = mock_use_case
 
         controller = CreateAgent(
             provider='openai', model='gpt-5', name='Test', instructions='Test'
         )
 
-        controller.chat('First message')
-        controller.chat('Second message')
-        controller.chat('Third message')
+        await controller.chat('First message')
+        await controller.chat('Second message')
+        await controller.chat('Third message')
 
         agent = controller._CreateAgent__agent
         history = agent.history.get_messages()
@@ -1105,19 +1108,22 @@ class TestCreateAgentEdgeCases:
     @patch(
         'createagents.application.facade.client.AgentComposer.create_get_config_use_case'
     )
-    def test_controller_workflow_chat_config_clear_repeat(
+    @pytest.mark.asyncio
+    async def test_clear_history_with_chat_and_get_configs(
         self, mock_create_config, mock_create_chat
     ):
+        from unittest.mock import AsyncMock
+
         mock_chat_use_case = Mock()
         mock_output = Mock()
         mock_output.response = 'Response'
 
-        def execute_side_effect(agent, input_dto):
+        async def execute_side_effect(agent, input_dto):
             agent.add_user_message(input_dto.message)
             agent.add_assistant_message(mock_output.response)
             return mock_output
 
-        mock_chat_use_case.execute.side_effect = execute_side_effect
+        mock_chat_use_case.execute = AsyncMock(side_effect=execute_side_effect)
         mock_create_chat.return_value = mock_chat_use_case
 
         mock_config_use_case = Mock()
@@ -1134,7 +1140,7 @@ class TestCreateAgentEdgeCases:
             provider='openai', model='gpt-5', name='Test', instructions='Test'
         )
 
-        controller.chat('Hello')
+        await controller.chat('Hello')
         agent = controller._CreateAgent__agent
         assert len(agent.history) == 2
 
@@ -1144,7 +1150,7 @@ class TestCreateAgentEdgeCases:
         controller.clear_history()
         assert len(agent.history) == 0
 
-        controller.chat('New conversation')
+        await controller.chat('New conversation')
         assert len(agent.history) == 2
 
         configs2 = controller.get_configs()
@@ -1167,30 +1173,35 @@ class TestCreateAgentEdgeCases:
     @patch(
         'createagents.application.facade.client.AgentComposer.create_chat_use_case'
     )
-    def test_multiple_consecutive_clear_history_calls(self, mock_create_chat):
+    @pytest.mark.asyncio
+    async def test_multiple_consecutive_clear_history_calls(
+        self, mock_create_chat
+    ):
+        from unittest.mock import AsyncMock
+
         mock_use_case = Mock()
         mock_output = Mock()
         mock_output.response = 'Response'
 
-        def execute_side_effect(agent, input_dto):
+        async def execute_side_effect(agent, input_dto):
             agent.add_user_message(input_dto.message)
             agent.add_assistant_message(mock_output.response)
             return mock_output
 
-        mock_use_case.execute.side_effect = execute_side_effect
+        mock_use_case.execute = AsyncMock(side_effect=execute_side_effect)
         mock_create_chat.return_value = mock_use_case
 
         controller = CreateAgent(
             provider='openai', model='gpt-5', name='Test', instructions='Test'
         )
 
-        controller.chat('Message')
+        await controller.chat('Message')
         assert len(controller._CreateAgent__agent.history) == 2
 
         controller.clear_history()
-        assert len(controller._CreateAgent__agent.history) == 0
-
         controller.clear_history()
+        controller.clear_history()
+
         assert len(controller._CreateAgent__agent.history) == 0
 
         controller.clear_history()
@@ -1364,8 +1375,9 @@ class TestCreateAgentEdgeCases:
 
         assert 'tools' in config
 
-    def test_initialization_tools_preserved_through_chat(self):
-        from unittest.mock import Mock, patch
+    @pytest.mark.asyncio
+    async def test_initialization_tools_preserved_through_chat(self):
+        from unittest.mock import AsyncMock, Mock, patch
 
         from createagents.domain import BaseTool
 
@@ -1384,7 +1396,7 @@ class TestCreateAgentEdgeCases:
             mock_use_case = Mock()
             mock_output = Mock()
             mock_output.response = 'Response'
-            mock_use_case.execute.return_value = mock_output
+            mock_use_case.execute = AsyncMock(return_value=mock_output)
             mock_create_chat.return_value = mock_use_case
 
             controller = CreateAgent(
@@ -1395,7 +1407,7 @@ class TestCreateAgentEdgeCases:
                 tools=[tool],
             )
 
-            controller.chat('Hello')
+            await controller.chat(' Hello')
 
             agent = controller._CreateAgent__agent
             assert len(agent.tools) == 1

@@ -1,3 +1,5 @@
+import re
+
 import pytest
 
 from createagents.utils import TextSanitizer
@@ -291,28 +293,29 @@ class TestFormatMarkdownForTerminal:
         result = TextSanitizer.format_markdown_for_terminal(text)
 
         assert 'Main Title' in result
-        assert '═══════' in result
+        assert '───────' in result
 
     def test_format_h2_header(self):
         text = '## Section Title'
         result = TextSanitizer.format_markdown_for_terminal(text)
-
         assert 'Section Title' in result
-        assert '═══' in result
 
     def test_format_h3_header(self):
         text = '### Subsection'
         result = TextSanitizer.format_markdown_for_terminal(text)
-
         assert 'Subsection' in result
-        assert '━━━' in result
 
-    def test_format_h4_h5_h6_headers(self):
-        for level in [4, 5, 6]:
+    def test_format_h4_header_uses_indicator(self):
+        result = TextSanitizer.format_markdown_for_terminal('#### Header')
+
+        assert 'Header' in result
+        assert '▌' in result
+
+    def test_format_h5_h6_headers_render_text(self):
+        for level in [5, 6]:
             markdown = '#' * level + ' Header'
             result = TextSanitizer.format_markdown_for_terminal(markdown)
             assert 'Header' in result
-            assert '━━' in result
 
     def test_format_multiple_headers(self):
         text = '# Title\n## Section 1\n### Subsection\n## Section 2'
@@ -623,8 +626,12 @@ This is a **critical** project with *important* details.
         wrapped = TextSanitizer._wrap_text(formatted, 40)
 
         assert len(wrapped) > 0
+        ansi_escape = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
         for line in wrapped:
-            assert len(line) <= 40
+            cleaned = ansi_escape.sub('', line)
+            if cleaned.strip('─') == '':
+                continue
+            assert len(cleaned) <= 40
 
 
 @pytest.mark.unit

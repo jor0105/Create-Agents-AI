@@ -9,7 +9,7 @@ IA_OPENAI_TEST_3: str = 'gpt-4-mini'
 
 @pytest.mark.unit
 class TestClientOpenAI:
-    @patch('createagents.infra.adapters.OpenAI.client_openai.OpenAI')
+    @patch('createagents.infra.adapters.OpenAI.client_openai.AsyncOpenAI')
     def test_get_client_creates_client_with_api_key(self, mock_openai):
         from createagents.infra.adapters.OpenAI.client_openai import (
             ClientOpenAI,
@@ -23,7 +23,7 @@ class TestClientOpenAI:
         assert client is mock_client
         mock_openai.assert_called_once_with(api_key='test-api-key')
 
-    @patch('createagents.infra.adapters.OpenAI.client_openai.OpenAI')
+    @patch('createagents.infra.adapters.OpenAI.client_openai.AsyncOpenAI')
     def test_get_client_returns_openai_instance(self, mock_openai):
         from createagents.infra.adapters.OpenAI.client_openai import (
             ClientOpenAI,
@@ -36,7 +36,7 @@ class TestClientOpenAI:
 
         assert client is not None
 
-    @patch('createagents.infra.adapters.OpenAI.client_openai.OpenAI')
+    @patch('createagents.infra.adapters.OpenAI.client_openai.AsyncOpenAI')
     def test_get_client_with_different_keys(self, mock_openai):
         from createagents.infra.adapters.OpenAI.client_openai import (
             ClientOpenAI,
@@ -59,7 +59,7 @@ class TestClientOpenAI:
 
         assert ClientOpenAI.API_OPENAI_NAME == 'OPENAI_API_KEY'
 
-    @patch('createagents.infra.adapters.OpenAI.client_openai.OpenAI')
+    @patch('createagents.infra.adapters.OpenAI.client_openai.AsyncOpenAI')
     def test_get_client_is_static_method(self, mock_openai):
         from createagents.infra.adapters.OpenAI.client_openai import (
             ClientOpenAI,
@@ -72,7 +72,7 @@ class TestClientOpenAI:
 
         assert client is not None
 
-    @patch('createagents.infra.adapters.OpenAI.client_openai.OpenAI')
+    @patch('createagents.infra.adapters.OpenAI.client_openai.AsyncOpenAI')
     def test_get_client_called_with_positional_and_keyword(self, mock_openai):
         from createagents.infra.adapters.OpenAI.client_openai import (
             ClientOpenAI,
@@ -87,7 +87,7 @@ class TestClientOpenAI:
         mock_openai.assert_any_call(api_key='positional-key')
         mock_openai.assert_any_call(api_key='keyword-key')
 
-    @patch('createagents.infra.adapters.OpenAI.client_openai.OpenAI')
+    @patch('createagents.infra.adapters.OpenAI.client_openai.AsyncOpenAI')
     def test_get_client_accepts_non_string_keys(self, mock_openai):
         from createagents.infra.adapters.OpenAI.client_openai import (
             ClientOpenAI,
@@ -117,7 +117,7 @@ class TestClientOpenAI:
         attr = getattr(ClientOpenAI, 'get_client')
         assert callable(attr)
 
-    @patch('createagents.infra.adapters.OpenAI.client_openai.OpenAI')
+    @patch('createagents.infra.adapters.OpenAI.client_openai.AsyncOpenAI')
     def test_get_client_handles_initialization_error(self, mock_openai):
         from createagents.infra.adapters.OpenAI.client_openai import (
             ClientOpenAI,
@@ -128,7 +128,7 @@ class TestClientOpenAI:
         with pytest.raises(Exception, match='OpenAI initialization failed'):
             ClientOpenAI.get_client('test-key')
 
-    @patch('createagents.infra.adapters.OpenAI.client_openai.OpenAI')
+    @patch('createagents.infra.adapters.OpenAI.client_openai.AsyncOpenAI')
     def test_get_client_with_empty_string_key(self, mock_openai):
         from createagents.infra.adapters.OpenAI.client_openai import (
             ClientOpenAI,
@@ -141,7 +141,7 @@ class TestClientOpenAI:
         assert client is mock_client
         mock_openai.assert_called_with(api_key='')
 
-    @patch('createagents.infra.adapters.OpenAI.client_openai.OpenAI')
+    @patch('createagents.infra.adapters.OpenAI.client_openai.AsyncOpenAI')
     def test_get_client_returns_different_clients_for_different_keys(
         self, mock_openai
     ):
@@ -167,7 +167,7 @@ class TestClientOpenAI:
 
         assert ClientOpenAI.API_OPENAI_NAME.isupper()
 
-    @patch('createagents.infra.adapters.OpenAI.client_openai.OpenAI')
+    @patch('createagents.infra.adapters.OpenAI.client_openai.AsyncOpenAI')
     def test_get_client_with_none_key_raises_error(self, mock_openai):
         from createagents.infra.adapters.OpenAI.client_openai import (
             ClientOpenAI,

@@ -1,4 +1,4 @@
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import AsyncMock, MagicMock, Mock, patch
 
 import pytest
 
@@ -12,6 +12,7 @@ IA_OPENAI_TEST_1: str = 'gpt-5-nano'
 class TestOpenAIHandler:
     def setup_method(self):
         self.mock_client = Mock()
+        self.mock_client.call_api = AsyncMock()
         self.handler = OpenAIHandler(self.mock_client)
 
     def _make_response(
@@ -41,7 +42,8 @@ class TestOpenAIHandler:
         return mock_response
 
     @patch('createagents.infra.adapters.OpenAI.openai_handler.ToolCallParser')
-    def test_execute_tool_loop_success(self, mock_parser):
+    @pytest.mark.asyncio
+    async def test_execute_tool_loop_success(self, mock_parser):
         mock_parser.has_tool_calls.return_value = False
 
         mock_response = self._make_response(
@@ -49,8 +51,12 @@ class TestOpenAIHandler:
         )
         self.mock_client.call_api.return_value = mock_response
 
-        response = self.handler.execute_tool_loop(
-            model=IA_OPENAI_TEST_1, messages=[], config={}, tools=None
+        response = await self.handler.execute_tool_loop(
+            model=IA_OPENAI_TEST_1,
+            instructions='Instr',
+            messages=[],
+            config={},
+            tools=None,
         )
 
         assert response == 'Success response'
@@ -62,7 +68,8 @@ class TestOpenAIHandler:
         assert metrics[0].tokens_used == 100
 
     @patch('createagents.infra.adapters.OpenAI.openai_handler.ToolCallParser')
-    def test_execute_tool_loop_empty_response(self, mock_parser):
+    @pytest.mark.asyncio
+    async def test_execute_tool_loop_empty_response(self, mock_parser):
         mock_parser.has_tool_calls.return_value = False
 
         mock_response = self._make_response(output_text='')
@@ -71,19 +78,28 @@ class TestOpenAIHandler:
         with pytest.raises(
             ChatException, match='OpenAI returned an empty response'
         ):
-            self.handler.execute_tool_loop(
-                model=IA_OPENAI_TEST_1, messages=[], config={}, tools=None
+            await self.handler.execute_tool_loop(
+                model=IA_OPENAI_TEST_1,
+                instructions='Instr',
+                messages=[],
+                config={},
+                tools=None,
             )
 
     @patch('createagents.infra.adapters.OpenAI.openai_handler.ToolCallParser')
-    def test_execute_tool_loop_api_error(self, mock_parser):
+    @pytest.mark.asyncio
+    async def test_execute_tool_loop_api_error(self, mock_parser):
         self.mock_client.call_api.side_effect = RuntimeError('API Error')
 
         with pytest.raises(
             ChatException, match='Error communicating with OpenAI'
         ):
-            self.handler.execute_tool_loop(
-                model=IA_OPENAI_TEST_1, messages=[], config={}, tools=None
+            await self.handler.execute_tool_loop(
+                model=IA_OPENAI_TEST_1,
+                instructions='Instr',
+                messages=[],
+                config={},
+                tools=None,
             )
 
         metrics = self.handler.get_metrics()
@@ -96,7 +112,8 @@ class TestOpenAIHandler:
     @patch(
         'createagents.infra.adapters.OpenAI.openai_handler.ToolSchemaFormatter'
     )
-    def test_execute_tool_loop_with_tool_calls(
+    @pytest.mark.asyncio
+    async def test_execute_tool_loop_with_tool_calls(
         self, mock_formatter, mock_executor_cls, mock_parser
     ):
         # Setup
@@ -104,6 +121,7 @@ class TestOpenAIHandler:
             True,
             False,
         ]  # First call has tools, second has final response
+        mock_parser.get_assistant_message_with_tool_calls.return_value = []
 
         # Mock tool extraction
         mock_parser.extract_tool_calls.return_value = [
@@ -112,6 +130,7 @@ class TestOpenAIHandler:
 
         # Mock tool execution
         mock_executor = Mock()
+        mock_executor.execute_tool = AsyncMock()
         mock_executor_cls.return_value = mock_executor
         mock_execution_result = Mock()
         mock_execution_result.success = True
@@ -129,8 +148,12 @@ class TestOpenAIHandler:
 
         # Execute
         tools = [Mock(name='test_tool')]
-        response = self.handler.execute_tool_loop(
-            model=IA_OPENAI_TEST_1, messages=[], config={}, tools=tools
+        response = await self.handler.execute_tool_loop(
+            model=IA_OPENAI_TEST_1,
+            instructions='Instr',
+            messages=[],
+            config={},
+            tools=tools,
         )
 
         # Verify
