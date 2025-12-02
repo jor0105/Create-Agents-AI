@@ -1,0 +1,165 @@
+from typing import Any, Dict, List, Optional, Union
+
+from ....domain.interfaces import IToolSchemaBuilder, LoggerInterface
+from ....domain.value_objects.base_tools import BaseTool
+from ....domain.value_objects.tool_choice import ToolChoice, ToolChoiceType
+
+
+class ToolPayloadBuilder(IToolSchemaBuilder):
+    """Unified tool payload builder for all providers.
+
+    This class implements the IToolSchemaBuilder interface and provides
+    common functionality for formatting tool schemas. Provider-specific
+    formatters can extend this class or use it directly.
+
+    Design:
+    - Follows Open/Closed Principle: extend via composition or inheritance
+    - Follows Single Responsibility: only handles schema formatting
+    - Follows Dependency Inversion: depends on abstractions (BaseTool)
+
+    Attributes:
+        _logger: Logger instance for debugging and info messages.
+        _format_style: The output format style ('openai', 'responses_api', 'ollama').
+    """
+
+    def __init__(
+        self,
+        logger: LoggerInterface,
+        format_style: str = 'openai',
+    ) -> None:
+        """Initialize the ToolPayloadBuilder.
+
+        Args:
+            logger: Logger instance for logging operations.
+            format_style: Output format style. Options:
+                - 'openai': OpenAI Completions API format
+                - 'responses_api': OpenAI Responses API format
+                - 'ollama': Ollama native format (same as openai)
+        """
+        self._logger = logger
+        self._format_style = format_style
+
+    def format_tool(self, tool: BaseTool) -> Dict[str, Any]:
+        """Convert a single tool to provider-specific format.
+
+        Args:
+            tool: A BaseTool instance from the domain layer.
+
+        Returns:
+            A dictionary formatted for the provider's API.
+        """
+        schema = tool.get_schema()
+
+        self._logger.debug(
+            "Formatting tool '%s' for %s",
+            schema['name'],
+            self._format_style,
+        )
+
+        if self._format_style == 'responses_api':
+            # OpenAI Responses API uses flat structure
+            return {
+                'type': 'function',
+                'name': schema['name'],
+                'description': schema['description'],
+                'parameters': schema['parameters'],
+            }
+
+        # OpenAI Completions API and Ollama use nested structure
+        return {
+            'type': 'function',
+            'function': {
+                'name': schema['name'],
+                'description': schema['description'],
+                'parameters': schema['parameters'],
+            },
+        }
+
+    def format_tools(self, tools: List[BaseTool]) -> List[Dict[str, Any]]:
+        """Convert multiple tools to provider-specific format.
+
+        Args:
+            tools: List of BaseTool instances.
+
+        Returns:
+            List of dictionaries formatted for the provider's API.
+        """
+        if not tools:
+            self._logger.debug('No tools to format')
+            return []
+
+        self._logger.info(
+            'Formatting %s tool(s) for %s',
+            len(tools),
+            self._format_style,
+        )
+
+        formatted = []
+        for tool in tools:
+            try:
+                formatted.append(self.format_tool(tool))
+            except (KeyError, AttributeError, TypeError, ValueError) as e:
+                self._logger.error(
+                    'Error formatting tool %s: %s',
+                    getattr(tool, 'name', 'unknown'),
+                    e,
+                    exc_info=True,
+                )
+                continue
+
+        if self._format_style == 'responses_api':
+            self._logger.debug(
+                'Formatted tools: %s',
+                [t['name'] for t in formatted],
+            )
+        else:
+            self._logger.debug(
+                'Formatted tools: %s',
+                [t['function']['name'] for t in formatted],
+            )
+
+        return formatted
+
+    def format_tool_choice(
+        self,
+        tool_choice: Optional[ToolChoiceType],
+        tools: Optional[List[BaseTool]] = None,
+    ) -> Optional[Union[str, Dict[str, Any]]]:
+        """Format tool_choice parameter for provider API.
+
+        Uses the domain ToolChoice value object for validation and formatting.
+
+        Args:
+            tool_choice: The tool_choice configuration from the user.
+            tools: Optional list of available tools for validation.
+
+        Returns:
+            Formatted tool_choice for provider API, or None if not specified.
+        """
+        if tool_choice is None:
+            return None
+
+        self._logger.debug('Formatting tool_choice: %s', tool_choice)
+
+        try:
+            # Get available tool names for validation
+            available_tools = [tool.name for tool in tools] if tools else None
+
+            # Use domain ToolChoice for parsing and validation
+            choice = ToolChoice.from_value(tool_choice, available_tools)
+
+            if choice is None:
+                return None
+
+            # All providers currently use OpenAI format for tool_choice
+            return choice.to_openai_format()
+
+        except ValueError as e:
+            self._logger.warning(
+                "Invalid tool_choice: %s. Using 'auto'.",
+                e,
+            )
+            return 'auto'
+
+
+__all__ = ['ToolPayloadBuilder']

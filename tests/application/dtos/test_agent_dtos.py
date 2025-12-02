@@ -678,6 +678,7 @@ class TestAgentConfigOutputDTO:
             'instructions',
             'config',
             'tools',
+            'tool_choice',
             'history',
             'history_max_size',
         }

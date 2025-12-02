@@ -1,6 +1,6 @@
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional, Union
 
-from ....domain import BaseTool
+from ....domain import BaseTool, ToolChoice, ToolChoiceType
 from ...config import LoggingConfig
 
 
@@ -94,3 +94,48 @@ class OllamaToolSchemaFormatter:
             'Formatted %s tool(s) for Ollama native API', len(formatted_tools)
         )
         return formatted_tools
+
+    @staticmethod
+    def format_tool_choice(
+        tool_choice: Optional[ToolChoiceType],
+        tools: Optional[List[BaseTool]] = None,
+    ) -> Optional[Union[str, Dict[str, Any]]]:
+        """Format tool_choice parameter for Ollama API.
+
+        Uses the domain ToolChoice value object for validation and formatting.
+
+        Note: Ollama's support for tool_choice may be limited compared
+        to OpenAI. This method provides the same interface for consistency.
+
+        Args:
+            tool_choice: The tool_choice configuration from the user.
+            tools: Optional list of available tools for validation.
+
+        Returns:
+            Formatted tool_choice, or None if not specified.
+        """
+        if tool_choice is None:
+            return None
+
+        OllamaToolSchemaFormatter._logger.debug(
+            'Formatting tool_choice for Ollama: %s', tool_choice
+        )
+
+        try:
+            # Get available tool names for validation
+            available_tools = [tool.name for tool in tools] if tools else None
+
+            # Use domain ToolChoice for parsing and validation
+            choice = ToolChoice.from_value(tool_choice, available_tools)
+
+            if choice is None:
+                return None
+
+            # Ollama uses same format as OpenAI
+            return choice.to_openai_format()
+
+        except ValueError as e:
+            OllamaToolSchemaFormatter._logger.warning(
+                "Invalid tool_choice: %s. Using 'auto'.", e
+            )
+            return 'auto'

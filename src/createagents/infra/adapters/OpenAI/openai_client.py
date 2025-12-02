@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 
 from ....domain import ChatException
 from ...config import EnvironmentConfig, LoggingConfig, retry_with_backoff
@@ -46,6 +46,7 @@ class OpenAIClient:
         messages: List[Dict[str, str]],
         config: Optional[Dict[str, Any]],
         tools: Optional[List[Dict[str, Any]]] = None,
+        tool_choice: Optional[Union[str, Dict[str, Any]]] = None,
     ) -> Any:
         """
         Calls the OpenAI API with automatic retries.
@@ -55,6 +56,11 @@ class OpenAIClient:
             messages: A list of messages.
             config: Internal AI configuration.
             tools: Optional list of tool schemas for function calling.
+            tool_choice: Optional tool choice configuration. Can be:
+                - "auto": Let the model decide
+                - "none": Don't call any tool
+                - "required": Force at least one tool call
+                - {"type": "function", "function": {"name": "tool_name"}}
 
         Returns:
             The API response.
@@ -67,6 +73,9 @@ class OpenAIClient:
 
         if tools:
             chat_kwargs['tools'] = tools
+            # Only add tool_choice if tools are provided
+            if tool_choice:
+                chat_kwargs['tool_choice'] = tool_choice
         if config:
             config_copy = config.copy()
 

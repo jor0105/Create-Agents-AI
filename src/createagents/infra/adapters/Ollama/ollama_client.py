@@ -27,8 +27,20 @@ class OllamaClient:
         messages: List[Dict[str, str]],
         config: Optional[Dict[str, Any]],
         tools: Optional[List[Dict[str, Any]]] = None,
+        tool_choice: Optional[Union[str, Dict[str, Any]]] = None,
     ) -> Union[ChatResponse, AsyncIterator[ChatResponse]]:
-        """Calls the Ollama API with automatic retries."""
+        """Calls the Ollama API with automatic retries.
+
+        Args:
+            model: The name of the model to use.
+            messages: List of messages in the conversation.
+            config: Optional configuration for the API call.
+            tools: Optional list of tool schemas.
+            tool_choice: Optional tool choice configuration.
+
+        Returns:
+            ChatResponse or AsyncIterator[ChatResponse] if streaming.
+        """
         try:
             chat_kwargs: Dict[str, Any] = {
                 'model': model,
@@ -38,6 +50,13 @@ class OllamaClient:
 
             if tools:
                 chat_kwargs['tools'] = tools
+                # Note: Ollama's native API may not support tool_choice directly
+                # but we include it for future compatibility
+                if tool_choice:
+                    self.__logger.debug(
+                        'Tool choice requested: %s (Ollama may have limited support)',
+                        tool_choice,
+                    )
             if config:
                 config_copy = config.copy()
                 if 'think' in config_copy:

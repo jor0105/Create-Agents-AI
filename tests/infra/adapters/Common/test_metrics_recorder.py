@@ -9,19 +9,31 @@ from createagents.infra.adapters.Common.metrics_recorder import (
 from createagents.infra.config.metrics import ChatMetrics
 
 
+@pytest.fixture
+def mock_logger():
+    """Create a mock logger for testing."""
+    return Mock()
+
+
 @pytest.mark.unit
 class TestMetricsRecorder:
-    def test_scenario_initialization_with_no_metrics_list(self):
-        recorder = MetricsRecorder()
+    def test_scenario_initialization_with_no_metrics_list(self, mock_logger):
+        recorder = MetricsRecorder(logger=mock_logger)
         assert recorder._metrics == []
 
-    def test_scenario_initialization_with_existing_metrics_list(self):
+    def test_scenario_initialization_with_existing_metrics_list(
+        self, mock_logger
+    ):
         existing_metrics = [Mock(spec=ChatMetrics)]
-        recorder = MetricsRecorder(existing_metrics)
+        recorder = MetricsRecorder(
+            logger=mock_logger, metrics_list=existing_metrics
+        )
         assert recorder._metrics == existing_metrics
 
-    def test_scenario_record_success_metrics_generic_provider(self):
-        recorder = MetricsRecorder()
+    def test_scenario_record_success_metrics_generic_provider(
+        self, mock_logger
+    ):
+        recorder = MetricsRecorder(logger=mock_logger)
         start_time = time.time()
 
         recorder.record_success_metrics(
@@ -37,8 +49,10 @@ class TestMetricsRecorder:
         assert metrics[0].success is True
         assert metrics[0].latency_ms >= 0
 
-    def test_scenario_record_success_metrics_openai_provider(self):
-        recorder = MetricsRecorder()
+    def test_scenario_record_success_metrics_openai_provider(
+        self, mock_logger
+    ):
+        recorder = MetricsRecorder(logger=mock_logger)
         start_time = time.time()
 
         mock_usage = Mock()
@@ -64,8 +78,10 @@ class TestMetricsRecorder:
         assert metrics[0].completion_tokens == 50
         assert metrics[0].success is True
 
-    def test_scenario_record_success_metrics_ollama_provider(self):
-        recorder = MetricsRecorder()
+    def test_scenario_record_success_metrics_ollama_provider(
+        self, mock_logger
+    ):
+        recorder = MetricsRecorder(logger=mock_logger)
         start_time = time.time()
 
         mock_response = {
@@ -93,8 +109,8 @@ class TestMetricsRecorder:
         assert metrics[0].prompt_eval_duration_ms == 2.0
         assert metrics[0].eval_duration_ms == 3.0
 
-    def test_scenario_record_error_metrics(self):
-        recorder = MetricsRecorder()
+    def test_scenario_record_error_metrics(self, mock_logger):
+        recorder = MetricsRecorder(logger=mock_logger)
         start_time = time.time()
         error = ValueError('Test error')
 
@@ -109,8 +125,8 @@ class TestMetricsRecorder:
         assert metrics[0].error_message == 'Test error'
         assert metrics[0].latency_ms >= 0
 
-    def test_scenario_get_metrics_returns_copy(self):
-        recorder = MetricsRecorder()
+    def test_scenario_get_metrics_returns_copy(self, mock_logger):
+        recorder = MetricsRecorder(logger=mock_logger)
         start_time = time.time()
 
         recorder.record_error_metrics(
@@ -123,8 +139,8 @@ class TestMetricsRecorder:
         assert metrics1 == metrics2
         assert metrics1 is not metrics2
 
-    def test_scenario_multiple_metrics_recorded(self):
-        recorder = MetricsRecorder()
+    def test_scenario_multiple_metrics_recorded(self, mock_logger):
+        recorder = MetricsRecorder(logger=mock_logger)
         start_time = time.time()
 
         recorder.record_success_metrics(

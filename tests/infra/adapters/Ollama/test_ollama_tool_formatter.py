@@ -1,95 +1,86 @@
+import pytest
+from pydantic import BaseModel, Field
+
 from createagents.domain import BaseTool
 from createagents.infra import OllamaToolSchemaFormatter
+
+
+class MockToolInput(BaseModel):
+    param1: str = Field(description='First parameter')
 
 
 class MockTool(BaseTool):
     name = 'mock_tool'
     description = 'A mock tool for testing'
-    parameters = {
-        'type': 'object',
-        'properties': {
-            'param1': {'type': 'string', 'description': 'First parameter'}
-        },
-        'required': ['param1'],
-    }
+    args_schema = MockToolInput
 
-    def execute(self, param1: str) -> str:
+    def _run(self, param1: str) -> str:
         return f'Executed with {param1}'
 
 
-def test_format_single_tool():
-    tool = MockTool()
-    formatted = OllamaToolSchemaFormatter.format_tools_for_ollama([tool])
-
-    assert len(formatted) == 1
-    assert formatted[0]['type'] == 'function'
-    assert formatted[0]['function']['name'] == 'mock_tool'
-    assert formatted[0]['function']['description'] == 'A mock tool for testing'
-    assert 'parameters' in formatted[0]['function']
+class EmptyInput(BaseModel):
+    pass
 
 
-def test_format_multiple_tools():
-    class Tool1(BaseTool):
-        name = 'tool1'
-        description = 'First tool'
-        parameters = {'type': 'object', 'properties': {}}
+@pytest.mark.unit
+class TestOllamaToolFormatter:
+    def test_format_single_tool(self):
+        tool = MockTool()
+        formatted = OllamaToolSchemaFormatter.format_tools_for_ollama([tool])
 
-        def execute(self):
-            pass
+        assert len(formatted) == 1
+        assert formatted[0]['type'] == 'function'
+        assert formatted[0]['function']['name'] == 'mock_tool'
+        assert (
+            formatted[0]['function']['description']
+            == 'A mock tool for testing'
+        )
+        assert 'parameters' in formatted[0]['function']
 
-    class Tool2(BaseTool):
-        name = 'tool2'
-        description = 'Second tool'
-        parameters = {'type': 'object', 'properties': {}}
+    def test_format_multiple_tools(self):
+        class Tool1(BaseTool):
+            name = 'tool1'
+            description = 'First tool'
+            args_schema = EmptyInput
 
-        def execute(self):
-            pass
+            def _run(self):
+                pass
 
-    tools = [Tool1(), Tool2()]
-    formatted = OllamaToolSchemaFormatter.format_tools_for_ollama(tools)
+        class Tool2(BaseTool):
+            name = 'tool2'
+            description = 'Second tool'
+            args_schema = EmptyInput
 
-    assert len(formatted) == 2
-    assert formatted[0]['function']['name'] == 'tool1'
-    assert formatted[1]['function']['name'] == 'tool2'
+            def _run(self):
+                pass
 
+        tools = [Tool1(), Tool2()]
+        formatted = OllamaToolSchemaFormatter.format_tools_for_ollama(tools)
 
-def test_format_empty_tools_list():
-    formatted = OllamaToolSchemaFormatter.format_tools_for_ollama([])
-    assert formatted == []
+        assert len(formatted) == 2
+        assert formatted[0]['function']['name'] == 'tool1'
+        assert formatted[1]['function']['name'] == 'tool2'
 
+    def test_format_empty_tools_list(self):
+        formatted = OllamaToolSchemaFormatter.format_tools_for_ollama([])
+        assert formatted == []
 
-def test_tool_schema_structure():
-    tool = MockTool()
-    formatted = OllamaToolSchemaFormatter.format_tools_for_ollama([tool])
+    def test_tool_schema_structure(self):
+        tool = MockTool()
+        formatted = OllamaToolSchemaFormatter.format_tools_for_ollama([tool])
 
-    expected_structure = {
-        'type': 'function',
-        'function': {
-            'name': 'mock_tool',
-            'description': 'A mock tool for testing',
-            'parameters': {
-                'type': 'object',
-                'properties': {
-                    'param1': {
-                        'type': 'string',
-                        'description': 'First parameter',
-                    }
-                },
-                'required': ['param1'],
-            },
-        },
-    }
+        func_schema = formatted[0]['function']
+        assert func_schema['name'] == 'mock_tool'
+        assert func_schema['description'] == 'A mock tool for testing'
+        assert func_schema['parameters']['type'] == 'object'
+        assert 'param1' in func_schema['parameters']['properties']
 
-    assert formatted[0] == expected_structure
+    def test_tool_parameters_preserved(self):
+        tool = MockTool()
+        formatted = OllamaToolSchemaFormatter.format_tools_for_ollama([tool])
 
-
-def test_tool_parameters_preserved():
-    tool = MockTool()
-    formatted = OllamaToolSchemaFormatter.format_tools_for_ollama([tool])
-
-    params = formatted[0]['function']['parameters']
-    assert params['type'] == 'object'
-    assert 'param1' in params['properties']
-    assert params['properties']['param1']['type'] == 'string'
-    assert 'required' in params
-    assert 'param1' in params['required']
+        params = formatted[0]['function']['parameters']
+        assert params['type'] == 'object'
+        assert 'param1' in params['properties']
+        assert 'required' in params
+        assert 'param1' in params['required']

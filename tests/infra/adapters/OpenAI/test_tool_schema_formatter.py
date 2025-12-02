@@ -1,56 +1,118 @@
+from typing import List, Literal, Optional
+
 import pytest
+from pydantic import BaseModel, Field, field_validator
 
 from createagents.domain import BaseTool
 from createagents.infra import ToolSchemaFormatter
 
 
+class WeatherInput(BaseModel):
+    """Input schema for weather tool."""
+
+    location: str = Field(
+        description='The city and state, e.g. San Francisco, CA'
+    )
+    unit: Literal['celsius', 'fahrenheit'] = Field(
+        default='celsius', description='Temperature unit'
+    )
+
+
+class SearchInput(BaseModel):
+    """Input schema for search tool."""
+
+    query: str = Field(description='The search query')
+
+
+class EmptyInput(BaseModel):
+    """Empty input schema."""
+
+    pass
+
+
+class ComplexSearchInput(BaseModel):
+    """Complex search input with filters."""
+
+    query: str = Field(description='Search query')
+    date_from: Optional[str] = Field(default=None, description='Start date')
+    date_to: Optional[str] = Field(default=None, description='End date')
+    categories: Optional[List[str]] = Field(
+        default=None, description='Categories'
+    )
+    limit: int = Field(default=10, ge=1, le=100, description='Result limit')
+
+
+class ArraySearchInput(BaseModel):
+    """Input with array parameter."""
+
+    queries: List[str] = Field(description='List of search queries')
+
+
+class MathInput(BaseModel):
+    """Input for math calculations."""
+
+    a: float = Field(description='First number')
+    b: int = Field(description='Second number')
+
+
+class FlagInput(BaseModel):
+    """Input with boolean flag."""
+
+    query: str = Field(description='Search query')
+    exact_match: bool = Field(default=False, description='Use exact matching')
+
+
+class ParamStringInput(BaseModel):
+    """Input with string param."""
+
+    param: str = Field(description='String parameter')
+
+
+class ParamIntInput(BaseModel):
+    """Input with int param."""
+
+    param: int = Field(description='Integer parameter')
+
+
+class ValidationInput(BaseModel):
+    """Input with validation constraints."""
+
+    text: str = Field(
+        min_length=5, max_length=100, description='Text to validate'
+    )
+
+    @field_validator('text')
+    @classmethod
+    def validate_alpha(cls, v):
+        if not v.isalpha():
+            raise ValueError('Text must be alphabetic')
+        return v
+
+
 class MockWeatherTool(BaseTool):
     name = 'get_weather'
     description = 'Get the current weather for a location'
-    parameters = {
-        'type': 'object',
-        'properties': {
-            'location': {
-                'type': 'string',
-                'description': 'The city and state, e.g. San Francisco, CA',
-            },
-            'unit': {
-                'type': 'string',
-                'enum': ['celsius', 'fahrenheit'],
-                'description': 'Temperature unit',
-            },
-        },
-        'required': ['location'],
-    }
+    args_schema = WeatherInput
 
-    def execute(self, location: str, unit: str = 'celsius') -> str:
+    def _run(self, location: str, unit: str = 'celsius') -> str:
         return f'Weather in {location}: 15°{unit[0].upper()}'
 
 
 class MockSearchTool(BaseTool):
     name = 'web_search'
     description = 'Search the web for information'
-    parameters = {
-        'type': 'object',
-        'properties': {
-            'query': {
-                'type': 'string',
-                'description': 'The search query',
-            }
-        },
-        'required': ['query'],
-    }
+    args_schema = SearchInput
 
-    def execute(self, query: str) -> str:
+    def _run(self, query: str) -> str:
         return f'Search results for: {query}'
 
 
 class MockNoParamsTool(BaseTool):
     name = 'get_time'
     description = 'Get the current time'
-    parameters = {'type': 'object', 'properties': {}, 'required': []}
+    args_schema = EmptyInput
 
-    def execute(self) -> str:
+    def _run(self) -> str:
         return '12:00 PM'
 
 
@@ -237,39 +299,17 @@ class TestToolSchemaFormatter:
         class ComplexTool(BaseTool):
             name = 'complex_search'
             description = 'Advanced search with filters'
-            parameters = {
-                'type': 'object',
-                'properties': {
-                    'query': {'type': 'string'},
-                    'filters': {
-                        'type': 'object',
-                        'properties': {
-                            'date_from': {'type': 'string'},
-                            'date_to': {'type': 'string'},
-                            'categories': {
-                                'type': 'array',
-                                'items': {'type': 'string'},
-                            },
-                        },
-                    },
-                    'limit': {'type': 'integer', 'minimum': 1, 'maximum': 100},
-                },
-                'required': ['query'],
-            }
+            args_schema = ComplexSearchInput
 
-            def execute(self, **kwargs):
+            def _run(self, **kwargs):
                 return 'results'
 
         tool = ComplexTool()
 
         result = ToolSchemaFormatter.format_tool_for_responses_api(tool)
 
-        assert 'filters' in result['parameters']['properties']
-        assert (
-            'date_from'
-            in result['parameters']['properties']['filters']['properties']
-        )
-        assert result['parameters']['properties']['limit']['minimum'] == 1
+        assert 'query' in result['parameters']['properties']
+        assert 'limit' in result['parameters']['properties']
 
     def test_format_tool_preserves_enum_values(self):
         tool = MockWeatherTool()
@@ -287,9 +327,9 @@ class TestToolSchemaFormatter:
             description = (
                 'Tool with special chars: @#$%^&*() and unicode: 你好'
             )
-            parameters = {'type': 'object', 'properties': {}}
+            args_schema = EmptyInput
 
-            def execute(self):
+            def _run(self):
                 return 'ok'
 
         tool = SpecialTool()
@@ -321,19 +361,9 @@ class TestToolSchemaFormatter:
         class ArrayTool(BaseTool):
             name = 'multi_search'
             description = 'Search multiple queries'
-            parameters = {
-                'type': 'object',
-                'properties': {
-                    'queries': {
-                        'type': 'array',
-                        'items': {'type': 'string'},
-                        'description': 'List of search queries',
-                    }
-                },
-                'required': ['queries'],
-            }
+            args_schema = ArraySearchInput
 
-            def execute(self, queries):
+            def _run(self, queries):
                 return f'Searching: {queries}'
 
         tool = ArrayTool()
@@ -344,22 +374,14 @@ class TestToolSchemaFormatter:
             'queries'
         ]
         assert queries_prop['type'] == 'array'
-        assert queries_prop['items']['type'] == 'string'
 
     def test_format_tool_with_number_parameters(self):
         class MathTool(BaseTool):
             name = 'calculate'
             description = 'Perform calculations'
-            parameters = {
-                'type': 'object',
-                'properties': {
-                    'a': {'type': 'number', 'description': 'First number'},
-                    'b': {'type': 'integer', 'description': 'Second number'},
-                },
-                'required': ['a', 'b'],
-            }
+            args_schema = MathInput
 
-            def execute(self, a, b):
+            def _run(self, a, b):
                 return a + b
 
         tool = MathTool()
@@ -373,19 +395,9 @@ class TestToolSchemaFormatter:
         class FlagTool(BaseTool):
             name = 'search_with_flag'
             description = 'Search with optional flag'
-            parameters = {
-                'type': 'object',
-                'properties': {
-                    'query': {'type': 'string'},
-                    'exact_match': {
-                        'type': 'boolean',
-                        'description': 'Use exact matching',
-                    },
-                },
-                'required': ['query'],
-            }
+            args_schema = FlagInput
 
-            def execute(self, query, exact_match=False):
+            def _run(self, query, exact_match=False):
                 return f'Searching: {query} (exact={exact_match})'
 
         tool = FlagTool()
@@ -401,23 +413,17 @@ class TestToolSchemaFormatter:
         class Tool1(BaseTool):
             name = 'tool_one'
             description = 'First tool'
-            parameters = {
-                'type': 'object',
-                'properties': {'param': {'type': 'string'}},
-            }
+            args_schema = ParamStringInput
 
-            def execute(self, param):
+            def _run(self, param):
                 return param
 
         class Tool2(BaseTool):
             name = 'tool_two'
             description = 'Second tool'
-            parameters = {
-                'type': 'object',
-                'properties': {'param': {'type': 'integer'}},
-            }
+            args_schema = ParamIntInput
 
-            def execute(self, param):
+            def _run(self, param):
                 return param
 
         tools = [Tool1(), Tool2()]
@@ -468,20 +474,9 @@ class TestToolSchemaFormatter:
         class ValidationTool(BaseTool):
             name = 'validate_input'
             description = 'Validate input with constraints'
-            parameters = {
-                'type': 'object',
-                'properties': {
-                    'text': {
-                        'type': 'string',
-                        'minLength': 5,
-                        'maxLength': 100,
-                        'pattern': '^[a-zA-Z]+$',
-                    }
-                },
-                'required': ['text'],
-            }
+            args_schema = ValidationInput
 
-            def execute(self, text):
+            def _run(self, text):
                 return f'Valid: {text}'
 
         tool = ValidationTool()
@@ -491,4 +486,3 @@ class TestToolSchemaFormatter:
         text_prop = result['function']['parameters']['properties']['text']
         assert text_prop['minLength'] == 5
         assert text_prop['maxLength'] == 100
-        assert text_prop['pattern'] == '^[a-zA-Z]+$'

@@ -1,6 +1,9 @@
 from datetime import datetime
+from enum import Enum
 from functools import lru_cache
-from typing import Any, Dict
+from typing import Literal
+
+from pydantic import BaseModel, Field
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from .....domain import BaseTool
@@ -18,7 +21,45 @@ def _get_zoneinfo(tz: str) -> ZoneInfo:
     Returns:
         ZoneInfo: The ZoneInfo object.
     """
-    return ZoneInfo(tz)
+    return ZoneInfo(tz.strip())
+
+
+class DateAction(str, Enum):
+    """Available actions for the CurrentDateTool."""
+
+    DATE = 'date'
+    TIME = 'time'
+    DATETIME = 'datetime'
+    TIMESTAMP = 'timestamp'
+    DATE_WITH_WEEKDAY = 'date_with_weekday'
+
+
+class CurrentDateInput(BaseModel):
+    """Input schema for CurrentDateTool using Pydantic validation.
+
+    This schema validates and documents the inputs expected by the tool.
+    """
+
+    action: Literal[
+        'date', 'time', 'datetime', 'timestamp', 'date_with_weekday'
+    ] = Field(
+        ...,
+        description=(
+            "What information to return: 'date' (just the date), "
+            "'time' (just the time), 'datetime' (both), "
+            "'timestamp' (unix seconds), or 'date_with_weekday' "
+            '(full date with weekday)'
+        ),
+    )
+    tz: str = Field(
+        ...,
+        description=(
+            "IANA timezone identifier. Examples: 'UTC', "
+            "'America/New_York' (New York), 'America/Los_Angeles' "
+            "(California), 'America/Chicago' (Chicago), "
+            "'America/Sao_Paulo' (Brazil), 'Europe/Lisbon', etc."
+        ),
+    )
 
 
 class CurrentDateTool(BaseTool):
@@ -46,37 +87,7 @@ class CurrentDateTool(BaseTool):
         'Get the current date and/or time in a specific timezone. '
         "Essential for answering 'What time is it?' or 'What day is it?' questions."
     )
-    parameters: Dict[str, Any] = {
-        'type': 'object',
-        'properties': {
-            'action': {
-                'type': 'string',
-                'enum': [
-                    'date',
-                    'time',
-                    'datetime',
-                    'timestamp',
-                    'date_with_weekday',
-                ],
-                'description': (
-                    "What information to return: 'date' (just the date), "
-                    "'time' (just the time), 'datetime' (both), "
-                    "'timestamp' (unix seconds), or 'date_with_weekday' "
-                    '(full date with weekday)'
-                ),
-            },
-            'tz': {
-                'type': 'string',
-                'description': (
-                    "IANA timezone identifier. Examples: 'UTC', "
-                    "'America/New_York' (New York), 'America/Los_Angeles' "
-                    "(California), 'America/Chicago' (Chicago), "
-                    "'America/Sao_Paulo' (Brazil), 'Europe/Lisbon', etc."
-                ),
-            },
-        },
-        'required': ['action', 'tz'],
-    }
+    args_schema = CurrentDateInput
 
     def __init__(self) -> None:
         """Initialize the CurrentDateTool."""
@@ -100,7 +111,7 @@ class CurrentDateTool(BaseTool):
         except ZoneInfoNotFoundError as e:
             raise ValueError(f'Invalid timezone: {tz}') from e
 
-    def execute(
+    def _run(
         self,
         action: str,
         tz: str,
@@ -108,12 +119,12 @@ class CurrentDateTool(BaseTool):
         """Run the tool with safety checks.
 
         Args:
-                action: One of 'date', 'time', 'datetime', 'timestamp'
-                tz: IANA timezone string (e.g., 'UTC', 'America/New_York')
+            action: One of 'date', 'time', 'datetime', 'timestamp', 'date_with_weekday'
+            tz: IANA timezone string (e.g., 'UTC', 'America/New_York')
 
         Returns:
-                A string with the requested date/time, or an error message
-                starting with "[CurrentDateTool Error]".
+            A string with the requested date/time, or an error message
+            starting with "[CurrentDateTool Error]".
         """
         self.__logger.info(
             'CurrentDateTool.execute called: action=%s, tz=%s',

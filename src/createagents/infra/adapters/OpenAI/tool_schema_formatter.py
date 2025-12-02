@@ -1,6 +1,6 @@
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional, Union
 
-from ....domain import BaseTool
+from ....domain import BaseTool, ToolChoice, ToolChoiceType
 from ...config import LoggingConfig
 
 
@@ -116,3 +116,59 @@ class ToolSchemaFormatter:
         )
 
         return formatted
+
+    @staticmethod
+    def format_tool_choice(
+        tool_choice: Optional[ToolChoiceType],
+        tools: Optional[List[BaseTool]] = None,
+    ) -> Optional[Union[str, Dict[str, Any]]]:
+        """Format tool_choice parameter for OpenAI API.
+
+        Uses the domain ToolChoice value object for validation and formatting.
+
+        Supports three main modes:
+        - "auto": Let the model decide whether to call a tool (default)
+        - "none": Force the model to not call any tool
+        - "required": Force the model to call at least one tool
+        - {"type": "function", "function": {"name": "tool_name"}}: Force a specific tool
+
+        Args:
+            tool_choice: The tool_choice configuration from the user.
+            tools: Optional list of available tools for validation.
+
+        Returns:
+            Formatted tool_choice for OpenAI API, or None if not specified.
+
+        Example:
+            ```python
+            # Let model decide
+            format_tool_choice("auto")  # Returns "auto"
+
+            # Force specific tool
+            format_tool_choice({"type": "function", "function": {"name": "search"}})
+            ```
+        """
+        if tool_choice is None:
+            return None
+
+        ToolSchemaFormatter._logger.debug(
+            'Formatting tool_choice: %s', tool_choice
+        )
+
+        try:
+            # Get available tool names for validation
+            available_tools = [tool.name for tool in tools] if tools else None
+
+            # Use domain ToolChoice for parsing and validation
+            choice = ToolChoice.from_value(tool_choice, available_tools)
+
+            if choice is None:
+                return None
+
+            return choice.to_openai_format()
+
+        except ValueError as e:
+            ToolSchemaFormatter._logger.warning(
+                "Invalid tool_choice: %s. Using 'auto'.", e
+            )
+            return 'auto'

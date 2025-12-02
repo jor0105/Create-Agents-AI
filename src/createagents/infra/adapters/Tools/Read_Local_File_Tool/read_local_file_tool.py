@@ -1,5 +1,7 @@
 from pathlib import Path
-from typing import Any, Dict
+from typing import Type
+
+from pydantic import BaseModel, Field
 
 from .....domain import BaseTool, FileReadException
 from ....config import LoggingConfig
@@ -19,6 +21,26 @@ try:
 except ImportError as e:
     DEPENDENCIES_AVAILABLE = False
     IMPORT_ERROR = e
+
+
+class ReadLocalFileInput(BaseModel):
+    """Input schema for ReadLocalFileTool using Pydantic validation.
+
+    This schema validates and documents the inputs expected by the tool.
+    """
+
+    path: str = Field(
+        ...,
+        description='Absolute or relative path to the file to read.',
+    )
+    max_tokens: int = Field(
+        default=30000,
+        ge=1,
+        description=(
+            'Maximum number of tokens allowed in the file content. '
+            'Files exceeding this limit will be rejected.'
+        ),
+    )
 
 
 class ReadLocalFileTool(BaseTool):
@@ -41,24 +63,7 @@ class ReadLocalFileTool(BaseTool):
         'overload. Input must include the absolute or relative file path and '
         'optionally the maximum number of tokens allowed (default: 30000).'
     )
-    parameters: Dict[str, Any] = {
-        'type': 'object',
-        'properties': {
-            'path': {
-                'type': 'string',
-                'description': 'Absolute or relative path to the file to read.',
-            },
-            'max_tokens': {
-                'type': 'integer',
-                'description': (
-                    'Maximum number of tokens allowed in the file content. '
-                    'Files exceeding this limit will be rejected.'
-                ),
-                'default': 30000,
-            },
-        },
-        'required': ['path', 'max_tokens'],
-    }
+    args_schema: Type[BaseModel] = ReadLocalFileInput
 
     MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_BYTES
 
@@ -80,7 +85,7 @@ class ReadLocalFileTool(BaseTool):
         self.__logger = LoggingConfig.get_logger(__name__)
         self.__encoding = initialize_tiktoken()
 
-    def execute(
+    def _run(
         self,
         path: str,
         max_tokens: int = 30000,

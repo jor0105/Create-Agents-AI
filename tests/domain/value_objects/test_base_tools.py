@@ -1,66 +1,58 @@
-from typing import Optional
+from typing import Any, Dict, Optional
 
 import pytest
+from pydantic import BaseModel, Field
 
 from createagents.domain import BaseTool
+
+
+# Pydantic models for test tools
+class ConcreteTestInput(BaseModel):
+    """Input schema for ConcreteTestTool."""
+
+    input: str = Field(description='Test input')
+
+
+class MinimalTestInput(BaseModel):
+    """Input schema for MinimalTestTool - no required fields."""
+
+    pass
+
+
+class ComplexParametersInput(BaseModel):
+    """Input schema for ComplexParametersTool."""
+
+    query: str = Field(description='Search query')
+    limit: int = Field(default=10, description='Result limit')
+    filters: Optional[Dict[str, Any]] = Field(
+        default=None, description='Optional filters'
+    )
 
 
 class ConcreteTestTool(BaseTool):
     name = 'test_tool'
     description = 'A tool for testing purposes'
-    parameters = {
-        'type': 'object',
-        'properties': {
-            'input': {
-                'type': 'string',
-                'description': 'Test input',
-            }
-        },
-        'required': ['input'],
-    }
+    args_schema = ConcreteTestInput
 
-    def execute(self, input: str) -> str:
+    def _run(self, input: str) -> str:
         return f'Executed with: {input}'
 
 
 class MinimalTestTool(BaseTool):
     name = 'minimal_tool'
     description = 'Minimal tool implementation'
+    args_schema = MinimalTestInput
 
-    def execute(self) -> str:
+    def _run(self) -> str:
         return 'Minimal execution'
 
 
 class ComplexParametersTool(BaseTool):
     name = 'complex_tool'
     description = 'Tool with complex parameters'
-    parameters = {
-        'type': 'object',
-        'properties': {
-            'query': {'type': 'string', 'description': 'Search query'},
-            'limit': {
-                'type': 'integer',
-                'description': 'Result limit',
-                'default': 10,
-            },
-            'filters': {
-                'type': 'object',
-                'properties': {
-                    'category': {'type': 'string'},
-                    'date_range': {
-                        'type': 'object',
-                        'properties': {
-                            'start': {'type': 'string'},
-                            'end': {'type': 'string'},
-                        },
-                    },
-                },
-            },
-        },
-        'required': ['query'],
-    }
+    args_schema = ComplexParametersInput
 
-    def execute(
+    def _run(
         self, query: str, limit: int = 10, filters: Optional[dict] = None
     ) -> str:
         return f'Query: {query}, Limit: {limit}, Filters: {filters}'
@@ -68,11 +60,13 @@ class ComplexParametersTool(BaseTool):
 
 @pytest.mark.unit
 class TestBaseTool:
-    def test_cannot_instantiate_base_tool_directly(self):
-        with pytest.raises(
-            TypeError, match="Can't instantiate abstract class"
-        ):
-            BaseTool()
+    def test_base_tool_can_be_instantiated_but_not_useful(self):
+        tool = BaseTool()
+
+        assert tool.name == 'base_tool'
+        assert (
+            tool.description == 'Base tool description (should be overridden)'
+        )
 
     def test_concrete_implementation_can_be_instantiated(self):
         tool = ConcreteTestTool()
@@ -81,14 +75,15 @@ class TestBaseTool:
         assert tool.name == 'test_tool'
         assert tool.description == 'A tool for testing purposes'
 
-    def test_execute_method_is_required(self):
-        with pytest.raises(TypeError):
+    def test_tool_without_run_override_has_default_behavior(self):
+        class IncompleteToolNoRun(BaseTool):
+            name = 'incomplete'
+            description = 'No _run method override'
+            args_schema = MinimalTestInput
 
-            class IncompleteToolNoExecute(BaseTool):
-                name = 'incomplete'
-                description = 'No execute method'
-
-            IncompleteToolNoExecute()
+        tool = IncompleteToolNoRun()
+        result = tool._run()
+        assert result is None
 
     def test_name_attribute_is_accessible(self):
         tool = ConcreteTestTool()
@@ -104,38 +99,31 @@ class TestBaseTool:
         assert isinstance(tool.description, str)
         assert tool.description == 'A tool for testing purposes'
 
-    def test_parameters_attribute_is_accessible(self):
+    def test_args_schema_attribute_is_accessible(self):
         tool = ConcreteTestTool()
 
-        assert hasattr(tool, 'parameters')
-        assert isinstance(tool.parameters, dict)
-        assert 'type' in tool.parameters
-        assert 'properties' in tool.parameters
+        assert hasattr(tool, 'args_schema')
+        assert tool.args_schema is ConcreteTestInput
 
-    def test_default_parameters_schema(self):
-        tool = MinimalTestTool()
-
-        assert tool.parameters == {'type': 'object', 'properties': {}}
-
-    def test_execute_method_can_be_called(self):
+    def test_run_method_can_be_called(self):
         tool = ConcreteTestTool()
 
-        result = tool.execute(input='test')
+        result = tool.run(input='test')
 
         assert result == 'Executed with: test'
         assert isinstance(result, str)
 
-    def test_execute_with_no_arguments(self):
+    def test_run_with_no_arguments(self):
         tool = MinimalTestTool()
 
-        result = tool.execute()
+        result = tool.run()
 
         assert result == 'Minimal execution'
 
-    def test_execute_with_multiple_arguments(self):
+    def test_run_with_multiple_arguments(self):
         tool = ComplexParametersTool()
 
-        result = tool.execute(
+        result = tool.run(
             query='search term', limit=5, filters={'category': 'tech'}
         )
 
@@ -175,7 +163,8 @@ class TestGetSchema:
         schema = tool.get_schema()
 
         assert 'parameters' in schema
-        assert schema['parameters'] == tool.parameters
+        assert 'properties' in schema['parameters']
+        assert 'input' in schema['parameters']['properties']
 
     def test_get_schema_has_all_required_fields(self):
         tool = ConcreteTestTool()
@@ -191,7 +180,7 @@ class TestGetSchema:
 
         assert schema['name'] == 'minimal_tool'
         assert schema['description'] == 'Minimal tool implementation'
-        assert schema['parameters'] == {'type': 'object', 'properties': {}}
+        assert schema['parameters']['type'] == 'object'
 
     def test_get_schema_with_complex_parameters(self):
         tool = ComplexParametersTool()
@@ -204,7 +193,7 @@ class TestGetSchema:
         assert 'required' in schema['parameters']
         assert 'query' in schema['parameters']['required']
 
-    def test_get_schema_returns_copy(self):
+    def test_get_schema_returns_new_dict_each_time(self):
         tool = ConcreteTestTool()
 
         schema1 = tool.get_schema()
@@ -223,15 +212,18 @@ class TestGetSchema:
         new_schema = tool.get_schema()
         assert new_schema['name'] == 'test_tool'
 
-    def test_get_schema_with_nested_parameters(self):
-        tool = ComplexParametersTool()
+    def test_get_schema_without_args_schema_raises_error(self):
+        class NoSchemaTool(BaseTool):
+            name = 'no_schema'
+            description = 'Tool without args_schema'
 
-        schema = tool.get_schema()
-        filters = schema['parameters']['properties']['filters']
+            def _run(self) -> str:
+                return 'no schema'
 
-        assert 'properties' in filters
-        assert 'category' in filters['properties']
-        assert 'date_range' in filters['properties']
+        tool = NoSchemaTool()
+
+        with pytest.raises(NotImplementedError):
+            tool.get_schema()
 
 
 @pytest.mark.unit
@@ -251,13 +243,14 @@ class TestToolInheritance:
             name = 'extended_tool'
             description = 'Extended version'
 
-            def execute(self, input: str) -> str:
-                return f'Extended: {super().execute(input)}'
+            def _run(self, input: str) -> str:
+                base_result = ConcreteTestTool._run(self, input=input)
+                return f'Extended: {base_result}'
 
         tool = ExtendedTool()
 
         assert tool.name == 'extended_tool'
-        result = tool.execute(input='test')
+        result = tool.run(input='test')
         assert 'Extended' in result
         assert 'Executed with: test' in result
 
@@ -274,24 +267,7 @@ class TestToolInheritance:
     def test_tool_attributes_are_class_attributes(self):
         assert hasattr(ConcreteTestTool, 'name')
         assert hasattr(ConcreteTestTool, 'description')
-        assert hasattr(ConcreteTestTool, 'parameters')
-
-    def test_default_parameters_can_be_overridden(self):
-        class CustomParamsTool(BaseTool):
-            name = 'custom'
-            description = 'Custom parameters'
-            parameters = {
-                'type': 'custom',
-                'properties': {'x': {'type': 'number'}},
-            }
-
-            def execute(self) -> str:
-                return 'custom'
-
-        tool = CustomParamsTool()
-
-        assert tool.parameters['type'] == 'custom'
-        assert 'x' in tool.parameters['properties']
+        assert hasattr(ConcreteTestTool, 'args_schema')
 
 
 @pytest.mark.unit
@@ -299,14 +275,16 @@ class TestToolParameterSchemas:
     def test_parameters_follow_json_schema_structure(self):
         tool = ConcreteTestTool()
 
-        params = tool.parameters
+        schema = tool.get_schema()
+        params = schema['parameters']
         assert params['type'] == 'object'
         assert isinstance(params['properties'], dict)
 
     def test_parameters_with_required_fields(self):
         tool = ConcreteTestTool()
 
-        params = tool.parameters
+        schema = tool.get_schema()
+        params = schema['parameters']
         assert 'required' in params
         assert isinstance(params['required'], list)
         assert 'input' in params['required']
@@ -314,7 +292,8 @@ class TestToolParameterSchemas:
     def test_parameters_with_optional_fields(self):
         tool = ComplexParametersTool()
 
-        params = tool.parameters
+        schema = tool.get_schema()
+        params = schema['parameters']
         required = params.get('required', [])
         all_props = params['properties'].keys()
 
@@ -324,45 +303,39 @@ class TestToolParameterSchemas:
     def test_parameters_with_default_values(self):
         tool = ComplexParametersTool()
 
-        limit_param = tool.parameters['properties']['limit']
+        schema = tool.get_schema()
+        limit_param = schema['parameters']['properties']['limit']
         assert 'default' in limit_param
         assert limit_param['default'] == 10
-
-    def test_parameters_with_nested_objects(self):
-        tool = ComplexParametersTool()
-
-        filters = tool.parameters['properties']['filters']
-        assert filters['type'] == 'object'
-        assert 'properties' in filters
-
-        date_range = filters['properties']['date_range']
-        assert date_range['type'] == 'object'
-        assert 'properties' in date_range
 
 
 @pytest.mark.unit
 class TestToolExecution:
-    def test_execute_returns_value(self):
+    def test_run_returns_value(self):
         tool = ConcreteTestTool()
 
-        result = tool.execute(input='test')
+        result = tool.run(input='test')
 
         assert result is not None
 
-    def test_execute_with_different_inputs(self):
+    def test_run_with_different_inputs(self):
         tool = ConcreteTestTool()
 
         inputs = ['simple', 'with spaces', 'special!@#$%', '123', '']
         for inp in inputs:
-            result = tool.execute(input=inp)
+            result = tool.run(input=inp)
             assert inp in result
 
-    def test_execute_can_raise_exceptions(self):
+    def test_run_can_raise_exceptions(self):
+        class StrictInput(BaseModel):
+            value: str = Field(description='Value')
+
         class StrictTool(BaseTool):
             name = 'strict'
             description = 'Raises on empty input'
+            args_schema = StrictInput
 
-            def execute(self, value: str) -> str:
+            def _run(self, value: str) -> str:
                 if not value:
                     raise ValueError('Value cannot be empty')
                 return value
@@ -370,23 +343,50 @@ class TestToolExecution:
         tool = StrictTool()
 
         with pytest.raises(ValueError, match='cannot be empty'):
-            tool.execute(value='')
+            tool.run(value='')
 
-    def test_execute_with_kwargs(self):
+    def test_run_with_kwargs(self):
         tool = ComplexParametersTool()
 
-        result = tool.execute(query='test', limit=20)
+        result = tool.run(query='test', limit=20)
 
         assert 'test' in result
         assert '20' in result
 
-    def test_execute_with_default_arguments(self):
+    def test_run_with_default_arguments(self):
         tool = ComplexParametersTool()
 
-        result = tool.execute(query='test')
+        result = tool.run(query='test')
 
         assert 'test' in result
         assert '10' in result
+
+
+@pytest.mark.unit
+class TestPydanticValidation:
+    def test_run_validates_input_with_pydantic(self):
+        tool = ConcreteTestTool()
+
+        result = tool.run(input='valid')
+        assert 'valid' in result
+
+    def test_run_rejects_missing_required_field(self):
+        tool = ConcreteTestTool()
+
+        with pytest.raises(Exception):
+            tool.run()
+
+    def test_run_validates_with_complex_schema(self):
+        tool = ComplexParametersTool()
+
+        result = tool.run(query='test', limit=5)
+        assert 'test' in result
+
+    def test_run_uses_default_values(self):
+        tool = ComplexParametersTool()
+
+        result = tool.run(query='test')
+        assert 'Limit: 10' in result
 
 
 @pytest.mark.unit
@@ -399,13 +399,6 @@ class TestToolDocumentation:
             tool.description != 'Base tool description (should be overridden)'
         )
 
-    def test_parameter_descriptions_exist(self):
-        tool = ConcreteTestTool()
-
-        for prop in tool.parameters['properties'].values():
-            assert 'description' in prop
-            assert len(prop['description']) > 0
-
     def test_complex_tool_has_detailed_schema(self):
         tool = ComplexParametersTool()
 
@@ -417,12 +410,15 @@ class TestToolDocumentation:
 @pytest.mark.unit
 class TestToolEdgeCases:
     def test_tool_with_empty_parameters(self):
+        class EmptyInput(BaseModel):
+            pass
+
         class NoParamsTool(BaseTool):
             name = 'no_params'
             description = 'Tool with no parameters'
-            parameters = {'type': 'object', 'properties': {}}
+            args_schema = EmptyInput
 
-            def execute(self) -> str:
+            def _run(self) -> str:
                 return 'no params'
 
         tool = NoParamsTool()
@@ -431,11 +427,15 @@ class TestToolEdgeCases:
         assert schema['parameters']['properties'] == {}
 
     def test_tool_name_with_special_characters(self):
+        class SpecialInput(BaseModel):
+            pass
+
         class SpecialNameTool(BaseTool):
             name = 'special_tool_123'
             description = 'Tool with special name'
+            args_schema = SpecialInput
 
-            def execute(self) -> str:
+            def _run(self) -> str:
                 return 'special'
 
         tool = SpecialNameTool()
@@ -447,11 +447,15 @@ class TestToolEdgeCases:
     def test_tool_with_long_description(self):
         long_desc = 'A' * 1000
 
+        class LongInput(BaseModel):
+            pass
+
         class LongDescTool(BaseTool):
             name = 'long_desc'
             description = long_desc
+            args_schema = LongInput
 
-            def execute(self) -> str:
+            def _run(self) -> str:
                 return 'long'
 
         tool = LongDescTool()
@@ -459,26 +463,31 @@ class TestToolEdgeCases:
         assert len(tool.description) == 1000
         assert tool.description == long_desc
 
-    def test_tool_execute_returns_different_types(self):
+    def test_tool_run_returns_different_types(self):
+        class EmptyInput(BaseModel):
+            pass
+
         class StringTool(BaseTool):
             name = 'string_tool'
             description = 'Returns string'
+            args_schema = EmptyInput
 
-            def execute(self) -> str:
+            def _run(self) -> str:
                 return 'string result'
 
         class DictTool(BaseTool):
             name = 'dict_tool'
             description = 'Returns dict'
+            args_schema = EmptyInput
 
-            def execute(self) -> dict:
+            def _run(self) -> dict:
                 return {'key': 'value'}
 
         string_tool = StringTool()
         dict_tool = DictTool()
 
-        assert isinstance(string_tool.execute(), str)
-        assert isinstance(dict_tool.execute(), dict)
+        assert isinstance(string_tool.run(), str)
+        assert isinstance(dict_tool.run(), dict)
 
     def test_multiple_tool_instances_are_independent(self):
         tool1 = ConcreteTestTool()

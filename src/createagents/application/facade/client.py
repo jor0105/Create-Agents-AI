@@ -74,6 +74,7 @@ class CreateAgent:
     async def chat(
         self,
         message: str,
+        tool_choice: Optional[Union[str, Dict[str, Any]]] = None,
     ) -> Union[str, StreamingResponseDTO]:
         """
         Sends a message to the agent and returns the response.
@@ -83,6 +84,13 @@ class CreateAgent:
 
         Args:
             message: The user's message.
+            tool_choice: Optional tool choice configuration. Can be:
+                - "auto": Let the model decide (default)
+                - "none": Don't call any tool
+                - "required": Force at least one tool call
+                - "<tool_name>": Force a specific tool
+                - {"type": "function", "function": {"name": "tool_name"}}
+                - ToolChoice value object
 
         Returns:
             Union[str, StreamingResponseDTO]: The agent's response.
@@ -92,6 +100,8 @@ class CreateAgent:
         Example:
             >>> agent = CreateAgent(provider="openai", model="gpt-5-nano")
             >>> print(await agent.chat("Hello!"))  # Works seamlessly with or without streaming
+            >>> # Force use of a specific tool
+            >>> print(await agent.chat("Calculate 2+2", tool_choice="calculator"))
         """
         from typing import AsyncGenerator  # pylint: disable=import-outside-toplevel
 
@@ -101,6 +111,7 @@ class CreateAgent:
 
         input_dto = ChatInputDTO(
             message=message,
+            tool_choice=tool_choice,
         )
         result = await self.__chat_use_case.execute(self.__agent, input_dto)
 

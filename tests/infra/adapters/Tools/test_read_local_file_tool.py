@@ -10,7 +10,7 @@ DEPENDENCIES_AVAILABLE = False
 
 try:
     module = importlib.import_module(
-        'createagents.infra.adapters.Tools.readlocalfile_Tool.readlocalfile_tool'
+        'createagents.infra.adapters.Tools.Read_Local_File_Tool.read_local_file_tool'
     )
     ReadLocalFileTool = getattr(module, 'ReadLocalFileTool')
     try:
@@ -40,22 +40,27 @@ class TestReadLocalFileTool:
         assert 'read' in tool.description.lower()
         assert 'file' in tool.description.lower()
 
-    def test_tool_has_parameters_schema(self):
+    def test_tool_has_args_schema(self):
         tool = ReadLocalFileTool()
-        assert 'type' in tool.parameters
-        assert tool.parameters['type'] == 'object'
-        assert 'properties' in tool.parameters
-        assert 'path' in tool.parameters['properties']
-        assert 'max_tokens' in tool.parameters['properties']
-        assert 'required' in tool.parameters
-        assert 'path' in tool.parameters['required']
+        assert tool.args_schema is not None
+        schema = tool.get_schema()
+        assert 'name' in schema
+        assert 'description' in schema
+        assert 'parameters' in schema
+        params = schema['parameters']
+        assert params['type'] == 'object'
+        assert 'properties' in params
+        assert 'path' in params['properties']
+        assert 'max_tokens' in params['properties']
+        assert 'required' in params
+        assert 'path' in params['required']
 
     def test_max_file_size_constant_defined(self):
         tool = ReadLocalFileTool()
         assert hasattr(tool, 'MAX_FILE_SIZE_BYTES')
         assert tool.MAX_FILE_SIZE_BYTES == 100 * 1024 * 1024
 
-    def test_execute_read_simple_text_file(self):
+    def test_run_read_simple_text_file(self):
         tool = ReadLocalFileTool()
 
         with tempfile.NamedTemporaryFile(
@@ -66,31 +71,31 @@ class TestReadLocalFileTool:
             filepath = f.name
 
         try:
-            result = tool.execute(path=filepath, max_tokens=1000)
+            result = tool.run(path=filepath, max_tokens=1000)
 
             assert not result.startswith('[ReadLocalFileTool Error]')
             assert 'Hello, World!' in result
         finally:
             Path(filepath).unlink()
 
-    def test_execute_file_not_found(self):
+    def test_run_file_not_found(self):
         tool = ReadLocalFileTool()
 
-        result = tool.execute(path='/nonexistent/file.txt', max_tokens=1000)
+        result = tool.run(path='/nonexistent/file.txt', max_tokens=1000)
 
         assert result.startswith('[ReadLocalFileTool Error]')
         assert 'File not found' in result
 
-    def test_execute_path_is_directory(self):
+    def test_run_path_is_directory(self):
         tool = ReadLocalFileTool()
 
         with tempfile.TemporaryDirectory() as tmpdir:
-            result = tool.execute(path=tmpdir, max_tokens=1000)
+            result = tool.run(path=tmpdir, max_tokens=1000)
 
             assert result.startswith('[ReadLocalFileTool Error]')
             assert 'directory' in result.lower()
 
-    def test_execute_file_too_large(self):
+    def test_run_file_too_large(self):
         tool = ReadLocalFileTool()
 
         with tempfile.NamedTemporaryFile(
@@ -102,14 +107,14 @@ class TestReadLocalFileTool:
             filepath = f.name
 
         try:
-            result = tool.execute(path=filepath, max_tokens=100000)
+            result = tool.run(path=filepath, max_tokens=100000)
 
             assert result.startswith('[ReadLocalFileTool Error]')
             assert 'File too large' in result
         finally:
             Path(filepath).unlink()
 
-    def test_execute_content_exceeds_token_limit(self):
+    def test_run_content_exceeds_token_limit(self):
         tool = ReadLocalFileTool()
 
         with tempfile.NamedTemporaryFile(
@@ -121,14 +126,14 @@ class TestReadLocalFileTool:
             filepath = f.name
 
         try:
-            result = tool.execute(path=filepath, max_tokens=100)
+            result = tool.run(path=filepath, max_tokens=100)
 
             assert result.startswith('[ReadLocalFileTool Error]')
             assert 'exceeds token limit' in result
         finally:
             Path(filepath).unlink()
 
-    def test_execute_with_default_max_tokens(self):
+    def test_run_with_default_max_tokens(self):
         tool = ReadLocalFileTool()
 
         with tempfile.NamedTemporaryFile(
@@ -139,14 +144,14 @@ class TestReadLocalFileTool:
             filepath = f.name
 
         try:
-            result = tool.execute(path=filepath, max_tokens=30000)
+            result = tool.run(path=filepath, max_tokens=30000)
 
             assert not result.startswith('[ReadLocalFileTool Error]')
             assert 'Test content' in result
         finally:
             Path(filepath).unlink()
 
-    def test_execute_resolves_relative_path(self):
+    def test_run_resolves_relative_path(self):
         tool = ReadLocalFileTool()
 
         with tempfile.NamedTemporaryFile(
@@ -158,13 +163,13 @@ class TestReadLocalFileTool:
 
         try:
             filename = Path(filepath).name
-            result = tool.execute(path=filename, max_tokens=1000)
+            result = tool.run(path=filename, max_tokens=1000)
 
             assert result.startswith('[ReadLocalFileTool Error]')
         finally:
             Path(filepath).unlink()
 
-    def test_execute_logs_operation(self):
+    def test_run_logs_operation(self):
         tool = ReadLocalFileTool()
 
         with tempfile.NamedTemporaryFile(
@@ -178,14 +183,14 @@ class TestReadLocalFileTool:
             with patch.object(
                 tool._ReadLocalFileTool__logger, 'info'
             ) as mock_info:
-                tool.execute(path=filepath, max_tokens=1000)
+                tool.run(path=filepath, max_tokens=1000)
 
                 assert mock_info.called
                 assert 'Successfully read file' in str(mock_info.call_args)
         finally:
             Path(filepath).unlink()
 
-    def test_execute_handles_permission_error(self):
+    def test_run_handles_permission_error(self):
         tool = ReadLocalFileTool()
 
         with tempfile.NamedTemporaryFile(
@@ -198,7 +203,7 @@ class TestReadLocalFileTool:
         try:
             Path(filepath).chmod(0o000)
 
-            result = tool.execute(path=filepath, max_tokens=1000)
+            result = tool.run(path=filepath, max_tokens=1000)
 
             assert result.startswith('[ReadLocalFileTool Error]')
             assert 'Permission denied' in result or 'File not found' in result
@@ -209,7 +214,7 @@ class TestReadLocalFileTool:
             except Exception:
                 pass
 
-    def test_execute_with_python_file(self):
+    def test_run_with_python_file(self):
         tool = ReadLocalFileTool()
 
         with tempfile.NamedTemporaryFile(
@@ -220,14 +225,14 @@ class TestReadLocalFileTool:
             filepath = f.name
 
         try:
-            result = tool.execute(path=filepath, max_tokens=1000)
+            result = tool.run(path=filepath, max_tokens=1000)
 
             assert not result.startswith('[ReadLocalFileTool Error]')
             assert 'def hello()' in result
         finally:
             Path(filepath).unlink()
 
-    def test_execute_with_markdown_file(self):
+    def test_run_with_markdown_file(self):
         tool = ReadLocalFileTool()
 
         with tempfile.NamedTemporaryFile(
@@ -238,14 +243,14 @@ class TestReadLocalFileTool:
             filepath = f.name
 
         try:
-            result = tool.execute(path=filepath, max_tokens=1000)
+            result = tool.run(path=filepath, max_tokens=1000)
 
             assert not result.startswith('[ReadLocalFileTool Error]')
             assert '# Header' in result
         finally:
             Path(filepath).unlink()
 
-    def test_execute_with_json_file(self):
+    def test_run_with_json_file(self):
         tool = ReadLocalFileTool()
 
         with tempfile.NamedTemporaryFile(
@@ -256,7 +261,7 @@ class TestReadLocalFileTool:
             filepath = f.name
 
         try:
-            result = tool.execute(path=filepath, max_tokens=1000)
+            result = tool.run(path=filepath, max_tokens=1000)
 
             assert not result.startswith('[ReadLocalFileTool Error]')
             assert 'key' in result
@@ -264,7 +269,7 @@ class TestReadLocalFileTool:
         finally:
             Path(filepath).unlink()
 
-    def test_execute_counts_tokens_correctly(self):
+    def test_run_counts_tokens_correctly(self):
         tool = ReadLocalFileTool()
 
         with tempfile.NamedTemporaryFile(
@@ -278,14 +283,14 @@ class TestReadLocalFileTool:
             with patch.object(
                 tool._ReadLocalFileTool__logger, 'debug'
             ) as mock_debug:
-                tool.execute(path=filepath, max_tokens=10000)
+                tool.run(path=filepath, max_tokens=10000)
 
                 calls = [str(call) for call in mock_debug.call_args_list]
                 assert any('tokens' in call for call in calls)
         finally:
             Path(filepath).unlink()
 
-    def test_execute_with_empty_file(self):
+    def test_run_with_empty_file(self):
         tool = ReadLocalFileTool()
 
         with tempfile.NamedTemporaryFile(
@@ -295,14 +300,14 @@ class TestReadLocalFileTool:
             filepath = f.name
 
         try:
-            result = tool.execute(path=filepath, max_tokens=1000)
+            result = tool.run(path=filepath, max_tokens=1000)
 
             assert not result.startswith('[ReadLocalFileTool Error]')
             assert result == '' or len(result) == 0
         finally:
             Path(filepath).unlink()
 
-    def test_execute_detects_file_type_correctly(self):
+    def test_run_detects_file_type_correctly(self):
         tool = ReadLocalFileTool()
 
         extensions = ['.txt', '.py', '.md', '.json', '.xml']
@@ -319,27 +324,28 @@ class TestReadLocalFileTool:
                 with patch.object(
                     tool._ReadLocalFileTool__logger, 'debug'
                 ) as mock_debug:
-                    tool.execute(path=filepath, max_tokens=1000)
+                    tool.run(path=filepath, max_tokens=1000)
 
                     calls = [str(call) for call in mock_debug.call_args_list]
                     assert any('file as type' in call for call in calls)
             finally:
                 Path(filepath).unlink()
 
-    def test_execute_handles_unexpected_exception(self):
+    def test_run_handles_unexpected_exception(self):
         tool = ReadLocalFileTool()
 
         with patch(
             'pathlib.Path.resolve', side_effect=RuntimeError('Unexpected')
         ):
-            result = tool.execute(path='/some/path', max_tokens=1000)
+            result = tool.run(path='/some/path', max_tokens=1000)
 
             assert result.startswith('[ReadLocalFileTool Error]')
-            assert 'Unexpected error' in result
+            assert 'Unexpected' in result
 
-    def test_parameters_schema_has_defaults(self):
+    def test_schema_has_defaults(self):
         tool = ReadLocalFileTool()
-        max_tokens_param = tool.parameters['properties']['max_tokens']
+        schema = tool.get_schema()
+        max_tokens_param = schema['parameters']['properties']['max_tokens']
 
         assert 'default' in max_tokens_param
         assert max_tokens_param['default'] == 30000
@@ -367,14 +373,14 @@ class TestReadLocalFileTool:
             filepath = f.name
 
         try:
-            result = tool.execute(path=filepath, max_tokens=1000)
+            result = tool.run(path=filepath, max_tokens=1000)
 
             assert not result.startswith('[ReadLocalFileTool Error]')
             assert 'Café' in result or 'Caf' in result
         finally:
             Path(filepath).unlink()
 
-    def test_multiple_executions_independent(self):
+    def test_multiple_runs_independent(self):
         tool = ReadLocalFileTool()
 
         files = []
@@ -387,7 +393,7 @@ class TestReadLocalFileTool:
                     f.flush()
                     files.append(f.name)
 
-            results = [tool.execute(path=f, max_tokens=1000) for f in files]
+            results = [tool.run(path=f, max_tokens=1000) for f in files]
 
             assert all(
                 not r.startswith('[ReadLocalFileTool Error]') for r in results
@@ -403,11 +409,11 @@ class TestReadLocalFileTool:
         tool = ReadLocalFileTool()
 
         errors = [
-            tool.execute(path='/nonexistent', max_tokens=1000),
+            tool.run(path='/nonexistent', max_tokens=1000),
         ]
 
         with tempfile.TemporaryDirectory() as tmpdir:
-            errors.append(tool.execute(path=tmpdir, max_tokens=1000))
+            errors.append(tool.run(path=tmpdir, max_tokens=1000))
 
         for error in errors:
             assert error.startswith('[ReadLocalFileTool Error]')
@@ -418,7 +424,7 @@ class TestReadLocalFileTool:
     not DEPENDENCIES_AVAILABLE, reason='Optional dependencies not available'
 )
 @pytest.mark.unit
-class TestReadLocalFileToolConstants:
+class TestReadLocalFileToolClassAttributes:
     def test_tool_name_constant(self):
         assert hasattr(ReadLocalFileTool, 'name')
         assert ReadLocalFileTool.name == 'readlocalfile'
@@ -427,9 +433,9 @@ class TestReadLocalFileToolConstants:
         assert hasattr(ReadLocalFileTool, 'description')
         assert isinstance(ReadLocalFileTool.description, str)
 
-    def test_parameters_constant(self):
-        assert hasattr(ReadLocalFileTool, 'parameters')
-        assert isinstance(ReadLocalFileTool.parameters, dict)
+    def test_args_schema_constant(self):
+        assert hasattr(ReadLocalFileTool, 'args_schema')
+        assert ReadLocalFileTool.args_schema is not None
 
     def test_max_file_size_is_class_attribute(self):
         assert hasattr(ReadLocalFileTool, 'MAX_FILE_SIZE_BYTES')

@@ -1,30 +1,52 @@
 import time
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 
-from ....domain import BaseTool, ChatException, ToolExecutor
-from ...config import (
-    ChatMetrics,
-    EnvironmentConfig,
-    LoggingConfig,
-    create_logger,
+from ....domain import BaseTool, ChatException
+from ....domain.interfaces import (
+    IMetricsRecorder,
+    IToolSchemaBuilder,
+    LoggerInterface,
 )
-from ..Common import MetricsRecorder
+from ....domain.services.tool_executor import ToolExecutor
+from ...config import ChatMetrics, EnvironmentConfig
 from .openai_client import OpenAIClient
 from .tool_call_parser import ToolCallParser
-from .tool_schema_formatter import ToolSchemaFormatter
 
 
 class OpenAIHandler:
-    """Handles tool execution loop for OpenAI."""
+    """Handles tool execution loop for OpenAI.
+
+    This handler follows SOLID principles:
+    - SRP: Only handles the tool execution loop orchestration
+    - OCP: Extensible via injected dependencies
+    - DIP: Depends on abstractions (interfaces) not concretions
+
+    Dependencies are injected via constructor for testability.
+    """
 
     def __init__(
         self,
         client: OpenAIClient,
-        metrics_list: Optional[List[ChatMetrics]] = None,
+        logger: LoggerInterface,
+        metrics_recorder: IMetricsRecorder,
+        schema_builder: IToolSchemaBuilder,
+        tool_executor_factory: Optional[Any] = None,
     ):
+        """Initialize the handler with injected dependencies.
+
+        Args:
+            client: OpenAI API client.
+            logger: Logger instance for logging operations.
+            metrics_recorder: Metrics recorder for tracking performance.
+            schema_builder: Tool schema builder for formatting tools.
+            tool_executor_factory: Optional factory for creating tool executors.
+                If None, uses default ToolExecutor.
+        """
         self.__client = client
-        self.__logger = LoggingConfig.get_logger(__name__)
-        self.__metrics_recorder = MetricsRecorder(metrics_list)
+        self.__logger = logger
+        self.__metrics_recorder = metrics_recorder
+        self.__schema_builder = schema_builder
+        self.__tool_executor_factory = tool_executor_factory
         self.__max_tool_iterations = int(
             EnvironmentConfig.get_env('OPENAI_MAX_TOOL_ITERATIONS', '100')
             or '100'
@@ -37,23 +59,48 @@ class OpenAIHandler:
         messages: List[Dict[str, str]],
         config: Optional[Dict[str, Any]],
         tools: Optional[List[BaseTool]],
+        tool_choice: Optional[Union[str, Dict[str, Any]]] = None,
     ) -> str:
-        """Executes the tool calling loop."""
+        """Executes the tool calling loop.
+
+        Args:
+            model: The model name to use.
+            instructions: System instructions.
+            messages: List of messages in the conversation.
+            config: Optional configuration for the API call.
+            tools: Optional list of tools available for the model.
+            tool_choice: Optional tool choice configuration.
+
+        Returns:
+            The final response text from the model.
+        """
         start_time = time.time()
 
         # Prepare tool schemas if tools are provided
         tool_schemas = None
         tool_executor = None
+        formatted_tool_choice = None
         if tools:
-            tool_schemas = ToolSchemaFormatter.format_tools_for_responses_api(
-                tools
-            )
-            tool_executor = ToolExecutor(
-                tools, create_logger(f'{__name__}.ToolExecutor')
+            # Use injected schema builder
+            tool_schemas = self.__schema_builder.format_tools(tools)
+            # Create tool executor via factory or directly
+            if self.__tool_executor_factory:
+                tool_executor = self.__tool_executor_factory(
+                    tools, self.__logger
+                )
+            else:
+                tool_executor = ToolExecutor(tools, self.__logger)
+            # Format tool_choice only if tools are provided
+            formatted_tool_choice = self.__schema_builder.format_tool_choice(
+                tool_choice, tools
             )
             self.__logger.debug(
                 'Tools enabled: %s', [tool.name for tool in tools]
             )
+            if formatted_tool_choice:
+                self.__logger.debug(
+                    'Tool choice configured: %s', formatted_tool_choice
+                )
 
         iteration = 0
         try:
@@ -70,7 +117,12 @@ class OpenAIHandler:
 
                 # Call OpenAI API
                 response_api = await self.__client.call_api(
-                    model, instructions, messages, config, tool_schemas
+                    model,
+                    instructions,
+                    messages,
+                    config,
+                    tool_schemas,
+                    formatted_tool_choice,
                 )
 
                 if ToolCallParser.has_tool_calls(response_api):
@@ -137,7 +189,7 @@ class OpenAIHandler:
                     raise ChatException('OpenAI returned an empty response.')
 
                 # Record metrics
-                self.__metrics_recorder.record_success_metrics(
+                self.__metrics_recorder.record_success(
                     model, start_time, response_api, provider_type='openai'
                 )
 
@@ -161,12 +213,12 @@ class OpenAIHandler:
             )
 
         except ChatException:
-            self.__metrics_recorder.record_error_metrics(
+            self.__metrics_recorder.record_error(
                 model, start_time, 'OpenAI chat error'
             )
             raise
         except AttributeError as e:
-            self.__metrics_recorder.record_error_metrics(
+            self.__metrics_recorder.record_error(
                 model, start_time, f'Error accessing response: {str(e)}'
             )
             self.__logger.error('Error accessing OpenAI response: %s', e)
@@ -174,7 +226,7 @@ class OpenAIHandler:
                 f'Error accessing OpenAI response: {str(e)}', original_error=e
             ) from e
         except IndexError as e:
-            self.__metrics_recorder.record_error_metrics(
+            self.__metrics_recorder.record_error(
                 model, start_time, f'Unexpected format: {str(e)}'
             )
             self.__logger.error(
@@ -185,7 +237,7 @@ class OpenAIHandler:
                 original_error=e,
             ) from e
         except (ValueError, TypeError, KeyError) as e:
-            self.__metrics_recorder.record_error_metrics(
+            self.__metrics_recorder.record_error(
                 model, start_time, f'Data error: {str(e)}'
             )
             self.__logger.error('Data error communicating with OpenAI: %s', e)
@@ -194,9 +246,7 @@ class OpenAIHandler:
                 original_error=e,
             ) from e
         except Exception as e:
-            self.__metrics_recorder.record_error_metrics(
-                model, start_time, str(e)
-            )
+            self.__metrics_recorder.record_error(model, start_time, str(e))
             self.__logger.error('Error communicating with OpenAI: %s', e)
             raise ChatException(
                 f'Error communicating with OpenAI: {str(e)}', original_error=e

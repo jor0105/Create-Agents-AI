@@ -2,25 +2,48 @@ from typing import Any, Dict, AsyncGenerator, List, Optional, Union
 
 from ....application.interfaces import ChatRepository
 from ....domain import BaseTool, ChatException
+from ....domain.interfaces import LoggerInterface
 from ...config import ChatMetrics, LoggingConfig
+from ..Common import MetricsRecorder, ToolPayloadBuilder
 from .openai_client import OpenAIClient
 from .openai_handler import OpenAIHandler
 from .openai_stream_handler import OpenAIStreamHandler
 
 
 class OpenAIChatAdapter(ChatRepository):
-    """Initialize the OpenAI adapter."""
+    """Adapter for communicating with OpenAI.
 
-    def __init__(self):
+    This adapter follows Clean Architecture and SOLID principles:
+    - Implements the ChatRepository interface (DIP)
+    - Creates dependencies internally but injects them into handlers
+    - All dependencies are abstracted behind interfaces
+
+    Design:
+    - Adapter pattern: Adapts OpenAI SDK to domain interface
+    - Factory method: Creates handlers with proper dependencies
+    """
+
+    def __init__(
+        self,
+        logger: Optional[LoggerInterface] = None,
+    ):
         """Initialize the OpenAI adapter.
+
+        Args:
+            logger: Optional logger instance. If None, creates from config.
 
         Raises:
             ChatException: If the API key is missing or invalid.
         """
-        self.__logger = LoggingConfig.get_logger(__name__)
+        self.__logger = logger or LoggingConfig.get_logger(__name__)
         self.__metrics: List[ChatMetrics] = []
-
         self.__client = OpenAIClient()
+
+        # Create schema builder for OpenAI Responses API format
+        self.__schema_builder = ToolPayloadBuilder(
+            logger=self.__logger,
+            format_style='responses_api',
+        )
 
     async def chat(
         self,
@@ -30,6 +53,7 @@ class OpenAIChatAdapter(ChatRepository):
         tools: Optional[List[BaseTool]],
         history: List[Dict[str, str]],
         user_ask: str,
+        tool_choice: Optional[Union[str, Dict[str, Any]]] = None,
     ) -> Union[str, AsyncGenerator[str, None]]:
         """
         Sends a message to OpenAI and returns the response.
@@ -50,6 +74,11 @@ class OpenAIChatAdapter(ChatRepository):
             history: The conversation history.
             user_ask: The user's question.
             tools: Optional list of tools available to the agent.
+            tool_choice: Optional tool choice configuration. Can be:
+                - "auto": Let the model decide
+                - "none": Don't call any tool
+                - "required": Force at least one tool call
+                - {"type": "function", "function": {"name": "tool_name"}}
 
         Returns:
             Union[str, AsyncGenerator[str, None]]:
@@ -70,18 +99,16 @@ class OpenAIChatAdapter(ChatRepository):
 
             # Check if streaming mode is enabled
             if config and config.get('stream'):
-                stream_handler = OpenAIStreamHandler(
-                    self.__client, self.__metrics
-                )
+                stream_handler = self.__create_stream_handler()
                 result_stream = stream_handler.handle_stream(
-                    model, instructions, messages, config, tools
+                    model, instructions, messages, config, tools, tool_choice
                 )
 
                 return result_stream
 
-            handler = OpenAIHandler(self.__client, self.__metrics)
+            handler = self.__create_handler()
             result = await handler.execute_tool_loop(
-                model, instructions, messages, config, tools
+                model, instructions, messages, config, tools, tool_choice
             )
 
             return result
@@ -96,6 +123,40 @@ class OpenAIChatAdapter(ChatRepository):
                 f'An error occurred while communicating with OpenAI: {str(e)}',
                 original_error=e,
             ) from e
+
+    def __create_handler(self) -> OpenAIHandler:
+        """Create an OpenAI handler with injected dependencies.
+
+        Returns:
+            Configured OpenAIHandler instance.
+        """
+        metrics_recorder = MetricsRecorder(
+            logger=self.__logger,
+            metrics_list=self.__metrics,
+        )
+        return OpenAIHandler(
+            client=self.__client,
+            logger=self.__logger,
+            metrics_recorder=metrics_recorder,
+            schema_builder=self.__schema_builder,
+        )
+
+    def __create_stream_handler(self) -> OpenAIStreamHandler:
+        """Create an OpenAI stream handler with injected dependencies.
+
+        Returns:
+            Configured OpenAIStreamHandler instance.
+        """
+        metrics_recorder = MetricsRecorder(
+            logger=self.__logger,
+            metrics_list=self.__metrics,
+        )
+        return OpenAIStreamHandler(
+            client=self.__client,
+            logger=self.__logger,
+            metrics_recorder=metrics_recorder,
+            schema_builder=self.__schema_builder,
+        )
 
     def get_metrics(self) -> List[ChatMetrics]:
         """Return the list of collected metrics.

@@ -1,53 +1,10 @@
 import json
-from dataclasses import dataclass
 from typing import Any, Dict, List, Optional
 
 from ..interfaces import LoggerInterface
 from ..value_objects import BaseTool
-
-
-@dataclass
-class ToolExecutionResult:
-    """Represents the result of a tool execution.
-
-    Attributes:
-        tool_name: Name of the tool that was executed.
-        success: Whether the execution was successful.
-        result: The result returned by the tool (if successful).
-        error: Error message (if execution failed).
-        execution_time_ms: Time taken to execute the tool in milliseconds.
-    """
-
-    tool_name: str
-    success: bool
-    result: Optional[Any] = None
-    error: Optional[str] = None
-    execution_time_ms: Optional[float] = None
-
-    def to_dict(self) -> Dict[str, Any]:
-        """Convert the result to a dictionary.
-
-        Returns:
-            Dict[str, Any]: The dictionary representation of the result.
-        """
-        return {
-            'tool_name': self.tool_name,
-            'success': self.success,
-            'result': self.result,
-            'error': self.error,
-            'execution_time_ms': self.execution_time_ms,
-        }
-
-    def to_llm_message(self) -> str:
-        """Format the result as a message for the LLM.
-
-        Returns:
-            A formatted string describing the tool execution result.
-        """
-        if self.success:
-            return f"Tool '{self.tool_name}' executed successfully:\n{self.result}"
-        else:
-            return f"Tool '{self.tool_name}' failed with error: {self.error}"
+from ..value_objects.tool_execution_result import ToolExecutionResult
+from .tool_argument_injector import ToolArgumentInjector
 
 
 class ToolExecutor:
@@ -80,6 +37,7 @@ class ToolExecutor:
         """
         self._tools_map: Dict[str, BaseTool] = {}
         self.__logger = logger
+        self._argument_injector = ToolArgumentInjector(logger)
 
         for tool in tools:
             self._tools_map[tool.name] = tool
@@ -117,16 +75,23 @@ class ToolExecutor:
         return tool_name in self._tools_map
 
     async def execute_tool(
-        self, tool_name: str, **kwargs: Any
+        self,
+        tool_name: str,
+        tool_call_id: Optional[str] = None,
+        agent_state: Optional[Dict[str, Any]] = None,
+        **kwargs: Any,
     ) -> ToolExecutionResult:
         """Execute a tool by name with given arguments.
 
         This method provides safe execution with comprehensive error handling,
-        ensuring that tool failures don't crash the agent.
+        ensuring that tool failures don't crash the agent. It also handles
+        injection of InjectedToolArg parameters.
 
         Args:
             tool_name: Name of the tool to execute.
-            **kwargs: Arguments to pass to the tool's execute method.
+            tool_call_id: Optional tool call ID for InjectedToolCallId params.
+            agent_state: Optional agent state for InjectedState params.
+            **kwargs: Arguments to pass to the tool's run method.
 
         Returns:
             A ToolExecutionResult containing the execution outcome.
@@ -135,6 +100,7 @@ class ToolExecutor:
             ```python
             result = await executor.execute_tool(
                 "web_search",
+                tool_call_id="call_123",
                 query="What is Clean Architecture?"
             )
             ```
@@ -162,21 +128,27 @@ class ToolExecutor:
 
         try:
             tool = self._tools_map[tool_name]
+
+            # Inject InjectedToolArg parameters if applicable
+            injected_kwargs = self._argument_injector.inject_args(
+                tool, kwargs, tool_call_id, agent_state
+            )
+
             self.__logger.debug(
                 "Executing tool '%s' with %s argument(s)",
                 tool_name,
-                len(kwargs),
+                len(injected_kwargs),
             )
 
             import asyncio  # pylint: disable=import-outside-toplevel
 
-            if asyncio.iscoroutinefunction(tool.execute):
-                result = await tool.execute(**kwargs)
+            # Use run() method which handles validation
+            if asyncio.iscoroutinefunction(tool.run):
+                result = await tool.run(**injected_kwargs)
             else:
-                # Run synchronous tools in a separate thread to avoid blocking
                 loop = asyncio.get_running_loop()
                 result = await loop.run_in_executor(
-                    None, lambda: tool.execute(**kwargs)
+                    None, lambda: tool.run(**injected_kwargs)
                 )
 
             execution_time = (time.time() - start_time) * 1000

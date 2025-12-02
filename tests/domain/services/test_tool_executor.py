@@ -1,16 +1,15 @@
 import json
 import time
-from typing import Any
+from typing import Any, Optional
 
 import pytest
+from pydantic import BaseModel, Field
 
 from createagents.domain import BaseTool, ToolExecutionResult, ToolExecutor
 from createagents.domain.interfaces import LoggerInterface
 
 
 class MockLogger(LoggerInterface):
-    """Mock logger for testing purposes."""
-
     def debug(self, message: str, *args: Any, **kwargs: Any) -> None:
         pass
 
@@ -29,25 +28,23 @@ class MockLogger(LoggerInterface):
 
 @pytest.fixture
 def mock_logger():
-    """Fixture to provide a mock logger for tests."""
     return MockLogger()
+
+
+class CalculatorInput(BaseModel):
+    expression: str = Field(description='Math expression to evaluate')
+
+
+class GreeterInput(BaseModel):
+    name: str = Field(description='Name to greet')
 
 
 class MockCalculatorTool(BaseTool):
     name = 'calculator'
     description = 'Performs basic mathematical calculations'
-    parameters = {
-        'type': 'object',
-        'properties': {
-            'expression': {
-                'type': 'string',
-                'description': 'Math expression to evaluate',
-            }
-        },
-        'required': ['expression'],
-    }
+    args_schema = CalculatorInput
 
-    def execute(self, expression: str) -> str:
+    def _run(self, expression: str) -> str:
         try:
             result = eval(expression)
             return f'Result: {result}'
@@ -58,15 +55,9 @@ class MockCalculatorTool(BaseTool):
 class MockGreeterTool(BaseTool):
     name = 'greeter'
     description = 'Greets people by name'
-    parameters = {
-        'type': 'object',
-        'properties': {
-            'name': {'type': 'string', 'description': 'Name to greet'}
-        },
-        'required': ['name'],
-    }
+    args_schema = GreeterInput
 
-    def execute(self, name: str) -> str:
+    def _run(self, name: str) -> str:
         return f'Hello, {name}!'
 
 
@@ -133,7 +124,10 @@ class TestToolExecutor:
         result = await executor.execute_tool('calculator')
 
         assert result.success is False
-        assert 'invalid arguments' in result.error.lower()
+        assert (
+            'invalid arguments' in result.error.lower()
+            or 'expression' in result.error.lower()
+        )
 
     @pytest.mark.asyncio
     async def test_execute_tool_with_execution_error(self, mock_logger):
@@ -236,6 +230,26 @@ class TestToolExecutor:
         assert 'Invalid input' in message
 
 
+class NullableInput(BaseModel):
+    value: Optional[str] = Field(default=None, description='Optional value')
+
+
+class EmptyInput(BaseModel):
+    pass
+
+
+class SingleArgInput(BaseModel):
+    arg1: str = Field(description='Single argument')
+
+
+class TextInput(BaseModel):
+    text: str = Field(description='Text input')
+
+
+class IdInput(BaseModel):
+    id: str = Field(description='Identifier')
+
+
 @pytest.mark.unit
 class TestToolExecutorEdgeCases:
     @pytest.mark.asyncio
@@ -243,8 +257,9 @@ class TestToolExecutorEdgeCases:
         class NullableTool(BaseTool):
             name = 'nullable'
             description = 'Accepts None values'
+            args_schema = NullableInput
 
-            def execute(self, value=None) -> str:
+            def _run(self, value: Optional[str] = None) -> str:
                 return f'Value: {value}'
 
         tools = [NullableTool()]
@@ -260,8 +275,9 @@ class TestToolExecutorEdgeCases:
         class SlowTool(BaseTool):
             name = 'slow'
             description = 'Slow tool'
+            args_schema = EmptyInput
 
-            def execute(self) -> str:
+            def _run(self) -> str:
                 time.sleep(0.01)
                 return 'done'
 
@@ -278,8 +294,9 @@ class TestToolExecutorEdgeCases:
         class FailingTool(BaseTool):
             name = 'failing'
             description = 'Always fails'
+            args_schema = EmptyInput
 
-            def execute(self) -> str:
+            def _run(self) -> str:
                 raise RuntimeError('Tool error')
 
         tools = [FailingTool()]
@@ -293,11 +310,15 @@ class TestToolExecutorEdgeCases:
 
     @pytest.mark.asyncio
     async def test_execute_tool_with_extra_kwargs(self, mock_logger):
+        class SingleArgInput(BaseModel):
+            arg1: str = Field(description='Single argument')
+
         class SimpleToolWithKwargs(BaseTool):
             name = 'simple'
             description = 'Simple tool'
+            args_schema = SingleArgInput
 
-            def execute(self, arg1: str) -> str:
+            def _run(self, arg1: str) -> str:
                 return arg1
 
         tools = [SimpleToolWithKwargs()]
@@ -307,19 +328,17 @@ class TestToolExecutorEdgeCases:
             'simple', arg1='value', extra='ignored'
         )
 
-        assert result.success is False
-        assert (
-            'invalid arguments' in result.error.lower()
-            or 'unexpected' in result.error.lower()
-        )
+        assert result.success is True
+        assert result.result == 'value'
 
     @pytest.mark.asyncio
     async def test_execute_tool_with_complex_return_types(self, mock_logger):
         class ComplexReturnTool(BaseTool):
             name = 'complex'
             description = 'Returns complex data'
+            args_schema = EmptyInput
 
-            def execute(self) -> dict:
+            def _run(self) -> dict:
                 return {'data': [1, 2, 3], 'nested': {'key': 'value'}}
 
         tools = [ComplexReturnTool()]
@@ -346,15 +365,17 @@ class TestToolExecutorEdgeCases:
         class SuccessTool(BaseTool):
             name = 'success'
             description = 'Always succeeds'
+            args_schema = EmptyInput
 
-            def execute(self) -> str:
+            def _run(self) -> str:
                 return 'success'
 
         class FailTool(BaseTool):
             name = 'fail'
             description = 'Always fails'
+            args_schema = EmptyInput
 
-            def execute(self) -> str:
+            def _run(self) -> str:
                 raise ValueError('Expected failure')
 
         tools = [SuccessTool(), FailTool()]
@@ -380,9 +401,10 @@ class TestToolExecutorEdgeCases:
         class CounterTool(BaseTool):
             name = 'counter'
             description = 'Counts calls'
+            args_schema = EmptyInput
             call_count = 0
 
-            def execute(self) -> str:
+            def _run(self) -> str:
                 CounterTool.call_count += 1
                 return f'Call {CounterTool.call_count}'
 
@@ -409,15 +431,17 @@ class TestToolExecutorEdgeCases:
         class Tool1(BaseTool):
             name = 'tool_one'
             description = 'First tool'
+            args_schema = EmptyInput
 
-            def execute(self) -> str:
+            def _run(self) -> str:
                 return 'one'
 
         class Tool2(BaseTool):
             name = 'tool_two'
             description = 'Second tool'
+            args_schema = EmptyInput
 
-            def execute(self) -> str:
+            def _run(self) -> str:
                 return 'two'
 
         tools = [Tool1(), Tool2()]
@@ -434,15 +458,17 @@ class TestToolExecutorEdgeCases:
         class Tool1(BaseTool):
             name = 'duplicate'
             description = 'First duplicate'
+            args_schema = EmptyInput
 
-            def execute(self) -> str:
+            def _run(self) -> str:
                 return 'first'
 
         class Tool2(BaseTool):
             name = 'duplicate'
             description = 'Second duplicate'
+            args_schema = EmptyInput
 
-            def execute(self) -> str:
+            def _run(self) -> str:
                 return 'second'
 
         tools = [Tool1(), Tool2()]
@@ -458,8 +484,9 @@ class TestToolExecutorEdgeCases:
         class UnicodeTool(BaseTool):
             name = 'unicode'
             description = 'Handles unicode'
+            args_schema = TextInput
 
-            def execute(self, text: str) -> str:
+            def _run(self, text: str) -> str:
                 return f'Received: {text}'
 
         tools = [UnicodeTool()]
@@ -489,17 +516,14 @@ class TestToolExecutorEdgeCases:
 
 @pytest.mark.unit
 class TestParallelExecution:
-    """Tests for parallel tool execution functionality."""
-
     @pytest.mark.asyncio
     async def test_execute_multiple_tools_parallel(self, mock_logger):
-        """Test that parallel execution works correctly."""
-
         class SlowTool(BaseTool):
             name = 'slow'
             description = 'A slow tool'
+            args_schema = IdInput
 
-            def execute(self, id: str) -> str:
+            def _run(self, id: str) -> str:
                 time.sleep(0.05)  # 50ms delay
                 return f'Result from {id}'
 
@@ -532,7 +556,6 @@ class TestParallelExecution:
     async def test_execute_multiple_tools_sequential_is_default(
         self, mock_logger
     ):
-        """Test that sequential execution is the default behavior."""
         tools = [MockGreeterTool()]
         executor = ToolExecutor(tools, mock_logger)
 
@@ -549,20 +572,20 @@ class TestParallelExecution:
 
     @pytest.mark.asyncio
     async def test_parallel_execution_handles_failures(self, mock_logger):
-        """Test that parallel execution handles tool failures correctly."""
-
         class SuccessTool(BaseTool):
             name = 'success'
             description = 'Always succeeds'
+            args_schema = EmptyInput
 
-            def execute(self) -> str:
+            def _run(self) -> str:
                 return 'success'
 
         class FailTool(BaseTool):
             name = 'fail'
             description = 'Always fails'
+            args_schema = EmptyInput
 
-            def execute(self) -> str:
+            def _run(self) -> str:
                 raise ValueError('Expected failure')
 
         tools = [SuccessTool(), FailTool()]
@@ -585,7 +608,6 @@ class TestParallelExecution:
 
     @pytest.mark.asyncio
     async def test_parallel_execution_with_invalid_json(self, mock_logger):
-        """Test parallel execution handles invalid JSON arguments."""
         tools = [MockGreeterTool()]
         executor = ToolExecutor(tools, mock_logger)
 

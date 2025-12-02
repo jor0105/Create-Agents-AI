@@ -2,7 +2,9 @@ from typing import Any, Dict, AsyncGenerator, List, Optional, Union
 
 from ....application.interfaces import ChatRepository
 from ....domain import BaseTool, ChatException
+from ....domain.interfaces import LoggerInterface
 from ...config import ChatMetrics, LoggingConfig
+from ..Common import MetricsRecorder, ToolPayloadBuilder
 from .ollama_client import OllamaClient
 from .ollama_handler import OllamaHandler
 from .ollama_stream_handler import OllamaStreamHandler
@@ -11,8 +13,14 @@ from .ollama_stream_handler import OllamaStreamHandler
 class OllamaChatAdapter(ChatRepository):
     """An adapter for communicating with Ollama.
 
-    This adapter supports native tool calling using Ollama's built-in
-    function calling capability (similar to OpenAI).
+    This adapter follows Clean Architecture and SOLID principles:
+    - Implements the ChatRepository interface (DIP)
+    - Creates dependencies internally but injects them into handlers
+    - All dependencies are abstracted behind interfaces
+
+    Design:
+    - Adapter pattern: Adapts Ollama SDK to domain interface
+    - Factory method: Creates handlers with proper dependencies
 
     Tool calling flow:
     1. Send tools schema to Ollama API
@@ -22,10 +30,19 @@ class OllamaChatAdapter(ChatRepository):
     5. Model generates final response
     """
 
-    def __init__(self):
-        self.__logger = LoggingConfig.get_logger(__name__)
+    def __init__(
+        self,
+        logger: Optional[LoggerInterface] = None,
+    ):
+        """Initialize the Ollama adapter.
+
+        Args:
+            logger: Optional logger instance. If None, creates from config.
+        """
+        self.__logger = logger or LoggingConfig.get_logger(__name__)
         self.__client = OllamaClient()
         self.__metrics: List[ChatMetrics] = []
+        self.__schema_builder = ToolPayloadBuilder(self.__logger, 'ollama')
 
         self.__logger.info('Ollama adapter initialized')
 
@@ -37,6 +54,7 @@ class OllamaChatAdapter(ChatRepository):
         tools: Optional[List[BaseTool]],
         history: List[Dict[str, str]],
         user_ask: str,
+        tool_choice: Optional[Union[str, Dict[str, Any]]] = None,
     ) -> Union[str, AsyncGenerator[str, None]]:
         """
         Sends a message to Ollama and returns the response.
@@ -48,6 +66,11 @@ class OllamaChatAdapter(ChatRepository):
             history: The conversation history.
             user_ask: The user's question.
             tools: Optional list of tools (native Ollama API).
+            tool_choice: Optional tool choice configuration. Can be:
+                - "auto": Let the model decide (default)
+                - "none": Don't call any tool
+                - "required": Force at least one tool call
+                - {"type": "function", "function": {"name": "tool_name"}}
 
         Returns:
             Union[str, AsyncGenerator[str, None]]:
@@ -71,19 +94,17 @@ class OllamaChatAdapter(ChatRepository):
 
             # Check if streaming mode is enabled
             if config and config.get('stream'):
-                stream_handler = OllamaStreamHandler(
-                    self.__client, self.__metrics
-                )
+                stream_handler = self.__create_stream_handler()
                 self.__logger.debug('Streaming mode enabled for Ollama')
                 result_stream = stream_handler.handle_stream(
-                    model, messages, config, tools
+                    model, messages, config, tools, tool_choice
                 )
                 return result_stream
 
             # Non-streaming mode - Tool calling loop
-            handler = OllamaHandler(self.__client, self.__metrics)
+            handler = self.__create_handler()
             result: str = await handler.execute_tool_loop(
-                model, messages, config, tools
+                model, messages, config, tools, tool_choice
             )
             return result
 
@@ -97,6 +118,40 @@ class OllamaChatAdapter(ChatRepository):
                 f'An error occurred while communicating with Ollama: {str(e)}',
                 original_error=e,
             ) from e
+
+    def __create_handler(self) -> OllamaHandler:
+        """Create an Ollama handler with injected dependencies.
+
+        Returns:
+            Configured OllamaHandler instance.
+        """
+        metrics_recorder = MetricsRecorder(
+            logger=self.__logger,
+            metrics_list=self.__metrics,
+        )
+        return OllamaHandler(
+            client=self.__client,
+            logger=self.__logger,
+            metrics_recorder=metrics_recorder,
+            schema_builder=self.__schema_builder,
+        )
+
+    def __create_stream_handler(self) -> OllamaStreamHandler:
+        """Create an Ollama stream handler with injected dependencies.
+
+        Returns:
+            Configured OllamaStreamHandler instance.
+        """
+        metrics_recorder = MetricsRecorder(
+            logger=self.__logger,
+            metrics_list=self.__metrics,
+        )
+        return OllamaStreamHandler(
+            client=self.__client,
+            logger=self.__logger,
+            metrics_recorder=metrics_recorder,
+            schema_builder=self.__schema_builder,
+        )
 
     def get_metrics(self) -> List[ChatMetrics]:
         """Return the list of collected metrics.

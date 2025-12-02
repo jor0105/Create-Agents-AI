@@ -60,6 +60,7 @@ class ChatWithAgentUseCase:
                 tools=agent.tools,
                 history=agent.history.to_dict_list(),
                 user_ask=input_dto.message,
+                tool_choice=input_dto.tool_choice,
             )
 
             if isinstance(response, AsyncGenerator):

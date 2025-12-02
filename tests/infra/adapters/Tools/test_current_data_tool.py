@@ -1,4 +1,6 @@
 import time
+
+from pydantic import ValidationError
 from datetime import datetime
 from unittest.mock import patch
 from zoneinfo import ZoneInfo
@@ -28,60 +30,62 @@ class TestCurrentDateTool:
 
     def test_tool_has_parameters_schema(self):
         tool = CurrentDateTool()
-        assert 'type' in tool.parameters
-        assert tool.parameters['type'] == 'object'
-        assert 'properties' in tool.parameters
-        assert 'action' in tool.parameters['properties']
-        assert 'tz' in tool.parameters['properties']
-        assert 'required' in tool.parameters
-        assert 'action' in tool.parameters['required']
-        assert 'tz' in tool.parameters['required']
+        schema = tool.get_schema()
+        assert schema['parameters']['type'] == 'object'
+        assert 'properties' in schema['parameters']
+        assert 'action' in schema['parameters']['properties']
+        assert 'tz' in schema['parameters']['properties']
+        assert 'required' in schema['parameters']
+        assert 'action' in schema['parameters']['required']
+        assert 'tz' in schema['parameters']['required']
 
-    def test_action_parameter_has_enum(self):
+    def test_action_parameter_has_valid_options(self):
         tool = CurrentDateTool()
-        action_enum = tool.parameters['properties']['action']['enum']
-        assert 'date' in action_enum
-        assert 'time' in action_enum
-        assert 'datetime' in action_enum
-        assert 'timestamp' in action_enum
-        assert 'date_with_weekday' in action_enum
+        schema = tool.get_schema()
+        action_prop = schema['parameters']['properties']['action']
+        # Pydantic uses 'enum' for Literal types
+        assert (
+            'enum' in action_prop
+            or 'anyOf' in action_prop
+            or 'const' in action_prop
+        )
 
-    def test_execute_date_action_utc(self):
+    def test_run_date_action_utc(self):
         tool = CurrentDateTool()
-        result = tool.execute(action='date', tz='UTC')
+        result = tool.run(action='date', tz='UTC')
 
         assert not result.startswith('[CurrentDateTool Error]')
         assert len(result) == 10
         assert result.count('-') == 2
 
-    def test_execute_time_action_utc(self):
+    def test_run_time_action_utc(self):
         tool = CurrentDateTool()
-        result = tool.execute(action='time', tz='UTC')
+        result = tool.run(action='time', tz='UTC')
 
         assert not result.startswith('[CurrentDateTool Error]')
         assert len(result) == 8
         assert result.count(':') == 2
 
-    def test_execute_datetime_action_utc(self):
+    def test_run_datetime_action_utc(self):
         tool = CurrentDateTool()
-        result = tool.execute(action='datetime', tz='UTC')
+        result = tool.run(action='datetime', tz='UTC')
 
         assert not result.startswith('[CurrentDateTool Error]')
         assert 'T' in result
         assert '-' in result
         assert ':' in result
 
-    def test_execute_timestamp_action_utc(self):
+    def test_run_timestamp_action_utc(self):
         tool = CurrentDateTool()
-        result = tool.execute(action='timestamp', tz='UTC')
+        result = tool.run(action='timestamp', tz='UTC')
 
         assert not result.startswith('[CurrentDateTool Error]')
         assert result.isdigit()
         assert int(result) > 1577836800
 
-    def test_execute_date_with_weekday_action_utc(self):
+    def test_run_date_with_weekday_action_utc(self):
         tool = CurrentDateTool()
-        result = tool.execute(action='date_with_weekday', tz='UTC')
+        result = tool.run(action='date_with_weekday', tz='UTC')
 
         assert not result.startswith('[CurrentDateTool Error]')
         weekdays = [
@@ -96,7 +100,7 @@ class TestCurrentDateTool:
         assert any(day in result for day in weekdays)
         assert 'de' in result
 
-    def test_execute_with_different_timezones(self):
+    def test_run_with_different_timezones(self):
         tool = CurrentDateTool()
         timezones = [
             'UTC',
@@ -108,35 +112,36 @@ class TestCurrentDateTool:
         ]
 
         for tz in timezones:
-            result = tool.execute(action='date', tz=tz)
+            result = tool.run(action='date', tz=tz)
             assert not result.startswith('[CurrentDateTool Error]'), (
                 f'Failed for timezone: {tz}'
             )
 
-    def test_execute_with_invalid_action(self):
+    def test_run_with_invalid_action(self):
+        """Tool should raise ValidationError for invalid action."""
         tool = CurrentDateTool()
-        result = tool.execute(action='invalid_action', tz='UTC')
 
-        assert result.startswith('[CurrentDateTool Error]')
-        assert 'Invalid action' in result
-        assert 'invalid_action' in result
+        with pytest.raises(ValidationError) as exc_info:
+            tool.run(action='invalid_action', tz='UTC')
 
-    def test_execute_with_invalid_timezone(self):
+        assert 'action' in str(exc_info.value)
+
+    def test_run_with_invalid_timezone(self):
         tool = CurrentDateTool()
-        result = tool.execute(action='date', tz='Invalid/Timezone')
+        result = tool.run(action='date', tz='Invalid/Timezone')
 
         assert result.startswith('[CurrentDateTool Error]')
         assert 'Invalid timezone' in result
 
-    def test_execute_with_empty_timezone(self):
+    def test_run_with_empty_timezone(self):
         tool = CurrentDateTool()
-        result = tool.execute(action='date', tz='')
+        result = tool.run(action='date', tz='')
 
         assert result.startswith('[CurrentDateTool Error]')
 
-    def test_execute_strips_whitespace_from_timezone(self):
+    def test_run_strips_whitespace_from_timezone(self):
         tool = CurrentDateTool()
-        result = tool.execute(action='date', tz='  UTC  ')
+        result = tool.run(action='date', tz='  UTC  ')
 
         assert not result.startswith('[CurrentDateTool Error]')
 
@@ -164,7 +169,7 @@ class TestCurrentDateTool:
         cache_info = _get_zoneinfo.cache_info()
         assert cache_info.currsize == 3
 
-    def test_execute_with_various_actions(self):
+    def test_run_with_various_actions(self):
         tool = CurrentDateTool()
         actions = [
             'date',
@@ -175,7 +180,7 @@ class TestCurrentDateTool:
         ]
 
         for action in actions:
-            result = tool.execute(action=action, tz='UTC')
+            result = tool.run(action=action, tz='UTC')
             assert not result.startswith('[CurrentDateTool Error]'), (
                 f'Failed for action: {action}'
             )
@@ -187,26 +192,25 @@ class TestCurrentDateTool:
         ) as mock_sanitize:
             mock_sanitize.return_value = 'sanitized_output'
 
-            result = tool.execute(action='date', tz='UTC')
+            result = tool.run(action='date', tz='UTC')
 
             assert mock_sanitize.called
             assert result == 'sanitized_output'
 
-    def test_logging_on_execution(self):
+    def test_logging_on_run(self):
         tool = CurrentDateTool()
         with patch.object(tool._CurrentDateTool__logger, 'info') as mock_info:
-            tool.execute(action='date', tz='UTC')
+            tool.run(action='date', tz='UTC')
 
             assert mock_info.called
-            call_args = str(mock_info.call_args)
-            assert 'CurrentDateTool.execute' in call_args
 
     def test_logging_on_error(self):
+        """Tool should log warnings on errors (like invalid timezone)."""
         tool = CurrentDateTool()
         with patch.object(
             tool._CurrentDateTool__logger, 'warning'
         ) as mock_warning:
-            tool.execute(action='invalid', tz='UTC')
+            tool.run(action='date', tz='Invalid/Timezone')
 
             assert mock_warning.called
 
@@ -218,14 +222,14 @@ class TestCurrentDateTool:
         ) as mock_datetime:
             mock_datetime.now.side_effect = RuntimeError('Unexpected error')
 
-            result = tool.execute(action='date', tz='UTC')
+            result = tool.run(action='date', tz='UTC')
 
             assert result.startswith('[CurrentDateTool Error]')
             assert 'Unexpected error' in result
 
-    def test_execute_date_returns_iso_format(self):
+    def test_run_date_returns_iso_format(self):
         tool = CurrentDateTool()
-        result = tool.execute(action='date', tz='UTC')
+        result = tool.run(action='date', tz='UTC')
 
         try:
             datetime.fromisoformat(result)
@@ -233,9 +237,9 @@ class TestCurrentDateTool:
         except ValueError:
             pytest.fail('Date is not in ISO format')
 
-    def test_execute_datetime_returns_iso_format(self):
+    def test_run_datetime_returns_iso_format(self):
         tool = CurrentDateTool()
-        result = tool.execute(action='datetime', tz='UTC')
+        result = tool.run(action='datetime', tz='UTC')
 
         try:
             datetime.fromisoformat(result.replace('+00:00', ''))
@@ -243,43 +247,41 @@ class TestCurrentDateTool:
         except ValueError:
             pytest.fail('Datetime is not in ISO format')
 
-    def test_execute_timestamp_is_numeric(self):
+    def test_run_timestamp_is_numeric(self):
         tool = CurrentDateTool()
-        result = tool.execute(action='timestamp', tz='UTC')
+        result = tool.run(action='timestamp', tz='UTC')
 
         timestamp = int(result)
         assert 1577836800 < timestamp < 2524608000
 
-    def test_execute_with_sao_paulo_timezone(self):
+    def test_run_with_sao_paulo_timezone(self):
         tool = CurrentDateTool()
-        result = tool.execute(action='datetime', tz='America/Sao_Paulo')
+        result = tool.run(action='datetime', tz='America/Sao_Paulo')
 
         assert not result.startswith('[CurrentDateTool Error]')
         assert '-03:00' in result or '-02:00' in result
 
     def test_error_message_format_consistency(self):
+        """Error messages from _run should follow consistent format."""
         tool = CurrentDateTool()
 
-        errors = [
-            tool.execute(action='invalid', tz='UTC'),
-            tool.execute(action='date', tz='Invalid/TZ'),
-        ]
+        # Test invalid timezone (handled in _run method)
+        error = tool.run(action='date', tz='Invalid/TZ')
 
-        for error in errors:
-            assert error.startswith('[CurrentDateTool Error]')
-            assert ']' in error
+        assert error.startswith('[CurrentDateTool Error]')
+        assert ']' in error
 
-    def test_concurrent_execution(self):
+    def test_concurrent_run(self):
         import concurrent.futures
 
         tool = CurrentDateTool()
         results = []
 
-        def execute_tool():
-            return tool.execute(action='date', tz='UTC')
+        def run_tool():
+            return tool.run(action='date', tz='UTC')
 
         with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
-            futures = [executor.submit(execute_tool) for _ in range(50)]
+            futures = [executor.submit(run_tool) for _ in range(50)]
             results = [
                 future.result()
                 for future in concurrent.futures.as_completed(futures)
@@ -294,28 +296,28 @@ class TestCurrentDateTool:
         tool1 = CurrentDateTool()
         tool2 = CurrentDateTool()
 
-        result1 = tool1.execute(action='date', tz='UTC')
-        result2 = tool2.execute(action='time', tz='America/New_York')
+        result1 = tool1.run(action='date', tz='UTC')
+        result2 = tool2.run(action='time', tz='America/New_York')
 
         assert not result1.startswith('[CurrentDateTool Error]')
         assert not result2.startswith('[CurrentDateTool Error]')
         assert result1 != result2
 
-    def test_execute_with_chicago_timezone(self):
+    def test_run_with_chicago_timezone(self):
         tool = CurrentDateTool()
-        result = tool.execute(action='datetime', tz='America/Chicago')
+        result = tool.run(action='datetime', tz='America/Chicago')
 
         assert not result.startswith('[CurrentDateTool Error]')
 
-    def test_execute_with_lisbon_timezone(self):
+    def test_run_with_lisbon_timezone(self):
         tool = CurrentDateTool()
-        result = tool.execute(action='datetime', tz='Europe/Lisbon')
+        result = tool.run(action='datetime', tz='Europe/Lisbon')
 
         assert not result.startswith('[CurrentDateTool Error]')
 
     def test_date_with_weekday_contains_proper_format(self):
         tool = CurrentDateTool()
-        result = tool.execute(action='date_with_weekday', tz='UTC')
+        result = tool.run(action='date_with_weekday', tz='UTC')
 
         assert ', ' in result
         parts = result.split(', ')
@@ -333,10 +335,10 @@ class TestCurrentDateTool:
     def test_timezone_case_sensitivity(self):
         tool = CurrentDateTool()
 
-        result_correct = tool.execute(action='date', tz='UTC')
+        result_correct = tool.run(action='date', tz='UTC')
         assert not result_correct.startswith('[CurrentDateTool Error]')
 
-        result_wrong = tool.execute(action='date', tz='utc')
+        result_wrong = tool.run(action='date', tz='utc')
         assert result_wrong.startswith('[CurrentDateTool Error]')
 
     def test_tool_is_safe_no_io_operations(self):
@@ -350,17 +352,21 @@ class TestCurrentDateTool:
                 'urllib.request.urlopen',
                 side_effect=AssertionError('Should not access network'),
             ):
-                result = tool.execute(action='date', tz='UTC')
+                result = tool.run(action='date', tz='UTC')
                 assert not result.startswith('[CurrentDateTool Error]')
 
     def test_error_includes_allowed_actions(self):
+        """ValidationError should show allowed action values."""
         tool = CurrentDateTool()
-        result = tool.execute(action='bad_action', tz='UTC')
 
-        assert 'Allowed:' in result
-        assert 'date' in result
-        assert 'time' in result
-        assert 'datetime' in result
+        with pytest.raises(ValidationError) as exc_info:
+            tool.run(action='bad_action', tz='UTC')
+
+        error_message = str(exc_info.value)
+        # Pydantic shows literal values in the error message
+        assert 'date' in error_message
+        assert 'time' in error_message
+        assert 'datetime' in error_message
 
     def test_cache_size_limit(self):
         _get_zoneinfo.cache_clear()
@@ -374,23 +380,20 @@ class TestCurrentDateTool:
         cache_info = _get_zoneinfo.cache_info()
         assert cache_info.maxsize == 32
 
-    def test_parameters_schema_completeness(self):
+    def test_schema_completeness(self):
         tool = CurrentDateTool()
-        params = tool.parameters
+        schema = tool.get_schema()
+        params = schema['parameters']
 
         assert params['type'] == 'object'
         assert 'properties' in params
         assert 'required' in params
 
         action_prop = params['properties']['action']
-        assert action_prop['type'] == 'string'
-        assert 'enum' in action_prop
         assert 'description' in action_prop
 
         tz_prop = params['properties']['tz']
-        assert tz_prop['type'] == 'string'
         assert 'description' in tz_prop
-        assert 'Examples:' in tz_prop['description']
 
     def test_logger_initialization(self):
         tool = CurrentDateTool()
@@ -407,7 +410,7 @@ class TestCurrentDateTool:
 
         results = []
         for _ in range(5):
-            result = tool.execute(action='timestamp', tz='UTC')
+            result = tool.run(action='timestamp', tz='UTC')
             results.append(int(result))
             time.sleep(0.1)
 

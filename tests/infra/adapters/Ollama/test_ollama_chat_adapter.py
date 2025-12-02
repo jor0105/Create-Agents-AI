@@ -9,13 +9,36 @@ IA_OLLAMA_TEST_1: str = 'phi4-mini:latest'
 IA_OLLAMA_TEST_2: str = 'gemma3:4b'
 
 
-def _mock_response(content='Response', tool_calls=None, get_return=None):
+def _mock_response(
+    content='Response',
+    tool_calls=None,
+    get_return=None,
+    prompt_eval_count=None,
+    eval_count=None,
+):
+    """Create a mock Ollama response object.
+
+    Args:
+        content: The content of the response message.
+        tool_calls: Optional tool calls in the response.
+        get_return: Value to return for any .get() call (legacy).
+        prompt_eval_count: Token count for prompt evaluation.
+        eval_count: Token count for completion.
+    """
     m = MagicMock()
     m.message = MagicMock()
     m.message.content = content
     m.message.tool_calls = tool_calls
 
+    # Set token counts as direct attributes (used by getattr in ollama_handler)
+    m.prompt_eval_count = prompt_eval_count
+    m.eval_count = eval_count
+
     def get_side_effect(key, default=None):
+        if key == 'prompt_eval_count' and prompt_eval_count is not None:
+            return prompt_eval_count
+        if key == 'eval_count' and eval_count is not None:
+            return eval_count
         if get_return is not None:
             return get_return
         return default
@@ -30,7 +53,6 @@ class TestOllamaChatAdapter:
         adapter = OllamaChatAdapter()
 
         assert adapter is not None
-        # Check for the new internal structure
         assert hasattr(adapter, '_OllamaChatAdapter__client')
         assert hasattr(adapter, '_OllamaChatAdapter__metrics')
 
@@ -449,7 +471,10 @@ class TestOllamaChatAdapter:
     @pytest.mark.asyncio
     async def test_chat_collects_metrics_on_success(self, mock_chat):
         mock_chat.return_value = _mock_response(
-            content='Success response', tool_calls=None, get_return=100
+            content='Success response',
+            tool_calls=None,
+            prompt_eval_count=100,
+            eval_count=100,
         )
 
         adapter = OllamaChatAdapter()

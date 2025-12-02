@@ -1,25 +1,121 @@
 import time
 from typing import Any, List, Optional
 
-from ...config import ChatMetrics, LoggingConfig
+from ....domain.interfaces import IMetricsRecorder, LoggerInterface
+from ...config import ChatMetrics
 
 
-class MetricsRecorder:
+class MetricsRecorder(IMetricsRecorder):
     """Base class for recording metrics in handlers.
 
     This class provides common functionality for recording success and error metrics
     across different handler implementations (OpenAI, Ollama, etc.), eliminating
     code duplication and ensuring consistent metric collection.
+
+    Implements IMetricsRecorder interface for dependency injection.
+
+    Supports two recording modes:
+    1. Response-based: Extracts tokens from API response objects
+    2. Value-based: Accepts pre-calculated values (useful for streaming)
     """
 
-    def __init__(self, metrics_list: Optional[List[ChatMetrics]] = None):
+    def __init__(
+        self,
+        logger: LoggerInterface,
+        metrics_list: Optional[List[ChatMetrics]] = None,
+    ):
         """Initialize the metrics recorder.
 
         Args:
+            logger: Logger instance for logging operations.
             metrics_list: Optional list to store metrics. If None, creates a new list.
         """
         self._metrics = metrics_list if metrics_list is not None else []
-        self._logger = LoggingConfig.get_logger(__name__)
+        self._logger = logger
+
+    def record_success(
+        self,
+        model: str,
+        start_time: float,
+        response: Any,
+        provider_type: str = 'generic',
+    ) -> None:
+        """Record metrics for a successful operation using response object.
+
+        Args:
+            model: The model name used for the operation.
+            start_time: The timestamp when the operation started.
+            response: The response object from the API.
+            provider_type: Type of provider ('openai' or 'ollama') for specific handling.
+        """
+        self.record_success_metrics(model, start_time, response, provider_type)
+
+    def record_success_with_values(
+        self,
+        model: str,
+        latency_ms: float,
+        tokens_used: Optional[int] = None,
+        prompt_tokens: Optional[int] = None,
+        completion_tokens: Optional[int] = None,
+    ) -> None:
+        """Record metrics for a successful operation using pre-calculated values.
+
+        Useful for streaming where tokens are accumulated across iterations.
+
+        Args:
+            model: The model name used for the operation.
+            latency_ms: The latency in milliseconds.
+            tokens_used: Total tokens used.
+            prompt_tokens: Prompt tokens used.
+            completion_tokens: Completion tokens used.
+        """
+        metrics = ChatMetrics(
+            model=model,
+            latency_ms=latency_ms,
+            tokens_used=tokens_used,
+            prompt_tokens=prompt_tokens,
+            completion_tokens=completion_tokens,
+            success=True,
+        )
+        self._metrics.append(metrics)
+        self._logger.info('Chat completed: %s', metrics)
+
+    def record_error(
+        self,
+        model: str,
+        start_time: float,
+        error: Any,
+    ) -> None:
+        """Record metrics for a failed operation.
+
+        Args:
+            model: The model name used for the operation.
+            start_time: The timestamp when the operation started.
+            error: The error that occurred (can be string or Exception).
+        """
+        self.record_error_metrics(model, start_time, error)
+
+    def record_error_with_values(
+        self,
+        model: str,
+        latency_ms: float,
+        error_message: str,
+    ) -> None:
+        """Record metrics for a failed operation using pre-calculated values.
+
+        Args:
+            model: The model name used for the operation.
+            latency_ms: The latency in milliseconds.
+            error_message: The error message.
+        """
+        metrics = ChatMetrics(
+            model=model,
+            latency_ms=latency_ms,
+            success=False,
+            error_message=error_message,
+        )
+        self._metrics.append(metrics)
+        self._logger.error('Chat failed: %s', metrics)
 
     def record_success_metrics(
         self,

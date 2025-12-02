@@ -78,9 +78,10 @@ class TestChatWithAgentUseCase:
             model='phi4-mini:latest',
             instructions='Instructions',
             config=None,
-            user_ask='Test message',
-            history=[],
             tools=None,
+            history=[],
+            user_ask='Test message',
+            tool_choice=None,
         )
 
     @pytest.mark.asyncio
@@ -306,9 +307,10 @@ class TestChatWithAgentUseCase:
             model='gpt-4',
             instructions='Test',
             config=config,
-            user_ask='Test message',
-            history=[],
             tools=None,
+            history=[],
+            user_ask='Test message',
+            tool_choice=None,
         )
 
     def test_get_metrics_when_repository_supports_it(self):

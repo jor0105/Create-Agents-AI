@@ -1,33 +1,69 @@
 import time
-from typing import Any, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional, Union
 
 from ....domain import BaseTool, ChatException, ToolExecutor
-from ...config import (
-    ChatMetrics,
-    EnvironmentConfig,
-    LoggingConfig,
-    create_logger,
+from ....domain.interfaces import (
+    IMetricsRecorder,
+    IToolSchemaBuilder,
+    LoggerInterface,
 )
-from ..Common import MetricsRecorder
+from ...config import ChatMetrics, EnvironmentConfig
 from .ollama_client import OllamaClient
-from .ollama_tool_schema_formatter import OllamaToolSchemaFormatter
 
 
 class OllamaHandler:
-    """Handles tool execution loop for Ollama."""
+    """Handles tool execution loop for Ollama.
+
+    This handler follows Clean Architecture and SOLID principles:
+    - All dependencies are injected via constructor (DIP)
+    - Uses interfaces for metrics and schema building (OCP)
+    - Single responsibility: manages tool execution loop
+    """
 
     def __init__(
         self,
         client: OllamaClient,
-        metrics_list: Optional[List[ChatMetrics]] = None,
+        logger: LoggerInterface,
+        metrics_recorder: IMetricsRecorder,
+        schema_builder: IToolSchemaBuilder,
+        tool_executor_factory: Optional[
+            Callable[[List[BaseTool]], ToolExecutor]
+        ] = None,
     ):
+        """Initialize the handler with injected dependencies.
+
+        Args:
+            client: Ollama API client.
+            logger: Logger instance for logging.
+            metrics_recorder: Metrics recorder for tracking performance.
+            schema_builder: Tool schema builder for formatting tools.
+            tool_executor_factory: Optional factory for creating ToolExecutor.
+                Defaults to creating ToolExecutor with provided tools and logger.
+        """
         self.__client = client
-        self.__logger = LoggingConfig.get_logger(__name__)
-        self.__metrics_recorder = MetricsRecorder(metrics_list)
+        self.__logger = logger
+        self.__metrics_recorder = metrics_recorder
+        self.__schema_builder = schema_builder
+        self.__tool_executor_factory = (
+            tool_executor_factory or self.__default_tool_executor_factory
+        )
         self.__max_tool_iterations = int(
             EnvironmentConfig.get_env('OLLAMA_MAX_TOOL_ITERATIONS', '100')
             or '100'
         )
+
+    def __default_tool_executor_factory(
+        self, tools: List[BaseTool]
+    ) -> ToolExecutor:
+        """Default factory for creating ToolExecutor instances.
+
+        Args:
+            tools: List of tools to provide to the executor.
+
+        Returns:
+            Configured ToolExecutor instance.
+        """
+        return ToolExecutor(tools, self.__logger)
 
     async def execute_tool_loop(
         self,
@@ -35,19 +71,35 @@ class OllamaHandler:
         messages: List[Dict[str, str]],
         config: Optional[Dict[str, Any]],
         tools: Optional[List[BaseTool]],
+        tool_choice: Optional[Union[str, Dict[str, Any]]] = None,
     ) -> str:
-        """Executes the tool calling loop."""
+        """Executes the tool calling loop.
+
+        Args:
+            model: The model name to use.
+            messages: List of messages in the conversation.
+            config: Optional configuration for the API call.
+            tools: Optional list of tools available for the model.
+            tool_choice: Optional tool choice configuration.
+
+        Returns:
+            The final response text from the model.
+        """
         start_time = time.time()
 
         tool_executor = None
         tool_schemas = None
+        formatted_tool_choice = None
         if tools:
-            tool_executor = ToolExecutor(
-                tools, create_logger(f'{__name__}.ToolExecutor')
+            tool_executor = self.__tool_executor_factory(tools)
+            tool_schemas = self.__schema_builder.format_tools(tools)
+            formatted_tool_choice = self.__schema_builder.format_tool_choice(
+                tool_choice, tools
             )
-            tool_schemas = OllamaToolSchemaFormatter.format_tools_for_ollama(
-                tools
-            )
+            if formatted_tool_choice:
+                self.__logger.debug(
+                    'Tool choice configured: %s', formatted_tool_choice
+                )
 
         iteration = 0
         final_response = None
@@ -65,7 +117,11 @@ class OllamaHandler:
                 )
 
                 response_api = await self.__client.call_api(
-                    model, messages, config, tool_schemas
+                    model,
+                    messages,
+                    config,
+                    tool_schemas,
+                    formatted_tool_choice,
                 )
 
                 if (
@@ -120,13 +176,38 @@ class OllamaHandler:
                     f'({self.__max_tool_iterations}) exceeded'
                 )
 
-            self.__metrics_recorder.record_success_metrics(
-                model, start_time, response_api, provider_type='ollama'
+            # Extract token usage from Ollama response
+            latency = (time.time() - start_time) * 1000
+            prompt_tokens = (
+                getattr(response_api, 'prompt_eval_count', None)
+                if response_api
+                else None
+            )
+            completion_tokens = (
+                getattr(response_api, 'eval_count', None)
+                if response_api
+                else None
+            )
+            total_tokens = None
+            if prompt_tokens and completion_tokens:
+                total_tokens = prompt_tokens + completion_tokens
+
+            self.__metrics_recorder.record_success_with_values(
+                model=model,
+                latency_ms=latency,
+                tokens_used=total_tokens,
+                prompt_tokens=prompt_tokens,
+                completion_tokens=completion_tokens,
             )
             return final_response
 
         except Exception as e:
-            self.__metrics_recorder.record_error_metrics(model, start_time, e)
+            latency = (time.time() - start_time) * 1000
+            self.__metrics_recorder.record_error_with_values(
+                model=model,
+                latency_ms=latency,
+                error_message=str(e),
+            )
             raise
         finally:
             self.__client.stop_model(model)

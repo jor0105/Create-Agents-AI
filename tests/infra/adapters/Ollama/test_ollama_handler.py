@@ -2,6 +2,7 @@ from types import SimpleNamespace
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
+from pydantic import BaseModel
 
 from createagents.domain import BaseTool
 from createagents.infra.adapters.Ollama.ollama_handler import OllamaHandler
@@ -19,12 +20,18 @@ class FakeResponse(dict):
         self.message = FakeMessage(content, tool_calls)
 
 
+class DummyInput(BaseModel):
+    """Input schema for DummyTool."""
+
+    pass
+
+
 class DummyTool(BaseTool):
     name = 'dummy'
     description = 'dummy tool'
-    parameters = {'type': 'object', 'properties': {}}
+    args_schema = DummyInput
 
-    def execute(self, **kwargs):
+    def _run(self, **kwargs):
         return kwargs
 
 
