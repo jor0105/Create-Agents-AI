@@ -1,15 +1,19 @@
-from typing import Any, Dict, Optional, Sequence, Union
+from __future__ import annotations
 
-from ...application.dtos import CreateAgentInputDTO
-from ...application.use_cases import (
-    ChatWithAgentUseCase,
-    CreateAgentUseCase,
-    GetAgentConfigUseCase,
-    GetAllAvailableToolsUseCase,
-    GetSystemAvailableToolsUseCase,
-)
+from typing import TYPE_CHECKING, Any, Dict, Optional, Sequence, Union
+
+# Importar apenas DTOs no topo - eles não causam circular import
+from ...application import CreateAgentInputDTO
 from ...domain import Agent, BaseTool
 from ...infra import ChatAdapterFactory, LoggingConfig
+
+# Type hints para IDEs (não executado em runtime)
+if TYPE_CHECKING:
+    from ...application import (
+        ChatWithAgentUseCase,
+        GetAgentConfigUseCase,
+        GetSystemAvailableToolsUseCase,
+    )
 
 
 class AgentComposer:
@@ -39,6 +43,7 @@ class AgentComposer:
             name: The name of the agent (optional).
             instructions: The agent's instructions (optional).
             config: Extra agent configurations, such as `max_tokens` and `temperature` (optional).
+            tools: A list of tool names or BaseTool instances to be used by the agent (optional).
             history_max_size: The maximum history size (default: 10).
 
         Returns:
@@ -52,7 +57,8 @@ class AgentComposer:
         )
 
         if config is None:
-            config = {}
+            # stream will be set to True by default
+            config = {'stream': True}
 
         AgentComposer.__logger.debug(
             'Agent parameters - Tools: %s, History max size: %s, Config keys: %s',
@@ -60,6 +66,8 @@ class AgentComposer:
             history_max_size,
             list(config.keys()) if isinstance(config, dict) else 'invalid',
         )
+
+        from ...application import CreateAgentUseCase  # pylint: disable=import-outside-toplevel
 
         input_dto = CreateAgentInputDTO(
             provider=provider,
@@ -88,12 +96,14 @@ class AgentComposer:
         Creates the ChatWithAgentUseCase with its dependencies injected.
 
         Args:
-            provider: The specific provider ("openai" or "ollama").
+            provider: The specific provider.
             model: The name of the AI model.
 
         Returns:
             A configured ChatWithAgentUseCase.
         """
+        from ...application import ChatWithAgentUseCase  # pylint: disable=import-outside-toplevel
+
         AgentComposer.__logger.debug(
             'Composing chat use case - Provider: %s, Model: %s',
             provider,
@@ -114,25 +124,10 @@ class AgentComposer:
         Returns:
             A configured GetAgentConfigUseCase.
         """
+        from ...application import GetAgentConfigUseCase  # pylint: disable=import-outside-toplevel
+
         AgentComposer.__logger.debug('Composing get config use case')
         return GetAgentConfigUseCase()
-
-    @staticmethod
-    def create_get_all_available_tools_use_case() -> (
-        GetAllAvailableToolsUseCase
-    ):
-        """
-        Creates the GetAllAvailableToolsUseCase.
-
-        This use case returns both system tools and agent tools.
-
-        Returns:
-            A configured GetAllAvailableToolsUseCase.
-        """
-        AgentComposer.__logger.debug(
-            'Composing get all available tools use case'
-        )
-        return GetAllAvailableToolsUseCase()
 
     @staticmethod
     def create_get_system_available_tools_use_case() -> (
@@ -146,6 +141,8 @@ class AgentComposer:
         Returns:
             A configured GetSystemAvailableToolsUseCase.
         """
+        from ...application import GetSystemAvailableToolsUseCase  # pylint: disable=import-outside-toplevel
+
         AgentComposer.__logger.debug(
             'Composing get system available tools use case'
         )

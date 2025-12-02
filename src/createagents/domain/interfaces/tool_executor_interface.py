@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Any, Dict, List, Optional
 
-from ..value_objects.tool_execution_result import ToolExecutionResult
+from ..value_objects import ToolExecutionResult
 
 
 class IToolExecutor(ABC):

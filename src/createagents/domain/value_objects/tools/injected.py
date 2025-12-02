@@ -83,6 +83,53 @@ class InjectedState(InjectedToolArg):
     pass
 
 
+class InjectedLogger(InjectedToolArg):
+    """Marker for injecting a logger into a tool.
+
+    When a parameter is annotated with this marker, the runtime
+    will inject a configured logger instance, allowing tools to
+    log execution details for debugging and monitoring.
+
+    The injected logger is configured with the tool's name as the
+    logger name, making it easy to filter and trace tool-specific logs.
+
+    Example:
+        ```python
+        from typing import Annotated
+        from logging import Logger
+        from createagents import tool
+        from createagents.domain.value_objects import InjectedLogger
+
+        @tool
+        def search_web(
+            query: str,
+            logger: Annotated[Logger, InjectedLogger]
+        ) -> str:
+            \"\"\"Search the web for information.
+
+            Args:
+                query: The search query.
+                logger: Injected logger for this tool.
+
+            Returns:
+                Search results.
+            \"\"\"
+            logger.info(f"Searching for: {query}")
+            results = perform_search(query)
+            logger.debug(f"Found {len(results)} results")
+            return results
+        ```
+
+    Benefits:
+        - Automatic logger configuration
+        - Consistent logging format across tools
+        - Easy debugging for advanced users
+        - No manual logger creation needed
+    """
+
+    pass
+
+
 def is_injected_arg(annotation) -> bool:
     """Check if a type annotation contains an InjectedToolArg marker.
 
@@ -136,5 +183,6 @@ __all__ = [
     'InjectedToolArg',
     'InjectedToolCallId',
     'InjectedState',
+    'InjectedLogger',
     'is_injected_arg',
 ]

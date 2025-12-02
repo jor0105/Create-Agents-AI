@@ -3,12 +3,17 @@ from enum import Enum
 from functools import lru_cache
 from typing import Literal
 
-from pydantic import BaseModel, Field
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
+from pydantic import BaseModel, Field
 
 from .....domain import BaseTool
 from .....utils import TextSanitizer
 from ....config import LoggingConfig
+
+# Type alias for better type checking
+ActionType = Literal[
+    'date', 'time', 'datetime', 'timestamp', 'date_with_weekday'
+]
 
 
 @lru_cache(maxsize=32)
@@ -111,12 +116,12 @@ class CurrentDateTool(BaseTool):
         except ZoneInfoNotFoundError as e:
             raise ValueError(f'Invalid timezone: {tz}') from e
 
-    def _run(
+    def execute(
         self,
-        action: str,
+        action: ActionType,
         tz: str,
     ) -> str:
-        """Run the tool with safety checks.
+        """Execute the tool with safety checks.
 
         Args:
             action: One of 'date', 'time', 'datetime', 'timestamp', 'date_with_weekday'

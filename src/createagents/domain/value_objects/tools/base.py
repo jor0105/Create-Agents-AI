@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 import asyncio
-from abc import ABC
+from abc import ABC, abstractmethod
 from typing import Any, Dict, Protocol, Type, runtime_checkable
 
-from pydantic import BaseModel, ValidationError
+from pydantic import BaseModel
 
 
 @runtime_checkable
@@ -47,24 +47,31 @@ class BaseTool(ABC):
     description: str = 'Base tool description (should be overridden)'
     args_schema: Type[BaseModel] | None = None
 
-    def _run(self, **kwargs: Any) -> Any:
-        """Internal execution method - must be implemented by subclasses.
+    @abstractmethod
+    def execute(self, **kwargs: Any) -> Any:
+        """Execute the tool's main logic - IMPLEMENT THIS METHOD.
 
         This is the core method that performs the tool's functionality.
-        Use the public `run()` method to execute with validation.
+        Arguments are already validated by the time this is called.
 
         Args:
-            **kwargs: Keyword arguments specific to the tool.
+            **kwargs: Keyword arguments specific to the tool (validated).
 
         Returns:
             The result of the tool execution.
+
+        Example:
+            def execute(self, query: str, limit: int = 10) -> str:
+                return f"Searching for: {query}"
         """
 
-    async def _arun(self, **kwargs: Any) -> Any:
-        """Execute the tool asynchronously.
+    async def execute_async(self, **kwargs: Any) -> Any:
+        """Execute the tool asynchronously - OPTIONAL OVERRIDE.
 
-        Override this method to provide async-specific implementation.
-        By default, runs the sync _run method in an executor.
+        Override this method ONLY if you need custom async implementation.
+        By default, runs the sync execute() method in an executor.
+
+        Most tools don't need to override this - the default is fine!
 
         Args:
             **kwargs: Keyword arguments specific to the tool.
@@ -73,7 +80,7 @@ class BaseTool(ABC):
             The result of the async tool execution.
         """
         loop = asyncio.get_running_loop()
-        return await loop.run_in_executor(None, lambda: self._run(**kwargs))
+        return await loop.run_in_executor(None, lambda: self.execute(**kwargs))
 
     def _validate_input(self, kwargs: Dict[str, Any]) -> Dict[str, Any]:
         """Validate input arguments using Pydantic schema.
@@ -90,17 +97,16 @@ class BaseTool(ABC):
         if self.args_schema is None:
             return kwargs
 
-        try:
-            validated = self.args_schema(**kwargs)
-            return validated.model_dump()
-        except ValidationError:
-            raise
+        validated = self.args_schema(**kwargs)
+        return validated.model_dump()
 
     def run(self, **kwargs: Any) -> Any:
-        """Execute the tool with validation.
+        """Execute the tool with validation - CALLED BY AI/SYSTEM.
 
-        This is the main entry point for tool execution. It validates
-        input arguments against the schema and then calls _run().
+        This is the main entry point used by the AI agent system.
+        It validates input arguments and calls your execute() method.
+
+        DO NOT override this method unless you know what you're doing!
 
         Args:
             **kwargs: Arguments to pass to the tool.
@@ -112,10 +118,15 @@ class BaseTool(ABC):
             ValidationError: If input validation fails.
         """
         validated_kwargs = self._validate_input(kwargs)
-        return self._run(**validated_kwargs)
+        return self.execute(**validated_kwargs)
 
     async def arun(self, **kwargs: Any) -> Any:
-        """Execute the tool asynchronously with validation.
+        """Execute the tool asynchronously with validation - CALLED BY AI/SYSTEM.
+
+        This is the async entry point used by the AI agent system.
+        It validates input arguments and calls your execute_async() method.
+
+        DO NOT override this method unless you know what you're doing!
 
         Args:
             **kwargs: Arguments to pass to the tool.
@@ -127,7 +138,7 @@ class BaseTool(ABC):
             ValidationError: If input validation fails.
         """
         validated_kwargs = self._validate_input(kwargs)
-        return await self._arun(**validated_kwargs)
+        return await self.execute_async(**validated_kwargs)
 
     def get_schema(self) -> Dict[str, Any]:
         """Return a generic schema describing the tool.
@@ -165,6 +176,3 @@ class BaseTool(ABC):
     def __repr__(self) -> str:
         """Return string representation of the tool."""
         return f'{self.__class__.__name__}(name={self.name!r})'
-
-
-__all__ = ['BaseTool', 'ToolProtocol']

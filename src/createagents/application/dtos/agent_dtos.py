@@ -4,7 +4,6 @@ from typing import Any, Dict, List, Optional, Sequence, Union
 from ...domain import (
     BaseTool,
     InvalidBaseToolException,
-    ToolChoice,
     ToolChoiceType,
     ToolProtocol,
 )
@@ -20,7 +19,6 @@ class CreateAgentInputDTO:
     instructions: Optional[str] = None
     config: Optional[Dict[str, Any]] = None
     tools: Optional[Sequence[Union[str, BaseTool]]] = None
-    tool_choice: Optional[ToolChoiceType] = None
     history_max_size: int = 10
 
     def validate(self) -> None:
@@ -108,9 +106,6 @@ class CreateAgentInputDTO:
 
             object.__setattr__(self, 'tools', validated_tools)
 
-        if self.tool_choice is not None:
-            self._validate_tool_choice()
-
         if (
             not isinstance(self.history_max_size, int)
             or self.history_max_size <= 0
@@ -118,38 +113,6 @@ class CreateAgentInputDTO:
             raise ValueError(
                 "The 'history_max_size' field must be a positive integer."
             )
-
-    def _validate_tool_choice(self) -> None:
-        """Validate the tool_choice parameter using domain ToolChoice.
-
-        Delegates validation to the ToolChoice value object in the domain
-        layer, following Clean Architecture principles.
-
-        Raises:
-            ValueError: If tool_choice is invalid.
-        """
-        if self.tool_choice is None:
-            return
-
-        # Get available tool names for validation
-        available_tools: Optional[List[str]] = None
-        if self.tools:
-            tool_names = []
-            for tool in self.tools:
-                if isinstance(tool, str):
-                    tool_names.append(tool.lower())
-                elif hasattr(tool, 'name'):
-                    tool_names.append(tool.name)
-            available_tools = tool_names
-
-        # Use domain ToolChoice for parsing and validation
-        # This will raise ValueError with descriptive message if invalid
-        choice = ToolChoice.from_value(self.tool_choice, available_tools)
-
-        # Validate that specific function exists in available tools
-        if choice and choice.is_specific_function and self.tools:
-            tool_names_set = set(available_tools) if available_tools else set()
-            choice.validate_against_tools(tool_names_set)
 
 
 @dataclass
@@ -163,7 +126,6 @@ class AgentConfigOutputDTO:
     config: Optional[Dict[str, Any]]
     tools: Optional[List[BaseTool]]
     history: List[Dict[str, str]]
-    tool_choice: Optional[ToolChoiceType] = None
     history_max_size: int = 10
 
     def to_dict(self) -> Dict[str, Any]:
@@ -183,7 +145,6 @@ class AgentConfigOutputDTO:
             'instructions': self.instructions,
             'config': self.config,
             'tools': tool_names,
-            'tool_choice': self.tool_choice,
             'history': self.history,
             'history_max_size': self.history_max_size,
         }
@@ -196,15 +157,29 @@ class ChatInputDTO:
     message: str
     tool_choice: Optional[ToolChoiceType] = None
 
-    def validate(self) -> None:
+    def validate(self, available_tools: Optional[List[str]] = None) -> None:
         """Validate the DTO data.
 
+        Args:
+            available_tools: Optional list of available tool names for validation.
+
         Raises:
-            ValueError: If the message is invalid.
+            ValueError: If the message or tool_choice is invalid.
         """
         if not isinstance(self.message, str) or not self.message.strip():
             raise ValueError(
                 "The 'message' field is required, must be a string, and cannot be empty."
+            )
+
+        # Validate tool_choice if provided
+        if self.tool_choice is not None:
+            from ...domain.value_objects.tools.choice import (  # pylint: disable=import-outside-toplevel
+                ToolChoice,
+            )
+
+            # This will raise ValueError if invalid format
+            ToolChoice.from_value(
+                self.tool_choice, available_tools=available_tools
             )
 
 

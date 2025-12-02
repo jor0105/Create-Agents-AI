@@ -5,7 +5,7 @@ import pytest
 from createagents.application.services.agent_service import AgentService
 from createagents.domain.entities.agent_domain import Agent
 from createagents.domain.interfaces.logger_interface import LoggerInterface
-from createagents.domain.value_objects.base_tools import BaseTool
+from createagents.domain.value_objects import BaseTool
 
 
 class TestTool(BaseTool):

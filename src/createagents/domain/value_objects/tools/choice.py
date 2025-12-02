@@ -1,14 +1,3 @@
-"""Tool Choice value object for controlling tool selection behavior.
-
-This module provides a domain-level abstraction for the tool_choice
-parameter, which controls how AI models select tools during execution.
-
-Following Clean Architecture principles, this value object:
-- Encapsulates all tool_choice validation logic in the domain layer
-- Provides a provider-agnostic representation
-- Can be formatted for specific providers by infrastructure adapters
-"""
-
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -237,10 +226,3 @@ class ToolChoice:
     def is_specific_function(self) -> bool:
         """Check if this choice forces a specific function."""
         return self.function_name is not None
-
-
-__all__ = [
-    'ToolChoice',
-    'ToolChoiceMode',
-    'ToolChoiceType',
-]

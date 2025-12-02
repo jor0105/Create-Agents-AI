@@ -1,8 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Any, Dict, List, Optional, Union
 
-from ..value_objects.base_tools import BaseTool
-from ..value_objects.tool_choice import ToolChoiceType
+from ..value_objects import BaseTool, ToolChoiceType
 
 
 class IToolSchemaBuilder(ABC):

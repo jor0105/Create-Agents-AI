@@ -3,7 +3,7 @@ import pytest
 from createagents.application.interfaces.chat_repository import (
     ChatRepository,
 )
-from createagents.domain.value_objects.base_tools import BaseTool
+from createagents.domain.value_objects import BaseTool
 
 
 class TestToolForRepo(BaseTool):

@@ -51,7 +51,7 @@ class CreateAgentUseCase:
             name=input_dto.name,
             instructions=input_dto.instructions,
             config=input_dto.config,
-            tools=input_dto.tools,  # type: ignore
+            tools=input_dto.tools,
             history=History(max_size=input_dto.history_max_size),
         )
 

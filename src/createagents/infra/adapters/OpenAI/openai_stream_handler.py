@@ -236,15 +236,34 @@ class OpenAIStreamHandler:
                             tool_name, **tool_args
                         )
 
+                        # Prepare result text for logging and LLM
+                        result_text = (
+                            str(execution_result.result)
+                            if execution_result.success
+                            else str(execution_result.error)
+                        )
+
+                        # Log tool response for audit trail
+                        self.__logger.info(
+                            "Tool '%s' response [%s]: %s",
+                            tool_name,
+                            'success' if execution_result.success else 'error',
+                            result_text[:200] + '...'
+                            if len(result_text) > 200
+                            else result_text,
+                        )
+                        self.__logger.debug(
+                            "Tool '%s' full response (ID: %s): %s",
+                            tool_name,
+                            tool_id,
+                            result_text,
+                        )
+
                         tool_result_msg = (
                             ToolCallParser.format_tool_results_for_llm(
                                 tool_call_id=tool_id,
                                 tool_name=tool_name,
-                                result=(
-                                    str(execution_result.result)
-                                    if execution_result.success
-                                    else str(execution_result.error)
-                                ),
+                                result=result_text,
                             )
                         )
                         messages.append(tool_result_msg)

@@ -232,6 +232,21 @@ class OllamaStreamHandler:
                             else f'Error: {execution_result.error}'
                         )
 
+                        # Log tool response for audit trail
+                        self.__logger.info(
+                            "Tool '%s' response [%s]: %s",
+                            tool_name,
+                            'success' if execution_result.success else 'error',
+                            result_text[:200] + '...'
+                            if len(result_text) > 200
+                            else result_text,
+                        )
+                        self.__logger.debug(
+                            "Tool '%s' full response: %s",
+                            tool_name,
+                            result_text,
+                        )
+
                         messages.append(
                             {
                                 'role': 'tool',

@@ -44,6 +44,3 @@ class ToolExecutionResult:
             return f"Tool '{self.tool_name}' executed successfully:\n{self.result}"
         else:
             return f"Tool '{self.tool_name}' failed with error: {self.error}"
-
-
-__all__ = ['ToolExecutionResult']

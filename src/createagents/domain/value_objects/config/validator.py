@@ -1,6 +1,9 @@
 from typing import Optional, Set, Union
 
-from ..exceptions import InvalidAgentConfigException
+from ...exceptions import (
+    InvalidAgentConfigException,
+    UnsupportedConfigException,
+)
 
 
 class SupportedConfigs:
@@ -23,14 +26,34 @@ class SupportedConfigs:
     }
 
     @classmethod
-    def get_available_configs(cls) -> Set[str]:
+    def validate_config(cls, key: str, value) -> None:
         """
-        Returns the set of supported configurations.
+        Validates a specific configuration based on its key.
 
-        Returns:
-            A set containing the names of available configurations.
+        Args:
+            key: The name of the configuration.
+            value: The value of the configuration.
+
+        Raises:
+            UnsupportedConfigException: If the configuration is not supported.
+            InvalidAgentConfigException: If the validation fails.
         """
-        return cls.__AVAILABLE_CONFIGS.copy()
+        if key not in cls.__AVAILABLE_CONFIGS:
+            raise UnsupportedConfigException(
+                key, set(cls.__AVAILABLE_CONFIGS.copy())
+            )
+
+        validators = {
+            'think': cls.validate_think,
+            'temperature': cls.validate_temperature,
+            'max_tokens': cls.validate_max_tokens,
+            'top_p': cls.validate_top_p,
+            'top_k': cls.validate_top_k,
+            'stream': cls.validate_stream,
+        }
+        validator = validators.get(key)
+        if validator:
+            validator(value)
 
     @staticmethod
     def validate_temperature(value: Optional[float]) -> None:
@@ -155,27 +178,3 @@ class SupportedConfigs:
         """
         if value is not None and not isinstance(value, bool):
             raise InvalidAgentConfigException('stream', 'must be a boolean')
-
-    @classmethod
-    def validate_config(cls, key: str, value) -> None:
-        """
-        Validates a specific configuration based on its key.
-
-        Args:
-            key: The name of the configuration.
-            value: The value of the configuration.
-
-        Raises:
-            InvalidAgentConfigException: If the validation fails.
-        """
-        validators = {
-            'think': cls.validate_think,
-            'temperature': cls.validate_temperature,
-            'max_tokens': cls.validate_max_tokens,
-            'top_p': cls.validate_top_p,
-            'top_k': cls.validate_top_k,
-            'stream': cls.validate_stream,
-        }
-        validator = validators.get(key)
-        if validator:
-            validator(value)

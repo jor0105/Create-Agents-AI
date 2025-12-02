@@ -109,19 +109,6 @@ class AgentService:
         )
         self._agent.add_assistant_message(content)
 
-    def add_tool_message(self, content: str) -> None:
-        """Add a tool message to history with logging.
-
-        Args:
-            content: The message content to add.
-        """
-        self._logger.debug(
-            'Adding tool message - Agent: %s, Length: %s chars',
-            self._agent.name,
-            len(content),
-        )
-        self._agent.add_tool_message(content)
-
     def clear_history(self) -> None:
         """Clear conversation history with logging."""
         history_size = len(self._agent.history)

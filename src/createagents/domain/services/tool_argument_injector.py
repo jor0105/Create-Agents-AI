@@ -8,11 +8,12 @@ from typing import (
     get_type_hints,
 )
 from ..interfaces import LoggerInterface
-from ..value_objects import BaseTool
-from ..value_objects.injected_args import (
+from ..value_objects import (
+    BaseTool,
     InjectedState,
     InjectedToolArg,
     InjectedToolCallId,
+    InjectedLogger,
 )
 
 
@@ -62,10 +63,8 @@ class ToolArgumentInjector:
             func = tool.func
         elif hasattr(tool, 'coroutine') and tool.coroutine is not None:
             func = tool.coroutine
-        elif hasattr(tool, '_run'):
-            func = tool._run
         elif hasattr(tool, 'execute'):
-            func = tool.execute
+            func = tool.execute  # BaseTool.execute()
 
         if func is None:
             return result
@@ -97,6 +96,20 @@ class ToolArgumentInjector:
                             self.__logger.debug(
                                 "Injected agent_state into '%s'", param_name
                             )
+                        break
+                    elif isinstance(arg, InjectedLogger):
+                        # Inject a configured logger for the tool
+                        from ...infra.config import LoggingConfig  # pylint: disable=import-outside-toplevel
+
+                        tool_logger = LoggingConfig.get_logger(
+                            f'tool.{tool.name}'
+                        )
+                        result[param_name] = tool_logger
+                        self.__logger.debug(
+                            "Injected logger into '%s' for tool '%s'",
+                            param_name,
+                            tool.name,
+                        )
                         break
                     elif isinstance(arg, InjectedToolArg):
                         # Generic injected arg - skip for now

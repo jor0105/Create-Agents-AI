@@ -10,9 +10,9 @@ from createagents.domain.value_objects import (
     InjectedState,
     InjectedToolCallId,
     StructuredTool,
+    ToolProtocol,
     tool,
 )
-from createagents.domain.value_objects.base_tools import ToolProtocol
 from createagents.infra.config.available_tools import AvailableTools
 
 

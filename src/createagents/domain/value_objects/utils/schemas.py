@@ -1,10 +1,3 @@
-"""Utilities for creating Pydantic schemas from function signatures.
-
-This module provides functions to automatically generate Pydantic models
-from function signatures, including support for parsing Google-style
-docstrings to extract parameter descriptions.
-"""
-
 from __future__ import annotations
 
 import inspect
@@ -24,7 +17,7 @@ from typing import (
 import docstring_parser
 from pydantic import BaseModel, Field, create_model
 
-from .injected_args import is_injected_arg
+from ..tools.injected import is_injected_arg
 
 
 def _get_base_type(annotation: Any) -> Any:

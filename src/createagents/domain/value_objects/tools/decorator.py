@@ -1,44 +1,3 @@
-"""Decorator for creating tools from functions.
-
-This module provides the `@tool` decorator, which is the primary and
-recommended way to create tools in the CreateAgents framework.
-
-Example:
-    ```python
-    from createagents import tool
-
-    @tool
-    def search(query: str, max_results: int = 10) -> str:
-        '''Search the web for information.
-
-        Args:
-            query: The search query to execute.
-            max_results: Maximum number of results to return.
-
-        Returns:
-            Search results as a formatted string.
-        '''
-        return f"Results for: {query}"
-
-    # Using with custom name
-    @tool("web_search")
-    def my_search(query: str) -> str:
-        '''Search the web.'''
-        return f"Results: {query}"
-
-    # Using with explicit Pydantic schema
-    from pydantic import BaseModel, Field
-
-    class CalculatorInput(BaseModel):
-        expression: str = Field(description="Math expression")
-
-    @tool(args_schema=CalculatorInput)
-    def calculator(expression: str) -> str:
-        '''Calculate a math expression.'''
-        return str(eval(expression))
-    ```
-"""
-
 from __future__ import annotations
 
 import asyncio
@@ -52,7 +11,7 @@ from typing import (
 
 from pydantic import BaseModel
 
-from .structured_tool import StructuredTool
+from .structured import StructuredTool
 
 
 # Type alias for the tool decorator return types
@@ -242,6 +201,3 @@ def tool(
         return _create_tool(func, tool_name)
 
     return decorator
-
-
-__all__ = ['tool']

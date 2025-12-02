@@ -5,12 +5,12 @@ from typing import Annotated, Any, Dict, List, Literal, Optional, Tuple, Union
 import pytest
 from pydantic import BaseModel, ValidationError
 
-from createagents.domain.value_objects.injected_args import (
+from createagents.domain.value_objects import (
     InjectedState,
     InjectedToolArg,
     InjectedToolCallId,
 )
-from createagents.domain.value_objects.schema_utils import (
+from createagents.domain.value_objects.utils.schemas import (
     _filter_injected_args,
     _get_base_type,
     _get_short_description,

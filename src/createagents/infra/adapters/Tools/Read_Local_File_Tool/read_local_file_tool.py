@@ -5,7 +5,6 @@ from pydantic import BaseModel, Field
 
 from .....domain import BaseTool, FileReadException
 from ....config import LoggingConfig
-from .constants import MAX_FILE_SIZE_BYTES
 
 IMPORT_ERROR = None
 
@@ -65,10 +64,11 @@ class ReadLocalFileTool(BaseTool):
     )
     args_schema: Type[BaseModel] = ReadLocalFileInput
 
-    MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_BYTES
-
-    def __init__(self) -> None:
+    def __init__(self, max_file_size_mb: float = 50.0) -> None:
         """Initialize the ReadLocalFileTool.
+
+        Args:
+            max_file_size_mb: Maximum file size in megabytes (default: 50 MB).
 
         Raises:
             RuntimeError: If tiktoken encoder initialization fails or
@@ -77,7 +77,7 @@ class ReadLocalFileTool(BaseTool):
         if not DEPENDENCIES_AVAILABLE:
             raise RuntimeError(
                 'ReadLocalFileTool requires optional dependencies. '
-                'Install with: pip install ai-agent[file-tools] or '
+                'Install with: pip install createagents[file-tools] or '
                 'poetry install -E file-tools\n'
                 f'Missing dependencies error: {IMPORT_ERROR}'
             )
@@ -85,7 +85,48 @@ class ReadLocalFileTool(BaseTool):
         self.__logger = LoggingConfig.get_logger(__name__)
         self.__encoding = initialize_tiktoken()
 
-    def _run(
+        # Configurable max file size
+        self.max_file_size_bytes = int(max_file_size_mb * 1024 * 1024)
+        self.__logger.debug(
+            'ReadLocalFileTool initialized with max_file_size: %.2f MB (%d bytes)',
+            max_file_size_mb,
+            self.max_file_size_bytes,
+        )
+
+    async def execute_async(
+        self,
+        path: str,
+        max_tokens: int = 30000,
+    ) -> str:
+        """Execute file reading asynchronously - optimized for I/O.
+
+        This method runs the file reading operation in a thread pool executor
+        to avoid blocking the event loop, which is important for I/O-bound
+        operations like file reading.
+
+        Args:
+            path: Absolute or relative path to the file.
+            max_tokens: Maximum tokens allowed (default: 30000).
+
+        Returns:
+            File content as string, or error message if operation fails.
+        """
+        import asyncio  # pylint: disable=import-outside-toplevel
+
+        self.__logger.debug(
+            'Executing file read asynchronously: path=%s, max_tokens=%s',
+            path,
+            max_tokens,
+        )
+
+        # Run the synchronous execute() in a thread pool executor
+        # This prevents blocking the event loop for file I/O
+        loop = asyncio.get_running_loop()
+        return await loop.run_in_executor(
+            None, lambda: self.execute(path=path, max_tokens=max_tokens)
+        )
+
+    def execute(
         self,
         path: str,
         max_tokens: int = 30000,
@@ -123,9 +164,9 @@ class ReadLocalFileTool(BaseTool):
 
             # Validation: File size check (before reading)
             file_size = file_path.stat().st_size
-            if file_size > self.MAX_FILE_SIZE_BYTES:
+            if file_size > self.max_file_size_bytes:
                 size_mb = file_size / (1024 * 1024)
-                max_mb = self.MAX_FILE_SIZE_BYTES / (1024 * 1024)
+                max_mb = self.max_file_size_bytes / (1024 * 1024)
                 return self.__format_error(
                     'File too large',
                     f'{path} is {size_mb:.2f} MB (max: {max_mb:.2f} MB)',

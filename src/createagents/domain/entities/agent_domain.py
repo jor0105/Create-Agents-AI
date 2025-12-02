@@ -1,12 +1,6 @@
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional
 
-
-from ..exceptions import (
-    InvalidConfigTypeException,
-    InvalidProviderException,
-    UnsupportedConfigException,
-)
 from ..value_objects import (
     BaseTool,
     History,
@@ -47,25 +41,10 @@ class Agent:
         if not isinstance(self.history, History):
             object.__setattr__(self, 'history', History())
 
-        available_providers = SupportedProviders.get_available_providers()
-        if self.provider.lower() not in available_providers:
-            raise InvalidProviderException(
-                self.provider, set(available_providers)
-            )
+        SupportedProviders.validate_provider(self.provider)
 
         if self.config:
             for key, value in self.config.items():
-                available_configs = SupportedConfigs.get_available_configs()
-                if key not in available_configs:
-                    raise UnsupportedConfigException(
-                        key, set(available_configs)
-                    )
-
-                if not isinstance(
-                    value, (int, float, str, bool, list, dict, type(None))
-                ):
-                    raise InvalidConfigTypeException(key, type(value))
-
                 SupportedConfigs.validate_config(key, value)
 
     def add_user_message(self, content: str) -> None:
@@ -75,10 +54,6 @@ class Agent:
     def add_assistant_message(self, content: str) -> None:
         """Add an assistant message to history."""
         self.history.add_assistant_message(content)
-
-    def add_tool_message(self, content: str) -> None:
-        """Add a tool message to history."""
-        self.history.add_tool_message(content)
 
     def clear_history(self) -> None:
         """Clear all messages from history."""

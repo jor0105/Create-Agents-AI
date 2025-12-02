@@ -1,10 +1,3 @@
-"""StructuredTool implementation for function-based tools.
-
-This module provides the StructuredTool class which wraps Python functions
-as tools that can be used by AI agents. It supports both synchronous and
-asynchronous functions, automatic schema inference, and Pydantic validation.
-"""
-
 from __future__ import annotations
 
 import asyncio
@@ -12,7 +5,7 @@ from typing import Any, Awaitable, Callable, Dict, Type
 
 from pydantic import BaseModel, ValidationError
 
-from .schema_utils import (
+from ..utils import (
     _get_short_description,
     create_schema_from_function,
 )
@@ -176,37 +169,6 @@ class StructuredTool:
         except ValidationError:
             raise
 
-    def _run(self, **kwargs: Any) -> Any:
-        """Execute the synchronous tool function.
-
-        Args:
-            **kwargs: Arguments to pass to the function.
-
-        Returns:
-            The result of the function execution.
-
-        Raises:
-            RuntimeError: If no synchronous function is available.
-        """
-        if self.func is None:
-            raise RuntimeError(
-                f'Tool "{self.name}" does not have a synchronous function. '
-                'Use arun() for async execution.'
-            )
-        return self.func(**kwargs)
-
-    def execute(self, *args: Any, **kwargs: Any) -> Any:
-        """Execute the tool (for compatibility with BaseTool interface).
-
-        Args:
-            *args: Positional arguments (ignored, use kwargs).
-            **kwargs: Arguments to pass to the function.
-
-        Returns:
-            The result of the function execution.
-        """
-        return self._run(**kwargs)
-
     async def _arun(self, **kwargs: Any) -> Any:
         """Execute the asynchronous tool function.
 
@@ -251,7 +213,13 @@ class StructuredTool:
             RuntimeError: If no function is available.
         """
         validated_kwargs = self._validate_input(kwargs)
-        return self._run(**validated_kwargs)
+
+        if self.func is None:
+            raise RuntimeError(
+                f'Tool "{self.name}" does not have a synchronous function. '
+                'Use arun() for async execution.'
+            )
+        return self.func(**validated_kwargs)
 
     async def arun(self, **kwargs: Any) -> Any:
         """Execute the tool asynchronously with validation.
@@ -302,6 +270,3 @@ class StructuredTool:
     def __repr__(self) -> str:
         """Return string representation of the tool."""
         return f'StructuredTool(name={self.name!r})'
-
-
-__all__ = ['StructuredTool']

@@ -1,8 +1,7 @@
 from typing import Any, Dict, List, Optional, Union
 
 from ....domain.interfaces import IToolSchemaBuilder, LoggerInterface
-from ....domain.value_objects.base_tools import BaseTool
-from ....domain.value_objects.tool_choice import ToolChoice, ToolChoiceType
+from ....domain.value_objects import BaseTool, ToolChoice, ToolChoiceType
 
 
 class ToolPayloadBuilder(IToolSchemaBuilder):

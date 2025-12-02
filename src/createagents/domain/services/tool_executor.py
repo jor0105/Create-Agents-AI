@@ -2,8 +2,7 @@ import json
 from typing import Any, Dict, List, Optional
 
 from ..interfaces import LoggerInterface
-from ..value_objects import BaseTool
-from ..value_objects.tool_execution_result import ToolExecutionResult
+from ..value_objects import BaseTool, ToolExecutionResult
 from .tool_argument_injector import ToolArgumentInjector
 
 

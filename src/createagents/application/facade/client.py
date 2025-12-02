@@ -36,6 +36,7 @@ class CreateAgent:
             name: The name of the agent (optional).
             instructions: The agent's instructions or prompt (optional).
             config: Extra agent configurations, such as `max_tokens` and `temperature` (optional).
+            tools: A list of tool names or BaseTool instances to be used by the agent (optional).
             history_max_size: The maximum history size (default: 10).
         """
         self.__logger = LoggingConfig.get_logger(__name__)
@@ -65,7 +66,6 @@ class CreateAgent:
         )
 
         self.__get_system_available_tools_use_case: GetSystemAvailableToolsUseCase = AgentComposer.create_get_system_available_tools_use_case()
-
         self.__logger.info(
             'CreateAgent controller initialized successfully - Agent: %s',
             self.__agent.name,

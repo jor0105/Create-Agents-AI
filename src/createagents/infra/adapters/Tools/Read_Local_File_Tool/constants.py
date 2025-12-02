@@ -54,9 +54,6 @@ DOCUMENT_EXTENSIONS: Final[FrozenSet[str]] = frozenset(
     }
 )
 
-# Maximum file size in bytes (100 MB) as an additional safety check
-MAX_FILE_SIZE_BYTES: Final[int] = 100 * 1024 * 1024
-
 # Default encoding for tiktoken
 TIKTOKEN_ENCODING: Final[str] = 'cl100k_base'
 
