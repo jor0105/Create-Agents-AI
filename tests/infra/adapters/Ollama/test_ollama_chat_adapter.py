@@ -73,8 +73,7 @@ class TestOllamaChatAdapter:
             instructions='Be helpful',
             config={},
             tools=None,
-            history=[],
-            user_ask='Hello',
+            history=[{'role': 'user', 'content': 'Hello'}],
         )
 
         assert response == 'Ollama response'
@@ -97,8 +96,10 @@ class TestOllamaChatAdapter:
             instructions='System instruction',
             config={},
             tools=None,
-            history=[{'role': 'user', 'content': 'Previous message'}],
-            user_ask='User question',
+            history=[
+                {'role': 'user', 'content': 'Previous message'},
+                {'role': 'user', 'content': 'User question'},
+            ],
         )
 
         call_args = mock_chat.call_args
@@ -129,8 +130,7 @@ class TestOllamaChatAdapter:
             instructions='Instructions',
             config={},
             tools=None,
-            history=[],
-            user_ask='Question',
+            history=[{'role': 'user', 'content': 'Question'}],
         )
 
         call_args = mock_chat.call_args
@@ -162,8 +162,7 @@ class TestOllamaChatAdapter:
             instructions='Instructions',
             config={},
             tools=None,
-            history=history,
-            user_ask='New question',
+            history=history + [{'role': 'user', 'content': 'New question'}],
         )
 
         call_args = mock_chat.call_args
@@ -188,8 +187,7 @@ class TestOllamaChatAdapter:
             instructions='Test',
             config={},
             tools=None,
-            history=[],
-            user_ask='Test',
+            history=[{'role': 'user', 'content': 'Test'}],
         )
 
         call_args = mock_chat.call_args
@@ -215,8 +213,7 @@ class TestOllamaChatAdapter:
                 instructions='Test',
                 config={},
                 tools=None,
-                history=[],
-                user_ask='Test',
+                history=[{'role': 'user', 'content': 'Test'}],
             )
 
     @patch(
@@ -239,8 +236,7 @@ class TestOllamaChatAdapter:
                 instructions='Test',
                 config={},
                 tools=None,
-                history=[],
-                user_ask='Test',
+                history=[{'role': 'user', 'content': 'Test'}],
             )
 
     @patch(
@@ -273,8 +269,7 @@ class TestOllamaChatAdapter:
                 instructions='Test',
                 config={},
                 tools=None,
-                history=[],
-                user_ask='Test',
+                history=[{'role': 'user', 'content': 'Test'}],
             )
 
     @patch(
@@ -305,8 +300,7 @@ class TestOllamaChatAdapter:
                 instructions='Test',
                 config={},
                 tools=None,
-                history=[],
-                user_ask='Test',
+                history=[{'role': 'user', 'content': 'Test'}],
             )
 
     @patch(
@@ -328,8 +322,7 @@ class TestOllamaChatAdapter:
                 instructions='Test',
                 config={},
                 tools=None,
-                history=[],
-                user_ask='Test',
+                history=[{'role': 'user', 'content': 'Test'}],
             )
 
     @patch(
@@ -353,8 +346,7 @@ class TestOllamaChatAdapter:
                 instructions='Test',
                 config={},
                 tools=None,
-                history=[],
-                user_ask='Test',
+                history=[{'role': 'user', 'content': 'Test'}],
             )
 
     @patch(
@@ -374,8 +366,7 @@ class TestOllamaChatAdapter:
                 instructions='Test',
                 config={},
                 tools=None,
-                history=[],
-                user_ask='Test',
+                history=[{'role': 'user', 'content': 'Test'}],
             )
         except ChatException as e:
             assert e.original_error is original_error
@@ -397,8 +388,7 @@ class TestOllamaChatAdapter:
                 instructions='Test',
                 config={},
                 tools=None,
-                history=[],
-                user_ask='Test',
+                history=[{'role': 'user', 'content': 'Test'}],
             )
 
         assert exc_info.value is original_exception
@@ -422,8 +412,7 @@ class TestOllamaChatAdapter:
             instructions='Test 你好',
             config={},
             tools=None,
-            history=[],
-            user_ask='Question 🎉',
+            history=[{'role': 'user', 'content': 'Question 🎉'}],
         )
 
         assert '你好' in response
@@ -446,8 +435,7 @@ class TestOllamaChatAdapter:
             instructions='Multi\nline\ninstructions',
             config={},
             tools=None,
-            history=[],
-            user_ask='Multi\nline\nquestion',
+            history=[{'role': 'user', 'content': 'Multi\nline\nquestion'}],
         )
 
         assert '\n' in response
@@ -484,8 +472,7 @@ class TestOllamaChatAdapter:
             instructions='Test',
             config={},
             tools=None,
-            history=[],
-            user_ask='Test',
+            history=[{'role': 'user', 'content': 'Test'}],
         )
 
         metrics = adapter.get_metrics()
@@ -511,8 +498,7 @@ class TestOllamaChatAdapter:
                 instructions='Test',
                 config={},
                 tools=None,
-                history=[],
-                user_ask='Test',
+                history=[{'role': 'user', 'content': 'Test'}],
             )
         except ChatException:
             pass
@@ -541,8 +527,7 @@ class TestOllamaChatAdapter:
             instructions='Test',
             config={},
             tools=None,
-            history=[],
-            user_ask='Test 1',
+            history=[{'role': 'user', 'content': 'Test 1'}],
         )
 
         await adapter.chat(
@@ -550,8 +535,7 @@ class TestOllamaChatAdapter:
             instructions='Test',
             config={},
             tools=None,
-            history=[],
-            user_ask='Test 2',
+            history=[{'role': 'user', 'content': 'Test 2'}],
         )
 
         metrics = adapter.get_metrics()
@@ -589,8 +573,7 @@ class TestOllamaChatAdapter:
             instructions='Test',
             config={},
             tools=None,
-            history=history,
-            user_ask='New question',
+            history=history + [{'role': 'user', 'content': 'New question'}],
         )
 
         assert response == 'Response'
@@ -620,8 +603,7 @@ class TestOllamaChatAdapter:
             instructions='Test',
             config={},
             tools=None,
-            history=history,
-            user_ask='Final question',
+            history=history + [{'role': 'user', 'content': 'Final question'}],
         )
 
         assert response == 'Response'
@@ -648,8 +630,7 @@ class TestOllamaChatAdapter:
             instructions='Test',
             config=config,
             tools=None,
-            history=[],
-            user_ask='Test',
+            history=[{'role': 'user', 'content': 'Test'}],
         )
 
         assert response == 'Response'
@@ -678,8 +659,7 @@ class TestOllamaChatAdapter:
                 instructions='Test',
                 config={},
                 tools=None,
-                history=[],
-                user_ask='Test',
+                history=[{'role': 'user', 'content': 'Test'}],
             )
 
     @patch(
@@ -702,8 +682,7 @@ class TestOllamaChatAdapter:
                 instructions='Test',
                 config={},
                 tools=None,
-                history=[],
-                user_ask='Test',
+                history=[{'role': 'user', 'content': 'Test'}],
             )
         except ChatException:
             pass
@@ -730,8 +709,7 @@ class TestOllamaChatAdapter:
             instructions='Test',
             config={'temperature': 0.7},
             tools=None,
-            history=[],
-            user_ask='Test',
+            history=[{'role': 'user', 'content': 'Test'}],
         )
 
         call_args = mock_chat.call_args
@@ -754,8 +732,7 @@ class TestOllamaChatAdapter:
             instructions='Test',
             config={'max_tokens': 500},
             tools=None,
-            history=[],
-            user_ask='Test',
+            history=[{'role': 'user', 'content': 'Test'}],
         )
 
         call_args = mock_chat.call_args
@@ -778,8 +755,7 @@ class TestOllamaChatAdapter:
             instructions='Test',
             config={'top_p': 0.9},
             tools=None,
-            history=[],
-            user_ask='Test',
+            history=[{'role': 'user', 'content': 'Test'}],
         )
 
         call_args = mock_chat.call_args
@@ -808,8 +784,7 @@ class TestOllamaChatAdapter:
             instructions='Test',
             config=config,
             tools=None,
-            history=[],
-            user_ask='Test',
+            history=[{'role': 'user', 'content': 'Test'}],
         )
 
         call_args = mock_chat.call_args
@@ -839,8 +814,7 @@ class TestOllamaChatAdapter:
             instructions='Test',
             config={},
             tools=None,
-            history=[],
-            user_ask='Test',
+            history=[{'role': 'user', 'content': 'Test'}],
         )
 
         call_args = mock_chat.call_args
@@ -869,8 +843,7 @@ class TestOllamaChatAdapter:
             instructions='Test',
             config={},
             tools=None,
-            history=[],
-            user_ask='Test',
+            history=[{'role': 'user', 'content': 'Test'}],
         )
 
         mock_subprocess.assert_called_once()
@@ -897,8 +870,7 @@ class TestOllamaChatAdapter:
                 instructions='Test',
                 config={},
                 tools=None,
-                history=[],
-                user_ask='Test',
+                history=[{'role': 'user', 'content': 'Test'}],
             )
         except Exception:
             pass
@@ -926,8 +898,7 @@ class TestOllamaChatAdapter:
             instructions='Test',
             config={},
             tools=None,
-            history=[],
-            user_ask='Test',
+            history=[{'role': 'user', 'content': 'Test'}],
         )
 
         assert response == 'Response'
@@ -955,8 +926,7 @@ class TestOllamaChatAdapter:
             instructions='Test',
             config={},
             tools=None,
-            history=[],
-            user_ask='Test',
+            history=[{'role': 'user', 'content': 'Test'}],
         )
 
         assert response == 'Response'
@@ -982,8 +952,7 @@ class TestOllamaChatAdapter:
             instructions='Test',
             config={},
             tools=None,
-            history=[],
-            user_ask='Test',
+            history=[{'role': 'user', 'content': 'Test'}],
         )
 
         assert response == 'Response'
@@ -1007,8 +976,7 @@ class TestOllamaChatAdapter:
             instructions=None,
             config={},
             tools=None,
-            history=[],
-            user_ask='Test',
+            history=[{'role': 'user', 'content': 'Test'}],
         )
 
         call_args = mock_chat.call_args
@@ -1034,8 +1002,7 @@ class TestOllamaChatAdapter:
             instructions='   \n\t  ',
             config={},
             tools=None,
-            history=[],
-            user_ask='Test',
+            history=[{'role': 'user', 'content': 'Test'}],
         )
 
         call_args = mock_chat.call_args

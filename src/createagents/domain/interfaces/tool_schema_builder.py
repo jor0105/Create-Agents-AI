@@ -15,26 +15,26 @@ class IToolSchemaBuilder(ABC):
     """
 
     @abstractmethod
-    def format_tool(self, tool: BaseTool) -> Dict[str, Any]:
-        """Convert a single tool to OpenAI Responses API format.
+    def single_format(self, tool: BaseTool) -> Dict[str, Any]:
+        """Convert a single tool to provider-specific format.
 
         Args:
             tool: A BaseTool instance from the domain layer.
 
         Returns:
-            A dictionary formatted for OpenAI Responses API.
+            A dictionary formatted for the provider's API.
         """
         pass
 
     @abstractmethod
-    def format_tools(self, tools: List[BaseTool]) -> List[Dict[str, Any]]:
-        """Convert multiple tools to OpenAI Responses API format.
+    def multiple_format(self, tools: List[BaseTool]) -> List[Dict[str, Any]]:
+        """Convert multiple tools to provider-specific format.
 
         Args:
             tools: List of BaseTool instances.
 
         Returns:
-            List of dictionaries formatted for OpenAI Responses API.
+            List of dictionaries formatted for the provider's API.
         """
         pass
 
@@ -44,14 +44,14 @@ class IToolSchemaBuilder(ABC):
         tool_choice: Optional[ToolChoiceType],
         tools: Optional[List[BaseTool]] = None,
     ) -> Optional[Union[str, Dict[str, Any]]]:
-        """Format tool_choice parameter for OpenAI Responses API.
+        """Format tool_choice parameter for provider API.
 
         Args:
             tool_choice: The tool_choice configuration from the user.
             tools: Optional list of available tools for validation.
 
         Returns:
-            Formatted tool_choice for OpenAI API, or None if not specified.
+            Formatted tool_choice for provider API, or None if not specified.
         """
         pass
 

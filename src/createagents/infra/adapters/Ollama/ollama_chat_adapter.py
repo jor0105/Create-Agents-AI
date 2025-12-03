@@ -40,9 +40,12 @@ class OllamaChatAdapter(ChatRepository):
             logger: Optional logger instance. If None, creates from config.
         """
         self.__logger = logger or LoggingConfig.get_logger(__name__)
-        self.__client = OllamaClient()
         self.__metrics: List[ChatMetrics] = []
-        self.__schema_builder = ToolPayloadBuilder(self.__logger, 'ollama')
+        self.__client = OllamaClient()
+        self.__schema_builder = ToolPayloadBuilder(
+            logger=self.__logger,
+            format_style='ollama'
+        )
 
         self.__logger.info('Ollama adapter initialized')
 
@@ -50,10 +53,9 @@ class OllamaChatAdapter(ChatRepository):
         self,
         model: str,
         instructions: Optional[str],
-        config: Optional[Dict[str, Any]],
+        config: Dict[str, Any],
         tools: Optional[List[BaseTool]],
         history: List[Dict[str, str]],
-        user_ask: str,
         tool_choice: Optional[Union[str, Dict[str, Any]]] = None,
     ) -> Union[str, AsyncGenerator[str, None]]:
         """
@@ -63,8 +65,7 @@ class OllamaChatAdapter(ChatRepository):
             model: The name of the model.
             instructions: System instructions (optional).
             config: Internal AI settings (supports 'stream': True/False).
-            history: The conversation history.
-            user_ask: The user's question.
+            history: The conversation history including user message.
             tools: Optional list of tools (native Ollama API).
             tool_choice: Optional tool choice configuration. Can be:
                 - "auto": Let the model decide (default)
@@ -86,14 +87,14 @@ class OllamaChatAdapter(ChatRepository):
                 'Starting chat with model %s on Ollama.', model
             )
 
+            # Prepare messages with system instructions if provided
             messages = []
             if instructions and instructions.strip():
                 messages.append({'role': 'system', 'content': instructions})
             messages.extend(history)
-            messages.append({'role': 'user', 'content': user_ask})
 
             # Check if streaming mode is enabled
-            if config and config.get('stream'):
+            if config.get('stream'):
                 stream_handler = self.__create_stream_handler()
                 self.__logger.debug('Streaming mode enabled for Ollama')
                 result_stream = stream_handler.handle_stream(

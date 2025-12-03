@@ -4,7 +4,7 @@ from unittest.mock import Mock
 
 import pytest
 
-from createagents.infra import ToolCallParser
+from createagents.infra import OpenAIToolCallParser
 
 
 class MockOutputItem:
@@ -25,14 +25,14 @@ class TestToolCallParser:
         response = Mock()
         response.output = []
 
-        result = ToolCallParser.has_tool_calls(response)
+        result = OpenAIToolCallParser.has_tool_calls(response)
 
         assert result is False
 
     def test_has_tool_calls_with_no_output_attribute(self):
         response = Mock(spec=[])
 
-        result = ToolCallParser.has_tool_calls(response)
+        result = OpenAIToolCallParser.has_tool_calls(response)
 
         assert result is False
 
@@ -42,7 +42,7 @@ class TestToolCallParser:
         )
         response = MockResponse([output_item])
 
-        result = ToolCallParser.has_tool_calls(response)
+        result = OpenAIToolCallParser.has_tool_calls(response)
 
         assert result is True
 
@@ -56,7 +56,7 @@ class TestToolCallParser:
         ]
         response = MockResponse(output_items)
 
-        result = ToolCallParser.has_tool_calls(response)
+        result = OpenAIToolCallParser.has_tool_calls(response)
 
         assert result is True
 
@@ -67,7 +67,7 @@ class TestToolCallParser:
         ]
         response = MockResponse(output_items)
 
-        result = ToolCallParser.has_tool_calls(response)
+        result = OpenAIToolCallParser.has_tool_calls(response)
 
         assert result is False
 
@@ -79,14 +79,14 @@ class TestToolCallParser:
 
         response = BadResponse()
 
-        result = ToolCallParser.has_tool_calls(response)
+        result = OpenAIToolCallParser.has_tool_calls(response)
 
         assert result is False
 
     def test_extract_tool_calls_from_empty_response(self):
         response = MockResponse([])
 
-        result = ToolCallParser.extract_tool_calls(response)
+        result = OpenAIToolCallParser.extract_tool_calls(response)
 
         assert result == []
 
@@ -100,7 +100,7 @@ class TestToolCallParser:
         )
         response = MockResponse([output_item])
 
-        result = ToolCallParser.extract_tool_calls(response)
+        result = OpenAIToolCallParser.extract_tool_calls(response)
 
         assert len(result) == 1
         assert result[0]['id'] == 'call_abc123'
@@ -126,7 +126,7 @@ class TestToolCallParser:
         ]
         response = MockResponse(output_items)
 
-        result = ToolCallParser.extract_tool_calls(response)
+        result = OpenAIToolCallParser.extract_tool_calls(response)
 
         assert len(result) == 2
         assert result[0]['name'] == 'tool_one'
@@ -142,7 +142,7 @@ class TestToolCallParser:
         )
         response = MockResponse([output_item])
 
-        result = ToolCallParser.extract_tool_calls(response)
+        result = OpenAIToolCallParser.extract_tool_calls(response)
 
         assert len(result) == 1
         assert result[0]['arguments'] == {'key': 'value'}
@@ -166,7 +166,7 @@ class TestToolCallParser:
         ]
         response = MockResponse(output_items)
 
-        result = ToolCallParser.extract_tool_calls(response)
+        result = OpenAIToolCallParser.extract_tool_calls(response)
 
         assert len(result) == 1
         assert result[0]['name'] == 'valid_tool'
@@ -185,7 +185,7 @@ class TestToolCallParser:
         ]
         response = MockResponse(output_items)
 
-        result = ToolCallParser.extract_tool_calls(response)
+        result = OpenAIToolCallParser.extract_tool_calls(response)
 
         assert len(result) == 1
         assert result[0]['name'] == 'tool'
@@ -203,13 +203,13 @@ class TestToolCallParser:
         ]
         response = MockResponse(output_items)
 
-        result = ToolCallParser.extract_tool_calls(response)
+        result = OpenAIToolCallParser.extract_tool_calls(response)
 
         assert len(result) == 1
         assert result[0]['name'] == 'good_tool'
 
     def test_format_tool_results_for_llm(self):
-        result = ToolCallParser.format_tool_results_for_llm(
+        result = OpenAIToolCallParser.format_tool_results_for_llm(
             tool_call_id='call_abc123',
             tool_name='get_weather',
             result='The weather is 15°C',
@@ -220,7 +220,7 @@ class TestToolCallParser:
         assert result['output'] == 'The weather is 15°C'
 
     def test_format_tool_results_converts_result_to_string(self):
-        result = ToolCallParser.format_tool_results_for_llm(
+        result = OpenAIToolCallParser.format_tool_results_for_llm(
             tool_call_id='call_123',
             tool_name='calculate',
             result=42,
@@ -229,7 +229,7 @@ class TestToolCallParser:
         assert result['output'] == '42'
 
     def test_format_tool_results_with_empty_result(self):
-        result = ToolCallParser.format_tool_results_for_llm(
+        result = OpenAIToolCallParser.format_tool_results_for_llm(
             tool_call_id='call_123', tool_name='test', result=''
         )
 
@@ -238,7 +238,7 @@ class TestToolCallParser:
     def test_format_tool_results_with_complex_result(self):
         complex_result = {'data': [1, 2, 3], 'status': 'success'}
 
-        result = ToolCallParser.format_tool_results_for_llm(
+        result = OpenAIToolCallParser.format_tool_results_for_llm(
             tool_call_id='call_123',
             tool_name='api_call',
             result=complex_result,
@@ -255,7 +255,9 @@ class TestToolCallParser:
         ]
         response = MockResponse(output_items)
 
-        result = ToolCallParser.get_assistant_message_with_tool_calls(response)
+        result = OpenAIToolCallParser.get_assistant_message_with_tool_calls(
+            response
+        )
 
         assert result is None
 
@@ -274,7 +276,9 @@ class TestToolCallParser:
         ]
         response = MockResponse(output_items)
 
-        result = ToolCallParser.get_assistant_message_with_tool_calls(response)
+        result = OpenAIToolCallParser.get_assistant_message_with_tool_calls(
+            response
+        )
 
         assert result is not None
         assert len(result) == 2
@@ -294,7 +298,9 @@ class TestToolCallParser:
         )
         response = MockResponse([output_item])
 
-        result = ToolCallParser.get_assistant_message_with_tool_calls(response)
+        result = OpenAIToolCallParser.get_assistant_message_with_tool_calls(
+            response
+        )
 
         assert result is not None
         assert len(result) == 1
@@ -317,7 +323,9 @@ class TestToolCallParser:
         ]
         response = MockResponse(output_items)
 
-        result = ToolCallParser.get_assistant_message_with_tool_calls(response)
+        result = OpenAIToolCallParser.get_assistant_message_with_tool_calls(
+            response
+        )
 
         assert result is not None
         assert len(result) == 2
@@ -327,7 +335,9 @@ class TestToolCallParser:
     def test_get_assistant_message_handles_no_output(self):
         response = Mock(spec=[])
 
-        result = ToolCallParser.get_assistant_message_with_tool_calls(response)
+        result = OpenAIToolCallParser.get_assistant_message_with_tool_calls(
+            response
+        )
 
         assert result is None
 
@@ -339,7 +349,9 @@ class TestToolCallParser:
 
         response = BadResponse()
 
-        result = ToolCallParser.get_assistant_message_with_tool_calls(response)
+        result = OpenAIToolCallParser.get_assistant_message_with_tool_calls(
+            response
+        )
 
         assert result is None
 
@@ -361,7 +373,7 @@ class TestToolCallParser:
         )
         response = MockResponse([output_item])
 
-        result = ToolCallParser.extract_tool_calls(response)
+        result = OpenAIToolCallParser.extract_tool_calls(response)
 
         assert len(result) == 1
         assert result[0]['arguments']['query'] == 'test'
@@ -378,7 +390,7 @@ class TestToolCallParser:
         )
         response = MockResponse([output_item])
 
-        result = ToolCallParser.extract_tool_calls(response)
+        result = OpenAIToolCallParser.extract_tool_calls(response)
 
         assert len(result) == 1
         assert result[0]['arguments'] == {}
@@ -387,14 +399,16 @@ class TestToolCallParser:
         response = Mock()
         response.output = None
 
-        result = ToolCallParser.has_tool_calls(response)
+        result = OpenAIToolCallParser.has_tool_calls(response)
 
         assert result is False
 
     def test_get_assistant_message_returns_none_for_empty_list(self):
         response = MockResponse([MockOutputItem('text', content='Only text')])
 
-        result = ToolCallParser.get_assistant_message_with_tool_calls(response)
+        result = OpenAIToolCallParser.get_assistant_message_with_tool_calls(
+            response
+        )
 
         assert result is None
 
@@ -412,7 +426,7 @@ class TestToolCallParser:
         )
         response = MockResponse([output_item])
 
-        result = ToolCallParser.extract_tool_calls(response)
+        result = OpenAIToolCallParser.extract_tool_calls(response)
 
         assert len(result) == 0
 
@@ -421,7 +435,7 @@ class TestToolCallParser:
 Line 2
 Line 3"""
 
-        result = ToolCallParser.format_tool_results_for_llm(
+        result = OpenAIToolCallParser.format_tool_results_for_llm(
             tool_call_id='call_123', tool_name='test', result=multiline_result
         )
 
@@ -454,7 +468,7 @@ Line 3"""
         ]
         response = MockResponse(output_items)
 
-        result = ToolCallParser.extract_tool_calls(response)
+        result = OpenAIToolCallParser.extract_tool_calls(response)
 
         assert len(result) == 3
         assert result[0]['name'] == 'first_tool'
@@ -478,7 +492,9 @@ Line 3"""
         ]
         response = MockResponse(output_items)
 
-        result = ToolCallParser.get_assistant_message_with_tool_calls(response)
+        result = OpenAIToolCallParser.get_assistant_message_with_tool_calls(
+            response
+        )
 
         assert result[0]['id'] == 'r_123'
         assert result[0]['summary'] == ['Step 1', 'Step 2']
@@ -499,7 +515,7 @@ Line 3"""
         )
         response = MockResponse([output_item])
 
-        result = ToolCallParser.extract_tool_calls(response)
+        result = OpenAIToolCallParser.extract_tool_calls(response)
 
         assert len(result) == 1
         assert 'Olá' in result[0]['arguments']['text']

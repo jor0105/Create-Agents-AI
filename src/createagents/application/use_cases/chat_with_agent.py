@@ -60,14 +60,17 @@ class ChatWithAgentUseCase:
         )
         self.__logger.debug('User message: %s...', input_dto.message[:100])
 
+        # Prepare history with user message
+        history = agent.history.to_dict_list()
+        history.append({'role': 'user', 'content': input_dto.message})
+
         try:
             response = await self.__chat_repository.chat(
                 model=agent.model,
                 instructions=agent.instructions,
                 config=agent.config,
                 tools=agent.tools,
-                history=agent.history.to_dict_list(),
-                user_ask=input_dto.message,
+                history=history,
                 tool_choice=input_dto.tool_choice,
             )
 

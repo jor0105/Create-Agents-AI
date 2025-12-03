@@ -1,24 +1,26 @@
 import asyncio
 import time
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 
-from ....domain import BaseTool, ChatException, ToolExecutor
+from ....domain import BaseTool, ChatException
 from ....domain.interfaces import (
     IMetricsRecorder,
     IToolSchemaBuilder,
     LoggerInterface,
 )
 from ...config import ChatMetrics, EnvironmentConfig
+from ..Common import BaseHandler
 from .ollama_client import OllamaClient
 
 
-class OllamaHandler:
+class OllamaHandler(BaseHandler):
     """Handles tool execution loop for Ollama.
 
     This handler follows Clean Architecture and SOLID principles:
     - All dependencies are injected via constructor (DIP)
     - Uses interfaces for metrics and schema building (OCP)
     - Single responsibility: manages tool execution loop
+    - Inherits common tool executor factory logic from BaseHandler
     """
 
     def __init__(
@@ -27,9 +29,6 @@ class OllamaHandler:
         logger: LoggerInterface,
         metrics_recorder: IMetricsRecorder,
         schema_builder: IToolSchemaBuilder,
-        tool_executor_factory: Optional[
-            Callable[[List[BaseTool]], ToolExecutor]
-        ] = None,
     ):
         """Initialize the handler with injected dependencies.
 
@@ -38,39 +37,23 @@ class OllamaHandler:
             logger: Logger instance for logging.
             metrics_recorder: Metrics recorder for tracking performance.
             schema_builder: Tool schema builder for formatting tools.
-            tool_executor_factory: Optional factory for creating ToolExecutor.
-                Defaults to creating ToolExecutor with provided tools and logger.
         """
-        self.__client = client
-        self.__logger = logger
-        self.__metrics_recorder = metrics_recorder
-        self.__schema_builder = schema_builder
-        self.__tool_executor_factory = (
-            tool_executor_factory or self.__default_tool_executor_factory
+        super().__init__(
+            logger=logger,
+            metrics_recorder=metrics_recorder,
+            schema_builder=schema_builder,
         )
+        self.__client = client
         self.__max_tool_iterations = int(
             EnvironmentConfig.get_env('OLLAMA_MAX_TOOL_ITERATIONS', '100')
             or '100'
         )
 
-    def __default_tool_executor_factory(
-        self, tools: List[BaseTool]
-    ) -> ToolExecutor:
-        """Default factory for creating ToolExecutor instances.
-
-        Args:
-            tools: List of tools to provide to the executor.
-
-        Returns:
-            Configured ToolExecutor instance.
-        """
-        return ToolExecutor(tools, self.__logger)
-
     async def execute_tool_loop(
         self,
         model: str,
-        messages: List[Dict[str, str]],
-        config: Optional[Dict[str, Any]],
+        history: List[Dict[str, str]],
+        config: Dict[str, Any],
         tools: Optional[List[BaseTool]],
         tool_choice: Optional[Union[str, Dict[str, Any]]] = None,
     ) -> str:
@@ -79,8 +62,8 @@ class OllamaHandler:
 
         Args:
             model: The model name to use.
-            messages: List of messages in the conversation.
-            config: Optional configuration for the API call.
+            history: List of history in the conversation.
+            config: Configuration for the API call.
             tools: Optional list of tools available for the model.
             tool_choice: Optional tool choice configuration.
 
@@ -98,13 +81,13 @@ class OllamaHandler:
         tool_schemas = None
         formatted_tool_choice = None
         if tools:
-            tool_executor = self.__tool_executor_factory(tools)
-            tool_schemas = self.__schema_builder.format_tools(tools)
-            formatted_tool_choice = self.__schema_builder.format_tool_choice(
+            tool_executor = self._create_tool_executor(tools)
+            tool_schemas = self._schema_builder.multiple_format(tools)
+            formatted_tool_choice = self._schema_builder.format_tool_choice(
                 tool_choice, tools
             )
             if formatted_tool_choice:
-                self.__logger.debug(
+                self._logger.debug(
                     'Tool choice configured: %s', formatted_tool_choice
                 )
 
@@ -117,7 +100,7 @@ class OllamaHandler:
         try:
             while iteration < self.__max_tool_iterations:
                 iteration += 1
-                self.__logger.info(
+                self._logger.info(
                     'Ollama tool calling iteration %s/%s',
                     iteration,
                     self.__max_tool_iterations,
@@ -125,7 +108,7 @@ class OllamaHandler:
 
                 response_api = await self.__client.call_api(
                     model,
-                    messages,
+                    history,
                     config,
                     tool_schemas,
                     formatted_tool_choice,
@@ -136,7 +119,7 @@ class OllamaHandler:
                     and response_api.message.tool_calls
                 ):
                     await self.__handle_tool_calls(
-                        response_api, messages, tool_executor
+                        response_api, history, tool_executor
                     )
                     continue
 
@@ -145,7 +128,7 @@ class OllamaHandler:
                 if not content:
                     empty_response_count += 1
                     if empty_response_count >= max_empty_responses:
-                        summary = self.__generate_summary_from_tools(messages)
+                        summary = self.__generate_summary_from_tools(history)
                         if summary:
                             final_response = summary
                             break
@@ -154,8 +137,8 @@ class OllamaHandler:
                         )
 
                     # Retry with simple prompt
-                    retry_messages = messages.copy()
-                    retry_messages.append(
+                    retry_history = history.copy()
+                    retry_history.append(
                         {
                             'role': 'user',
                             'content': (
@@ -166,7 +149,7 @@ class OllamaHandler:
                         }
                     )
                     response_api = await self.__client.call_api(
-                        model, retry_messages, config, None
+                        model, retry_history, config, None
                     )
                     content = response_api.message.content
                     if content:
@@ -199,7 +182,7 @@ class OllamaHandler:
             if prompt_tokens and completion_tokens:
                 total_tokens = prompt_tokens + completion_tokens
 
-            self.__metrics_recorder.record_success_with_values(
+            self._metrics_recorder.record_success_with_values(
                 model=model,
                 latency_ms=latency,
                 tokens_used=total_tokens,
@@ -210,7 +193,7 @@ class OllamaHandler:
 
         except Exception as e:
             latency = (time.time() - start_time) * 1000
-            self.__metrics_recorder.record_error_with_values(
+            self._metrics_recorder.record_error_with_values(
                 model=model,
                 latency_ms=latency,
                 error_message=str(e),
@@ -220,21 +203,19 @@ class OllamaHandler:
             self.__client.stop_model(model)
 
     async def __handle_tool_calls(
-        self, response_api, messages, tool_executor
+        self, response_api, history, tool_executor
     ) -> None:
         """Handle tool calls from Ollama response with parallel execution.
 
         Args:
             response_api: The Ollama API response containing tool calls.
-            messages: The conversation messages to append results to.
+            history: The conversation history to append results to.
             tool_executor: The tool executor instance.
         """
         tool_calls = response_api.message.tool_calls
-        messages.append(response_api.message)
+        history.append(response_api.message)
 
-        self.__logger.debug(
-            'Executing %s tool(s) in parallel', len(tool_calls)
-        )
+        self._logger.debug('Executing %s tool(s) in parallel', len(tool_calls))
 
         # Execute all tools in parallel using asyncio.gather
         async def execute_single_tool(tool_call):
@@ -253,7 +234,7 @@ class OllamaHandler:
             )
 
             # Log tool response for audit trail
-            self.__logger.info(
+            self._logger.info(
                 "Tool '%s' response [%s]: %s",
                 tool_name,
                 'success' if execution_result.success else 'error',
@@ -261,7 +242,7 @@ class OllamaHandler:
                 if len(result_text) > 200
                 else result_text,
             )
-            self.__logger.debug(
+            self._logger.debug(
                 "Tool '%s' full response: %s",
                 tool_name,
                 result_text,
@@ -279,16 +260,16 @@ class OllamaHandler:
             return_exceptions=True,
         )
 
-        # Process results and add to messages
+        # Process results and add to history
         for i, result in enumerate(tool_results):
             if isinstance(result, Exception):
                 tool_name = tool_calls[i].function.name
-                self.__logger.error(
+                self._logger.error(
                     "Tool '%s' failed with exception: %s",
                     tool_name,
                     result,
                 )
-                messages.append(
+                history.append(
                     {
                         'role': 'tool',
                         'tool_name': tool_name,
@@ -296,14 +277,14 @@ class OllamaHandler:
                     }
                 )
             else:
-                messages.append(result)
+                history.append(result)
 
     def __generate_summary_from_tools(
-        self, messages: List[Dict[str, Any]]
+        self, history: List[Dict[str, Any]]
     ) -> Optional[str]:
         try:
             tool_results = []
-            for msg in messages:
+            for msg in history:
                 if msg.get('role') == 'tool':
                     content = msg.get('content', '')
                     if content:
@@ -323,4 +304,4 @@ class OllamaHandler:
 
     def get_metrics(self) -> List[ChatMetrics]:
         """Return the list of collected metrics."""
-        return self.__metrics_recorder.get_metrics()
+        return self._metrics_recorder.get_metrics()

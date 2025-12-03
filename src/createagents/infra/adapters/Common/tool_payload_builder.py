@@ -11,7 +11,7 @@ class ToolPayloadBuilder(IToolSchemaBuilder):
     common functionality for formatting tool schemas.
 
     Supports two formats:
-    - 'responses_api' (OpenAI): Flat structure with name, description, parameters
+    - 'openai' (OpenAI): Flat structure with name, description, parameters
     - 'ollama': Nested structure with function wrapper (required by Ollama API)
 
     Design:
@@ -21,14 +21,14 @@ class ToolPayloadBuilder(IToolSchemaBuilder):
 
     Attributes:
         _logger: Logger instance for debugging and info messages.
-        _format_style: The output format style ('responses_api' or 'ollama').
+        _format_style: The output format style ('openai' or 'ollama').
         _strict: Whether to enable strict mode for structured outputs (OpenAI only).
     """
 
     def __init__(
         self,
         logger: LoggerInterface,
-        format_style: str = 'responses_api',
+        format_style: str,
         strict: bool = False,
     ) -> None:
         """Initialize the ToolPayloadBuilder.
@@ -36,7 +36,7 @@ class ToolPayloadBuilder(IToolSchemaBuilder):
         Args:
             logger: Logger instance for logging operations.
             format_style: Output format style. Options:
-                - 'responses_api': OpenAI Responses API format (flat structure)
+                - 'openai': OpenAI Responses API format (flat structure)
                 - 'ollama': Ollama native format (nested with 'function' key)
             strict: If True, enables strict mode for structured outputs (OpenAI only).
                    This adds 'strict: true' and 'additionalProperties: false'
@@ -46,7 +46,7 @@ class ToolPayloadBuilder(IToolSchemaBuilder):
         self._format_style = format_style
         self._strict = strict
 
-    def format_tool(self, tool: BaseTool) -> Dict[str, Any]:
+    def single_format(self, tool: BaseTool) -> Dict[str, Any]:
         """Convert a single tool to provider-specific format.
 
         Args:
@@ -66,7 +66,7 @@ class ToolPayloadBuilder(IToolSchemaBuilder):
 
         # Build parameters with optional strict mode (OpenAI only)
         parameters = schema['parameters'].copy()
-        if self._strict and self._format_style == 'responses_api':
+        if self._strict and self._format_style == 'openai':
             parameters['additionalProperties'] = False
 
         if self._format_style == 'ollama':
@@ -94,7 +94,7 @@ class ToolPayloadBuilder(IToolSchemaBuilder):
 
         return result
 
-    def format_tools(self, tools: List[BaseTool]) -> List[Dict[str, Any]]:
+    def multiple_format(self, tools: List[BaseTool]) -> List[Dict[str, Any]]:
         """Convert multiple tools to provider-specific format.
 
         Args:
@@ -117,7 +117,7 @@ class ToolPayloadBuilder(IToolSchemaBuilder):
         formatted = []
         for tool in tools:
             try:
-                formatted.append(self.format_tool(tool))
+                formatted.append(self.single_format(tool))
             except (KeyError, AttributeError, TypeError, ValueError) as e:
                 self._logger.error(
                     'Error formatting tool %s: %s',

@@ -1,25 +1,27 @@
 import asyncio
 import time
-from typing import Any, Callable, Dict, AsyncGenerator, List, Optional, Union
+from typing import Any, Dict, AsyncGenerator, List, Optional, Union
 
-from ....domain import BaseTool, ChatException, ToolExecutor
+from ....domain import BaseTool, ChatException
 from ....domain.interfaces import (
     IMetricsRecorder,
     IToolSchemaBuilder,
     LoggerInterface,
 )
 from ...config import EnvironmentConfig
+from ..Common import BaseHandler
 from .openai_client import OpenAIClient
-from .tool_call_parser import ToolCallParser
+from .openai_tool_call_parser import OpenAIToolCallParser
 
 
-class OpenAIStreamHandler:
+class OpenAIStreamHandler(BaseHandler):
     """Handles streaming responses from OpenAI with tool calling support.
 
     This handler follows Clean Architecture and SOLID principles:
     - All dependencies are injected via constructor (DIP)
     - Uses interfaces for metrics and schema building (OCP)
     - Single responsibility: manages streaming response flow
+    - Inherits common tool executor factory logic from BaseHandler
     """
 
     def __init__(
@@ -28,9 +30,6 @@ class OpenAIStreamHandler:
         logger: LoggerInterface,
         metrics_recorder: IMetricsRecorder,
         schema_builder: IToolSchemaBuilder,
-        tool_executor_factory: Optional[
-            Callable[[List[BaseTool]], ToolExecutor]
-        ] = None,
     ):
         """Initialize the stream handler with injected dependencies.
 
@@ -39,40 +38,24 @@ class OpenAIStreamHandler:
             logger: Logger instance for logging.
             metrics_recorder: Metrics recorder for tracking performance.
             schema_builder: Tool schema builder for formatting tools.
-            tool_executor_factory: Optional factory for creating ToolExecutor.
-                Defaults to creating ToolExecutor with provided tools and logger.
         """
-        self.__client = client
-        self.__logger = logger
-        self.__metrics_recorder = metrics_recorder
-        self.__schema_builder = schema_builder
-        self.__tool_executor_factory = (
-            tool_executor_factory or self.__default_tool_executor_factory
+        super().__init__(
+            logger=logger,
+            metrics_recorder=metrics_recorder,
+            schema_builder=schema_builder,
         )
+        self.__client = client
         self.__max_tool_iterations = int(
             EnvironmentConfig.get_env('OPENAI_MAX_TOOL_ITERATIONS', '100')
             or '100'
         )
 
-    def __default_tool_executor_factory(
-        self, tools: List[BaseTool]
-    ) -> ToolExecutor:
-        """Default factory for creating ToolExecutor instances.
-
-        Args:
-            tools: List of tools to provide to the executor.
-
-        Returns:
-            Configured ToolExecutor instance.
-        """
-        return ToolExecutor(tools, self.__logger)
-
     async def handle_stream(
         self,
         model: str,
         instructions: Optional[str],
-        messages: List[Dict[str, str]],
-        config: Optional[Dict[str, Any]],
+        history: List[Dict[str, str]],
+        config: Dict[str, Any],
         tools: Optional[List[BaseTool]],
         tool_choice: Optional[Union[str, Dict[str, Any]]] = None,
     ) -> AsyncGenerator[str, None]:
@@ -85,8 +68,8 @@ class OpenAIStreamHandler:
         Args:
             model: The model name to use.
             instructions: System instructions.
-            messages: List of messages in the conversation.
-            config: Optional configuration for the API call.
+            history: List of history in the conversation.
+            config: Configuration for the API call.
             tools: Optional list of tools available for the model.
             tool_choice: Optional tool choice configuration.
         """
@@ -97,21 +80,21 @@ class OpenAIStreamHandler:
         tool_executor = None
         formatted_tool_choice = None
         if tools:
-            tool_schemas = self.__schema_builder.format_tools(tools)
-            tool_executor = self.__tool_executor_factory(tools)
-            formatted_tool_choice = self.__schema_builder.format_tool_choice(
+            tool_schemas = self._schema_builder.multiple_format(tools)
+            tool_executor = self._create_tool_executor(tools)
+            formatted_tool_choice = self._schema_builder.format_tool_choice(
                 tool_choice, tools
             )
-            self.__logger.debug(
+            self._logger.debug(
                 'Streaming with tools enabled: %s',
                 [tool.name for tool in tools],
             )
             if formatted_tool_choice:
-                self.__logger.debug(
+                self._logger.debug(
                     'Tool choice configured: %s', formatted_tool_choice
                 )
 
-        self.__logger.debug('Streaming mode enabled for OpenAI')
+        self._logger.debug('Streaming mode enabled for OpenAI')
 
         # Accumulate token counts across all iterations (for tool calls)
         total_prompt_tokens = 0
@@ -121,7 +104,7 @@ class OpenAIStreamHandler:
         try:
             while iteration < self.__max_tool_iterations:
                 iteration += 1
-                self.__logger.info(
+                self._logger.info(
                     'OpenAI streaming iteration %s/%s',
                     iteration,
                     self.__max_tool_iterations,
@@ -131,13 +114,13 @@ class OpenAIStreamHandler:
                 stream_response = await self.__client.call_api(
                     model,
                     instructions,
-                    messages,
+                    history,
                     config,
                     tool_schemas,
                     formatted_tool_choice,
                 )
 
-                self.__logger.debug(
+                self._logger.debug(
                     'Streaming response received, iterating events'
                 )
 
@@ -172,7 +155,7 @@ class OpenAIStreamHandler:
 
                 # Check if we have a valid response
                 if not full_response:
-                    self.__logger.warning(
+                    self._logger.warning(
                         'No response object received from stream'
                     )
                     break
@@ -200,7 +183,7 @@ class OpenAIStreamHandler:
                         total_prompt_tokens += prompt_tokens
                     if completion_tokens:
                         total_completion_tokens += completion_tokens
-                    self.__logger.debug(
+                    self._logger.debug(
                         'Iteration %s tokens - prompt: %s, completion: %s',
                         iteration,
                         prompt_tokens,
@@ -208,23 +191,21 @@ class OpenAIStreamHandler:
                     )
 
                 # Execute tool calls if present
-                if tool_executor and ToolCallParser.has_tool_calls(
+                if tool_executor and OpenAIToolCallParser.has_tool_calls(
                     full_response
                 ):
-                    # Add output items to messages for context
-                    output_items = (
-                        ToolCallParser.get_assistant_message_with_tool_calls(
-                            full_response
-                        )
-                    )
-                    if output_items:
-                        messages.extend(output_items)
-
-                    # Extract and execute tool calls in parallel
-                    tool_calls = ToolCallParser.extract_tool_calls(
+                    # Add output items to history for context
+                    output_items = OpenAIToolCallParser.get_assistant_message_with_tool_calls(
                         full_response
                     )
-                    self.__logger.info(
+                    if output_items:
+                        history.extend(output_items)
+
+                    # Extract and execute tool calls in parallel
+                    tool_calls = OpenAIToolCallParser.extract_tool_calls(
+                        full_response
+                    )
+                    self._logger.info(
                         'Executing %s tool(s) in parallel', len(tool_calls)
                     )
 
@@ -235,7 +216,7 @@ class OpenAIStreamHandler:
                         tool_args = tool_call['arguments']
                         tool_id = tool_call['id']
 
-                        self.__logger.debug("Executing tool '%s'", tool_name)
+                        self._logger.debug("Executing tool '%s'", tool_name)
 
                         execution_result = await tool_executor.execute_tool(
                             tool_name, **tool_args
@@ -247,7 +228,7 @@ class OpenAIStreamHandler:
                             else str(execution_result.error)
                         )
 
-                        self.__logger.info(
+                        self._logger.info(
                             "Tool '%s' response [%s]: %s",
                             tool_name,
                             'success' if execution_result.success else 'error',
@@ -255,17 +236,19 @@ class OpenAIStreamHandler:
                             if len(result_text) > 200
                             else result_text,
                         )
-                        self.__logger.debug(
+                        self._logger.debug(
                             "Tool '%s' full response (ID: %s): %s",
                             tool_name,
                             tool_id,
                             result_text,
                         )
 
-                        return ToolCallParser.format_tool_results_for_llm(
-                            tool_call_id=tool_id,
-                            tool_name=tool_name,
-                            result=result_text,
+                        return (
+                            OpenAIToolCallParser.format_tool_results_for_llm(
+                                tool_call_id=tool_id,
+                                tool_name=tool_name,
+                                result=result_text,
+                            )
                         )
 
                     # Execute all tools in parallel
@@ -274,24 +257,22 @@ class OpenAIStreamHandler:
                         return_exceptions=True,
                     )
 
-                    # Process results and add to messages
+                    # Process results and add to history
                     for i, result in enumerate(tool_results):
                         if isinstance(result, Exception):
-                            self.__logger.error(
+                            self._logger.error(
                                 "Tool '%s' failed with exception: %s",
                                 tool_calls[i]['name'],
                                 result,
                             )
-                            error_msg = (
-                                ToolCallParser.format_tool_results_for_llm(
-                                    tool_call_id=tool_calls[i]['id'],
-                                    tool_name=tool_calls[i]['name'],
-                                    result=f'Error: {str(result)}',
-                                )
+                            error_msg = OpenAIToolCallParser.format_tool_results_for_llm(
+                                tool_call_id=tool_calls[i]['id'],
+                                tool_name=tool_calls[i]['name'],
+                                result=f'Error: {str(result)}',
                             )
-                            messages.append(error_msg)
+                            history.append(error_msg)
                         else:
-                            messages.append(result)
+                            history.append(result)
 
                     # Continue to next iteration for final response
                     continue
@@ -300,7 +281,7 @@ class OpenAIStreamHandler:
                 break
 
             if iteration >= self.__max_tool_iterations:
-                self.__logger.warning(
+                self._logger.warning(
                     'Max tool iterations (%s) reached during streaming',
                     self.__max_tool_iterations,
                 )
@@ -312,7 +293,7 @@ class OpenAIStreamHandler:
                 if total_prompt_tokens or total_completion_tokens
                 else None
             )
-            self.__metrics_recorder.record_success_with_values(
+            self._metrics_recorder.record_success_with_values(
                 model=model,
                 latency_ms=latency,
                 tokens_used=total_tokens,
@@ -323,7 +304,7 @@ class OpenAIStreamHandler:
                 if total_completion_tokens
                 else None,
             )
-            self.__logger.info(
+            self._logger.info(
                 'Streaming chat completed: latency=%.2fms, tokens=%s '
                 '(accumulated over %s iteration(s))',
                 latency,
@@ -333,12 +314,12 @@ class OpenAIStreamHandler:
 
         except Exception as e:
             latency = (time.time() - start_time) * 1000
-            self.__metrics_recorder.record_error_with_values(
+            self._metrics_recorder.record_error_with_values(
                 model=model,
                 latency_ms=latency,
                 error_message=str(e),
             )
-            self.__logger.error('Error during streaming: %s', e)
+            self._logger.error('Error during streaming: %s', e)
             raise ChatException(
                 f'Error during OpenAI streaming: {str(e)}',
                 original_error=e,

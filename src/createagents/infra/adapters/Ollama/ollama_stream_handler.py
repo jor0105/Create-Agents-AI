@@ -1,24 +1,26 @@
 import asyncio
 import time
-from typing import Any, Callable, Dict, AsyncGenerator, List, Optional, Union
+from typing import Any, Dict, AsyncGenerator, List, Optional, Union
 
-from ....domain import ChatException, BaseTool, ToolExecutor
+from ....domain import ChatException, BaseTool
 from ....domain.interfaces import (
     IMetricsRecorder,
     IToolSchemaBuilder,
     LoggerInterface,
 )
 from ...config import EnvironmentConfig
+from ..Common import BaseHandler
 from .ollama_client import OllamaClient
 
 
-class OllamaStreamHandler:
+class OllamaStreamHandler(BaseHandler):
     """Handles streaming responses from Ollama with tool calling support.
 
     This handler follows Clean Architecture and SOLID principles:
     - All dependencies are injected via constructor (DIP)
     - Uses interfaces for metrics and schema building (OCP)
     - Single responsibility: manages streaming response flow
+    - Inherits common tool executor factory logic from BaseHandler
     """
 
     def __init__(
@@ -27,9 +29,6 @@ class OllamaStreamHandler:
         logger: LoggerInterface,
         metrics_recorder: IMetricsRecorder,
         schema_builder: IToolSchemaBuilder,
-        tool_executor_factory: Optional[
-            Callable[[List[BaseTool]], ToolExecutor]
-        ] = None,
     ):
         """Initialize the stream handler with injected dependencies.
 
@@ -38,39 +37,23 @@ class OllamaStreamHandler:
             logger: Logger instance for logging.
             metrics_recorder: Metrics recorder for tracking performance.
             schema_builder: Tool schema builder for formatting tools.
-            tool_executor_factory: Optional factory for creating ToolExecutor.
-                Defaults to creating ToolExecutor with provided tools and logger.
         """
-        self.__client = client
-        self.__logger = logger
-        self.__metrics_recorder = metrics_recorder
-        self.__schema_builder = schema_builder
-        self.__tool_executor_factory = (
-            tool_executor_factory or self.__default_tool_executor_factory
+        super().__init__(
+            logger=logger,
+            metrics_recorder=metrics_recorder,
+            schema_builder=schema_builder,
         )
+        self.__client = client
         self.__max_tool_iterations = int(
             EnvironmentConfig.get_env('OLLAMA_MAX_TOOL_ITERATIONS', '100')
             or '100'
         )
 
-    def __default_tool_executor_factory(
-        self, tools: List[BaseTool]
-    ) -> ToolExecutor:
-        """Default factory for creating ToolExecutor instances.
-
-        Args:
-            tools: List of tools to provide to the executor.
-
-        Returns:
-            Configured ToolExecutor instance.
-        """
-        return ToolExecutor(tools, self.__logger)
-
     async def handle_stream(
         self,
         model: str,
-        messages: List[Dict[str, str]],
-        config: Optional[Dict[str, Any]],
+        history: List[Dict[str, str]],
+        config: Dict[str, Any],
         tools: Optional[List[BaseTool]],
         tool_choice: Optional[Union[str, Dict[str, Any]]] = None,
     ) -> AsyncGenerator[str, None]:
@@ -82,8 +65,8 @@ class OllamaStreamHandler:
 
         Args:
             model: The model name to use.
-            messages: List of messages in the conversation.
-            config: Optional configuration for the API call.
+            history: List of history in the conversation.
+            config: Configuration for the API call.
             tools: Optional list of tools available for the model.
             tool_choice: Optional tool choice configuration.
         """
@@ -94,32 +77,29 @@ class OllamaStreamHandler:
         tool_executor = None
         formatted_tool_choice = None
         if tools:
-            tool_schemas = self.__schema_builder.format_tools(tools)
-            tool_executor = self.__tool_executor_factory(tools)
-            formatted_tool_choice = self.__schema_builder.format_tool_choice(
+            tool_schemas = self._schema_builder.multiple_format(tools)
+            tool_executor = self._create_tool_executor(tools)
+            formatted_tool_choice = self._schema_builder.format_tool_choice(
                 tool_choice, tools
             )
-            self.__logger.debug(
+            self._logger.debug(
                 'Streaming with tools enabled: %s',
                 [tool.name for tool in tools],
             )
             if formatted_tool_choice:
-                self.__logger.debug(
+                self._logger.debug(
                     'Tool choice configured: %s', formatted_tool_choice
                 )
 
         # Accumulate metrics across all iterations (for tool calls)
         total_prompt_tokens = 0
         total_completion_tokens = 0
-        last_load_duration_ms: Optional[float] = None
-        last_prompt_eval_duration_ms: Optional[float] = None
-        last_eval_duration_ms: Optional[float] = None
 
         iteration = 0
         try:
             while iteration < self.__max_tool_iterations:
                 iteration += 1
-                self.__logger.info(
+                self._logger.info(
                     'Ollama streaming iteration %s/%s',
                     iteration,
                     self.__max_tool_iterations,
@@ -127,7 +107,7 @@ class OllamaStreamHandler:
 
                 stream_response = await self.__client.call_api(
                     model,
-                    messages,
+                    history,
                     config,
                     tool_schemas,
                     formatted_tool_choice,
@@ -149,7 +129,7 @@ class OllamaStreamHandler:
                         and chunk.message.tool_calls
                     ):
                         tool_call_detected = True
-                        self.__logger.debug(
+                        self._logger.debug(
                             'Tool calls detected early in stream, will break'
                         )
                         # Break immediately - don't wait for rest of stream
@@ -176,24 +156,7 @@ class OllamaStreamHandler:
                     if eval_count:
                         total_completion_tokens += eval_count
 
-                    # Duration metrics (use last values, not accumulated)
-                    load_duration = getattr(last_chunk, 'load_duration', None)
-                    if load_duration is not None:
-                        last_load_duration_ms = load_duration / 1_000_000
-
-                    prompt_eval_duration = getattr(
-                        last_chunk, 'prompt_eval_duration', None
-                    )
-                    if prompt_eval_duration is not None:
-                        last_prompt_eval_duration_ms = (
-                            prompt_eval_duration / 1_000_000
-                        )
-
-                    eval_duration = getattr(last_chunk, 'eval_duration', None)
-                    if eval_duration is not None:
-                        last_eval_duration_ms = eval_duration / 1_000_000
-
-                    self.__logger.debug(
+                    self._logger.debug(
                         'Iteration %s tokens - prompt: %s, completion: %s',
                         iteration,
                         prompt_eval_count,
@@ -202,14 +165,14 @@ class OllamaStreamHandler:
 
                 # Process tool calls if detected
                 if tool_call_detected and last_chunk and tool_executor:
-                    self.__logger.info('Tool calls detected, executing tools')
+                    self._logger.info('Tool calls detected, executing tools')
 
                     # Add assistant message with tool calls to history
-                    messages.append(last_chunk.message)
+                    history.append(last_chunk.message)
 
                     # Execute tool calls in parallel
                     tool_calls = last_chunk.message.tool_calls
-                    self.__logger.debug(
+                    self._logger.debug(
                         'Executing %s tool(s) in parallel', len(tool_calls)
                     )
 
@@ -219,7 +182,7 @@ class OllamaStreamHandler:
                         tool_name = tool_call.function.name
                         tool_args = tool_call.function.arguments
 
-                        self.__logger.debug(
+                        self._logger.debug(
                             "Executing tool '%s' with args: %s",
                             tool_name,
                             tool_args,
@@ -236,7 +199,7 @@ class OllamaStreamHandler:
                         )
 
                         # Log tool response for audit trail
-                        self.__logger.info(
+                        self._logger.info(
                             "Tool '%s' response [%s]: %s",
                             tool_name,
                             'success' if execution_result.success else 'error',
@@ -244,7 +207,7 @@ class OllamaStreamHandler:
                             if len(result_text) > 200
                             else result_text,
                         )
-                        self.__logger.debug(
+                        self._logger.debug(
                             "Tool '%s' full response: %s",
                             tool_name,
                             result_text,
@@ -262,16 +225,16 @@ class OllamaStreamHandler:
                         return_exceptions=True,
                     )
 
-                    # Process results and add to messages
+                    # Process results and add to history
                     for i, result in enumerate(tool_results):
                         if isinstance(result, Exception):
                             tool_name = tool_calls[i].function.name
-                            self.__logger.error(
+                            self._logger.error(
                                 "Tool '%s' failed with exception: %s",
                                 tool_name,
                                 result,
                             )
-                            messages.append(
+                            history.append(
                                 {
                                     'role': 'tool',
                                     'tool_name': tool_name,
@@ -279,7 +242,7 @@ class OllamaStreamHandler:
                                 }
                             )
                         else:
-                            messages.append(result)
+                            history.append(result)
 
                     # Continue to next iteration to get final response
                     # Reset for next iteration
@@ -293,20 +256,20 @@ class OllamaStreamHandler:
 
                 # If this was a tool-only iteration (no content), continue to next iteration
                 if tool_call_detected and not has_yielded_content:
-                    self.__logger.debug(
+                    self._logger.debug(
                         'Tool-only iteration, continuing to next'
                     )
                     continue
 
                 # If we didn't yield anything and no tool calls, something's wrong
                 if not has_yielded_content and not tool_call_detected:
-                    self.__logger.warning(
+                    self._logger.warning(
                         'No content yielded in streaming response'
                     )
                     break
 
             if iteration >= self.__max_tool_iterations:
-                self.__logger.warning(
+                self._logger.warning(
                     'Max tool iterations (%s) reached during streaming',
                     self.__max_tool_iterations,
                 )
@@ -318,7 +281,7 @@ class OllamaStreamHandler:
                 if total_prompt_tokens or total_completion_tokens
                 else None
             )
-            self.__metrics_recorder.record_success_with_values(
+            self._metrics_recorder.record_success_with_values(
                 model=model,
                 latency_ms=latency,
                 tokens_used=total_tokens,
@@ -331,7 +294,7 @@ class OllamaStreamHandler:
                     else None
                 ),
             )
-            self.__logger.info(
+            self._logger.info(
                 'Streaming chat completed: latency=%.2fms, tokens=%s '
                 '(accumulated over %s iteration(s))',
                 latency,
@@ -341,12 +304,12 @@ class OllamaStreamHandler:
 
         except Exception as e:
             latency = (time.time() - start_time) * 1000
-            self.__metrics_recorder.record_error_with_values(
+            self._metrics_recorder.record_error_with_values(
                 model=model,
                 latency_ms=latency,
                 error_message=str(e),
             )
-            self.__logger.error('Error during streaming: %s', e)
+            self._logger.error('Error during streaming: %s', e)
             raise ChatException(
                 f'Error during Ollama streaming: {str(e)}', original_error=e
             ) from e

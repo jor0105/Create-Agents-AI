@@ -4,7 +4,7 @@ from typing import Any, Dict, List, Optional
 from ...config import LoggingConfig
 
 
-class ToolCallParser:
+class OpenAIToolCallParser:
     """Parser for OpenAI Responses API tool calls.
 
     This class is responsible for extracting and parsing tool call information
@@ -38,7 +38,7 @@ class ToolCallParser:
         """
         try:
             if not hasattr(response, 'output') or not response.output:
-                ToolCallParser._logger.debug(
+                OpenAIToolCallParser._logger.debug(
                     'Response has no output attribute or output is empty'
                 )
                 return False
@@ -46,15 +46,15 @@ class ToolCallParser:
             # Check if any item in output has type "function_call"
             for item in response.output:
                 if hasattr(item, 'type') and item.type == 'function_call':
-                    ToolCallParser._logger.debug(
+                    OpenAIToolCallParser._logger.debug(
                         'Tool calls detected in response'
                     )
                     return True
 
-            ToolCallParser._logger.debug('No tool calls found in response')
+            OpenAIToolCallParser._logger.debug('No tool calls found in response')
             return False
         except (AttributeError, TypeError) as e:
-            ToolCallParser._logger.warning(
+            OpenAIToolCallParser._logger.warning(
                 'Error checking for tool calls: %s', e
             )
             return False
@@ -81,11 +81,11 @@ class ToolCallParser:
             ]
             ```
         """
-        if not ToolCallParser.has_tool_calls(response):
-            ToolCallParser._logger.debug('No tool calls to extract')
+        if not OpenAIToolCallParser.has_tool_calls(response):
+            OpenAIToolCallParser._logger.debug('No tool calls to extract')
             return []
 
-        ToolCallParser._logger.debug('Extracting tool calls from response')
+        OpenAIToolCallParser._logger.debug('Extracting tool calls from response')
         tool_calls = []
 
         for item in response.output:
@@ -106,7 +106,7 @@ class ToolCallParser:
                     'arguments': arguments,
                 }
                 tool_calls.append(tool_call)
-                ToolCallParser._logger.debug(
+                OpenAIToolCallParser._logger.debug(
                     'Extracted tool call: %s with call_id: %s',
                     item.name,
                     item.call_id,
@@ -114,12 +114,12 @@ class ToolCallParser:
 
             except (json.JSONDecodeError, AttributeError) as e:
                 # Log error but continue processing other tool calls
-                ToolCallParser._logger.error(
+                OpenAIToolCallParser._logger.error(
                     'Failed to parse tool call: %s', e, exc_info=True
                 )
                 continue
 
-        ToolCallParser._logger.info(
+        OpenAIToolCallParser._logger.info(
             'Extracted %s tool call(s)', len(tool_calls)
         )
         return tool_calls
@@ -147,7 +147,7 @@ class ToolCallParser:
             }
             ```
         """
-        ToolCallParser._logger.debug(
+        OpenAIToolCallParser._logger.debug(
             "Formatting tool result for '%s' with call_id '%s'",
             tool_name,
             tool_call_id,
@@ -159,7 +159,7 @@ class ToolCallParser:
             'output': str(result),
         }
 
-        ToolCallParser._logger.debug(
+        OpenAIToolCallParser._logger.debug(
             'Formatted tool result (length: %s chars)', len(str(result))
         )
         return formatted
@@ -180,20 +180,20 @@ class ToolCallParser:
         Returns:
             List of output items (cleaned), or None if not available.
         """
-        if not ToolCallParser.has_tool_calls(response):
-            ToolCallParser._logger.debug(
+        if not OpenAIToolCallParser.has_tool_calls(response):
+            OpenAIToolCallParser._logger.debug(
                 'No tool calls in response, skipping extraction'
             )
             return None
 
         try:
             if not hasattr(response, 'output') or not response.output:
-                ToolCallParser._logger.warning(
+                OpenAIToolCallParser._logger.warning(
                     'Response has no output for assistant message'
                 )
                 return None
 
-            ToolCallParser._logger.debug(
+            OpenAIToolCallParser._logger.debug(
                 'Extracting assistant message with tool calls'
             )
 
@@ -212,7 +212,7 @@ class ToolCallParser:
                             'summary': getattr(item, 'summary', []),
                         }
                     )
-                    ToolCallParser._logger.debug(
+                    OpenAIToolCallParser._logger.debug(
                         'Included reasoning item in assistant message'
                     )
                 elif item_type == 'function_call':
@@ -225,25 +225,25 @@ class ToolCallParser:
                             'arguments': getattr(item, 'arguments', None),
                         }
                     )
-                    ToolCallParser._logger.debug(
+                    OpenAIToolCallParser._logger.debug(
                         "Included function_call item for '%s'",
                         getattr(item, 'name', 'unknown'),
                     )
 
             if output_items:
-                ToolCallParser._logger.info(
+                OpenAIToolCallParser._logger.info(
                     'Extracted %s output item(s) for assistant message',
                     len(output_items),
                 )
             else:
-                ToolCallParser._logger.warning(
+                OpenAIToolCallParser._logger.warning(
                     'No valid output items found in response'
                 )
 
             return output_items if output_items else None
 
         except (AttributeError, TypeError) as e:
-            ToolCallParser._logger.error(
+            OpenAIToolCallParser._logger.error(
                 'Error extracting assistant message with tool calls: %s',
                 e,
                 exc_info=True,

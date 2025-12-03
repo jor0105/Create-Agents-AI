@@ -54,8 +54,7 @@ class TestOpenAIChatAdapter:
             instructions='Instr',
             config={},
             tools=None,
-            user_ask='Ask',
-            history=[],
+            history=[{'role': 'user', 'content': 'Ask'}],
         )
 
         assert response == 'Response'
@@ -86,8 +85,7 @@ class TestOpenAIChatAdapter:
             instructions='Instr',
             config={'stream': True},
             tools=None,
-            user_ask='Ask',
-            history=[],
+            history=[{'role': 'user', 'content': 'Ask'}],
         )
 
         assert list(response) == ['Hello']

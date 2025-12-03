@@ -38,21 +38,19 @@ class OpenAIChatAdapter(ChatRepository):
         self.__logger = logger or LoggingConfig.get_logger(__name__)
         self.__metrics: List[ChatMetrics] = []
         self.__client = OpenAIClient()
-
-        # Create schema builder for OpenAI Responses API format
         self.__schema_builder = ToolPayloadBuilder(
             logger=self.__logger,
-            format_style='responses_api',
+            format_style='openai'
         )
+        self.__logger.info('OpenAI adapter initialized')
 
     async def chat(
         self,
         model: str,
         instructions: Optional[str],
-        config: Optional[Dict[str, Any]],
+        config: Dict[str, Any],
         tools: Optional[List[BaseTool]],
         history: List[Dict[str, str]],
-        user_ask: str,
         tool_choice: Optional[Union[str, Dict[str, Any]]] = None,
     ) -> Union[str, AsyncGenerator[str, None]]:
         """
@@ -71,8 +69,7 @@ class OpenAIChatAdapter(ChatRepository):
             model: The name of the model.
             instructions: System instructions (optional).
             config: Internal AI configuration (supports 'stream': True/False).
-            history: The conversation history.
-            user_ask: The user's question.
+            history: The conversation history including user message.
             tools: Optional list of tools available to the agent.
             tool_choice: Optional tool choice configuration. Can be:
                 - "auto": Let the model decide
@@ -94,21 +91,18 @@ class OpenAIChatAdapter(ChatRepository):
                 'Starting chat with model %s on OpenAI.', model
             )
 
-            messages = history.copy()
-            messages.append({'role': 'user', 'content': user_ask})
-
             # Check if streaming mode is enabled
-            if config and config.get('stream'):
+            if config.get('stream'):
                 stream_handler = self.__create_stream_handler()
                 result_stream = stream_handler.handle_stream(
-                    model, instructions, messages, config, tools, tool_choice
+                    model, instructions, history, config, tools, tool_choice
                 )
 
                 return result_stream
 
             handler = self.__create_handler()
             result = await handler.execute_tool_loop(
-                model, instructions, messages, config, tools, tool_choice
+                model, instructions, history, config, tools, tool_choice
             )
 
             return result

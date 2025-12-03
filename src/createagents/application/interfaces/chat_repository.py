@@ -12,10 +12,9 @@ class ChatRepository(ABC):
         self,
         model: str,
         instructions: Optional[str],
-        config: Optional[Dict[str, Any]],
+        config: Dict[str, Any],
         tools: Optional[List[BaseTool]],
         history: List[Dict[str, str]],
-        user_ask: str,
         tool_choice: Optional[Union[str, Dict[str, Any]]] = None,
     ) -> Union[str, AsyncGenerator[str, None]]:
         """Send a message to the chat model and get a response.
@@ -25,8 +24,7 @@ class ChatRepository(ABC):
             instructions: System instructions for the agent.
             config: Configuration parameters for the model.
             tools: List of tools available to the agent.
-            history: Chat history.
-            user_ask: The user's message.
+            history: Chat history including the latest user message.
             tool_choice: Optional tool choice configuration. Can be:
                 - "auto": Let the model decide (default)
                 - "none": Don't call any tool

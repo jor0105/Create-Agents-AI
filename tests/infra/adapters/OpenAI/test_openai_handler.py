@@ -23,12 +23,12 @@ class TestOpenAIHandler:
 
         if tool_calls:
             # Mocking tool calls structure for Responses API
-            # This depends on how ToolCallParser expects it
-            # Assuming ToolCallParser.has_tool_calls checks for tool_calls attribute or similar
-            # Based on openai_chat_adapter.py: ToolCallParser.has_tool_calls(response_api)
-            # And ToolCallParser.extract_tool_calls(response_api)
-            # I should probably mock ToolCallParser methods instead of response structure if possible,
-            # or match what ToolCallParser expects.
+            # This depends on how OpenAIToolCallParser expects it
+            # Assuming OpenAIToolCallParser.has_tool_calls checks for tool_calls attribute or similar
+            # Based on openai_chat_adapter.py: OpenAIToolCallParser.has_tool_calls(response_api)
+            # And OpenAIToolCallParser.extract_tool_calls(response_api)
+            # I should probably mock OpenAIToolCallParser methods instead of response structure if possible,
+            # or match what OpenAIToolCallParser expects.
             pass
 
         if usage_attrs:
@@ -41,7 +41,9 @@ class TestOpenAIHandler:
 
         return mock_response
 
-    @patch('createagents.infra.adapters.OpenAI.openai_handler.ToolCallParser')
+    @patch(
+        'createagents.infra.adapters.OpenAI.openai_handler.OpenAIToolCallParser'
+    )
     @pytest.mark.asyncio
     async def test_execute_tool_loop_success(self, mock_parser):
         mock_parser.has_tool_calls.return_value = False
@@ -67,7 +69,9 @@ class TestOpenAIHandler:
         assert metrics[0].success is True
         assert metrics[0].tokens_used == 100
 
-    @patch('createagents.infra.adapters.OpenAI.openai_handler.ToolCallParser')
+    @patch(
+        'createagents.infra.adapters.OpenAI.openai_handler.OpenAIToolCallParser'
+    )
     @pytest.mark.asyncio
     async def test_execute_tool_loop_empty_response(self, mock_parser):
         mock_parser.has_tool_calls.return_value = False
@@ -86,7 +90,9 @@ class TestOpenAIHandler:
                 tools=None,
             )
 
-    @patch('createagents.infra.adapters.OpenAI.openai_handler.ToolCallParser')
+    @patch(
+        'createagents.infra.adapters.OpenAI.openai_handler.OpenAIToolCallParser'
+    )
     @pytest.mark.asyncio
     async def test_execute_tool_loop_api_error(self, mock_parser):
         self.mock_client.call_api.side_effect = RuntimeError('API Error')
@@ -107,10 +113,12 @@ class TestOpenAIHandler:
         assert metrics[0].success is False
         assert 'API Error' in metrics[0].error_message
 
-    @patch('createagents.infra.adapters.OpenAI.openai_handler.ToolCallParser')
+    @patch(
+        'createagents.infra.adapters.OpenAI.openai_handler.OpenAIToolCallParser'
+    )
     @patch('createagents.infra.adapters.OpenAI.openai_handler.ToolExecutor')
     @patch(
-        'createagents.infra.adapters.OpenAI.openai_handler.ToolSchemaFormatter'
+        'createagents.infra.adapters.OpenAI.openai_handler.OpenAIToolSchemaFormatter'
     )
     @pytest.mark.asyncio
     async def test_execute_tool_loop_with_tool_calls(

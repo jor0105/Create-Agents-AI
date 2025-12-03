@@ -66,6 +66,7 @@ class CreateAgent:
         )
 
         self.__get_system_available_tools_use_case: GetSystemAvailableToolsUseCase = AgentComposer.create_get_system_available_tools_use_case()
+
         self.__logger.info(
             'CreateAgent controller initialized successfully - Agent: %s',
             self.__agent.name,

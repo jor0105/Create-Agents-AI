@@ -79,13 +79,13 @@ class TestOpenAIStreamHandler:
 
     @pytest.mark.asyncio
     @patch(
-        'createagents.infra.adapters.OpenAI.openai_stream_handler.ToolCallParser'
+        'createagents.infra.adapters.OpenAI.openai_stream_handler.OpenAIToolCallParser'
     )
     @patch(
         'createagents.infra.adapters.OpenAI.openai_stream_handler.ToolExecutor'
     )
     @patch(
-        'createagents.infra.adapters.OpenAI.openai_stream_handler.ToolSchemaFormatter'
+        'createagents.infra.adapters.OpenAI.openai_stream_handler.OpenAIToolSchemaFormatter'
     )
     async def test_handle_stream_executes_tool_calls(
         self,
