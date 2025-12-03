@@ -8,8 +8,11 @@ class ToolPayloadBuilder(IToolSchemaBuilder):
     """Unified tool payload builder for all providers.
 
     This class implements the IToolSchemaBuilder interface and provides
-    common functionality for formatting tool schemas. Provider-specific
-    formatters can extend this class or use it directly.
+    common functionality for formatting tool schemas.
+
+    Supports two formats:
+    - 'responses_api' (OpenAI): Flat structure with name, description, parameters
+    - 'ollama': Nested structure with function wrapper (required by Ollama API)
 
     Design:
     - Follows Open/Closed Principle: extend via composition or inheritance
@@ -18,25 +21,30 @@ class ToolPayloadBuilder(IToolSchemaBuilder):
 
     Attributes:
         _logger: Logger instance for debugging and info messages.
-        _format_style: The output format style ('openai', 'responses_api', 'ollama').
+        _format_style: The output format style ('responses_api' or 'ollama').
+        _strict: Whether to enable strict mode for structured outputs (OpenAI only).
     """
 
     def __init__(
         self,
         logger: LoggerInterface,
-        format_style: str = 'openai',
+        format_style: str = 'responses_api',
+        strict: bool = False,
     ) -> None:
         """Initialize the ToolPayloadBuilder.
 
         Args:
             logger: Logger instance for logging operations.
             format_style: Output format style. Options:
-                - 'openai': OpenAI Completions API format
-                - 'responses_api': OpenAI Responses API format
-                - 'ollama': Ollama native format (same as openai)
+                - 'responses_api': OpenAI Responses API format (flat structure)
+                - 'ollama': Ollama native format (nested with 'function' key)
+            strict: If True, enables strict mode for structured outputs (OpenAI only).
+                   This adds 'strict: true' and 'additionalProperties: false'
+                   to ensure the model follows the schema exactly.
         """
         self._logger = logger
         self._format_style = format_style
+        self._strict = strict
 
     def format_tool(self, tool: BaseTool) -> Dict[str, Any]:
         """Convert a single tool to provider-specific format.
@@ -50,29 +58,41 @@ class ToolPayloadBuilder(IToolSchemaBuilder):
         schema = tool.get_schema()
 
         self._logger.debug(
-            "Formatting tool '%s' for %s",
+            "Formatting tool '%s' for %s (strict=%s)",
             schema['name'],
             self._format_style,
+            self._strict,
         )
 
-        if self._format_style == 'responses_api':
-            # OpenAI Responses API uses flat structure
+        # Build parameters with optional strict mode (OpenAI only)
+        parameters = schema['parameters'].copy()
+        if self._strict and self._format_style == 'responses_api':
+            parameters['additionalProperties'] = False
+
+        if self._format_style == 'ollama':
+            # Ollama requires nested structure with 'function' wrapper
+            # See: https://docs.ollama.com/capabilities/tool-calling
             return {
                 'type': 'function',
-                'name': schema['name'],
-                'description': schema['description'],
-                'parameters': schema['parameters'],
+                'function': {
+                    'name': schema['name'],
+                    'description': schema['description'],
+                    'parameters': parameters,
+                },
             }
 
-        # OpenAI Completions API and Ollama use nested structure
-        return {
+        # OpenAI Responses API uses flat structure
+        result: Dict[str, Any] = {
             'type': 'function',
-            'function': {
-                'name': schema['name'],
-                'description': schema['description'],
-                'parameters': schema['parameters'],
-            },
+            'name': schema['name'],
+            'description': schema['description'],
+            'parameters': parameters,
         }
+
+        if self._strict:
+            result['strict'] = True
+
+        return result
 
     def format_tools(self, tools: List[BaseTool]) -> List[Dict[str, Any]]:
         """Convert multiple tools to provider-specific format.
@@ -88,9 +108,10 @@ class ToolPayloadBuilder(IToolSchemaBuilder):
             return []
 
         self._logger.info(
-            'Formatting %s tool(s) for %s',
+            'Formatting %s tool(s) for %s (strict=%s)',
             len(tools),
             self._format_style,
+            self._strict,
         )
 
         formatted = []
@@ -106,15 +127,16 @@ class ToolPayloadBuilder(IToolSchemaBuilder):
                 )
                 continue
 
-        if self._format_style == 'responses_api':
+        # Log formatted tool names based on format style
+        if self._format_style == 'ollama':
             self._logger.debug(
                 'Formatted tools: %s',
-                [t['name'] for t in formatted],
+                [t['function']['name'] for t in formatted],
             )
         else:
             self._logger.debug(
                 'Formatted tools: %s',
-                [t['function']['name'] for t in formatted],
+                [t['name'] for t in formatted],
             )
 
         return formatted

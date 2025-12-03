@@ -173,9 +173,7 @@ class ChatInputDTO:
 
         # Validate tool_choice if provided
         if self.tool_choice is not None:
-            from ...domain.value_objects.tools.choice import (  # pylint: disable=import-outside-toplevel
-                ToolChoice,
-            )
+            from ...domain import ToolChoice  # pylint: disable=import-outside-toplevel
 
             # This will raise ValueError if invalid format
             ToolChoice.from_value(

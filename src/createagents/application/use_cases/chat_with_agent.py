@@ -45,7 +45,15 @@ class ChatWithAgentUseCase:
             ValueError: If the input data is invalid.
             ChatException: If an error occurs during AI communication.
         """
-        input_dto.validate()
+        # Extract available tool names from the agent for validation
+        available_tools = None
+        if agent.tools:
+            available_tools = [tool.name for tool in agent.tools]
+            self.__logger.debug(
+                'Available tools for validation: %s', available_tools
+            )
+
+        input_dto.validate(available_tools=available_tools)
 
         self.__logger.info(
             "Running chat with agent '%s' (model: %s)", agent.name, agent.model

@@ -5,6 +5,13 @@ from enum import Enum
 from typing import Any, Dict, List, Literal, Optional, Set, Union
 
 
+# Type alias for tool_choice parameter (for external API compatibility)
+ToolChoiceType = Union[
+    Literal['auto', 'none', 'required'],
+    Dict[str, Any],
+]
+
+
 class ToolChoiceMode(str, Enum):
     """Predefined modes for tool selection behavior.
 
@@ -17,13 +24,6 @@ class ToolChoiceMode(str, Enum):
     AUTO = 'auto'
     NONE = 'none'
     REQUIRED = 'required'
-
-
-# Type alias for tool_choice parameter (for external API compatibility)
-ToolChoiceType = Union[
-    Literal['auto', 'none', 'required'],
-    Dict[str, Any],
-]
 
 
 @dataclass(frozen=True)
@@ -96,6 +96,55 @@ class ToolChoice:
         return cls(mode='specific', function_name=name)
 
     @classmethod
+    def specific(cls, name: str) -> 'ToolChoice':
+        """Alias for for_function() for convenience.
+
+        Args:
+            name: The name of the function to force.
+
+        Returns:
+            A ToolChoice configured for the specific function.
+
+        Example:
+            ```python
+            # These are equivalent:
+            ToolChoice.specific("weather")
+            ToolChoice.for_function("weather")
+            ```
+        """
+        return cls.for_function(name)
+
+    @classmethod
+    def _parse_dict(cls, value: Dict[str, Any]) -> 'ToolChoice':
+        """Parse a dictionary format tool_choice.
+
+        Args:
+            value: Dictionary with 'type' and 'function' keys.
+
+        Returns:
+            A ToolChoice for the specified function.
+
+        Raises:
+            ValueError: If the dictionary format is invalid.
+        """
+        if 'type' not in value:
+            raise ValueError("tool_choice dict must contain 'type' key")
+
+        if value['type'] != 'function':
+            raise ValueError("tool_choice dict 'type' must be 'function'")
+
+        if 'function' not in value:
+            raise ValueError("tool_choice dict must contain 'function' key")
+
+        func_spec = value['function']
+        if not isinstance(func_spec, dict) or 'name' not in func_spec:
+            raise ValueError(
+                "tool_choice function spec must be a dict with 'name' key"
+            )
+
+        return cls.for_function(func_spec['name'])
+
+    @classmethod
     def from_value(
         cls,
         value: Optional[ToolChoiceType],
@@ -148,36 +197,6 @@ class ToolChoice:
             'Must be a string or dict.'
         )
 
-    @classmethod
-    def _parse_dict(cls, value: Dict[str, Any]) -> 'ToolChoice':
-        """Parse a dictionary format tool_choice.
-
-        Args:
-            value: Dictionary with 'type' and 'function' keys.
-
-        Returns:
-            A ToolChoice for the specified function.
-
-        Raises:
-            ValueError: If the dictionary format is invalid.
-        """
-        if 'type' not in value:
-            raise ValueError("tool_choice dict must contain 'type' key")
-
-        if value['type'] != 'function':
-            raise ValueError("tool_choice dict 'type' must be 'function'")
-
-        if 'function' not in value:
-            raise ValueError("tool_choice dict must contain 'function' key")
-
-        func_spec = value['function']
-        if not isinstance(func_spec, dict) or 'name' not in func_spec:
-            raise ValueError(
-                "tool_choice function spec must be a dict with 'name' key"
-            )
-
-        return cls.for_function(func_spec['name'])
-
     def validate_against_tools(self, tool_names: Set[str]) -> None:
         """Validate that the specified function exists in available tools.
 
@@ -187,7 +206,7 @@ class ToolChoice:
         Raises:
             ValueError: If function_name is set but not in tool_names.
         """
-        if self.function_name and self.function_name not in tool_names:
+        if self.is_specific_function and self.function_name not in tool_names:
             raise ValueError(
                 f"tool_choice specifies unknown tool '{self.function_name}'. "
                 f'Available tools: {sorted(tool_names)}'

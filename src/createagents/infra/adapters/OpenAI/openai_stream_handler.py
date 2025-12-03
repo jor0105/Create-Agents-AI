@@ -1,3 +1,4 @@
+import asyncio
 import time
 from typing import Any, Callable, Dict, AsyncGenerator, List, Optional, Union
 
@@ -219,13 +220,17 @@ class OpenAIStreamHandler:
                     if output_items:
                         messages.extend(output_items)
 
-                    # Extract and execute tool calls
+                    # Extract and execute tool calls in parallel
                     tool_calls = ToolCallParser.extract_tool_calls(
                         full_response
                     )
-                    self.__logger.info('Executing %s tool(s)', len(tool_calls))
+                    self.__logger.info(
+                        'Executing %s tool(s) in parallel', len(tool_calls)
+                    )
 
-                    for tool_call in tool_calls:
+                    # Execute all tools in parallel using asyncio.gather
+                    async def execute_single_tool(tool_call: Dict[str, Any]):
+                        """Execute a single tool and return formatted result."""
                         tool_name = tool_call['name']
                         tool_args = tool_call['arguments']
                         tool_id = tool_call['id']
@@ -236,14 +241,12 @@ class OpenAIStreamHandler:
                             tool_name, **tool_args
                         )
 
-                        # Prepare result text for logging and LLM
                         result_text = (
                             str(execution_result.result)
                             if execution_result.success
                             else str(execution_result.error)
                         )
 
-                        # Log tool response for audit trail
                         self.__logger.info(
                             "Tool '%s' response [%s]: %s",
                             tool_name,
@@ -259,14 +262,36 @@ class OpenAIStreamHandler:
                             result_text,
                         )
 
-                        tool_result_msg = (
-                            ToolCallParser.format_tool_results_for_llm(
-                                tool_call_id=tool_id,
-                                tool_name=tool_name,
-                                result=result_text,
-                            )
+                        return ToolCallParser.format_tool_results_for_llm(
+                            tool_call_id=tool_id,
+                            tool_name=tool_name,
+                            result=result_text,
                         )
-                        messages.append(tool_result_msg)
+
+                    # Execute all tools in parallel
+                    tool_results = await asyncio.gather(
+                        *[execute_single_tool(tc) for tc in tool_calls],
+                        return_exceptions=True,
+                    )
+
+                    # Process results and add to messages
+                    for i, result in enumerate(tool_results):
+                        if isinstance(result, Exception):
+                            self.__logger.error(
+                                "Tool '%s' failed with exception: %s",
+                                tool_calls[i]['name'],
+                                result,
+                            )
+                            error_msg = (
+                                ToolCallParser.format_tool_results_for_llm(
+                                    tool_call_id=tool_calls[i]['id'],
+                                    tool_name=tool_calls[i]['name'],
+                                    result=f'Error: {str(result)}',
+                                )
+                            )
+                            messages.append(error_msg)
+                        else:
+                            messages.append(result)
 
                     # Continue to next iteration for final response
                     continue

@@ -1,3 +1,4 @@
+import asyncio
 import time
 from typing import Any, Callable, Dict, List, Optional, Union
 
@@ -73,7 +74,8 @@ class OllamaHandler:
         tools: Optional[List[BaseTool]],
         tool_choice: Optional[Union[str, Dict[str, Any]]] = None,
     ) -> str:
-        """Executes the tool calling loop.
+        """
+        Executes the tool calling loop.
 
         Args:
             model: The model name to use.
@@ -84,6 +86,11 @@ class OllamaHandler:
 
         Returns:
             The final response text from the model.
+
+        Limitation:
+            The native Ollama API (/api/chat) does NOT support the tool_choice parameter.
+            The parameter is formatted for future compatibility, but is ignored by the API.
+            If you need strict tool selection (e.g. required, specific), use the OpenAI-compatible endpoint (/v1/chat/completions).
         """
         start_time = time.time()
 
@@ -215,15 +222,30 @@ class OllamaHandler:
     async def __handle_tool_calls(
         self, response_api, messages, tool_executor
     ) -> None:
+        """Handle tool calls from Ollama response with parallel execution.
+
+        Args:
+            response_api: The Ollama API response containing tool calls.
+            messages: The conversation messages to append results to.
+            tool_executor: The tool executor instance.
+        """
         tool_calls = response_api.message.tool_calls
         messages.append(response_api.message)
 
-        for tool_call in tool_calls:
+        self.__logger.debug(
+            'Executing %s tool(s) in parallel', len(tool_calls)
+        )
+
+        # Execute all tools in parallel using asyncio.gather
+        async def execute_single_tool(tool_call):
+            """Execute a single tool and return formatted result."""
             tool_name = tool_call.function.name
             tool_args = tool_call.function.arguments
+
             execution_result = await tool_executor.execute_tool(
                 tool_name, **tool_args
             )
+
             result_text = (
                 str(execution_result.result)
                 if execution_result.success
@@ -245,13 +267,36 @@ class OllamaHandler:
                 result_text,
             )
 
-            messages.append(
-                {
-                    'role': 'tool',
-                    'tool_name': tool_name,
-                    'content': result_text,
-                }
-            )
+            return {
+                'role': 'tool',
+                'tool_name': tool_name,
+                'content': result_text,
+            }
+
+        # Execute all tools in parallel
+        tool_results = await asyncio.gather(
+            *[execute_single_tool(tc) for tc in tool_calls],
+            return_exceptions=True,
+        )
+
+        # Process results and add to messages
+        for i, result in enumerate(tool_results):
+            if isinstance(result, Exception):
+                tool_name = tool_calls[i].function.name
+                self.__logger.error(
+                    "Tool '%s' failed with exception: %s",
+                    tool_name,
+                    result,
+                )
+                messages.append(
+                    {
+                        'role': 'tool',
+                        'tool_name': tool_name,
+                        'content': f'Error: {str(result)}',
+                    }
+                )
+            else:
+                messages.append(result)
 
     def __generate_summary_from_tools(
         self, messages: List[Dict[str, Any]]

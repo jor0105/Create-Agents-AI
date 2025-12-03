@@ -5,13 +5,14 @@ from ...config import LoggingConfig
 
 
 class ToolSchemaFormatter:
-    """Formats tool schemas for OpenAI API.
+    """Formats tool schemas for OpenAI Responses API.
 
     This class converts domain-level tool schemas into the specific
-    format required by OpenAI's function calling API and Responses API.
+    format required by OpenAI's Responses API function calling.
 
     Responsibilities:
-    - Transform generic tool schemas to OpenAI format
+    - Transform generic tool schemas to OpenAI Responses API format
+    - Support strict mode for structured outputs
     - Ensure compliance with OpenAI's schema requirements
     - Keep provider-specific logic out of the domain layer
     """
@@ -19,36 +20,17 @@ class ToolSchemaFormatter:
     _logger = LoggingConfig.get_logger(__name__)
 
     @staticmethod
-    def format_tool_for_openai(tool: BaseTool) -> Dict[str, Any]:
-        """Convert a tool to OpenAI function calling format (Completions API).
-
-        Args:
-            tool: A BaseTool instance from the domain layer.
-
-        Returns:
-            A dictionary formatted for OpenAI's tools parameter.
-        """
-        schema = tool.get_schema()
-
-        ToolSchemaFormatter._logger.debug(
-            "Formatting tool '%s' for OpenAI Completions API", schema['name']
-        )
-
-        return {
-            'type': 'function',
-            'function': {
-                'name': schema['name'],
-                'description': schema['description'],
-                'parameters': schema['parameters'],
-            },
-        }
-
-    @staticmethod
-    def format_tool_for_responses_api(tool: BaseTool) -> Dict[str, Any]:
+    def format_tool(
+        tool: BaseTool,
+        strict: bool = False,
+    ) -> Dict[str, Any]:
         """Convert a tool to OpenAI Responses API format.
 
         Args:
             tool: A BaseTool instance from the domain layer.
+            strict: If True, enables strict mode for structured outputs.
+                   This adds 'strict: true' and 'additionalProperties: false'
+                   to ensure the model follows the schema exactly.
 
         Returns:
             A dictionary formatted for Responses API's tools parameter.
@@ -56,58 +38,50 @@ class ToolSchemaFormatter:
         schema = tool.get_schema()
 
         ToolSchemaFormatter._logger.debug(
-            "Formatting tool '%s' for OpenAI Responses API", schema['name']
+            "Formatting tool '%s' for OpenAI Responses API (strict=%s)",
+            schema['name'],
+            strict,
         )
 
-        return {
+        # Build parameters with optional strict mode
+        parameters = schema['parameters'].copy()
+        if strict:
+            parameters['additionalProperties'] = False
+
+        result: Dict[str, Any] = {
             'type': 'function',
             'name': schema['name'],
             'description': schema['description'],
-            'parameters': schema['parameters'],
+            'parameters': parameters,
         }
 
-    @staticmethod
-    def format_tools_for_openai(tools: List[BaseTool]) -> List[Dict[str, Any]]:
-        """Convert multiple tools to OpenAI Completions API format.
+        if strict:
+            result['strict'] = True
 
-        Args:
-            tools: List of BaseTool instances.
-
-        Returns:
-            List of dictionaries formatted for OpenAI's tools parameter.
-        """
-        ToolSchemaFormatter._logger.info(
-            'Formatting %s tool(s) for OpenAI Completions API', len(tools)
-        )
-
-        formatted = [
-            ToolSchemaFormatter.format_tool_for_openai(tool) for tool in tools
-        ]
-
-        ToolSchemaFormatter._logger.debug(
-            'Formatted tools: %s', [t['function']['name'] for t in formatted]
-        )
-
-        return formatted
+        return result
 
     @staticmethod
-    def format_tools_for_responses_api(
+    def format_tools(
         tools: List[BaseTool],
+        strict: bool = False,
     ) -> List[Dict[str, Any]]:
         """Convert multiple tools to OpenAI Responses API format.
 
         Args:
             tools: List of BaseTool instances.
+            strict: If True, enables strict mode for all tools.
 
         Returns:
             List of dictionaries formatted for Responses API's tools parameter.
         """
         ToolSchemaFormatter._logger.info(
-            'Formatting %s tool(s) for OpenAI Responses API', len(tools)
+            'Formatting %s tool(s) for OpenAI Responses API (strict=%s)',
+            len(tools),
+            strict,
         )
 
         formatted = [
-            ToolSchemaFormatter.format_tool_for_responses_api(tool)
+            ToolSchemaFormatter.format_tool(tool, strict=strict)
             for tool in tools
         ]
 

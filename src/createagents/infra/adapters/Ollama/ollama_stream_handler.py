@@ -1,3 +1,4 @@
+import asyncio
 import time
 from typing import Any, Callable, Dict, AsyncGenerator, List, Optional, Union
 
@@ -206,13 +207,15 @@ class OllamaStreamHandler:
                     # Add assistant message with tool calls to history
                     messages.append(last_chunk.message)
 
-                    # Execute tool calls
+                    # Execute tool calls in parallel
                     tool_calls = last_chunk.message.tool_calls
                     self.__logger.debug(
-                        'Executing %s tool(s)', len(tool_calls)
+                        'Executing %s tool(s) in parallel', len(tool_calls)
                     )
 
-                    for tool_call in tool_calls:
+                    # Execute all tools in parallel using asyncio.gather
+                    async def execute_single_tool(tool_call):
+                        """Execute a single tool and return formatted result."""
                         tool_name = tool_call.function.name
                         tool_args = tool_call.function.arguments
 
@@ -247,13 +250,36 @@ class OllamaStreamHandler:
                             result_text,
                         )
 
-                        messages.append(
-                            {
-                                'role': 'tool',
-                                'tool_name': tool_name,
-                                'content': result_text,
-                            }
-                        )
+                        return {
+                            'role': 'tool',
+                            'tool_name': tool_name,
+                            'content': result_text,
+                        }
+
+                    # Execute all tools in parallel
+                    tool_results = await asyncio.gather(
+                        *[execute_single_tool(tc) for tc in tool_calls],
+                        return_exceptions=True,
+                    )
+
+                    # Process results and add to messages
+                    for i, result in enumerate(tool_results):
+                        if isinstance(result, Exception):
+                            tool_name = tool_calls[i].function.name
+                            self.__logger.error(
+                                "Tool '%s' failed with exception: %s",
+                                tool_name,
+                                result,
+                            )
+                            messages.append(
+                                {
+                                    'role': 'tool',
+                                    'tool_name': tool_name,
+                                    'content': f'Error: {str(result)}',
+                                }
+                            )
+                        else:
+                            messages.append(result)
 
                     # Continue to next iteration to get final response
                     # Reset for next iteration
