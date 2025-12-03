@@ -38,9 +38,11 @@ class ToolPayloadBuilder(IToolSchemaBuilder):
             format_style: Output format style. Options:
                 - 'openai': OpenAI Responses API format (flat structure)
                 - 'ollama': Ollama native format (nested with 'function' key)
-            strict: If True, enables strict mode for structured outputs (OpenAI only).
-                   This adds 'strict: true' and 'additionalProperties: false'
-                   to ensure the model follows the schema exactly.
+            strict: If True, enables OpenAI's 'Structured Outputs' mode.
+                   - GUARANTEES that the model's output exactly matches the schema.
+                   - REQUIRES all fields in schema to be 'required' (no optional fields without explicit null).
+                   - Adds 'strict: true' and 'additionalProperties: false' to the payload.
+                   - Use with caution: requires strict adherence to schema rules in tool definitions.
         """
         self._logger = logger
         self._format_style = format_style
@@ -64,7 +66,12 @@ class ToolPayloadBuilder(IToolSchemaBuilder):
             self._strict,
         )
 
-        # Build parameters with optional strict mode (OpenAI only)
+        # Handle OpenAI's 'Strict Mode' (Structured Outputs)
+        # When enabled, this forces the model to follow the schema 100%.
+        # Requirement: 'additionalProperties' must be False.
+        # Note: This mode is less forgiving. If your Pydantic model has optional fields
+        # with default values (not marked as required), this might cause issues unless
+        # handled carefully (e.g., Union[T, None]).
         parameters = schema['parameters'].copy()
         if self._strict and self._format_style == 'openai':
             parameters['additionalProperties'] = False
@@ -90,6 +97,8 @@ class ToolPayloadBuilder(IToolSchemaBuilder):
         }
 
         if self._strict:
+            # Enables the strict schema enforcement on the provider side.
+            # This prevents hallucinations of non-existent parameters.
             result['strict'] = True
 
         return result

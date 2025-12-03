@@ -99,11 +99,9 @@ class ToolArgumentInjector:
                         break
                     elif isinstance(arg, InjectedLogger):
                         # Inject a configured logger for the tool
-                        from ...infra.config import LoggingConfig  # pylint: disable=import-outside-toplevel
+                        from ...infra.config import create_logger  # pylint: disable=import-outside-toplevel
 
-                        tool_logger = LoggingConfig.get_logger(
-                            f'tool.{tool.name}'
-                        )
+                        tool_logger = create_logger(f'tool.{tool.name}')
                         result[param_name] = tool_logger
                         self.__logger.debug(
                             "Injected logger into '%s' for tool '%s'",

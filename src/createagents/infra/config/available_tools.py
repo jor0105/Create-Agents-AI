@@ -246,15 +246,15 @@ class AvailableTools:
 
         try:
             from ..adapters import ReadLocalFileTool  # pylint: disable=import-outside-toplevel
-            from .logging_config import LoggingConfig  # pylint: disable=import-outside-toplevel
+            from .logging_config import create_logger  # pylint: disable=import-outside-toplevel
 
-            logger = LoggingConfig.get_logger(__name__)
+            logger = create_logger(__name__)
             cls.__LAZY_SYSTEM_TOOLS['readlocalfile'] = ReadLocalFileTool()
             logger.debug('ReadLocalFileTool loaded successfully')
         except ImportError as e:
-            from .logging_config import LoggingConfig  # pylint: disable=import-outside-toplevel
+            from .logging_config import create_logger  # pylint: disable=import-outside-toplevel
 
-            logger = LoggingConfig.get_logger(__name__)
+            logger = create_logger(__name__)
             logger.warning(
                 'ReadLocalFileTool not available - optional dependencies missing. '
                 'Install with: pip install ai-agent[file-tools]\n'
@@ -263,14 +263,14 @@ class AvailableTools:
             )
             cls.__LAZY_SYSTEM_TOOLS['readlocalfile'] = None
         except RuntimeError as e:
-            from .logging_config import LoggingConfig  # pylint: disable=import-outside-toplevel
+            from .logging_config import create_logger  # pylint: disable=import-outside-toplevel
 
-            logger = LoggingConfig.get_logger(__name__)
+            logger = create_logger(__name__)
             logger.warning('ReadLocalFileTool not available: %s', e)
             cls.__LAZY_SYSTEM_TOOLS['readlocalfile'] = None
         except Exception as e:
-            from .logging_config import LoggingConfig  # pylint: disable=import-outside-toplevel
+            from .logging_config import create_logger  # pylint: disable=import-outside-toplevel
 
-            logger = LoggingConfig.get_logger(__name__)
+            logger = create_logger(__name__)
             logger.error('Failed to load ReadLocalFileTool: %s', e)
             cls.__LAZY_SYSTEM_TOOLS['readlocalfile'] = None

@@ -3,14 +3,20 @@ from typing import Any, AsyncIterator, Dict, List, Optional, Union
 
 from ollama import AsyncClient, ChatResponse
 
-from ...config import EnvironmentConfig, LoggingConfig, retry_with_backoff
+from ....domain.interfaces import LoggerInterface
+from ...config import EnvironmentConfig, create_logger, retry_with_backoff
 
 
 class OllamaClient:
     """Handles direct communication with the Ollama API."""
 
-    def __init__(self):
-        self.__logger = LoggingConfig.get_logger(__name__)
+    def __init__(self, logger: Optional[LoggerInterface] = None):
+        """Initialize the Ollama client.
+
+        Args:
+            logger: Optional logger instance. If None, creates from config.
+        """
+        self.__logger = logger or create_logger(__name__)
         self.__host = EnvironmentConfig.get_env(
             'OLLAMA_HOST', 'http://localhost:11434'
         )

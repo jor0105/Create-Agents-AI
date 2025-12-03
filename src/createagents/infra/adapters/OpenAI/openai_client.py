@@ -1,20 +1,24 @@
 from typing import Any, Dict, List, Optional, Union
 
 from ....domain import ChatException
-from ...config import EnvironmentConfig, LoggingConfig, retry_with_backoff
+from ....domain.interfaces import LoggerInterface
+from ...config import EnvironmentConfig, create_logger, retry_with_backoff
 from .client_openai import ClientOpenAI
 
 
 class OpenAIClient:
     """Handles direct communication with the OpenAI API."""
 
-    def __init__(self):
+    def __init__(self, logger: Optional[LoggerInterface] = None):
         """Initialize the OpenAI client.
+
+        Args:
+            logger: Optional logger instance. If None, creates from config.
 
         Raises:
             ChatException: If the API key is missing or invalid.
         """
-        self.__logger = LoggingConfig.get_logger(__name__)
+        self.__logger = logger or create_logger(__name__)
         self.__timeout = int(EnvironmentConfig.get_env('OPENAI_TIMEOUT', '30'))
         self.__max_retries = int(
             EnvironmentConfig.get_env('OPENAI_MAX_RETRIES', '3')

@@ -1,7 +1,8 @@
 from typing import Any, Dict, List, Optional, Sequence, Union
 
 from ...domain import Agent, BaseTool
-from ...infra import ChatMetrics, LoggingConfig
+from ...domain.interfaces import LoggerInterface
+from ...infra import ChatMetrics
 from ...main import AgentComposer
 from ..dtos import ChatInputDTO, StreamingResponseDTO
 from ..use_cases import (
@@ -26,6 +27,7 @@ class CreateAgent:
         config: Optional[Dict[str, Any]] = None,
         tools: Optional[Sequence[Union[str, BaseTool]]] = None,
         history_max_size: int = 10,
+        logger: Optional[LoggerInterface] = None,
     ) -> None:
         """
         Initializes the controller by creating an agent and its dependencies.
@@ -38,8 +40,15 @@ class CreateAgent:
             config: Extra agent configurations, such as `max_tokens` and `temperature` (optional).
             tools: A list of tool names or BaseTool instances to be used by the agent (optional).
             history_max_size: The maximum history size (default: 10).
+            logger: Optional logger interface. If not provided, a default logger will be created.
         """
-        self.__logger = LoggingConfig.get_logger(__name__)
+        # If no logger provided, create one from infrastructure
+        if logger is None:
+            from ...infra.config import create_logger  # pylint: disable=import-outside-toplevel
+
+            self.__logger = create_logger(__name__)
+        else:
+            self.__logger = logger
 
         self.__logger.info(
             'Initializing CreateAgent controller - Provider: %s, Model: %s, Name: %s',
@@ -68,8 +77,13 @@ class CreateAgent:
         self.__get_system_available_tools_use_case: GetSystemAvailableToolsUseCase = AgentComposer.create_get_system_available_tools_use_case()
 
         self.__logger.info(
-            'CreateAgent controller initialized successfully - Agent: %s',
-            self.__agent.name,
+            'Agent controller initialized',
+            extra={
+                'event': 'controller.initialized',
+                'agent_name': self.__agent.name,
+                'provider': provider,
+                'model': model,
+            },
         )
 
     async def chat(
@@ -106,10 +120,6 @@ class CreateAgent:
         """
         from typing import AsyncGenerator  # pylint: disable=import-outside-toplevel
 
-        self.__logger.debug(
-            'Chat request received - Message length: %s chars', len(message)
-        )
-
         input_dto = ChatInputDTO(
             message=message,
             tool_choice=tool_choice,
@@ -118,17 +128,9 @@ class CreateAgent:
 
         # If result is an AsyncGenerator (streaming mode), wrap in StreamingResponseDTO
         if isinstance(result, AsyncGenerator):
-            self.__logger.debug(
-                'Chat response: streaming mode (AsyncGenerator)'
-            )
             return StreamingResponseDTO(result)
 
         # Otherwise it's a ChatOutputDTO, extract the response
-        self.__logger.debug(
-            'Chat response generated - Response length: %s chars',
-            len(result.response),
-        )
-
         response: str = result.response
 
         return response
@@ -140,7 +142,6 @@ class CreateAgent:
         Returns:
             A dictionary containing the agent's configurations.
         """
-        self.__logger.debug('Retrieving agent configurations')
         output_dto = self.__get_config_use_case.execute(self.__agent)
 
         output_dict: Dict[str, Any] = output_dto.to_dict()
@@ -161,10 +162,6 @@ class CreateAgent:
             A dict of all tool names and descriptions available for this agent.
         """
         from ...infra import AvailableTools  # pylint: disable=import-outside-toplevel
-
-        self.__logger.debug(
-            'Retrieving all available tools for this agent (system + agent-specific)'
-        )
 
         # Get system tools
         all_tools: Dict[str, str] = (
@@ -196,11 +193,6 @@ class CreateAgent:
                 if tool_name_lower not in all_system_tool_names:
                     all_tools[tool_name_lower] = tool.description
 
-        self.__logger.info(
-            "Retrieved %s tool(s) for agent '%s'",
-            len(all_tools),
-            self.__agent.name,
-        )
         return all_tools
 
     def get_system_available_tools(self) -> Dict[str, str]:
@@ -212,7 +204,6 @@ class CreateAgent:
         Returns:
             A dict of system tool names and descriptions.
         """
-        self.__logger.debug('Retrieving system available tools')
         output_dto: Dict[str, str] = (
             self.__get_system_available_tools_use_case.execute()
         )
@@ -223,7 +214,12 @@ class CreateAgent:
         history_size = len(self.__agent.history)
         self.__agent.clear_history()
         self.__logger.info(
-            'Agent history cleared - Removed %s message(s)', history_size
+            'History cleared',
+            extra={
+                'event': 'history.cleared',
+                'agent_name': self.__agent.name,
+                'messages_removed': history_size,
+            },
         )
 
     def get_metrics(self) -> List[ChatMetrics]:
@@ -234,7 +230,6 @@ class CreateAgent:
             A list of metrics collected during interactions.
         """
         metrics: List[ChatMetrics] = self.__chat_use_case.get_metrics()
-        self.__logger.debug('Retrieved %s metric(s)', len(metrics))
         return metrics
 
     def export_metrics_json(self, filepath: Optional[str] = None) -> str:

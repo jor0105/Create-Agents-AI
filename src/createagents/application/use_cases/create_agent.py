@@ -1,14 +1,18 @@
 from ...domain import Agent, History, InvalidAgentConfigException
-from ...infra import LoggingConfig
+from ...domain.interfaces import LoggerInterface
 from ..dtos import CreateAgentInputDTO
 
 
 class CreateAgentUseCase:
     """Use Case for creating a new agent instance."""
 
-    def __init__(self):
-        """Initialize the CreateAgentUseCase with logging."""
-        self.__logger = LoggingConfig.get_logger(__name__)
+    def __init__(self, logger: LoggerInterface):
+        """Initialize the CreateAgentUseCase with logging.
+
+        Args:
+            logger: Logger interface for logging operations.
+        """
+        self.__logger = logger
 
     def execute(self, input_dto: CreateAgentInputDTO) -> Agent:
         """
@@ -40,9 +44,11 @@ class CreateAgentUseCase:
 
         try:
             input_dto.validate()
-            self.__logger.debug('Input DTO validated successfully')
         except ValueError as e:
-            self.__logger.error('Validation error in input DTO: %s', e)
+            self.__logger.error(
+                'Agent creation failed - validation error',
+                extra={'error': str(e), 'provider': input_dto.provider},
+            )
             raise InvalidAgentConfigException('input_dto', str(e)) from e
 
         agent = Agent(
@@ -56,10 +62,15 @@ class CreateAgentUseCase:
         )
 
         self.__logger.info(
-            'Agent created successfully - Name: %s, Provider: %s, Model: %s',
-            agent.name,
-            agent.provider,
-            agent.model,
+            'Agent created',
+            extra={
+                'event': 'agent.created',
+                'agent_name': agent.name,
+                'provider': agent.provider,
+                'model': agent.model,
+                'tools_count': len(agent.tools) if agent.tools else 0,
+                'history_max_size': agent.history.max_size,
+            },
         )
 
         return agent

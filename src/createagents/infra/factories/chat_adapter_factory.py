@@ -2,7 +2,7 @@ from typing import Dict, Tuple, Type
 
 from ...application.interfaces import ChatRepository
 from ..adapters import OllamaChatAdapter, OpenAIChatAdapter
-from ..config import LoggingConfig
+from ..config import create_logger
 
 
 class ChatAdapterFactory:
@@ -16,7 +16,7 @@ class ChatAdapterFactory:
     """
 
     __cache: Dict[Tuple[str, str], ChatRepository] = {}
-    __logger = LoggingConfig.get_logger(__name__)
+    __logger = create_logger(__name__)
 
     # Strategy Pattern: Registry for O(1) lookup instead of O(n) conditional chain
     __ADAPTER_REGISTRY: Dict[str, Type[ChatRepository]] = {

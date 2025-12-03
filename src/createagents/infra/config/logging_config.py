@@ -1,56 +1,53 @@
-"""Centralized logging configuration for the application.
-
-This module provides a configurable logger that can be used
-throughout the application for tracking and debugging.
-
-Features:
-- Automatic sensitive data filtering
-- Log file rotation
-- Configuration via environment variables
-- Optional structured (JSON) logs
-- Different handlers for console and file
-"""
-
-import json
 import logging
+import json
 import os
 import sys
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
-from typing import List, Optional
+from typing import Any, List, Optional
 
+from ...domain.interfaces import LoggerInterface
 from .sensitive_data_filter import SensitiveDataFilter
 
 
-class ErrorOnlyFilter(logging.Filter):
-    """A filter that only allows ERROR and CRITICAL messages."""
+class _LoggingState:
+    """Internal state management for logging configuration.
 
-    def filter(self, record: logging.LogRecord) -> bool:
-        """Only allow ERROR and CRITICAL level messages."""
-        return record.levelno >= logging.ERROR
+    Thread-safe singleton state for global logging configuration.
+    """
+
+    configured: bool = False
+    log_level: int = logging.INFO
+    handlers: List[logging.Handler] = []
 
 
 class SensitiveDataFormatter(logging.Formatter):
-    """A formatter that applies sensitive data filtering.
+    """Formatter that filters sensitive data from log messages.
 
-    This ensures that no sensitive data is logged.
+    Ensures compliance with LGPD/GDPR by redacting:
+    - API keys and tokens
+    - Personal data (emails, CPF, phone numbers)
+    - Financial data (credit cards, CVV)
+    - Passwords and secrets
     """
 
     def format(self, record: logging.LogRecord) -> str:
-        """Formats the log record while filtering for sensitive data."""
+        """Format log record with sensitive data filtering."""
         original = super().format(record)
-        result: str = SensitiveDataFilter.filter(original)
-        return result
+        return SensitiveDataFilter.filter(original)
 
 
 class JSONFormatter(logging.Formatter):
-    """A formatter for structured JSON logs.
+    """Formatter for structured JSON logs.
 
-    This is useful for integration with log analysis tools.
+    Produces machine-readable logs suitable for:
+    - Log aggregation systems (ELK, Splunk, Datadog)
+    - Cloud logging services (CloudWatch, Stackdriver)
+    - Automated log analysis and alerting
     """
 
     def format(self, record: logging.LogRecord) -> str:
-        """Formats the log record as a structured JSON object."""
+        """Format log record as structured JSON."""
         log_data = {
             'timestamp': self.formatTime(record, self.datefmt),
             'level': record.levelname,
@@ -65,17 +62,28 @@ class JSONFormatter(logging.Formatter):
             log_data['exception'] = self.formatException(record.exc_info)
 
         json_str = json.dumps(log_data, ensure_ascii=False)
-        result: str = SensitiveDataFilter.filter(json_str)
-        return result
+        return SensitiveDataFilter.filter(json_str)
 
 
-class LoggingConfig:
-    """A centralized configuration for logging.
+class LoggingConfig(LoggerInterface):
+    """Production-ready logger implementation using Python's logging module.
 
-    This class provides configured loggers for different modules, featuring:
+    This adapter implements LoggerInterface for dependency inversion,
+    allowing the domain layer to remain infrastructure-agnostic.
+
+    Features:
+    - Full logging.Logger API (debug, info, warning, error, critical, exception)
+    - Global configuration management
     - Sensitive data filtering
-    - Log file rotation
-    - Configuration via environment variables
+    - JSON and text output formats
+    - File rotation support
+    - Environment-based configuration
+
+    Example:
+        >>> logger = create_logger(__name__)
+        >>> logger.configure(level=logging.DEBUG)
+        >>> logger.info('Application started')
+        >>> logger.error('Failed to connect', exc_info=True)
     """
 
     DEFAULT_LOG_LEVEL = logging.INFO
@@ -83,13 +91,44 @@ class LoggingConfig:
     DEFAULT_BACKUP_COUNT = 5
     DEFAULT_LOG_PATH = 'logs/app.log'
 
-    _configured: bool = False
-    _log_level: int = DEFAULT_LOG_LEVEL
-    _handlers: List[logging.Handler] = []
+    def __init__(self, logger: logging.Logger):
+        """Initialize with a Python logger instance.
 
-    @classmethod
+        Args:
+            logger: The underlying Python logger to use.
+        """
+        self._logger = logger
+
+    def debug(self, message: str, *args: Any, **kwargs: Any) -> None:
+        """Log a debug message."""
+        self._logger.debug(message, *args, **kwargs)
+
+    def info(self, message: str, *args: Any, **kwargs: Any) -> None:
+        """Log an info message."""
+        self._logger.info(message, *args, **kwargs)
+
+    def warning(self, message: str, *args: Any, **kwargs: Any) -> None:
+        """Log a warning message."""
+        self._logger.warning(message, *args, **kwargs)
+
+    def error(self, message: str, *args: Any, **kwargs: Any) -> None:
+        """Log an error message."""
+        self._logger.error(message, *args, **kwargs)
+
+    def critical(self, message: str, *args: Any, **kwargs: Any) -> None:
+        """Log a critical message."""
+        self._logger.critical(message, *args, **kwargs)
+
+    def exception(self, message: str, *args: Any, **kwargs: Any) -> None:
+        """Log an error message with exception information.
+
+        This method should be called from an exception handler.
+        It automatically captures and logs the current exception traceback.
+        """
+        self._logger.exception(message, *args, **kwargs)
+
     def configure(
-        cls,
+        self,
         level: Optional[int] = None,
         format_string: Optional[str] = None,
         include_timestamp: bool = True,
@@ -99,34 +138,40 @@ class LoggingConfig:
         backup_count: int = DEFAULT_BACKUP_COUNT,
         json_format: bool = False,
     ) -> None:
-        """Configures the application's logging.
+        """Configure the logging system globally.
+
+        This method configures the root logger and all existing loggers
+        to use consistent formatting and output destinations.
 
         Args:
-            level: The logging level (e.g., DEBUG, INFO).
-            format_string: A custom format string (optional).
-            include_timestamp: Whether to include a timestamp in the logs.
-            log_to_file: Whether to log to a file in addition to the console.
-            log_file_path: The path to the log file.
-            max_bytes: The maximum file size before rotation (default: 10MB).
-            backup_count: The number of backup files to keep (default: 5).
-            json_format: Whether to use a structured JSON format.
+            level: Logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL).
+                   Defaults to LOG_LEVEL environment variable or INFO.
+            format_string: Custom format string for log messages.
+            include_timestamp: Whether to include timestamps in logs.
+            log_to_file: Enable file logging with rotation.
+            log_file_path: Path to log file. Defaults to LOG_FILE_PATH env or 'logs/app.log'.
+            max_bytes: Maximum file size before rotation (default: 10MB).
+            backup_count: Number of backup files to keep (default: 5).
+            json_format: Use JSON formatting for structured logs.
         """
-        # Remove a verificação anterior - sempre reconfigurar se chamado
-        # if cls._configured:
-        #     return
+        # Resolve configuration from environment if not explicitly provided
+        if level is None:
+            level = self._get_log_level_from_env()
 
-        level = level or cls._get_log_level_from_env()
-        log_to_file = (
-            log_to_file or os.getenv('LOG_TO_FILE', 'false').lower() == 'true'
-        )
-        log_file_path = cls._resolve_log_file_path(log_file_path)
-        json_format = (
-            json_format
-            or os.getenv('LOG_JSON_FORMAT', 'false').lower() == 'true'
-        )
+        if not log_to_file:
+            log_to_file = os.getenv('LOG_TO_FILE', 'false').lower() == 'true'
 
-        cls._log_level = level
+        if log_file_path is None:
+            log_file_path = os.getenv('LOG_FILE_PATH', self.DEFAULT_LOG_PATH)
 
+        if not json_format:
+            json_format = (
+                os.getenv('LOG_JSON_FORMAT', 'false').lower() == 'true'
+            )
+
+        _LoggingState.log_level = level
+
+        # Build format string
         if format_string is None:
             if include_timestamp:
                 format_string = (
@@ -135,41 +180,38 @@ class LoggingConfig:
             else:
                 format_string = '%(name)s - %(levelname)s - %(message)s'
 
+        # Configure root logger
         root_logger = logging.getLogger()
         root_logger.setLevel(level)
 
-        # Remove todos os handlers existentes
+        # Remove existing handlers
         for handler in root_logger.handlers[:]:
             root_logger.removeHandler(handler)
-        cls._handlers.clear()
+        _LoggingState.handlers.clear()
 
-        # Força todos os loggers existentes a respeitarem o novo nível e adiciona filtro
+        # Configure all existing loggers
         for logger_name in list(logging.Logger.manager.loggerDict):
-            logger = logging.getLogger(logger_name)
-            logger.setLevel(level)
-            # Remove handlers antigos
-            for handler in logger.handlers[:]:
-                logger.removeHandler(handler)
-            # Se nível é ERROR, adiciona filtro
-            if level >= logging.ERROR:
-                logger.addFilter(ErrorOnlyFilter())
+            existing_logger = logging.getLogger(logger_name)
+            existing_logger.setLevel(level)
+            for handler in existing_logger.handlers[:]:
+                existing_logger.removeHandler(handler)
 
+        # Create formatter
+        formatter: logging.Formatter
         if json_format:
-            formatter: logging.Formatter = JSONFormatter()
+            formatter = JSONFormatter()
         else:
             formatter = SensitiveDataFormatter(format_string)
 
+        # Console handler
         console_handler = logging.StreamHandler(sys.stdout)
         console_handler.setLevel(level)
         console_handler.setFormatter(formatter)
 
-        # Se o nível é ERROR ou CRITICAL, adiciona um filtro para bloquear INFO/WARNING
-        if level >= logging.ERROR:
-            console_handler.addFilter(ErrorOnlyFilter())
-
         root_logger.addHandler(console_handler)
-        cls._handlers.append(console_handler)
+        _LoggingState.handlers.append(console_handler)
 
+        # File handler (optional)
         if log_to_file:
             log_path = Path(log_file_path)
             log_path.parent.mkdir(parents=True, exist_ok=True)
@@ -183,53 +225,39 @@ class LoggingConfig:
             file_handler.setLevel(level)
             file_handler.setFormatter(formatter)
 
-            # Se o nível é ERROR ou CRITICAL, adiciona um filtro para bloquear INFO/WARNING
-            if level >= logging.ERROR:
-                file_handler.addFilter(ErrorOnlyFilter())
-
             root_logger.addHandler(file_handler)
-            cls._handlers.append(file_handler)
+            _LoggingState.handlers.append(file_handler)
 
-        cls._configured = True
+        _LoggingState.configured = True
 
-    @classmethod
-    def configure_for_development(cls, level: int = logging.INFO) -> None:
-        """Helper method to configure logging for development/testing environments.
+    def reset(self) -> None:
+        """Reset the logging configuration.
 
-        This is useful for seeing logs during development, tests, or examples.
-        It enables console logging with sensible defaults.
+        Removes all handlers and clears configuration state.
+        Useful for testing to ensure clean state between tests.
         """
-        cls.configure(level=level)
+        _LoggingState.configured = False
+        root_logger = logging.getLogger()
 
-    @classmethod
-    def _resolve_log_file_path(cls, log_file_path: Optional[str]) -> str:
-        """Resolves and validates the log file path.
+        for handler in _LoggingState.handlers[:]:
+            handler.close()
+            root_logger.removeHandler(handler)
 
-        This method centralizes the logic for path validation to improve readability.
+        _LoggingState.handlers.clear()
+        SensitiveDataFilter.clear_cache()
+
+    def set_level(self, level: int) -> None:
+        """Adjust the logging level at runtime.
 
         Args:
-            log_file_path: The provided path, or None.
-
-        Returns:
-            A valid path as a string.
+            level: The new logging level (e.g., logging.DEBUG).
         """
-        default_path = os.getenv('LOG_FILE_PATH', cls.DEFAULT_LOG_PATH)
+        _LoggingState.log_level = level
+        logging.getLogger().setLevel(level)
 
-        if log_file_path is None or isinstance(log_file_path, bool):
-            return default_path
-
-        try:
-            return str(log_file_path)
-        except (ValueError, TypeError):
-            return default_path
-
-    @classmethod
-    def _get_log_level_from_env(cls) -> int:
-        """Retrieves the log level from the LOG_LEVEL environment variable.
-
-        Returns:
-            The logging level (default: INFO).
-        """
+    @staticmethod
+    def _get_log_level_from_env() -> int:
+        """Get log level from environment variable."""
         level_name = os.getenv('LOG_LEVEL', 'INFO').upper()
         level_map = {
             'DEBUG': logging.DEBUG,
@@ -240,53 +268,64 @@ class LoggingConfig:
         }
         return level_map.get(level_name, logging.INFO)
 
-    @classmethod
-    def get_logger(cls, name: str) -> logging.Logger:
-        """Retrieves a logger for the specified module.
+    @staticmethod
+    def is_configured() -> bool:
+        """Check if logging has been configured."""
+        return _LoggingState.configured
 
-        Note: This no longer configures logging automatically.
-        The application using the library is responsible for configuring logging.
 
-        Args:
-            name: The name of the module (usually `__name__`).
+def create_logger(name: str) -> LoggingConfig:
+    """Factory function to create a logger instance.
 
-        Returns:
-            A standard python logger.
-        """
-        # Simply return the logger. Configuration is up to the app.
-        return logging.getLogger(name)
+    This is the primary entry point for obtaining loggers throughout
+    the application. Use this instead of logging.getLogger() directly
+    to ensure consistent LoggerInterface implementation.
 
-    @classmethod
-    def set_level(cls, level: int) -> None:
-        """Adjusts the logging level at runtime.
+    Args:
+        name: The name for the logger (usually __name__).
 
-        Args:
-            level: The new logging level.
-        """
-        cls._log_level = level
-        logging.getLogger().setLevel(level)
+    Returns:
+        A LoggingConfig instance implementing LoggerInterface.
 
-    @classmethod
-    def reset(cls) -> None:
-        """Resets the logging configuration, which is useful for tests.
+    Example:
+        >>> from createagents.infra.config import create_logger
+        >>> logger = create_logger(__name__)
+        >>> logger.info('Service initialized')
+    """
+    python_logger = logging.getLogger(name)
+    return LoggingConfig(python_logger)
 
-        This method removes all handlers and marks the configuration as not set.
-        """
-        cls._configured = False
-        root_logger = logging.getLogger()
 
-        for handler in cls._handlers[:]:
-            handler.close()
-            root_logger.removeHandler(handler)
+def configure_logging(
+    level: Optional[int] = None,
+    json_format: bool = False,
+    log_to_file: bool = False,
+    log_file_path: Optional[str] = None,
+) -> LoggingConfig:
+    """Configure global logging and return a root logger.
 
-        cls._handlers.clear()
-        SensitiveDataFilter.clear_cache()
+    Convenience function to configure logging in one call.
+    Typically called once at application startup.
 
-    @classmethod
-    def get_handlers(cls) -> list:
-        """Returns a list of the configured handlers.
+    Args:
+        level: Logging level (default: from LOG_LEVEL env or INFO).
+        json_format: Use JSON formatting for structured logs.
+        log_to_file: Enable file logging with rotation.
+        log_file_path: Path to log file.
 
-        Returns:
-            A list of active handlers.
-        """
-        return cls._handlers.copy()
+    Returns:
+        A configured LoggingConfig instance.
+
+    Example:
+        >>> from createagents.infra.config import configure_logging
+        >>> logger = configure_logging(level=logging.DEBUG)
+        >>> logger.info('Logging configured')
+    """
+    logger = create_logger('createagents')
+    logger.configure(
+        level=level,
+        json_format=json_format,
+        log_to_file=log_to_file,
+        log_file_path=log_file_path,
+    )
+    return logger

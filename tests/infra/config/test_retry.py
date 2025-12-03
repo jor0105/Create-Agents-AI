@@ -150,7 +150,7 @@ class TestRetryWithBackoff:
         mock_func = Mock(side_effect=[Exception('Error'), 'success'])
 
         with patch(
-            'createagents.infra.config.retry.LoggingConfig.get_logger'
+            'createagents.infra.config.retry.create_logger'
         ) as mock_logger:
             mock_log_instance = Mock()
             mock_logger.return_value = mock_log_instance
@@ -168,7 +168,7 @@ class TestRetryWithBackoff:
         mock_func = Mock(side_effect=Exception('Persistent error'))
 
         with patch(
-            'createagents.infra.config.retry.LoggingConfig.get_logger'
+            'createagents.infra.config.retry.create_logger'
         ) as mock_logger:
             mock_log_instance = Mock()
             mock_logger.return_value = mock_log_instance
@@ -436,7 +436,7 @@ class TestRetryWithBackoff:
         mock_func = Mock(side_effect=[Exception('Error'), 'success'])
 
         with patch(
-            'createagents.infra.config.retry.LoggingConfig.get_logger'
+            'createagents.infra.config.retry.create_logger'
         ) as mock_logger:
             mock_log_instance = Mock()
             mock_logger.return_value = mock_log_instance

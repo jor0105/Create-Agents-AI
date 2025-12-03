@@ -218,7 +218,7 @@ class TestLoggingConfig:
         assert second_level == logging.ERROR
 
     def test_get_logger_returns_logger(self):
-        logger = LoggingConfig.get_logger('test.module')
+        logger = logging.getLogger('test.module')
 
         assert isinstance(logger, logging.Logger)
         assert logger.name == 'test.module'
@@ -226,7 +226,7 @@ class TestLoggingConfig:
     def test_get_logger_does_not_configure_automatically(self):
         assert LoggingConfig._configured is False
 
-        logger = LoggingConfig.get_logger('test')
+        logger = logging.getLogger('test')
 
         # Should NOT configure automatically anymore
         assert LoggingConfig._configured is False
@@ -279,7 +279,7 @@ class TestLoggingConfig:
                 log_to_file=True, log_file_path=str(log_file)
             )
 
-            logger = LoggingConfig.get_logger('test')
+            logger = logging.getLogger('test')
             logger.info('User password=secret123')
 
             for handler in LoggingConfig._handlers:
@@ -341,8 +341,8 @@ class TestLoggingConfig:
     def test_multiple_loggers_share_config(self):
         LoggingConfig.configure(level=logging.WARNING)
 
-        logger1 = LoggingConfig.get_logger('module1')
-        logger2 = LoggingConfig.get_logger('module2')
+        logger1 = logging.getLogger('module1')
+        logger2 = logging.getLogger('module2')
 
         assert logger1.getEffectiveLevel() == logging.WARNING
         assert logger2.getEffectiveLevel() == logging.WARNING
@@ -356,7 +356,7 @@ class TestLoggingConfig:
 
         LoggingConfig.reset()
         LoggingConfig.configure(level=logging.WARNING)
-        logger = LoggingConfig.get_logger('test')
+        logger = logging.getLogger('test')
 
         logger.addHandler(handler)
 
@@ -386,7 +386,7 @@ class TestLoggingIntegration:
                 log_to_file=True, log_file_path=str(log_file)
             )
 
-            logger = LoggingConfig.get_logger('app')
+            logger = logging.getLogger('app')
 
             logger.info('User logged in: user@example.com')
             logger.debug('API request with key: sk-proj-123456789012')
@@ -419,7 +419,7 @@ class TestLoggingIntegration:
                 log_to_file=True, log_file_path=str(log_file), json_format=True
             )
 
-            logger = LoggingConfig.get_logger('api')
+            logger = logging.getLogger('api')
             logger.info('Request received from user@test.com')
 
             for handler in LoggingConfig._handlers:

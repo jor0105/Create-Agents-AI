@@ -1,10 +1,11 @@
 from pathlib import Path
-from typing import Type
+from typing import Optional, Type
 
 from pydantic import BaseModel, Field
 
 from .....domain import BaseTool, FileReadException
-from ....config import LoggingConfig
+from .....domain.interfaces import LoggerInterface
+from ....config import create_logger
 
 IMPORT_ERROR = None
 
@@ -64,11 +65,16 @@ class ReadLocalFileTool(BaseTool):
     )
     args_schema: Type[BaseModel] = ReadLocalFileInput
 
-    def __init__(self, max_file_size_mb: float = 50.0) -> None:
+    def __init__(
+        self,
+        max_file_size_mb: float = 50.0,
+        logger: Optional[LoggerInterface] = None,
+    ) -> None:
         """Initialize the ReadLocalFileTool.
 
         Args:
             max_file_size_mb: Maximum file size in megabytes (default: 50 MB).
+            logger: Optional logger instance. If None, creates from config.
 
         Raises:
             RuntimeError: If tiktoken encoder initialization fails or
@@ -82,7 +88,7 @@ class ReadLocalFileTool(BaseTool):
                 f'Missing dependencies error: {IMPORT_ERROR}'
             )
 
-        self.__logger = LoggingConfig.get_logger(__name__)
+        self.__logger = logger or create_logger(__name__)
         self.__encoding = initialize_tiktoken()
 
         # Configurable max file size

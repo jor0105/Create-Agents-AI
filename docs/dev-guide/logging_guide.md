@@ -37,12 +37,12 @@ class LoggerInterface(ABC):
         pass
 ```
 
-### StandardLogger (Infraestrutura)
+### LoggingConfig (Infraestrutura)
 
 A implementação concreta está na camada de infraestrutura (`src/createagents/infra/config/`):
 
 ```python
-class StandardLogger(LoggerInterface):
+class LoggingConfig(LoggerInterface):
     """Implementação padrão do LoggerInterface usando Python logging."""
 
     def __init__(self, logger: logging.Logger):
@@ -144,11 +144,11 @@ class MyCustomTool(BaseTool):
 ### Injeção de Dependência
 
 ```python
-from createagents.infra.config import LoggingConfig, StandardLogger
+from createagents.infra.config import LoggingConfig, LoggingConfig
 
 # Criar logger
 python_logger = LoggingConfig.get_logger(__name__)
-logger_interface = StandardLogger(python_logger)
+logger_interface = LoggingConfig(python_logger)
 
 # Injetar na ferramenta
 my_tool = MyCustomTool(logger=logger_interface)

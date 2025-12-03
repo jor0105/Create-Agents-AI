@@ -347,10 +347,7 @@ class TestToolPayloadBuilderOllama:
 
         # Ollama doesn't use strict mode
         assert 'strict' not in result
-        assert (
-            'additionalProperties'
-            not in result['function']['parameters']
-        )
+        assert 'additionalProperties' not in result['function']['parameters']
 
 
 # =============================================================================

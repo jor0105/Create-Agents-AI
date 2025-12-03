@@ -3,7 +3,7 @@ from typing import Any, Dict, AsyncGenerator, List, Optional, Union
 from ....application.interfaces import ChatRepository
 from ....domain import BaseTool, ChatException
 from ....domain.interfaces import LoggerInterface
-from ...config import ChatMetrics, LoggingConfig
+from ...config import ChatMetrics, create_logger
 from ..Common import MetricsRecorder, ToolPayloadBuilder
 from .ollama_client import OllamaClient
 from .ollama_handler import OllamaHandler
@@ -39,12 +39,11 @@ class OllamaChatAdapter(ChatRepository):
         Args:
             logger: Optional logger instance. If None, creates from config.
         """
-        self.__logger = logger or LoggingConfig.get_logger(__name__)
+        self.__logger = logger or create_logger(__name__)
         self.__metrics: List[ChatMetrics] = []
-        self.__client = OllamaClient()
+        self.__client = OllamaClient(logger=self.__logger)
         self.__schema_builder = ToolPayloadBuilder(
-            logger=self.__logger,
-            format_style='ollama'
+            logger=self.__logger, format_style='ollama'
         )
 
         self.__logger.info('Ollama adapter initialized')

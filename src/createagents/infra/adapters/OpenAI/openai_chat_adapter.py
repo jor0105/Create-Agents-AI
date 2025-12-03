@@ -3,7 +3,7 @@ from typing import Any, Dict, AsyncGenerator, List, Optional, Union
 from ....application.interfaces import ChatRepository
 from ....domain import BaseTool, ChatException
 from ....domain.interfaces import LoggerInterface
-from ...config import ChatMetrics, LoggingConfig
+from ...config import ChatMetrics, create_logger
 from ..Common import MetricsRecorder, ToolPayloadBuilder
 from .openai_client import OpenAIClient
 from .openai_handler import OpenAIHandler
@@ -35,12 +35,11 @@ class OpenAIChatAdapter(ChatRepository):
         Raises:
             ChatException: If the API key is missing or invalid.
         """
-        self.__logger = logger or LoggingConfig.get_logger(__name__)
+        self.__logger = logger or create_logger(__name__)
         self.__metrics: List[ChatMetrics] = []
-        self.__client = OpenAIClient()
+        self.__client = OpenAIClient(logger=self.__logger)
         self.__schema_builder = ToolPayloadBuilder(
-            logger=self.__logger,
-            format_style='openai'
+            logger=self.__logger, format_style='openai'
         )
         self.__logger.info('OpenAI adapter initialized')
 

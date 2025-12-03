@@ -19,16 +19,16 @@ def configure_logging():
     """Configures logging for all tests."""
     import logging
 
-    from createagents.infra.config.logging_config import LoggingConfig
+    from createagents.infra.config import create_logger
 
-    # Configure logging for tests to ensure we can see output if needed
-    # Using DEBUG level by default for tests to catch everything
-    LoggingConfig.configure_for_development(level=logging.DEBUG)
+    # Configure logging for tests using the new LoggingConfig API
+    logger = create_logger('createagents.tests')
+    logger.configure(level=logging.DEBUG)
 
     yield
 
     # Reset logging after test
-    LoggingConfig.reset()
+    logger.reset()
 
 
 @pytest.fixture

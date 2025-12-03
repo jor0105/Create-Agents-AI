@@ -1,6 +1,6 @@
 from typing import Dict
 
-from ...infra import AvailableTools, LoggingConfig
+from ...infra import AvailableTools
 
 
 class GetSystemAvailableToolsUseCase:
@@ -9,9 +9,6 @@ class GetSystemAvailableToolsUseCase:
     System tools are built-in tools provided by the framework that are always
     available and can be added to any agent.
     """
-
-    def __init__(self):
-        self.__logger = LoggingConfig.get_logger(__name__)
 
     def execute(self) -> Dict[str, str]:
         """
@@ -22,7 +19,5 @@ class GetSystemAvailableToolsUseCase:
         Returns:
             Dict[str, str]: Dictionary mapping system tool names to descriptions.
         """
-        self.__logger.debug('Retrieving available system tools.')
         system_tools: Dict[str, str] = AvailableTools.get_system_tools()
-        self.__logger.info('Retrieved %s system tool(s).', len(system_tools))
         return system_tools

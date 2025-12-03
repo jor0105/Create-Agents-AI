@@ -1,7 +1,7 @@
 import json
 from typing import Any, Dict, List, Optional
 
-from ...config import LoggingConfig
+from ...config import create_logger
 
 
 class OpenAIToolCallParser:
@@ -24,7 +24,7 @@ class OpenAIToolCallParser:
     ```
     """
 
-    _logger = LoggingConfig.get_logger(__name__)
+    _logger = create_logger(__name__)
 
     @staticmethod
     def has_tool_calls(response: Any) -> bool:
@@ -51,7 +51,9 @@ class OpenAIToolCallParser:
                     )
                     return True
 
-            OpenAIToolCallParser._logger.debug('No tool calls found in response')
+            OpenAIToolCallParser._logger.debug(
+                'No tool calls found in response'
+            )
             return False
         except (AttributeError, TypeError) as e:
             OpenAIToolCallParser._logger.warning(
@@ -85,7 +87,9 @@ class OpenAIToolCallParser:
             OpenAIToolCallParser._logger.debug('No tool calls to extract')
             return []
 
-        OpenAIToolCallParser._logger.debug('Extracting tool calls from response')
+        OpenAIToolCallParser._logger.debug(
+            'Extracting tool calls from response'
+        )
         tool_calls = []
 
         for item in response.output:

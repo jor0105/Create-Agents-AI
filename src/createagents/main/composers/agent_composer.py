@@ -5,7 +5,9 @@ from typing import TYPE_CHECKING, Any, Dict, Optional, Sequence, Union
 # Importar apenas DTOs no topo - eles não causam circular import
 from ...application import CreateAgentInputDTO
 from ...domain import Agent, BaseTool
-from ...infra import ChatAdapterFactory, LoggingConfig
+from ...domain.interfaces import LoggerInterface
+from ...infra import ChatAdapterFactory
+from ...infra.config import create_logger
 
 # Type hints para IDEs (não executado em runtime)
 if TYPE_CHECKING:
@@ -22,7 +24,7 @@ class AgentComposer:
     dependencies for agent-related use cases.
     """
 
-    __logger = LoggingConfig.get_logger(__name__)
+    __logger: LoggerInterface = create_logger(__name__)
 
     @staticmethod
     def create_agent(
@@ -79,7 +81,10 @@ class AgentComposer:
             history_max_size=history_max_size,
         )
 
-        use_case = CreateAgentUseCase()
+        logger = create_logger(
+            'createagents.application.use_cases.create_agent'
+        )
+        use_case = CreateAgentUseCase(logger=logger)
         agent = use_case.execute(input_dto)
 
         AgentComposer.__logger.info(
@@ -111,7 +116,12 @@ class AgentComposer:
         )
 
         chat_adapter = ChatAdapterFactory.create(provider, model)
-        use_case = ChatWithAgentUseCase(chat_repository=chat_adapter)
+        logger = create_logger(
+            'createagents.application.use_cases.chat_with_agent'
+        )
+        use_case = ChatWithAgentUseCase(
+            chat_repository=chat_adapter, logger=logger
+        )
 
         AgentComposer.__logger.debug('Chat use case composed successfully')
         return use_case

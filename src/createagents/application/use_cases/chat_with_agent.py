@@ -1,7 +1,8 @@
 from typing import AsyncGenerator, List, Union
 
 from ...domain import Agent, ChatException
-from ...infra import ChatMetrics, LoggingConfig
+from ...domain.interfaces import LoggerInterface
+from ...infra import ChatMetrics
 from ..dtos import ChatInputDTO, ChatOutputDTO
 from ..interfaces import ChatRepository
 
@@ -16,15 +17,18 @@ class ChatWithAgentUseCase:
     the interaction.
     """
 
-    def __init__(self, chat_repository: ChatRepository):
+    def __init__(
+        self, chat_repository: ChatRepository, logger: LoggerInterface
+    ):
         """
         Initializes the Use Case with its dependencies.
 
         Args:
             chat_repository: Repository for AI communication.
+            logger: Logger interface for logging operations.
         """
         self.__chat_repository = chat_repository
-        self.__logger = LoggingConfig.get_logger(__name__)
+        self.__logger = logger
 
     async def execute(
         self, agent: Agent, input_dto: ChatInputDTO
@@ -55,11 +59,6 @@ class ChatWithAgentUseCase:
 
         input_dto.validate(available_tools=available_tools)
 
-        self.__logger.info(
-            "Running chat with agent '%s' (model: %s)", agent.name, agent.model
-        )
-        self.__logger.debug('User message: %s...', input_dto.message[:100])
-
         # Prepare history with user message
         history = agent.history.to_dict_list()
         history.append({'role': 'user', 'content': input_dto.message})
@@ -87,9 +86,17 @@ class ChatWithAgentUseCase:
             agent.add_user_message(input_dto.message)
             agent.add_assistant_message(response)
 
-            self.__logger.info('Chat executed successfully')
-            self.__logger.debug(
-                'Response (first 100 chars): %s...', response[:100]
+            self.__logger.info(
+                'Chat completed',
+                extra={
+                    'event': 'chat.completed',
+                    'agent_name': agent.name,
+                    'model': agent.model,
+                    'streaming': False,
+                    'message_length': len(input_dto.message),
+                    'response_length': len(response),
+                    'tools_available': len(agent.tools) if agent.tools else 0,
+                },
             )
 
             return output_dto
@@ -167,10 +174,16 @@ class ChatWithAgentUseCase:
             # Update agent's conversation history
             agent.add_user_message(input_dto.message)
             agent.add_assistant_message(complete_text)
-            self.__logger.info('Streaming chat executed successfully')
-            self.__logger.debug(
-                'Complete response (first 100 chars): %s...',
-                complete_text[:100] if complete_text else '',
+
+            self.__logger.info(
+                'Chat completed',
+                extra={
+                    'event': 'chat.completed',
+                    'agent_name': agent.name,
+                    'streaming': True,
+                    'message_length': len(input_dto.message),
+                    'response_length': len(complete_text),
+                },
             )
 
         except ChatException:

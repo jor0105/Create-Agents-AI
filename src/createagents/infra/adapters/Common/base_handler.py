@@ -1,5 +1,5 @@
 from abc import ABC
-from typing import Callable, List, Optional
+from typing import List, Optional
 
 from ....domain import BaseTool, ToolExecutor
 from ....domain.interfaces import (
@@ -25,7 +25,7 @@ class BaseHandler(ABC):
         self,
         logger: LoggerInterface,
         metrics_recorder: IMetricsRecorder,
-        schema_builder: IToolSchemaBuilder
+        schema_builder: IToolSchemaBuilder,
     ):
         """Initialize the base handler with common dependencies.
 
@@ -37,9 +37,7 @@ class BaseHandler(ABC):
         self._logger = logger
         self._metrics_recorder = metrics_recorder
         self._schema_builder = schema_builder
-        self._tool_executor_factory = (
-            self._default_tool_executor_factory
-        )
+        self._tool_executor_factory = self._default_tool_executor_factory
 
     def _default_tool_executor_factory(
         self, tools: Optional[List[BaseTool]]

@@ -115,7 +115,7 @@ Documentação completa da arquitetura do **Create Agents AI**, baseada em **Cle
   - `CurrentDateTool` — ferramenta de data/hora
   - `ReadLocalFileTool` — leitura de arquivos (PDF, Excel, CSV, Parquet, JSON, YAML, TXT)
 - **Factory:** `ChatAdapterFactory` — criação de adapters baseada em provider
-- **Config:** `EnvironmentConfig`, `LoggingConfig`, `StandardLogger` (implementação de `LoggerInterface`), `ChatMetrics`
+- **Config:** `EnvironmentConfig`, `LoggingConfig`, `LoggingConfig` (implementação de `LoggerInterface`), `ChatMetrics`
 
 ---
 
@@ -175,7 +175,7 @@ class ChatWithAgentUseCase:
 # Exemplo com LoggerInterface (DIP no domínio)
 class ToolExecutor:
     def __init__(self, logger: LoggerInterface):  # Abstração
-        self._logger = logger  # Não depende de StandardLogger diretamente
+        self._logger = logger  # Não depende de LoggingConfig diretamente
 ```
 
 ---

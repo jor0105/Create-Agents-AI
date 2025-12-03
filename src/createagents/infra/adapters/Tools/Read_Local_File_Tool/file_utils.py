@@ -5,7 +5,7 @@ import io
 from typing import TYPE_CHECKING, Optional
 
 from .....domain import FileReadException
-from ....config import LoggingConfig
+from ....config import create_logger
 from .constants import (
     COMMON_ENCODINGS,
     DOCUMENT_EXTENSIONS,
@@ -18,7 +18,7 @@ from .constants import (
 if TYPE_CHECKING:
     import tiktoken  # pylint: disable=import-outside-toplevel
 
-logger = LoggingConfig.get_logger(__name__)
+logger = create_logger(__name__)
 
 
 def initialize_tiktoken() -> 'tiktoken.Encoding':

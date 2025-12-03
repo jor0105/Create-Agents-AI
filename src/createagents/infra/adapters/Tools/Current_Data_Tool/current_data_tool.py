@@ -1,14 +1,15 @@
 from datetime import datetime
 from enum import Enum
 from functools import lru_cache
-from typing import Literal
+from typing import Literal, Optional
 
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 from pydantic import BaseModel, Field
 
 from .....domain import BaseTool
+from .....domain.interfaces import LoggerInterface
 from .....utils import TextSanitizer
-from ....config import LoggingConfig
+from ....config import create_logger
 
 # Type alias for better type checking
 ActionType = Literal[
@@ -94,9 +95,13 @@ class CurrentDateTool(BaseTool):
     )
     args_schema = CurrentDateInput
 
-    def __init__(self) -> None:
-        """Initialize the CurrentDateTool."""
-        self.__logger = LoggingConfig.get_logger(__name__)
+    def __init__(self, logger: Optional[LoggerInterface] = None) -> None:
+        """Initialize the CurrentDateTool.
+
+        Args:
+            logger: Optional logger instance. If None, creates from config.
+        """
+        self.__logger = logger or create_logger(__name__)
 
     @staticmethod
     def __resolve_zone(tz: str) -> ZoneInfo:

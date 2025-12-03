@@ -3,7 +3,7 @@ import time
 from functools import wraps
 from typing import Callable, Optional, Tuple, Type
 
-from .logging_config import LoggingConfig
+from .logging_config import create_logger
 
 
 def retry_with_backoff(
@@ -35,7 +35,7 @@ def retry_with_backoff(
         ... def api_call():
         ...     return requests.get("https://api.example.com")
     """
-    logger = LoggingConfig.get_logger(__name__)
+    logger = create_logger(__name__)
 
     def decorator(func: Callable) -> Callable:
         @wraps(func)

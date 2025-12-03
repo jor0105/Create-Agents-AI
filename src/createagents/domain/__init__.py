@@ -11,6 +11,7 @@ from .exceptions import (
     InvalidProviderException,
     UnsupportedConfigException,
 )
+from .interfaces import LoggerInterface
 from .services import ToolExecutionResult, ToolExecutor
 from .value_objects import (
     BaseTool,
@@ -48,6 +49,8 @@ __all__ = [
     'InvalidProviderException',
     'UnsupportedConfigException',
     'InvalidConfigTypeException',
+    # interfaces
+    'LoggerInterface',
     # value objects
     'Message',
     'MessageRole',

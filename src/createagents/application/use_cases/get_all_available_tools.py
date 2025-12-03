@@ -1,6 +1,6 @@
 from typing import Dict
 
-from ...infra import AvailableTools, LoggingConfig
+from ...infra import AvailableTools
 
 
 class GetAllAvailableToolsUseCase:
@@ -9,9 +9,6 @@ class GetAllAvailableToolsUseCase:
     This use case returns both system tools and agent-specific tools.
     """
 
-    def __init__(self):
-        self.__logger = LoggingConfig.get_logger(__name__)
-
     def execute(self) -> Dict[str, str]:
         """
         Returns a dictionary of all available tool instances (system + agent).
@@ -19,7 +16,5 @@ class GetAllAvailableToolsUseCase:
         Returns:
             Dict[str, str]: Dictionary mapping all tool names to descriptions.
         """
-        self.__logger.debug('Retrieving all available tools (system + agent).')
         all_tools: Dict[str, str] = AvailableTools.get_all_available_tools()
-        self.__logger.info('Retrieved %s total tool(s).', len(all_tools))
         return all_tools
