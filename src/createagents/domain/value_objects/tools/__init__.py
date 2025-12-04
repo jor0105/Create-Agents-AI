@@ -8,6 +8,7 @@ from .injected import (
     InjectedToolCallId,
     is_injected_arg,
 )
+from .response import ResponseStatus, ToolResponse, ToolResponseMetadata
 from .result import ToolExecutionResult
 from .structured import StructuredTool
 
@@ -28,6 +29,10 @@ __all__ = [
     'InjectedState',
     'InjectedLogger',
     'is_injected_arg',
+    # Tool response
+    'ResponseStatus',
+    'ToolResponse',
+    'ToolResponseMetadata',
     # Tool execution
     'ToolExecutionResult',
 ]

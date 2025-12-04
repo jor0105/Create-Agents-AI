@@ -1,15 +1,18 @@
 from pathlib import Path
-from typing import List, Optional, Type
+from time import perf_counter
+from typing import Final, List, Optional, Type
 
 from pydantic import BaseModel, Field
 
 from .....domain import BaseTool, FileReadException
 from .....domain.interfaces import LoggerInterface
+from .....domain.value_objects.tools.response import ToolResponse
 from ....config import create_logger
 
-# Security: Sensitive directories that should never be read by LLM tools
-# This prevents accidental or malicious access to system/user sensitive files
-FORBIDDEN_PATH_PATTERNS: List[str] = [
+_TOOL_NAME: Final[str] = 'readlocalfile'
+_TOOL_VERSION: Final[str] = '2.0.0'
+
+FORBIDDEN_PATH_PATTERNS: Final[List[str]] = [
     '/etc',
     '/root',
     '/var/log',
@@ -38,7 +41,8 @@ FORBIDDEN_PATH_PATTERNS: List[str] = [
     '/.git/config',
 ]
 
-IMPORT_ERROR = None
+_IMPORT_ERROR: Optional[Exception] = None
+_DEPENDENCIES_AVAILABLE: bool = False
 
 try:
     from .file_utils import (
@@ -46,53 +50,78 @@ try:
         determine_file_type,
         initialize_tiktoken,
         read_file_by_type,
-    )  # pylint: disable=import-outside-toplevel
+    )
 
-    DEPENDENCIES_AVAILABLE = True
+    _DEPENDENCIES_AVAILABLE = True
 except ImportError as e:
-    DEPENDENCIES_AVAILABLE = False
-    IMPORT_ERROR = e
+    _IMPORT_ERROR = e
 
 
 class ReadLocalFileInput(BaseModel):
-    """Input schema for ReadLocalFileTool using Pydantic validation.
+    """Input schema for ReadLocalFileTool.
 
-    This schema validates and documents the inputs expected by the tool.
+    Validates and documents the expected inputs for file reading
+    with comprehensive descriptions for AI understanding.
     """
 
     path: str = Field(
         ...,
-        description='Absolute or relative path to the file to read.',
+        description=(
+            'Path to the file to read. Can be absolute or relative. '
+            'Supports: txt, md, py, json, csv, xlsx, pdf, parquet, docx, and more.'
+        ),
     )
     max_tokens: int = Field(
         default=30000,
-        ge=1,
+        ge=100,
+        le=200000,
         description=(
-            'Maximum number of tokens allowed in the file content. '
-            'Files exceeding this limit will be rejected.'
+            'Maximum tokens allowed in response. '
+            'Files exceeding this limit will be rejected. '
+            'Range: 100-200000. Default: 30000.'
         ),
     )
 
 
+class FileMetadata(BaseModel):
+    """Metadata about the read file."""
+
+    path: str
+    size_bytes: int
+    size_human: str
+    token_count: int
+    file_type: str
+    encoding: Optional[str] = None
+
+
 class ReadLocalFileTool(BaseTool):
-    """Secure local file reader with token validation.
+    """Secure local file reader with validation and token management.
 
-    Reads files with multiple validation layers:
-    - Token limit enforcement
-    - File type validation
-    - Comprehensive error handling
+    Features:
+    - Multi-layer security validation (forbidden paths, permissions)
+    - Token counting with configurable limits
+    - Support for multiple file formats (text, CSV, Excel, PDF, Parquet, etc.)
+    - Automatic encoding detection
+    - Async execution support for non-blocking I/O
+    - Structured responses with metadata
 
-    Supports formats: txt, csv, excel (xls/xlsx), pdf, parquet,
-    and common text files.
+    Security:
+    - Blocks access to sensitive system directories
+    - Validates file permissions before reading
+    - Enforces size limits to prevent memory issues
+
+    Supported formats:
+    - Text: txt, md, py, js, json, yaml, xml, html, css, etc.
+    - Data: csv, xlsx, xls, parquet
+    - Documents: pdf, docx, pptx, odt
     """
 
-    name = 'readlocalfile'
-    description = (
-        'Use this tool to read local files from the system. '
-        'Supports text files (txt, md, py, etc.), CSV, Excel, PDF and '
-        'Parquet formats. The tool validates file size in tokens to prevent '
-        'overload. Input must include the absolute or relative file path and '
-        'optionally the maximum number of tokens allowed (default: 30000).'
+    name: str = _TOOL_NAME
+    description: str = (
+        'Read local files securely with automatic format detection. '
+        'Supports text files, CSV, Excel, PDF, Parquet, and documents. '
+        'Returns content with token count validation to prevent overload. '
+        'Use for accessing local data, reading configurations, or analyzing documents.'
     )
     args_schema: Type[BaseModel] = ReadLocalFileInput
 
@@ -101,107 +130,94 @@ class ReadLocalFileTool(BaseTool):
         max_file_size_mb: float = 50.0,
         logger: Optional[LoggerInterface] = None,
     ) -> None:
-        """Initialize the ReadLocalFileTool.
+        """Initialize the file reader with configuration.
 
         Args:
-            max_file_size_mb: Maximum file size in megabytes (default: 50 MB).
-            logger: Optional logger instance. If None, creates from config.
+            max_file_size_mb: Maximum file size in MB (default: 50 MB).
+            logger: Optional logger instance.
 
         Raises:
-            RuntimeError: If tiktoken encoder initialization fails or
-                          dependencies are missing.
+            RuntimeError: If required dependencies are not available.
         """
-        if not DEPENDENCIES_AVAILABLE:
+        if not _DEPENDENCIES_AVAILABLE:
             raise RuntimeError(
                 'ReadLocalFileTool requires optional dependencies. '
                 'Install with: pip install createagents[file-tools] or '
-                'poetry install -E file-tools\n'
-                f'Missing dependencies error: {IMPORT_ERROR}'
+                f'poetry install -E file-tools\nError: {_IMPORT_ERROR}'
             )
 
-        self.__logger = logger or create_logger(__name__)
-        self.__encoding = initialize_tiktoken()
+        self._logger = logger or create_logger(__name__)
+        self._encoding = initialize_tiktoken()
+        self._max_file_size_bytes = int(max_file_size_mb * 1024 * 1024)
 
-        # Configurable max file size
-        self.max_file_size_bytes = int(max_file_size_mb * 1024 * 1024)
-        self.__logger.debug(
-            'ReadLocalFileTool initialized with max_file_size: %.2f MB (%d bytes)',
+        self._logger.debug(
+            'ReadLocalFileTool initialized: max_size=%.2fMB',
             max_file_size_mb,
-            self.max_file_size_bytes,
         )
 
     def _validate_path_security(self, file_path: Path) -> Optional[str]:
-        """Validate that the path doesn't access sensitive system directories.
-
-        This is a security measure to prevent LLM tools from reading:
-        - System configuration files (/etc, /var, etc.)
-        - User credentials (~/.ssh, ~/.aws, etc.)
-        - Private keys and secrets
+        """Validate path against security rules.
 
         Args:
-            file_path: The resolved (absolute) path to validate.
+            file_path: Resolved absolute path to validate.
 
         Returns:
-            Error message if path is forbidden, None if path is safe.
+            Error message if path is forbidden, None if safe.
         """
         path_str = str(file_path).lower()
         home_dir = str(Path.home())
 
         for pattern in FORBIDDEN_PATH_PATTERNS:
-            # Check both absolute paths and home-relative paths
             if pattern.startswith('/'):
-                # Absolute pattern - check if path starts with it
                 if path_str.startswith(pattern.lower()):
-                    self.__logger.warning(
-                        'Security: Blocked access to sensitive path: %s (matched pattern: %s)',
+                    self._logger.warning(
+                        'Security: Blocked path %s (pattern: %s)',
                         file_path,
                         pattern,
                     )
-                    return f'Access denied: Path matches forbidden pattern ({pattern})'
+                    return f'Access denied: forbidden path pattern ({pattern})'
             else:
-                # Relative pattern (like /.ssh) - check in home directory and in path
                 home_pattern = f'{home_dir}{pattern}'.lower()
                 if (
                     path_str.startswith(home_pattern)
                     or pattern.lower() in path_str
                 ):
-                    self.__logger.warning(
-                        'Security: Blocked access to sensitive path: %s (matched pattern: %s)',
+                    self._logger.warning(
+                        'Security: Blocked path %s (pattern: %s)',
                         file_path,
                         pattern,
                     )
-                    return f'Access denied: Path contains forbidden pattern ({pattern})'
+                    return f'Access denied: forbidden pattern ({pattern})'
 
-        return None  # Path is safe
+        return None
+
+    @staticmethod
+    def _format_size(size_bytes: int) -> str:
+        """Format byte size to human-readable string."""
+        size: float = float(size_bytes)
+        for unit in ('B', 'KB', 'MB', 'GB'):
+            if size < 1024:
+                return f'{size:.2f} {unit}'
+            size /= 1024
+        return f'{size:.2f} TB'
 
     async def execute_async(  # type: ignore[override]
         self,
         path: str,
         max_tokens: int = 30000,
     ) -> str:
-        """Execute file reading asynchronously - optimized for I/O.
-
-        This method runs the file reading operation in a thread pool executor
-        to avoid blocking the event loop, which is important for I/O-bound
-        operations like file reading.
+        """Execute file reading asynchronously.
 
         Args:
-            path: Absolute or relative path to the file.
-            max_tokens: Maximum tokens allowed (default: 30000).
+            path: Path to the file.
+            max_tokens: Maximum tokens allowed.
 
         Returns:
-            File content as string, or error message if operation fails.
+            File content or error message.
         """
         import asyncio  # pylint: disable=import-outside-toplevel
 
-        self.__logger.debug(
-            'Executing file read asynchronously: path=%s, max_tokens=%s',
-            path,
-            max_tokens,
-        )
-
-        # Run the synchronous execute() in a thread pool executor
-        # This prevents blocking the event loop for file I/O
+        self._logger.debug('Async file read: path=%s', path)
         loop = asyncio.get_running_loop()
         return await loop.run_in_executor(
             None, lambda: self.execute(path=path, max_tokens=max_tokens)
@@ -212,109 +228,162 @@ class ReadLocalFileTool(BaseTool):
         path: str,
         max_tokens: int = 30000,
     ) -> str:
-        """Execute the file reading operation with validation.
+        """Execute the file reading operation.
 
         Args:
-            path: Absolute or relative path to the file.
+            path: Path to the file (absolute or relative).
             max_tokens: Maximum tokens allowed (default: 30000).
 
         Returns:
-            File content as string, or error message if operation fails.
-
-        Error Messages:
-            - File not found: File doesn't exist
-            - Path is a directory: Path points to a directory
-            - File too large: File exceeds size limit
-            - Content exceeds token limit: Content has too many tokens
-            - Various file-specific errors
+            File content as string, or formatted error message.
         """
-        self.__logger.info(
-            "Executing file read: path='%s', max_tokens=%s",
-            path,
-            max_tokens,
+        start_time = perf_counter()
+        self._logger.info(
+            'Reading file: path=%s, max_tokens=%d', path, max_tokens
         )
 
         try:
             file_path = Path(path).resolve()
 
-            # Security validation: Check for forbidden paths FIRST
             security_error = self._validate_path_security(file_path)
             if security_error:
-                return self.__format_error(
-                    'Security violation', security_error
+                return self._error_response(
+                    security_error, 'SECURITY_VIOLATION', start_time
                 )
 
             if not file_path.exists():
-                return self.__format_error('File not found', path)
+                return self._error_response(
+                    f'File not found: {path}', 'FILE_NOT_FOUND', start_time
+                )
 
             if not file_path.is_file():
-                return self.__format_error('Path is a directory', path)
-
-            # Validation: File size check (before reading)
-            file_size = file_path.stat().st_size
-            if file_size > self.max_file_size_bytes:
-                size_mb = file_size / (1024 * 1024)
-                max_mb = self.max_file_size_bytes / (1024 * 1024)
-                return self.__format_error(
-                    'File too large',
-                    f'{path} is {size_mb:.2f} MB (max: {max_mb:.2f} MB)',
+                return self._error_response(
+                    f'Path is a directory: {path}', 'IS_DIRECTORY', start_time
                 )
 
-            # Determine file type and read content
-            extension = file_path.suffix.lstrip('.').lower() or 'txt'
-            self.__logger.debug('Processing file as type: %s', extension)
+            file_size = file_path.stat().st_size
+            if file_size > self._max_file_size_bytes:
+                size_human = self._format_size(file_size)
+                max_human = self._format_size(self._max_file_size_bytes)
+                return self._error_response(
+                    f'File too large: {size_human} (max: {max_human})',
+                    'FILE_TOO_LARGE',
+                    start_time,
+                )
 
+            extension = file_path.suffix.lstrip('.').lower() or 'txt'
             file_type = determine_file_type(extension)
             content = read_file_by_type(file_path, file_type)
+            token_count = count_tokens(content, self._encoding)
 
-            token_count = count_tokens(content, self.__encoding)
-            self.__logger.debug('File content has %s tokens', token_count)
+            self._logger.debug(
+                'File read: %d chars, %d tokens', len(content), token_count
+            )
 
             if token_count > max_tokens:
-                return self.__format_error(
-                    'Content exceeds token limit',
-                    f'{path} has {token_count} tokens (max: {max_tokens}). '
-                    f'Consider increasing max_tokens or processing in chunks',
+                return self._error_response(
+                    f'Content exceeds token limit: {token_count:,} tokens (max: {max_tokens:,}). '
+                    'Increase max_tokens or process file in chunks.',
+                    'TOKEN_LIMIT_EXCEEDED',
+                    start_time,
                 )
 
-            self.__logger.info(
-                "Successfully read file '%s': %s characters, %s tokens",
-                path,
-                len(content),
-                token_count,
+            elapsed_ms = (perf_counter() - start_time) * 1000
+
+            metadata = FileMetadata(
+                path=str(file_path),
+                size_bytes=file_size,
+                size_human=self._format_size(file_size),
+                token_count=token_count,
+                file_type=file_type.value,
             )
-            return content
+
+            self._logger.info(
+                'Successfully read %s: %d tokens in %.2fms',
+                path,
+                token_count,
+                elapsed_ms,
+            )
+
+            return self._success_response(content, metadata, elapsed_ms)
 
         except FileNotFoundError:
-            return self.__format_error('File not found', path)
+            return self._error_response(
+                f'File not found: {path}', 'FILE_NOT_FOUND', start_time
+            )
 
-        except FileReadException as e:
-            return self.__format_error('File read error', e.message)
+        except FileReadException as exc:
+            return self._error_response(
+                f'Read error: {exc.message}', 'FILE_READ_ERROR', start_time
+            )
 
         except PermissionError:
-            return self.__format_error('Permission denied', path)
-
-        except (OSError, RuntimeError, ValueError) as e:
-            return self.__format_error('File processing error', str(e))
-
-        except Exception as e:
-            error_msg = (
-                f'[ReadLocalFileTool Error] Unexpected error: '
-                f'{type(e).__name__}: {e}'
+            return self._error_response(
+                f'Permission denied: {path}', 'PERMISSION_DENIED', start_time
             )
-            self.__logger.error(error_msg, exc_info=True)
-            return error_msg
 
-    def __format_error(self, error_type: str, details: str) -> str:
-        """Format a consistent error message.
+        except (OSError, RuntimeError, ValueError) as exc:
+            return self._error_response(
+                f'Processing error: {exc}', 'PROCESSING_ERROR', start_time
+            )
+
+        except Exception as exc:
+            self._logger.error(
+                'Unexpected error reading %s: %s', path, exc, exc_info=True
+            )
+            return self._error_response(
+                f'Unexpected error: {type(exc).__name__}: {exc}',
+                'UNEXPECTED_ERROR',
+                start_time,
+            )
+
+    def _success_response(
+        self,
+        content: str,
+        metadata: FileMetadata,
+        elapsed_ms: float,
+    ) -> str:
+        """Format successful response with content.
 
         Args:
-            error_type: Type of error that occurred.
-            details: Detailed information about the error.
+            content: The file content.
+            metadata: File metadata.
+            elapsed_ms: Execution time in milliseconds.
 
         Returns:
-            Formatted error message string.
+            Formatted response string optimized for AI consumption.
         """
-        error_msg = f'[ReadLocalFileTool Error] {error_type}: {details}'
-        self.__logger.error(error_msg)
-        return error_msg
+        return ToolResponse.success(
+            data=content,
+            message=(
+                f'Read {metadata.size_human}, {metadata.token_count:,} tokens, '
+                f'type: {metadata.file_type}'
+            ),
+            tool_name=_TOOL_NAME,
+            execution_time_ms=elapsed_ms,
+        ).format()
+
+    def _error_response(
+        self, message: str, code: str, start_time: float
+    ) -> str:
+        """Format error response.
+
+        Args:
+            message: Error message.
+            code: Error code.
+            start_time: Execution start time.
+
+        Returns:
+            Formatted error string.
+        """
+        elapsed_ms = (perf_counter() - start_time) * 1000
+        self._logger.warning('ReadLocalFileTool error [%s]: %s', code, message)
+        return ToolResponse.error(
+            message=message,
+            tool_name=_TOOL_NAME,
+            error_code=code,
+            execution_time_ms=elapsed_ms,
+        ).format()
+
+
+__all__ = ['ReadLocalFileTool']

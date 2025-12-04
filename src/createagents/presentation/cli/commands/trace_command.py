@@ -8,7 +8,7 @@ from .base_command import CommandHandler
 
 if TYPE_CHECKING:
     from ....application.facade import CreateAgent
-    from ....domain.interfaces.trace_store_interface import TraceSummary
+    from ....domain.interfaces.tracing import TraceSummary
 
 
 class TraceCommandHandler(CommandHandler):

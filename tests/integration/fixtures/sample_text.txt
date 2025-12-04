@@ -1,4 +1,0 @@
-This is a sample text file for testing purposes.
-It contains multiple lines of text.
-The content is simple and easy to verify in tests.
-Total: 3 sentences across 3 lines.

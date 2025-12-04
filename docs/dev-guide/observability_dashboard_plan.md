@@ -812,6 +812,6 @@ docker run -p 8501:8501 createagents-dashboard
 
 ---
 
-**Autor:** Senior Developer  
-**Data:** 2025-12-03  
+**Autor:** Senior Developer
+**Data:** 2025-12-03
 **Status:** Pronto para implementação

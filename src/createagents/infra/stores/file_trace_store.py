@@ -8,7 +8,7 @@ from pathlib import Path
 from threading import Lock
 from typing import Dict, Iterator, List, Optional
 
-from ...domain.interfaces.trace_store_interface import (
+from ...domain.interfaces.tracing import (
     ITraceStore,
     TraceEntry,
     TraceSummary,

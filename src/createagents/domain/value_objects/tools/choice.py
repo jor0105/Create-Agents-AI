@@ -158,6 +158,7 @@ class ToolChoice:
         Args:
             value: The tool_choice value to parse. Can be:
                 - None: Returns None
+                - ToolChoice instance: Returns as-is
                 - "auto", "none", "required": Creates corresponding mode
                 - A tool name string: Creates specific function mode
                 - {"type": "function", "function": {"name": "..."}}: Specific function
@@ -170,6 +171,9 @@ class ToolChoice:
         """
         if value is None:
             return None
+
+        if isinstance(value, ToolChoice):
+            return value
 
         if isinstance(value, str):
             # Check predefined modes
@@ -194,7 +198,7 @@ class ToolChoice:
 
         raise ValueError(
             f'Invalid tool_choice type: {type(value).__name__}. '
-            'Must be a string or dict.'
+            'Must be a string, dict, or ToolChoice instance.'
         )
 
     def validate_against_tools(self, tool_names: Set[str]) -> None:
