@@ -1,6 +1,6 @@
 from typing import List, TYPE_CHECKING
 
-from ....utils.text_sanitizer import TextSanitizer
+from ..ui import render_markdown
 from .base_command import CommandHandler
 
 if TYPE_CHECKING:
@@ -42,9 +42,7 @@ class MetricsCommandHandler(CommandHandler):
                 f'| {m.model} | {duration_s:.2f}s | '
                 f'{m.prompt_tokens} / {m.completion_tokens} / {m.tokens_used} |\n'
             )
-        formatted_metrics = TextSanitizer.format_markdown_for_terminal(
-            metrics_str
-        )
+        formatted_metrics = render_markdown(metrics_str)
         self._renderer.render_system_message(formatted_metrics)
 
     def get_aliases(self) -> List[str]:

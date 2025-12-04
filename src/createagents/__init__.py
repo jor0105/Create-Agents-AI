@@ -7,7 +7,6 @@ from .domain import (
     tool,
 )
 from .infra import (
-    LoggingConfigurator,
     configure_logging,
     configure_resilience,
     create_logger,
@@ -20,7 +19,6 @@ __all__ = [
     'BaseTool',
     'tool',
     'LoggerInterface',
-    'LoggingConfigurator',
     'create_logger',
     'configure_logging',
     'configure_resilience',

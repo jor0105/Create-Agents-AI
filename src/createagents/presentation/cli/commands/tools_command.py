@@ -1,6 +1,6 @@
 from typing import List, TYPE_CHECKING
 
-from ....utils.text_sanitizer import TextSanitizer
+from ..ui import render_markdown
 from .base_command import CommandHandler
 
 if TYPE_CHECKING:
@@ -33,7 +33,7 @@ class ToolsCommandHandler(CommandHandler):
         else:
             for name, desc in tools.items():
                 tools_str += f'**{name}**\n{desc}\n\n'
-        formatted_tools = TextSanitizer.format_markdown_for_terminal(tools_str)
+        formatted_tools = render_markdown(tools_str)
         self._renderer.render_system_message(formatted_tools)
 
     def get_aliases(self) -> List[str]:

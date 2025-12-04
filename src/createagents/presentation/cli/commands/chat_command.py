@@ -1,6 +1,6 @@
 from typing import List, TYPE_CHECKING
 
-from ....utils.text_sanitizer import TextSanitizer
+from ..ui import render_markdown
 from .base_command import CommandHandler
 
 if TYPE_CHECKING:
@@ -28,7 +28,7 @@ class ChatCommandHandler(CommandHandler):
             agent: The CreateAgent instance.
             user_input: The user's input string.
         """
-        import asyncio  # pylint: disable=import-outside-toplevel
+        from ..application import EventLoopManager  # pylint: disable=import-outside-toplevel
         from ....application import StreamingResponseDTO  # pylint: disable=import-outside-toplevel
 
         async def run_chat():
@@ -49,9 +49,7 @@ class ChatCommandHandler(CommandHandler):
                 else:
                     # Non-streaming mode - clear thinking and format response
                     self._renderer.clear_thinking_indicator()
-                    response = TextSanitizer.format_markdown_for_terminal(
-                        response
-                    )
+                    response = render_markdown(response)
                     self._renderer.render_ai_message(response)
 
             except Exception as e:
@@ -62,7 +60,7 @@ class ChatCommandHandler(CommandHandler):
 
             self._renderer.render_spacer()
 
-        asyncio.run(run_chat())
+        EventLoopManager().run(run_chat())
 
     def get_aliases(self) -> List[str]:
         """Get chat command aliases.

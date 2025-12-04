@@ -3,7 +3,7 @@
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional, TYPE_CHECKING
 
-from ....utils.text_sanitizer import TextSanitizer
+from ..ui import render_markdown
 from .base_command import CommandHandler
 
 if TYPE_CHECKING:
@@ -76,7 +76,7 @@ class TraceCommandHandler(CommandHandler):
 | `/trace clear` | Clear all traces |
 | `/trace clear --older-than 7d` | Clear old traces |
 """
-        formatted = TextSanitizer.format_markdown_for_terminal(help_text)
+        formatted = render_markdown(help_text)
         self._renderer.render_system_message(formatted)
 
     def _get_trace_store(self, agent: 'CreateAgent') -> Optional[Any]:
@@ -145,7 +145,7 @@ class TraceCommandHandler(CommandHandler):
                 f'{trace.tool_calls_count} |\n'
             )
 
-        formatted = TextSanitizer.format_markdown_for_terminal(output)
+        formatted = render_markdown(output)
         self._renderer.render_system_message(formatted)
 
     def _handle_show(self, agent: 'CreateAgent', args: List[str]) -> None:
@@ -178,7 +178,7 @@ class TraceCommandHandler(CommandHandler):
             return
 
         if output_format == 'json':
-            import json
+            import json  # pylint: disable=import-outside-toplevel
 
             output = json.dumps(
                 [e.to_dict() for e in trace.entries],

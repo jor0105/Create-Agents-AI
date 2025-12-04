@@ -39,7 +39,7 @@ class TerminalRenderer:
         # Modern, minimal ASCII banner
         banner = f"""{ColorScheme.PURPLE}{ColorScheme.BOLD}
     ╔═══════════════════════════════════════╗
-    ║     🤖  AI CHAT SYSTEM  ✨           ║
+    ║     🤖  AI CHAT SYSTEM  ✨            ║
     ║     Enterprise Agent Framework        ║
     ╚═══════════════════════════════════════╝{ColorScheme.RESET}
 """
@@ -60,8 +60,9 @@ class TerminalRenderer:
             f'{ColorScheme.CYAN}/metrics{ColorScheme.RESET} '
             f'{ColorScheme.CYAN}/configs{ColorScheme.RESET} '
             f'{ColorScheme.CYAN}/tools{ColorScheme.RESET} '
+            f'{ColorScheme.CYAN}/trace{ColorScheme.RESET} '
             f'{ColorScheme.CYAN}/clear{ColorScheme.RESET} '
-            f'{ColorScheme.GRAY}exit{ColorScheme.RESET}\n'
+            f'{ColorScheme.CYAN}exit{ColorScheme.RESET}\n'
             f'{ColorScheme.DARK_GRAY}└{"─" * 45}{ColorScheme.RESET}\n'
         )
 

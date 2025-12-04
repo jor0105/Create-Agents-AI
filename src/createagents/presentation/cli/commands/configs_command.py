@@ -1,6 +1,6 @@
 from typing import List, TYPE_CHECKING
 
-from ....utils.text_sanitizer import TextSanitizer
+from ..ui import render_markdown
 from .base_command import CommandHandler
 
 if TYPE_CHECKING:
@@ -46,9 +46,7 @@ class ConfigsCommandHandler(CommandHandler):
                 config_str += '\n'
             else:
                 config_str += f'**{k}:** {v}\n'
-        formatted_config = TextSanitizer.format_markdown_for_terminal(
-            config_str
-        )
+        formatted_config = render_markdown(config_str)
         self._renderer.render_system_message(formatted_config)
 
     def get_aliases(self) -> List[str]:

@@ -174,18 +174,3 @@ class TerminalFormatter:
             f'{indent}{color}{BL}{H * box_width}{BR}{ColorScheme.RESET}'
         )
         return '\n'.join(lines)
-
-    @staticmethod
-    def create_list_indent(line: str) -> str:
-        """Create appropriate indent for list items.
-
-        Args:
-            line: The line to analyze.
-
-        Returns:
-            Indent string for subsequent lines.
-        """
-        match = re.match(r'^(\s*[•→▪]\s+)', line)
-        if match:
-            return ' ' * len(match.group(1))
-        return ''

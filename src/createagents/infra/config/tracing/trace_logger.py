@@ -471,7 +471,7 @@ class TraceLogger(ITraceLogger):
         if not self._trace_store:
             return
 
-        from ....domain.value_objects.tracing import TraceEntry #pylint: disable=import-outside-toplevel
+        from ....domain.value_objects.tracing import TraceEntry  # pylint: disable=import-outside-toplevel
 
         entry = TraceEntry(
             timestamp=datetime.now(timezone.utc),

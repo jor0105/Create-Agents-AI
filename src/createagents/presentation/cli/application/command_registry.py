@@ -40,15 +40,3 @@ class CommandRegistry:
             if handler.can_handle(user_input):
                 return handler
         return None
-
-    def get_all_handlers(self) -> List[CommandHandler]:
-        """Get all registered handlers.
-
-        Returns:
-            List of all registered command handlers.
-        """
-        return self._handlers.copy()
-
-    def clear(self) -> None:
-        """Clear all registered handlers."""
-        self._handlers.clear()

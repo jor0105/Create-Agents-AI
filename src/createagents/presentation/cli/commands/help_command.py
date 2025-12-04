@@ -1,6 +1,6 @@
 from typing import List, TYPE_CHECKING
 
-from ....utils.text_sanitizer import TextSanitizer
+from ..ui import render_markdown
 from .base_command import CommandHandler
 
 if TYPE_CHECKING:
@@ -44,7 +44,7 @@ Trace Commands:
 
 Type 'exit' or 'quit' to close the application.
         """
-        formatted_help = TextSanitizer.format_markdown_for_terminal(help_text)
+        formatted_help = render_markdown(help_text)
         self._renderer.render_system_message(formatted_help)
 
     def get_aliases(self) -> List[str]:
