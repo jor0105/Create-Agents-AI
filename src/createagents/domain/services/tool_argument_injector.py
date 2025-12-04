@@ -1,5 +1,6 @@
 from typing import (
     Any,
+    Callable,
     Dict,
     Optional,
     Annotated,
@@ -16,6 +17,9 @@ from ..value_objects import (
     InjectedLogger,
 )
 
+# Type alias for logger factory function
+LoggerFactory = Callable[[str], LoggerInterface]
+
 
 class ToolArgumentInjector:
     """Service responsible for injecting special arguments into tool calls.
@@ -25,13 +29,20 @@ class ToolArgumentInjector:
     and InjectedState.
     """
 
-    def __init__(self, logger: LoggerInterface):
+    def __init__(
+        self,
+        logger: LoggerInterface,
+        logger_factory: Optional[LoggerFactory] = None,
+    ):
         """Initialize the injector with a logger.
 
         Args:
             logger: Logger instance for logging injection details.
+            logger_factory: Optional factory function to create loggers for tools.
+                           If not provided, InjectedLogger parameters will not be injected.
         """
         self.__logger = logger
+        self.__logger_factory = logger_factory
 
     def inject_args(
         self,
@@ -98,16 +109,21 @@ class ToolArgumentInjector:
                             )
                         break
                     elif isinstance(arg, InjectedLogger):
-                        # Inject a configured logger for the tool
-                        from ...infra.config import create_logger  # pylint: disable=import-outside-toplevel
-
-                        tool_logger = create_logger(f'tool.{tool.name}')
-                        result[param_name] = tool_logger
-                        self.__logger.debug(
-                            "Injected logger into '%s' for tool '%s'",
-                            param_name,
-                            tool.name,
-                        )
+                        if self.__logger_factory is not None:
+                            tool_logger = self.__logger_factory(
+                                f'tool.{tool.name}'
+                            )
+                            result[param_name] = tool_logger
+                            self.__logger.debug(
+                                "Injected logger into '%s' for tool '%s'",
+                                param_name,
+                                tool.name,
+                            )
+                        else:
+                            self.__logger.warning(
+                                "InjectedLogger requested for '%s' but no logger_factory provided",
+                                param_name,
+                            )
                         break
                     elif isinstance(arg, InjectedToolArg):
                         # Generic injected arg - skip for now

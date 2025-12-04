@@ -1,3 +1,5 @@
+import asyncio
+import inspect
 import random
 import time
 from functools import wraps
@@ -16,6 +18,7 @@ def retry_with_backoff(
 ):
     """
     A decorator for retrying with exponential backoff and jitter.
+    Supports both synchronous and asynchronous functions.
 
     Args:
         max_attempts: The maximum number of attempts.
@@ -31,15 +34,65 @@ def retry_with_backoff(
         A decorator function.
 
     Example:
-        >>> @retry_with_backoff(max_attempts=3, initial_delay=1.0, jitter=True)
+        >>> @retry_with_backoff(max_attempts=3)
         ... def api_call():
-        ...     return requests.get("https://api.example.com")
+        ...     return requests.get("...")
+        ...
+        >>> @retry_with_backoff(max_attempts=3)
+        ... async def async_api_call():
+        ...     return await client.get("...")
     """
     logger = create_logger(__name__)
 
     def decorator(func: Callable) -> Callable:
+        is_async = inspect.iscoroutinefunction(func)
+
         @wraps(func)
-        def wrapper(*args, **kwargs):
+        async def async_wrapper(*args, **kwargs):
+            delay = initial_delay
+            last_exception = None
+
+            for attempt in range(1, max_attempts + 1):
+                try:
+                    return await func(*args, **kwargs)
+                except exceptions as e:
+                    last_exception = e
+
+                    if attempt == max_attempts:
+                        logger.error(
+                            'Failure after %s attempts: %s', max_attempts, e
+                        )
+                        raise
+
+                    if on_retry:
+                        try:
+                            on_retry(attempt, e)
+                        except Exception as callback_error:
+                            logger.warning(
+                                'Error in retry callback: %s', callback_error
+                            )
+
+                    actual_delay = delay
+                    if jitter:
+                        jitter_factor = 1 + random.uniform(-0.1, 0.1)  # nosec
+                        actual_delay = delay * jitter_factor
+
+                    logger.warning(
+                        'Attempt %s/%s failed: %s. Waiting %.2fs before retrying...',
+                        attempt,
+                        max_attempts,
+                        e,
+                        actual_delay,
+                    )
+
+                    await asyncio.sleep(actual_delay)
+                    delay *= backoff_factor
+
+            if last_exception:
+                raise last_exception
+
+        @wraps(func)
+        def sync_wrapper(*args, **kwargs):
             delay = initial_delay
             last_exception = None
 
@@ -82,6 +135,6 @@ def retry_with_backoff(
             if last_exception:
                 raise last_exception
 
-        return wrapper
+        return async_wrapper if is_async else sync_wrapper
 
     return decorator

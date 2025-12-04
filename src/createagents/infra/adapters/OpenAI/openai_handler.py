@@ -2,10 +2,11 @@ import asyncio
 import time
 from typing import Any, Dict, List, Optional, Union
 
-from ....domain import BaseTool, ChatException
+from ....domain import BaseTool, ChatException, RunType, TraceContext
 from ....domain.interfaces import (
     IMetricsRecorder,
     IToolSchemaBuilder,
+    ITraceLogger,
     LoggerInterface,
 )
 from ...config import ChatMetrics, EnvironmentConfig
@@ -32,6 +33,7 @@ class OpenAIHandler(BaseHandler):
         logger: LoggerInterface,
         metrics_recorder: IMetricsRecorder,
         schema_builder: IToolSchemaBuilder,
+        trace_logger: Optional[ITraceLogger] = None,
     ):
         """Initialize the handler with injected dependencies.
 
@@ -40,11 +42,13 @@ class OpenAIHandler(BaseHandler):
             logger: Logger instance for logging operations.
             metrics_recorder: Metrics recorder for tracking performance.
             schema_builder: Tool schema builder for formatting tools.
+            trace_logger: Optional trace logger for persistent tracing.
         """
         super().__init__(
             logger=logger,
             metrics_recorder=metrics_recorder,
             schema_builder=schema_builder,
+            trace_logger=trace_logger,
         )
         self.__client = client
         self.__max_tool_iterations = int(
@@ -60,6 +64,7 @@ class OpenAIHandler(BaseHandler):
         config: Dict[str, Any],
         tools: Optional[List[BaseTool]],
         tool_choice: Optional[Union[str, Dict[str, Any]]] = None,
+        trace_context: Optional[TraceContext] = None,
     ) -> str:
         """Executes the tool calling loop.
 
@@ -70,11 +75,17 @@ class OpenAIHandler(BaseHandler):
             config: Configuration for the API call.
             tools: Optional list of tools available for the model.
             tool_choice: Optional tool choice configuration.
+            trace_context: Optional trace context for distributed tracing.
 
         Returns:
             The final response text from the model.
         """
         start_time = time.time()
+
+        # Build trace extra for consistent logging
+        trace_extra: Dict[str, Any] = {}
+        if trace_context:
+            trace_extra = trace_context.to_log_extra()
 
         # Prepare tool schemas if tools are provided
         tool_schemas = None
@@ -101,16 +112,42 @@ class OpenAIHandler(BaseHandler):
         try:
             while iteration < self.__max_tool_iterations:
                 iteration += 1
+                # Create child trace context for this LLM iteration
+                iteration_ctx = None
+                if trace_context:
+                    iteration_ctx = trace_context.create_child(
+                        run_type=RunType.LLM,
+                        operation=f'openai_iteration_{iteration}',
+                        metadata={'iteration': iteration},
+                    )
+                    trace_extra = iteration_ctx.to_log_extra()
+
                 self._logger.info(
                     'OpenAI tool calling iteration %s/%s',
                     iteration,
                     self.__max_tool_iterations,
+                    extra={
+                        **trace_extra,
+                        'event': 'llm.iteration.start',
+                        'iteration': iteration,
+                        'max_iterations': self.__max_tool_iterations,
+                    },
                 )
                 self._logger.debug(
                     'Current message history size: %s', len(history)
                 )
 
+                # Log LLM request via TraceLogger (persists to TraceStore)
+                if self._trace_logger and iteration_ctx:
+                    self._trace_logger.log_llm_request(
+                        iteration_ctx,
+                        model=model,
+                        messages_count=len(history),
+                        tools_available=len(tools) if tools else None,
+                    )
+
                 # Call OpenAI API
+                llm_start_time = time.time()
                 response_api = await self.__client.call_api(
                     model,
                     instructions,
@@ -119,9 +156,31 @@ class OpenAIHandler(BaseHandler):
                     tool_schemas,
                     formatted_tool_choice,
                 )
+                llm_duration_ms = (time.time() - llm_start_time) * 1000
 
                 if OpenAIToolCallParser.has_tool_calls(response_api):
-                    self._logger.info('Tool calls detected in response')
+                    tool_calls = OpenAIToolCallParser.extract_tool_calls(
+                        response_api
+                    )
+
+                    # Log LLM response with tool calls via TraceLogger
+                    if self._trace_logger and iteration_ctx:
+                        self._trace_logger.log_llm_response(
+                            iteration_ctx,
+                            model=model,
+                            response_preview=f'Tool calls: {[tc["name"] for tc in tool_calls]}',
+                            has_tool_calls=True,
+                            tool_calls_count=len(tool_calls),
+                            duration_ms=llm_duration_ms,
+                        )
+
+                    self._logger.info(
+                        'Tool calls detected in response',
+                        extra={
+                            **trace_extra,
+                            'event': 'llm.tool_calls_detected',
+                        },
+                    )
 
                     if tool_executor is None:
                         self._logger.error(
@@ -139,24 +198,60 @@ class OpenAIHandler(BaseHandler):
                     if output_items:
                         history.extend(output_items)
 
-                    tool_calls = OpenAIToolCallParser.extract_tool_calls(
-                        response_api
-                    )
-                    self._logger.debug(
-                        'Executing %s tool(s) in parallel', len(tool_calls)
+                    self._logger.info(
+                        'Executing %s tool(s) in parallel',
+                        len(tool_calls),
+                        extra={
+                            **trace_extra,
+                            'event': 'tool.execution.start',
+                            'tool_count': len(tool_calls),
+                            'tool_names': [tc['name'] for tc in tool_calls],
+                        },
                     )
 
                     # Execute all tools in parallel using asyncio.gather
-                    async def execute_single_tool(tool_call: Dict[str, Any]):
+                    async def execute_single_tool(
+                        tool_call: Dict[str, Any],
+                        parent_ctx: Optional[TraceContext] = None,
+                    ):
                         """Execute a single tool and return formatted result."""
                         tool_name = tool_call['name']
                         tool_args = tool_call['arguments']
                         tool_id = tool_call['id']
+                        tool_start_time = time.time()
 
-                        self._logger.debug(
-                            "Executing tool '%s' with args: %s",
+                        # Create tool trace context
+                        tool_ctx = None
+                        tool_trace_extra: Dict[str, Any] = {}
+                        if parent_ctx:
+                            tool_ctx = parent_ctx.create_child(
+                                run_type=RunType.TOOL,
+                                operation=f'tool_{tool_name}',
+                                metadata={
+                                    'tool_name': tool_name,
+                                    'tool_call_id': tool_id,
+                                },
+                            )
+                            tool_trace_extra = tool_ctx.to_log_extra()
+
+                        # Log tool call start via TraceLogger (persists to TraceStore)
+                        if self._trace_logger and tool_ctx:
+                            self._trace_logger.log_tool_call(
+                                tool_ctx, tool_name, tool_id, tool_args
+                            )
+
+                        self._logger.info(
+                            "🔧 Executing tool '%s'",
                             tool_name,
-                            tool_args,
+                            extra={
+                                **tool_trace_extra,
+                                'event': 'tool.call.start',
+                                'tool_name': tool_name,
+                                'tool_call_id': tool_id,
+                                'tool_args': self._sanitize_for_logging(
+                                    tool_args
+                                ),
+                            },
                         )
 
                         execution_result = await tool_executor.execute_tool(
@@ -169,13 +264,41 @@ class OpenAIHandler(BaseHandler):
                             else str(execution_result.error)
                         )
 
+                        status = (
+                            'success' if execution_result.success else 'error'
+                        )
+                        tool_duration_ms = (
+                            time.time() - tool_start_time
+                        ) * 1000
+
+                        # Log tool result via TraceLogger (persists to TraceStore)
+                        if self._trace_logger and tool_ctx:
+                            self._trace_logger.log_tool_result(
+                                tool_ctx,
+                                tool_name,
+                                tool_id,
+                                result_text,
+                                tool_duration_ms,
+                                success=execution_result.success,
+                            )
+
                         self._logger.info(
-                            "Tool '%s' response [%s]: %s",
+                            "🔧 Tool '%s' completed [%s]",
                             tool_name,
-                            'success' if execution_result.success else 'error',
-                            result_text[:200] + '...'
-                            if len(result_text) > 200
-                            else result_text,
+                            status,
+                            extra={
+                                **tool_trace_extra,
+                                'event': 'tool.call.end',
+                                'tool_name': tool_name,
+                                'tool_call_id': tool_id,
+                                'status': status,
+                                'result_preview': (
+                                    result_text[:500] + '...'
+                                    if len(result_text) > 500
+                                    else result_text
+                                ),
+                                'result_length': len(result_text),
+                            },
                         )
                         self._logger.debug(
                             "Tool '%s' full response (ID: %s): %s",
@@ -194,7 +317,10 @@ class OpenAIHandler(BaseHandler):
 
                     # Execute all tools in parallel
                     tool_results = await asyncio.gather(
-                        *[execute_single_tool(tc) for tc in tool_calls],
+                        *[
+                            execute_single_tool(tc, iteration_ctx)
+                            for tc in tool_calls
+                        ],
                         return_exceptions=True,
                     )
 
@@ -205,6 +331,13 @@ class OpenAIHandler(BaseHandler):
                                 "Tool '%s' failed with exception: %s",
                                 tool_calls[i]['name'],
                                 result,
+                                extra={
+                                    **trace_extra,
+                                    'event': 'tool.call.error',
+                                    'tool_name': tool_calls[i]['name'],
+                                    'tool_call_id': tool_calls[i]['id'],
+                                    'error': str(result),
+                                },
                             )
                             # Add error result to history
                             error_msg = OpenAIToolCallParser.format_tool_results_for_llm(
@@ -220,21 +353,54 @@ class OpenAIHandler(BaseHandler):
 
                 content: str = response_api.output_text
                 if not content:
-                    self._logger.warning('OpenAI returned an empty response.')
+                    self._logger.warning(
+                        'OpenAI returned an empty response.',
+                        extra={
+                            **trace_extra,
+                            'event': 'llm.response.empty',
+                        },
+                    )
                     raise ChatException('OpenAI returned an empty response.')
+
+                # Log LLM text response via TraceLogger (persists to TraceStore)
+                if self._trace_logger and iteration_ctx:
+                    # Extract token usage if available
+                    tokens_used = None
+                    usage = getattr(response_api, 'usage', None)
+                    if usage:
+                        tokens_used = getattr(usage, 'total_tokens', None)
+
+                    self._trace_logger.log_llm_response(
+                        iteration_ctx,
+                        model=model,
+                        response_preview=content,
+                        has_tool_calls=False,
+                        tool_calls_count=0,
+                        tokens_used=tokens_used,
+                        duration_ms=llm_duration_ms,
+                    )
 
                 # Record metrics
                 self._metrics_recorder.record_success(
                     model, start_time, response_api, provider_type='openai'
                 )
 
-                self._logger.debug(
-                    'Response (first 100 chars): %s...', content[:100]
-                )
-
-                self._logger.debug(
-                    'Response after formatting (first 100 chars): %s...',
-                    content[:100],
+                elapsed_ms = int((time.time() - start_time) * 1000)
+                self._logger.info(
+                    '🤖 OpenAI response received',
+                    extra={
+                        **trace_extra,
+                        'event': 'llm.response.complete',
+                        'model': model,
+                        'iteration': iteration,
+                        'elapsed_ms': elapsed_ms,
+                        'response_preview': (
+                            content[:300] + '...'
+                            if len(content) > 300
+                            else content
+                        ),
+                        'response_length': len(content),
+                    },
                 )
 
                 return content

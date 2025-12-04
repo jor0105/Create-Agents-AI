@@ -32,8 +32,15 @@ Available Commands:
 • /metrics  → Show agent performance metrics and statistics
 • /configs  → Display current agent configuration settings
 • /tools    → List all available tools and their descriptions
+• /trace    → View and manage execution traces (debugging)
 • /clear    → Clear conversation history and start fresh
 • /help     → Show this help message
+
+Trace Commands:
+• /trace list             → List recent traces
+• /trace show <trace_id>  → View trace details
+• /trace export           → Export traces to file
+• /trace clear            → Clear stored traces
 
 Type 'exit' or 'quit' to close the application.
         """

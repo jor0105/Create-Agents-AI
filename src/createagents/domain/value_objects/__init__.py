@@ -11,6 +11,13 @@ from .config import (
     SupportedProviders,
 )
 
+from .tracing import (
+    RunType,
+    TraceContext,
+    TraceEntry,
+    TraceSummary,
+)
+
 from .tools import (
     BaseTool,
     InjectedState,
@@ -43,6 +50,11 @@ __all__ = [
     # Configuration value objects
     'SupportedProviders',
     'SupportedConfigs',
+    # Tracing value objects
+    'TraceContext',
+    'RunType',
+    'TraceEntry',
+    'TraceSummary',
     # Tool value objects
     'BaseTool',
     'ToolProtocol',

@@ -1,11 +1,42 @@
 from pathlib import Path
-from typing import Optional, Type
+from typing import List, Optional, Type
 
 from pydantic import BaseModel, Field
 
 from .....domain import BaseTool, FileReadException
 from .....domain.interfaces import LoggerInterface
 from ....config import create_logger
+
+# Security: Sensitive directories that should never be read by LLM tools
+# This prevents accidental or malicious access to system/user sensitive files
+FORBIDDEN_PATH_PATTERNS: List[str] = [
+    '/etc',
+    '/root',
+    '/var/log',
+    '/var/run',
+    '/proc',
+    '/sys',
+    '/dev',
+    '/boot',
+    '/lib',
+    '/lib64',
+    '/usr/lib',
+    '/usr/local/lib',
+    '/.ssh',
+    '/.gnupg',
+    '/.aws',
+    '/.config',
+    '/.local/share',
+    '/.bash_history',
+    '/.zsh_history',
+    '/.env',
+    '/id_rsa',
+    '/id_ed25519',
+    '/credentials',
+    '/secrets',
+    '/private',
+    '/.git/config',
+]
 
 IMPORT_ERROR = None
 
@@ -99,6 +130,50 @@ class ReadLocalFileTool(BaseTool):
             self.max_file_size_bytes,
         )
 
+    def _validate_path_security(self, file_path: Path) -> Optional[str]:
+        """Validate that the path doesn't access sensitive system directories.
+
+        This is a security measure to prevent LLM tools from reading:
+        - System configuration files (/etc, /var, etc.)
+        - User credentials (~/.ssh, ~/.aws, etc.)
+        - Private keys and secrets
+
+        Args:
+            file_path: The resolved (absolute) path to validate.
+
+        Returns:
+            Error message if path is forbidden, None if path is safe.
+        """
+        path_str = str(file_path).lower()
+        home_dir = str(Path.home())
+
+        for pattern in FORBIDDEN_PATH_PATTERNS:
+            # Check both absolute paths and home-relative paths
+            if pattern.startswith('/'):
+                # Absolute pattern - check if path starts with it
+                if path_str.startswith(pattern.lower()):
+                    self.__logger.warning(
+                        'Security: Blocked access to sensitive path: %s (matched pattern: %s)',
+                        file_path,
+                        pattern,
+                    )
+                    return f'Access denied: Path matches forbidden pattern ({pattern})'
+            else:
+                # Relative pattern (like /.ssh) - check in home directory and in path
+                home_pattern = f'{home_dir}{pattern}'.lower()
+                if (
+                    path_str.startswith(home_pattern)
+                    or pattern.lower() in path_str
+                ):
+                    self.__logger.warning(
+                        'Security: Blocked access to sensitive path: %s (matched pattern: %s)',
+                        file_path,
+                        pattern,
+                    )
+                    return f'Access denied: Path contains forbidden pattern ({pattern})'
+
+        return None  # Path is safe
+
     async def execute_async(
         self,
         path: str,
@@ -161,6 +236,13 @@ class ReadLocalFileTool(BaseTool):
 
         try:
             file_path = Path(path).resolve()
+
+            # Security validation: Check for forbidden paths FIRST
+            security_error = self._validate_path_security(file_path)
+            if security_error:
+                return self.__format_error(
+                    'Security violation', security_error
+                )
 
             if not file_path.exists():
                 return self.__format_error('File not found', path)

@@ -1,8 +1,7 @@
 """Tests for LoggingConfig implementation.
 
 This module tests the LoggingConfig class which implements LoggerInterface,
-ensuring it correctly delegates to Python's logging module and provides
-proper configuration management.
+ensuring it correctly delegates to Python's logging module.
 """
 
 import logging
@@ -11,11 +10,14 @@ from unittest.mock import Mock, patch
 import pytest
 
 from createagents.domain.interfaces.logger_interface import LoggerInterface
-from createagents.infra.config.logging_config import (
+from createagents.infra.config.logging_configurator import (
     JSONFormatter,
+    LoggingConfigurator,
     SensitiveDataFormatter,
-    LoggingConfig,
     _LoggingState,
+)
+from createagents.infra.config.logging_config import (
+    LoggingConfig,
     configure_logging,
     create_logger,
 )
@@ -24,11 +26,9 @@ from createagents.infra.config.logging_config import (
 @pytest.fixture(autouse=True)
 def reset_logging_state():
     """Reset logging state before and after each test."""
-    _LoggingState.configured = False
-    _LoggingState.handlers.clear()
+    LoggingConfigurator.reset()
     yield
-    _LoggingState.configured = False
-    _LoggingState.handlers.clear()
+    LoggingConfigurator.reset()
 
 
 @pytest.mark.unit
@@ -114,15 +114,13 @@ class TestStandardLogger:
         python_logger = logging.getLogger('test.interface')
         logger = LoggingConfig(python_logger)
 
+        # LoggingConfig should only have logging methods (ISP compliance)
         assert hasattr(logger, 'debug')
         assert hasattr(logger, 'info')
         assert hasattr(logger, 'warning')
         assert hasattr(logger, 'error')
         assert hasattr(logger, 'critical')
         assert hasattr(logger, 'exception')
-        assert hasattr(logger, 'configure')
-        assert hasattr(logger, 'reset')
-        assert hasattr(logger, 'set_level')
 
     def test_logger_with_exception_info(self):
         """error() correctly passes exc_info parameter."""
@@ -174,7 +172,7 @@ class TestConfigureLogging:
         logger = configure_logging(level=logging.DEBUG)
 
         assert isinstance(logger, LoggingConfig)
-        assert LoggingConfig.is_configured()
+        assert LoggingConfigurator.is_configured()
 
     def test_configure_logging_sets_level(self):
         """configure_logging sets the specified log level."""
@@ -184,73 +182,69 @@ class TestConfigureLogging:
 
 
 @pytest.mark.unit
-class TestStandardLoggerConfiguration:
-    """Tests for LoggingConfig configuration methods."""
+class TestLoggingConfiguratorIntegration:
+    """Tests for LoggingConfig with LoggingConfigurator."""
 
     def test_configure_sets_level(self):
-        """configure() sets the logging level correctly."""
-        logger = create_logger('test.config')
-        logger.configure(level=logging.ERROR)
+        """LoggingConfigurator.configure() sets the logging level."""
+        LoggingConfigurator.configure(level=logging.ERROR)
 
         assert _LoggingState.log_level == logging.ERROR
         assert _LoggingState.configured is True
 
     def test_configure_with_timestamp(self):
         """configure() includes timestamp by default."""
-        logger = create_logger('test.timestamp')
-        logger.configure(level=logging.INFO, include_timestamp=True)
+        LoggingConfigurator.configure(
+            level=logging.INFO, include_timestamp=True
+        )
 
         assert len(_LoggingState.handlers) >= 1
 
     def test_configure_without_timestamp(self):
         """configure() can exclude timestamp."""
-        logger = create_logger('test.no_timestamp')
-        logger.configure(level=logging.INFO, include_timestamp=False)
+        LoggingConfigurator.configure(
+            level=logging.INFO, include_timestamp=False
+        )
 
         assert len(_LoggingState.handlers) >= 1
 
     def test_reset_clears_configuration(self):
         """reset() clears logging configuration."""
-        logger = create_logger('test.reset')
-        logger.configure(level=logging.DEBUG)
+        LoggingConfigurator.configure(level=logging.DEBUG)
         assert _LoggingState.configured is True
 
-        logger.reset()
+        LoggingConfigurator.reset()
 
         assert _LoggingState.configured is False
         assert len(_LoggingState.handlers) == 0
 
     def test_set_level_changes_level_at_runtime(self):
         """set_level() changes logging level at runtime."""
-        logger = create_logger('test.set_level')
-        logger.configure(level=logging.INFO)
+        LoggingConfigurator.configure(level=logging.INFO)
 
-        logger.set_level(logging.DEBUG)
+        LoggingConfigurator.set_level(logging.DEBUG)
 
         assert _LoggingState.log_level == logging.DEBUG
 
     def test_is_configured_returns_correct_state(self):
         """is_configured() returns correct configuration state."""
-        assert LoggingConfig.is_configured() is False
+        assert LoggingConfigurator.is_configured() is False
 
-        logger = create_logger('test.is_configured')
-        logger.configure(level=logging.INFO)
+        LoggingConfigurator.configure(level=logging.INFO)
 
-        assert LoggingConfig.is_configured() is True
+        assert LoggingConfigurator.is_configured() is True
 
     @patch.dict('os.environ', {'LOG_LEVEL': 'WARNING'})
     def test_configure_reads_level_from_env(self):
         """configure() reads LOG_LEVEL from environment."""
-        logger = create_logger('test.env_level')
-        logger.configure()
+        LoggingConfigurator.configure()
 
         assert _LoggingState.log_level == logging.WARNING
 
     @patch.dict('os.environ', {'LOG_JSON_FORMAT': 'true'})
     def test_configure_reads_json_format_from_env(self):
         """configure() reads LOG_JSON_FORMAT from environment."""
-        logger = create_logger('test.env_json')
-        logger.configure()
+        LoggingConfigurator.configure()
 
         assert _LoggingState.configured is True
 

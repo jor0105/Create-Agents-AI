@@ -11,17 +11,22 @@ from .config import (
     EnvironmentConfig,
     JSONFormatter,
     LoggingConfig,
+    LoggingConfigurator,
     MetricsCollector,
     SensitiveDataFilter,
     SensitiveDataFormatter,
+    TraceLogger,
+    create_trace_logger,
     retry_with_backoff,
 )
 from .factories import ChatAdapterFactory
+from .stores import FileTraceStore, InMemoryTraceStore
 
 __all__ = [
     # Configs
     'EnvironmentConfig',
     'LoggingConfig',
+    'LoggingConfigurator',
     'JSONFormatter',
     'SensitiveDataFormatter',
     'ChatMetrics',
@@ -29,6 +34,12 @@ __all__ = [
     'retry_with_backoff',
     'SensitiveDataFilter',
     'AvailableTools',
+    # Trace Logging
+    'TraceLogger',
+    'create_trace_logger',
+    # Trace Stores
+    'InMemoryTraceStore',
+    'FileTraceStore',
     # Adapters
     'OllamaChatAdapter',
     'OpenAIChatAdapter',

@@ -1,8 +1,8 @@
 from typing import Any, Dict, AsyncGenerator, List, Optional, Union
 
 from ....application.interfaces import ChatRepository
-from ....domain import BaseTool, ChatException
-from ....domain.interfaces import LoggerInterface
+from ....domain import BaseTool, ChatException, TraceContext
+from ....domain.interfaces import ITraceLogger, LoggerInterface
 from ...config import ChatMetrics, create_logger
 from ..Common import MetricsRecorder, ToolPayloadBuilder
 from .ollama_client import OllamaClient
@@ -33,13 +33,16 @@ class OllamaChatAdapter(ChatRepository):
     def __init__(
         self,
         logger: Optional[LoggerInterface] = None,
+        trace_logger: Optional[ITraceLogger] = None,
     ):
         """Initialize the Ollama adapter.
 
         Args:
             logger: Optional logger instance. If None, creates from config.
+            trace_logger: Optional trace logger for persistent tracing.
         """
         self.__logger = logger or create_logger(__name__)
+        self.__trace_logger = trace_logger
         self.__metrics: List[ChatMetrics] = []
         self.__client = OllamaClient(logger=self.__logger)
         self.__schema_builder = ToolPayloadBuilder(
@@ -56,6 +59,7 @@ class OllamaChatAdapter(ChatRepository):
         tools: Optional[List[BaseTool]],
         history: List[Dict[str, str]],
         tool_choice: Optional[Union[str, Dict[str, Any]]] = None,
+        trace_context: Optional[TraceContext] = None,
     ) -> Union[str, AsyncGenerator[str, None]]:
         """
         Sends a message to Ollama and returns the response.
@@ -71,6 +75,7 @@ class OllamaChatAdapter(ChatRepository):
                 - "none": Don't call any tool
                 - "required": Force at least one tool call
                 - {"type": "function", "function": {"name": "tool_name"}}
+            trace_context: Optional trace context for distributed tracing.
 
         Returns:
             Union[str, AsyncGenerator[str, None]]:
@@ -97,14 +102,14 @@ class OllamaChatAdapter(ChatRepository):
                 stream_handler = self.__create_stream_handler()
                 self.__logger.debug('Streaming mode enabled for Ollama')
                 result_stream = stream_handler.handle_stream(
-                    model, messages, config, tools, tool_choice
+                    model, messages, config, tools, tool_choice, trace_context
                 )
                 return result_stream
 
             # Non-streaming mode - Tool calling loop
             handler = self.__create_handler()
             result: str = await handler.execute_tool_loop(
-                model, messages, config, tools, tool_choice
+                model, messages, config, tools, tool_choice, trace_context
             )
             return result
 
@@ -134,6 +139,7 @@ class OllamaChatAdapter(ChatRepository):
             logger=self.__logger,
             metrics_recorder=metrics_recorder,
             schema_builder=self.__schema_builder,
+            trace_logger=self.__trace_logger,
         )
 
     def __create_stream_handler(self) -> OllamaStreamHandler:
@@ -151,6 +157,7 @@ class OllamaChatAdapter(ChatRepository):
             logger=self.__logger,
             metrics_recorder=metrics_recorder,
             schema_builder=self.__schema_builder,
+            trace_logger=self.__trace_logger,
         )
 
     def get_metrics(self) -> List[ChatMetrics]:

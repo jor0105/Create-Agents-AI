@@ -36,6 +36,9 @@ class TestLoggerInterface:
             def critical(self, message: str, *args, **kwargs) -> None:
                 pass
 
+            def exception(self, message: str, *args, **kwargs) -> None:
+                pass
+
         logger = CompleteLogger()
         assert isinstance(logger, LoggerInterface)
 
@@ -57,6 +60,9 @@ class TestLoggerInterface:
                 pass
 
             def critical(self, message: str, *args, **kwargs) -> None:
+                pass
+
+            def exception(self, message: str, *args, **kwargs) -> None:
                 pass
 
         logger = TestLogger()
@@ -88,6 +94,9 @@ class TestLoggerInterface:
             def critical(self, message: str, *args, **kwargs) -> None:
                 pass
 
+            def exception(self, message: str, *args, **kwargs) -> None:
+                pass
+
         logger = TestLogger()
         logger.info('info message', 'arg1', key='value')
         assert logger.logs[0] == (
@@ -115,6 +124,9 @@ class TestLoggerInterface:
                 pass
 
             def critical(self, message: str, *args, **kwargs) -> None:
+                pass
+
+            def exception(self, message: str, *args, **kwargs) -> None:
                 pass
 
         logger = TestLogger()
@@ -146,6 +158,9 @@ class TestLoggerInterface:
             def critical(self, message: str, *args, **kwargs) -> None:
                 pass
 
+            def exception(self, message: str, *args, **kwargs) -> None:
+                pass
+
         logger = TestLogger()
         logger.error('error message', 'arg1', key='value')
         assert logger.logs[0] == (
@@ -175,11 +190,46 @@ class TestLoggerInterface:
             def critical(self, message: str, *args, **kwargs) -> None:
                 self.logs.append(('critical', message, args, kwargs))
 
+            def exception(self, message: str, *args, **kwargs) -> None:
+                pass
+
         logger = TestLogger()
         logger.critical('critical message', 'arg1', key='value')
         assert logger.logs[0] == (
             'critical',
             'critical message',
+            ('arg1',),
+            {'key': 'value'},
+        )
+
+    def test_scenario_exception_method_signature(self):
+        class TestLogger(LoggerInterface):
+            def __init__(self):
+                self.logs = []
+
+            def debug(self, message: str, *args, **kwargs) -> None:
+                pass
+
+            def info(self, message: str, *args, **kwargs) -> None:
+                pass
+
+            def warning(self, message: str, *args, **kwargs) -> None:
+                pass
+
+            def error(self, message: str, *args, **kwargs) -> None:
+                pass
+
+            def critical(self, message: str, *args, **kwargs) -> None:
+                pass
+
+            def exception(self, message: str, *args, **kwargs) -> None:
+                self.logs.append(('exception', message, args, kwargs))
+
+        logger = TestLogger()
+        logger.exception('exception message', 'arg1', key='value')
+        assert logger.logs[0] == (
+            'exception',
+            'exception message',
             ('arg1',),
             {'key': 'value'},
         )

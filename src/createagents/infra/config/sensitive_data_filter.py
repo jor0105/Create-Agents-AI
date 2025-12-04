@@ -18,22 +18,35 @@ class SensitiveDataFilter:
     generic patterns from capturing data incorrectly.
 
     Current order:
-    1. JWT tokens (most specific)
-    2. API keys
-    3. Bearer tokens
-    4. Secrets
-    5. Auth headers
-    6. URLs with passwords (before the generic password pattern)
-    7. Passwords (most generic)
-    8. Personal data (LGPD/GDPR)
-    9. Financial data
-    10. Private IPs
+    1. Cloud/AI Provider keys (OpenAI, AWS, Google, Anthropic, HF, GitHub)
+    2. Private Keys (PEM headers)
+    3. JWT tokens (most specific)
+    4. API keys (generic label-based)
+    5. Bearer tokens
+    6. Secrets
+    7. Auth headers
+    8. URIs with passwords (DBs, URLs)
+    9. Passwords (most generic)
+    9. Personal data (LGPD/GDPR)
+    10. Financial data
+    11. Private IPs
     """
 
     DEFAULT_CACHE_SIZE = 1000
     DEFAULT_VISIBLE_CHARS = 4
 
     _PATTERNS: Dict[str, Pattern] = {
+        # Specific Provider Keys (High Priority)
+        'openai_key': re.compile(r'\bsk-(?:proj-)?[a-zA-Z0-9\-_]{20,}\b'),
+        'anthropic_key': re.compile(r'\bsk-ant-[a-zA-Z0-9\-_]{20,}\b'),
+        'google_key': re.compile(r'\bAIza[0-9A-Za-z\-_]{35}\b'),
+        'aws_access_key': re.compile(r'\b(AKIA|ASIA|ABIA|ACCA)[0-9A-Z]{16}\b'),
+        'github_token': re.compile(
+            r'\b(ghp|gho|ghu|ghs|ghr)_[a-zA-Z0-9]{36}\b'
+        ),
+        'huggingface_token': re.compile(r'\bhf_[a-zA-Z0-9]{34}\b'),
+        'private_key': re.compile(r'-----BEGIN[ A-Z0-9_-]+PRIVATE KEY-----'),
+        # Generic Patterns
         'jwt_token': re.compile(
             r'eyJ[a-zA-Z0-9_-]*\.eyJ[a-zA-Z0-9_-]*\.[a-zA-Z0-9_-]*'
         ),
@@ -49,7 +62,7 @@ class SensitiveDataFilter:
             re.IGNORECASE,
         ),
         'url_with_password': re.compile(
-            r'(https?://[^:@\s]+):([^@\s]+)@', re.IGNORECASE
+            r'([a-zA-Z][a-zA-Z0-9+.-]*://[^:@\s]+):([^@\s]+)@', re.IGNORECASE
         ),
         'password': re.compile(
             r'(password|senha|pwd|pass)[\s:="\'\[]*([^\s,\]"\'}@]{3,})',
@@ -142,49 +155,3 @@ class SensitiveDataFilter:
     def clear_cache(cls) -> None:
         """Clears the LRU cache of replacements."""
         cls._filter_cached.cache_clear()
-
-    @classmethod
-    def mask_partial(
-        cls, text: str, visible_chars: int = DEFAULT_VISIBLE_CHARS
-    ) -> str:
-        """
-        Partially masks a text, keeping a specified number of characters visible.
-
-        Args:
-            text: The text to be masked.
-            visible_chars: The number of characters to keep visible at the end.
-
-        Returns:
-            The masked text.
-
-        Example:
-            >>> SensitiveDataFilter.mask_partial("sk-1234567890abcdef", 4)
-            '****cdef'
-        """
-        if len(text) <= visible_chars:
-            return '*' * len(text)
-
-        if visible_chars <= 0:
-            return '*' * len(text)
-
-        return '*' * (len(text) - visible_chars) + text[-visible_chars:]
-
-    @classmethod
-    def is_sensitive(cls, text: str) -> bool:
-        """
-        Checks if the given text contains sensitive data.
-
-        Args:
-            text: The text to be checked.
-
-        Returns:
-            True if the text contains sensitive data, False otherwise.
-        """
-        if not text:
-            return False
-
-        for pattern in cls._PATTERNS.values():
-            if pattern.search(text):
-                return True
-
-        return False

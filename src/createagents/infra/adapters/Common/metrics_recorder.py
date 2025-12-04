@@ -1,5 +1,5 @@
 import time
-from typing import Any, List, Optional
+from typing import Any, List, Optional, Tuple
 
 from ....domain.interfaces import IMetricsRecorder, LoggerInterface
 from ...config import ChatMetrics
@@ -48,7 +48,42 @@ class MetricsRecorder(IMetricsRecorder):
             response: The response object from the API.
             provider_type: Type of provider ('openai' or 'ollama') for specific handling.
         """
-        self.record_success_metrics(model, start_time, response, provider_type)
+        latency = (time.time() - start_time) * 1000
+
+        # Extract tokens based on provider type
+        if provider_type == 'openai':
+            tokens_used, prompt_tokens, completion_tokens = (
+                self._extract_openai_tokens(response)
+            )
+            load_duration_ms = None
+            prompt_eval_duration_ms = None
+            eval_duration_ms = None
+        elif provider_type == 'ollama':
+            tokens_used, prompt_tokens, completion_tokens = (
+                self._extract_ollama_tokens(response)
+            )
+            load_duration_ms, prompt_eval_duration_ms, eval_duration_ms = (
+                self._extract_ollama_durations(response)
+            )
+        else:
+            tokens_used = prompt_tokens = completion_tokens = None
+            load_duration_ms = prompt_eval_duration_ms = eval_duration_ms = (
+                None
+            )
+
+        metrics = ChatMetrics(
+            model=model,
+            latency_ms=latency,
+            tokens_used=tokens_used,
+            prompt_tokens=prompt_tokens,
+            completion_tokens=completion_tokens,
+            load_duration_ms=load_duration_ms,
+            prompt_eval_duration_ms=prompt_eval_duration_ms,
+            eval_duration_ms=eval_duration_ms,
+            success=True,
+        )
+        self._metrics.append(metrics)
+        self._logger.info('Chat completed: %s', metrics)
 
     def record_success_with_values(
         self,
@@ -93,7 +128,17 @@ class MetricsRecorder(IMetricsRecorder):
             start_time: The timestamp when the operation started.
             error: The error that occurred (can be string or Exception).
         """
-        self.record_error_metrics(model, start_time, error)
+        latency = (time.time() - start_time) * 1000
+        error_message = str(error) if error else 'Unknown error'
+
+        metrics = ChatMetrics(
+            model=model,
+            latency_ms=latency,
+            success=False,
+            error_message=error_message,
+        )
+        self._metrics.append(metrics)
+        self._logger.error('Chat failed: %s', metrics)
 
     def record_error_with_values(
         self,
@@ -117,79 +162,6 @@ class MetricsRecorder(IMetricsRecorder):
         self._metrics.append(metrics)
         self._logger.error('Chat failed: %s', metrics)
 
-    def record_success_metrics(
-        self,
-        model: str,
-        start_time: float,
-        response_api: Any,
-        provider_type: str = 'generic',
-    ) -> None:
-        """Record metrics for a successful operation.
-
-        Args:
-            model: The model name used for the operation.
-            start_time: The timestamp when the operation started.
-            response_api: The response object from the API.
-            provider_type: Type of provider ('openai' or 'ollama') for specific handling.
-        """
-        latency = (time.time() - start_time) * 1000
-
-        # Extract tokens based on provider type
-        if provider_type == 'openai':
-            tokens_used, prompt_tokens, completion_tokens = (
-                self._extract_openai_tokens(response_api)
-            )
-            load_duration_ms = None
-            prompt_eval_duration_ms = None
-            eval_duration_ms = None
-        elif provider_type == 'ollama':
-            tokens_used, prompt_tokens, completion_tokens = (
-                self._extract_ollama_tokens(response_api)
-            )
-            load_duration_ms, prompt_eval_duration_ms, eval_duration_ms = (
-                self._extract_ollama_durations(response_api)
-            )
-        else:
-            tokens_used = prompt_tokens = completion_tokens = None
-            load_duration_ms = prompt_eval_duration_ms = eval_duration_ms = (
-                None
-            )
-
-        metrics = ChatMetrics(
-            model=model,
-            latency_ms=latency,
-            tokens_used=tokens_used,
-            prompt_tokens=prompt_tokens,
-            completion_tokens=completion_tokens,
-            load_duration_ms=load_duration_ms,
-            prompt_eval_duration_ms=prompt_eval_duration_ms,
-            eval_duration_ms=eval_duration_ms,
-            success=True,
-        )
-        self._metrics.append(metrics)
-        self._logger.info('Chat completed: %s', metrics)
-
-    def record_error_metrics(
-        self, model: str, start_time: float, error: Any
-    ) -> None:
-        """Record metrics for a failed operation.
-
-        Args:
-            model: The model name used for the operation.
-            start_time: The timestamp when the operation started.
-            error: The error that occurred (can be string or Exception).
-        """
-        latency = (time.time() - start_time) * 1000
-        error_message = str(error) if error else 'Unknown error'
-
-        metrics = ChatMetrics(
-            model=model,
-            latency_ms=latency,
-            success=False,
-            error_message=error_message,
-        )
-        self._metrics.append(metrics)
-
     def get_metrics(self) -> List[ChatMetrics]:
         """Return a copy of collected metrics.
 
@@ -199,7 +171,9 @@ class MetricsRecorder(IMetricsRecorder):
         return self._metrics.copy()
 
     @staticmethod
-    def _extract_openai_tokens(response_api: Any) -> tuple:
+    def _extract_openai_tokens(
+        response_api: Any,
+    ) -> Tuple[Optional[int], Optional[int], Optional[int]]:
         """Extract token information from OpenAI response.
 
         Args:
@@ -221,7 +195,7 @@ class MetricsRecorder(IMetricsRecorder):
         return tokens_used, prompt_tokens, completion_tokens
 
     @staticmethod
-    def _extract_ollama_tokens(response_api: Any) -> tuple:
+    def _extract_ollama_tokens(response_api: Any) -> Tuple[int, int, int]:
         """Extract token information from Ollama response.
 
         Args:
@@ -237,7 +211,9 @@ class MetricsRecorder(IMetricsRecorder):
         return total_tokens, prompt_eval_count, eval_count
 
     @staticmethod
-    def _extract_ollama_durations(response_api: Any) -> tuple:
+    def _extract_ollama_durations(
+        response_api: Any,
+    ) -> Tuple[Optional[float], Optional[float], Optional[float]]:
         """Extract duration information from Ollama response.
 
         Args:

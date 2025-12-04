@@ -2,10 +2,11 @@ import asyncio
 import time
 from typing import Any, Dict, AsyncGenerator, List, Optional, Union
 
-from ....domain import ChatException, BaseTool
+from ....domain import ChatException, BaseTool, RunType, TraceContext
 from ....domain.interfaces import (
     IMetricsRecorder,
     IToolSchemaBuilder,
+    ITraceLogger,
     LoggerInterface,
 )
 from ...config import EnvironmentConfig
@@ -29,6 +30,7 @@ class OllamaStreamHandler(BaseHandler):
         logger: LoggerInterface,
         metrics_recorder: IMetricsRecorder,
         schema_builder: IToolSchemaBuilder,
+        trace_logger: Optional[ITraceLogger] = None,
     ):
         """Initialize the stream handler with injected dependencies.
 
@@ -37,11 +39,13 @@ class OllamaStreamHandler(BaseHandler):
             logger: Logger instance for logging.
             metrics_recorder: Metrics recorder for tracking performance.
             schema_builder: Tool schema builder for formatting tools.
+            trace_logger: Optional trace logger for persistent tracing.
         """
         super().__init__(
             logger=logger,
             metrics_recorder=metrics_recorder,
             schema_builder=schema_builder,
+            trace_logger=trace_logger,
         )
         self.__client = client
         self.__max_tool_iterations = int(
@@ -56,6 +60,7 @@ class OllamaStreamHandler(BaseHandler):
         config: Dict[str, Any],
         tools: Optional[List[BaseTool]],
         tool_choice: Optional[Union[str, Dict[str, Any]]] = None,
+        trace_context: Optional[TraceContext] = None,
     ) -> AsyncGenerator[str, None]:
         """Yields tokens from the Ollama API as they arrive.
 
@@ -69,8 +74,14 @@ class OllamaStreamHandler(BaseHandler):
             config: Configuration for the API call.
             tools: Optional list of tools available for the model.
             tool_choice: Optional tool choice configuration.
+            trace_context: Optional trace context for distributed tracing.
         """
         start_time = time.time()
+
+        # Build trace extra for consistent logging
+        trace_extra: Dict[str, Any] = {}
+        if trace_context:
+            trace_extra = trace_context.to_log_extra()
 
         # Prepare tool schemas and executor if tools are provided
         tool_schemas = None
@@ -99,10 +110,27 @@ class OllamaStreamHandler(BaseHandler):
         try:
             while iteration < self.__max_tool_iterations:
                 iteration += 1
+
+                # Create child trace context for this LLM iteration
+                iteration_ctx = None
+                if trace_context:
+                    iteration_ctx = trace_context.create_child(
+                        run_type=RunType.LLM,
+                        operation=f'ollama_stream_iteration_{iteration}',
+                        metadata={'iteration': iteration, 'streaming': True},
+                    )
+                    trace_extra = iteration_ctx.to_log_extra()
+
                 self._logger.info(
                     'Ollama streaming iteration %s/%s',
                     iteration,
                     self.__max_tool_iterations,
+                    extra={
+                        **trace_extra,
+                        'event': 'llm.stream.iteration.start',
+                        'iteration': iteration,
+                        'max_iterations': self.__max_tool_iterations,
+                    },
                 )
 
                 stream_response = await self.__client.call_api(
@@ -165,15 +193,30 @@ class OllamaStreamHandler(BaseHandler):
 
                 # Process tool calls if detected
                 if tool_call_detected and last_chunk and tool_executor:
-                    self._logger.info('Tool calls detected, executing tools')
+                    self._logger.info(
+                        'Tool calls detected, executing tools',
+                        extra={
+                            **trace_extra,
+                            'event': 'llm.stream.tool_calls_detected',
+                        },
+                    )
 
                     # Add assistant message with tool calls to history
                     history.append(last_chunk.message)
 
                     # Execute tool calls in parallel
                     tool_calls = last_chunk.message.tool_calls
-                    self._logger.debug(
-                        'Executing %s tool(s) in parallel', len(tool_calls)
+                    self._logger.info(
+                        'Executing %s tool(s) in parallel',
+                        len(tool_calls),
+                        extra={
+                            **trace_extra,
+                            'event': 'tool.execution.start',
+                            'tool_count': len(tool_calls),
+                            'tool_names': [
+                                tc.function.name for tc in tool_calls
+                            ],
+                        },
                     )
 
                     # Execute all tools in parallel using asyncio.gather
@@ -181,11 +224,37 @@ class OllamaStreamHandler(BaseHandler):
                         """Execute a single tool and return formatted result."""
                         tool_name = tool_call.function.name
                         tool_args = tool_call.function.arguments
+                        tool_start_time = time.time()
 
-                        self._logger.debug(
-                            "Executing tool '%s' with args: %s",
+                        # Create tool trace context
+                        tool_ctx = None
+                        tool_trace_extra: Dict[str, Any] = {}
+                        if iteration_ctx:
+                            tool_ctx = iteration_ctx.create_child(
+                                run_type=RunType.TOOL,
+                                operation=f'tool_{tool_name}',
+                                metadata={'tool_name': tool_name},
+                            )
+                            tool_trace_extra = tool_ctx.to_log_extra()
+
+                        # Log tool call start via TraceLogger (persists to TraceStore)
+                        tool_call_id = f'ollama_stream_{tool_name}_{int(time.time() * 1000)}'
+                        if self._trace_logger and tool_ctx:
+                            self._trace_logger.log_tool_call(
+                                tool_ctx, tool_name, tool_call_id, tool_args
+                            )
+
+                        self._logger.info(
+                            "🔧 Executing tool '%s'",
                             tool_name,
-                            tool_args,
+                            extra={
+                                **tool_trace_extra,
+                                'event': 'tool.call.start',
+                                'tool_name': tool_name,
+                                'tool_args': self._sanitize_for_logging(
+                                    tool_args
+                                ),
+                            },
                         )
 
                         execution_result = await tool_executor.execute_tool(
@@ -198,19 +267,40 @@ class OllamaStreamHandler(BaseHandler):
                             else f'Error: {execution_result.error}'
                         )
 
-                        # Log tool response for audit trail
-                        self._logger.info(
-                            "Tool '%s' response [%s]: %s",
-                            tool_name,
-                            'success' if execution_result.success else 'error',
-                            result_text[:200] + '...'
-                            if len(result_text) > 200
-                            else result_text,
+                        status = (
+                            'success' if execution_result.success else 'error'
                         )
-                        self._logger.debug(
-                            "Tool '%s' full response: %s",
+                        tool_duration_ms = (
+                            time.time() - tool_start_time
+                        ) * 1000
+
+                        # Log tool result via TraceLogger (persists to TraceStore)
+                        if self._trace_logger and tool_ctx:
+                            self._trace_logger.log_tool_result(
+                                tool_ctx,
+                                tool_name,
+                                tool_call_id,
+                                result_text,
+                                tool_duration_ms,
+                                success=execution_result.success,
+                            )
+
+                        self._logger.info(
+                            "🔧 Tool '%s' completed [%s]",
                             tool_name,
-                            result_text,
+                            status,
+                            extra={
+                                **tool_trace_extra,
+                                'event': 'tool.call.end',
+                                'tool_name': tool_name,
+                                'status': status,
+                                'result_preview': (
+                                    result_text[:500] + '...'
+                                    if len(result_text) > 500
+                                    else result_text
+                                ),
+                                'result_length': len(result_text),
+                            },
                         )
 
                         return {
@@ -233,6 +323,12 @@ class OllamaStreamHandler(BaseHandler):
                                 "Tool '%s' failed with exception: %s",
                                 tool_name,
                                 result,
+                                extra={
+                                    **trace_extra,
+                                    'event': 'tool.call.error',
+                                    'tool_name': tool_name,
+                                    'error': str(result),
+                                },
                             )
                             history.append(
                                 {
@@ -295,11 +391,17 @@ class OllamaStreamHandler(BaseHandler):
                 ),
             )
             self._logger.info(
-                'Streaming chat completed: latency=%.2fms, tokens=%s '
-                '(accumulated over %s iteration(s))',
-                latency,
-                total_tokens,
-                iteration,
+                '🤖 Streaming chat completed',
+                extra={
+                    **trace_extra,
+                    'event': 'llm.stream.complete',
+                    'model': model,
+                    'latency_ms': latency,
+                    'total_tokens': total_tokens,
+                    'prompt_tokens': total_prompt_tokens,
+                    'completion_tokens': total_completion_tokens,
+                    'iterations': iteration,
+                },
             )
 
         except Exception as e:
@@ -309,7 +411,16 @@ class OllamaStreamHandler(BaseHandler):
                 latency_ms=latency,
                 error_message=str(e),
             )
-            self._logger.error('Error during streaming: %s', e)
+            self._logger.error(
+                'Error during streaming: %s',
+                e,
+                extra={
+                    **trace_extra,
+                    'event': 'llm.stream.error',
+                    'error': str(e),
+                    'error_type': type(e).__name__,
+                },
+            )
             raise ChatException(
                 f'Error during Ollama streaming: {str(e)}', original_error=e
             ) from e

@@ -3,7 +3,7 @@ from typing import Any, Dict, List, Optional
 
 from ..interfaces import LoggerInterface
 from ..value_objects import BaseTool, ToolExecutionResult
-from .tool_argument_injector import ToolArgumentInjector
+from .tool_argument_injector import ToolArgumentInjector, LoggerFactory
 
 
 class ToolExecutor:
@@ -26,17 +26,23 @@ class ToolExecutor:
         ```
     """
 
-    def __init__(self, tools: List[BaseTool], logger: LoggerInterface):
+    def __init__(
+        self,
+        tools: List[BaseTool],
+        logger: LoggerInterface,
+        logger_factory: Optional[LoggerFactory] = None,
+    ):
         """Initialize the executor with available tools and logger.
 
         Args:
             tools: List of tool instances available for execution.
                    If None, no tools will be available.
             logger: Logger instance for logging tool execution events.
+            logger_factory: Optional factory function to create loggers for tools.
         """
         self._tools_map: Dict[str, BaseTool] = {}
         self.__logger = logger
-        self._argument_injector = ToolArgumentInjector(logger)
+        self._argument_injector = ToolArgumentInjector(logger, logger_factory)
 
         for tool in tools:
             self._tools_map[tool.name] = tool

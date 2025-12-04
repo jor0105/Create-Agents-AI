@@ -6,8 +6,8 @@ from .domain import (
     LoggerInterface,
     tool,
 )
-from .infra import LoggingConfig
-from .infra.config import create_logger
+from .infra import LoggingConfig, LoggingConfigurator
+from .infra.config import configure_logging, create_logger
 
 logging.getLogger(__name__).addHandler(logging.NullHandler())
 
@@ -16,6 +16,8 @@ __all__ = [
     'BaseTool',
     'tool',
     'LoggingConfig',
+    'LoggingConfigurator',
     'LoggerInterface',
     'create_logger',
+    'configure_logging',
 ]

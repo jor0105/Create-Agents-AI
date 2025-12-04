@@ -11,7 +11,6 @@ from .use_cases import (
     ChatWithAgentUseCase,
     CreateAgentUseCase,
     GetAgentConfigUseCase,
-    GetAllAvailableToolsUseCase,
     GetSystemAvailableToolsUseCase,
 )
 
@@ -22,7 +21,6 @@ __all__ = [
     'CreateAgentUseCase',
     'ChatWithAgentUseCase',
     'GetAgentConfigUseCase',
-    'GetAllAvailableToolsUseCase',
     'GetSystemAvailableToolsUseCase',
     # dtos
     'CreateAgentInputDTO',

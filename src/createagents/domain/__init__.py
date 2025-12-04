@@ -22,6 +22,7 @@ from .value_objects import (
     InjectedToolCallId,
     Message,
     MessageRole,
+    RunType,
     StructuredTool,
     SupportedConfigs,
     SupportedProviders,
@@ -30,6 +31,7 @@ from .value_objects import (
     ToolChoiceMode,
     ToolChoiceType,
     ToolProtocol,
+    TraceContext,
     create_schema_from_function,
     is_injected_arg,
     tool,
@@ -71,6 +73,9 @@ __all__ = [
     'ToolCallInfo',
     'SupportedConfigs',
     'SupportedProviders',
+    # tracing value objects
+    'TraceContext',
+    'RunType',
     # services
     'ToolExecutor',
     'ToolExecutionResult',

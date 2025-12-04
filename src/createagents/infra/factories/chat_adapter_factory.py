@@ -1,6 +1,7 @@
-from typing import Dict, Tuple, Type
+from typing import Dict, Optional, Tuple, Type
 
 from ...application.interfaces import ChatRepository
+from ...domain.interfaces import ITraceLogger
 from ..adapters import OllamaChatAdapter, OpenAIChatAdapter
 from ..config import create_logger
 
@@ -29,6 +30,7 @@ class ChatAdapterFactory:
         cls,
         provider: str,
         model: str,
+        trace_logger: Optional[ITraceLogger] = None,
     ) -> ChatRepository:
         """
         Creates the appropriate adapter with caching.
@@ -36,12 +38,18 @@ class ChatAdapterFactory:
         Args:
             model: The name of the model (e.g., "gpt-4", "llama2").
             provider: The specific provider ("openai", "ollama").
+            trace_logger: Optional trace logger for persistent tracing.
 
         Returns:
             An instance of the appropriate adapter, cached if it already exists.
 
         Raises:
             ValueError: If the provider is not supported.
+
+        Note:
+            When trace_logger is provided and an adapter is already cached,
+            the cached adapter is returned WITHOUT updating the trace_logger.
+            To use a different trace_logger, call clear_cache() first.
         """
         cache_key = (model.lower(), provider.lower())
 
@@ -72,7 +80,9 @@ class ChatAdapterFactory:
             )
 
         cls.__logger.debug('Creating %s chat adapter', provider.title())
-        adapter = adapter_class()
+        # Registry contains concrete adapter classes that accept trace_logger,
+        # but mypy only sees the abstract ChatRepository type
+        adapter = adapter_class(trace_logger=trace_logger)  # type: ignore[call-arg]
 
         cls.__cache[cache_key] = adapter
         cls.__logger.debug('Adapter cached with key: %s', cache_key)

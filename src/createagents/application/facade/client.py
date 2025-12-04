@@ -46,7 +46,7 @@ class CreateAgent:
         if logger is None:
             from ...infra.config import create_logger  # pylint: disable=import-outside-toplevel
 
-            self.__logger = create_logger(__name__)
+            self.__logger: LoggerInterface = create_logger(__name__)
         else:
             self.__logger = logger
 

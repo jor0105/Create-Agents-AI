@@ -7,7 +7,7 @@ from ...application import CreateAgentInputDTO
 from ...domain import Agent, BaseTool
 from ...domain.interfaces import LoggerInterface
 from ...infra import ChatAdapterFactory
-from ...infra.config import create_logger
+from ...infra.config import create_logger, create_trace_logger
 
 # Type hints para IDEs (não executado em runtime)
 if TYPE_CHECKING:
@@ -96,6 +96,7 @@ class AgentComposer:
     def create_chat_use_case(
         provider: str,
         model: str,
+        enable_tracing: bool = True,
     ) -> ChatWithAgentUseCase:
         """
         Creates the ChatWithAgentUseCase with its dependencies injected.
@@ -103,6 +104,7 @@ class AgentComposer:
         Args:
             provider: The specific provider.
             model: The name of the AI model.
+            enable_tracing: Whether to enable detailed trace logging (default: True).
 
         Returns:
             A configured ChatWithAgentUseCase.
@@ -115,12 +117,27 @@ class AgentComposer:
             model,
         )
 
-        chat_adapter = ChatAdapterFactory.create(provider, model)
+        # Create trace logger if tracing is enabled
+        trace_logger = None
+        if enable_tracing:
+            trace_logger = create_trace_logger(
+                'createagents.tracing.chat',
+                json_output=False,
+                enable_persistence=True,  # Enable persistence by default
+            )
+
+        # Pass trace_logger to the factory so handlers can use it
+        chat_adapter = ChatAdapterFactory.create(
+            provider, model, trace_logger=trace_logger
+        )
         logger = create_logger(
             'createagents.application.use_cases.chat_with_agent'
         )
+
         use_case = ChatWithAgentUseCase(
-            chat_repository=chat_adapter, logger=logger
+            chat_repository=chat_adapter,
+            logger=logger,
+            trace_logger=trace_logger,
         )
 
         AgentComposer.__logger.debug('Chat use case composed successfully')

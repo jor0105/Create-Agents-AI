@@ -7,6 +7,7 @@ from ..commands import (
     HelpCommandHandler,
     MetricsCommandHandler,
     ToolsCommandHandler,
+    TraceCommandHandler,
 )
 from ..io import InputReader
 from ..ui import TerminalRenderer
@@ -51,6 +52,7 @@ class ChatCLIApplication:
         self._registry.register(ConfigsCommandHandler(self._renderer))
         self._registry.register(ToolsCommandHandler(self._renderer))
         self._registry.register(ClearCommandHandler(self._renderer))
+        self._registry.register(TraceCommandHandler(self._renderer))
         # Default handler (must be last)
         self._registry.register(ChatCommandHandler(self._renderer))
 

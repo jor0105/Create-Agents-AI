@@ -2,10 +2,11 @@ import asyncio
 import time
 from typing import Any, Dict, AsyncGenerator, List, Optional, Union
 
-from ....domain import BaseTool, ChatException
+from ....domain import BaseTool, ChatException, RunType, TraceContext
 from ....domain.interfaces import (
     IMetricsRecorder,
     IToolSchemaBuilder,
+    ITraceLogger,
     LoggerInterface,
 )
 from ...config import EnvironmentConfig
@@ -30,6 +31,7 @@ class OpenAIStreamHandler(BaseHandler):
         logger: LoggerInterface,
         metrics_recorder: IMetricsRecorder,
         schema_builder: IToolSchemaBuilder,
+        trace_logger: Optional[ITraceLogger] = None,
     ):
         """Initialize the stream handler with injected dependencies.
 
@@ -38,11 +40,13 @@ class OpenAIStreamHandler(BaseHandler):
             logger: Logger instance for logging.
             metrics_recorder: Metrics recorder for tracking performance.
             schema_builder: Tool schema builder for formatting tools.
+            trace_logger: Optional trace logger for persistent tracing.
         """
         super().__init__(
             logger=logger,
             metrics_recorder=metrics_recorder,
             schema_builder=schema_builder,
+            trace_logger=trace_logger,
         )
         self.__client = client
         self.__max_tool_iterations = int(
@@ -58,6 +62,7 @@ class OpenAIStreamHandler(BaseHandler):
         config: Dict[str, Any],
         tools: Optional[List[BaseTool]],
         tool_choice: Optional[Union[str, Dict[str, Any]]] = None,
+        trace_context: Optional[TraceContext] = None,
     ) -> AsyncGenerator[str, None]:
         """Yields tokens from the OpenAI API as they arrive.
 
@@ -72,8 +77,14 @@ class OpenAIStreamHandler(BaseHandler):
             config: Configuration for the API call.
             tools: Optional list of tools available for the model.
             tool_choice: Optional tool choice configuration.
+            trace_context: Optional trace context for distributed tracing.
         """
         start_time = time.time()
+
+        # Build trace extra for consistent logging
+        trace_extra: Dict[str, Any] = {}
+        if trace_context:
+            trace_extra = trace_context.to_log_extra()
 
         # Prepare tool schemas and executor if tools are provided
         tool_schemas = None
@@ -104,10 +115,26 @@ class OpenAIStreamHandler(BaseHandler):
         try:
             while iteration < self.__max_tool_iterations:
                 iteration += 1
+                # Create child trace context for this LLM iteration
+                iteration_ctx = None
+                if trace_context:
+                    iteration_ctx = trace_context.create_child(
+                        run_type=RunType.LLM,
+                        operation=f'openai_stream_iteration_{iteration}',
+                        metadata={'iteration': iteration, 'streaming': True},
+                    )
+                    trace_extra = iteration_ctx.to_log_extra()
+
                 self._logger.info(
                     'OpenAI streaming iteration %s/%s',
                     iteration,
                     self.__max_tool_iterations,
+                    extra={
+                        **trace_extra,
+                        'event': 'llm.stream.iteration.start',
+                        'iteration': iteration,
+                        'max_iterations': self.__max_tool_iterations,
+                    },
                 )
 
                 # Call OpenAI API with streaming enabled
@@ -194,6 +221,13 @@ class OpenAIStreamHandler(BaseHandler):
                 if tool_executor and OpenAIToolCallParser.has_tool_calls(
                     full_response
                 ):
+                    self._logger.info(
+                        'Tool calls detected in streaming response',
+                        extra={
+                            **trace_extra,
+                            'event': 'llm.stream.tool_calls_detected',
+                        },
+                    )
                     # Add output items to history for context
                     output_items = OpenAIToolCallParser.get_assistant_message_with_tool_calls(
                         full_response
@@ -206,17 +240,60 @@ class OpenAIStreamHandler(BaseHandler):
                         full_response
                     )
                     self._logger.info(
-                        'Executing %s tool(s) in parallel', len(tool_calls)
+                        'Executing %s tool(s) in parallel',
+                        len(tool_calls),
+                        extra={
+                            **trace_extra,
+                            'event': 'tool.execution.start',
+                            'tool_count': len(tool_calls),
+                            'tool_names': [tc['name'] for tc in tool_calls],
+                        },
                     )
 
                     # Execute all tools in parallel using asyncio.gather
-                    async def execute_single_tool(tool_call: Dict[str, Any]):
+                    async def execute_single_tool(
+                        tool_call: Dict[str, Any],
+                        parent_ctx: Optional[TraceContext] = None,
+                    ):
                         """Execute a single tool and return formatted result."""
                         tool_name = tool_call['name']
                         tool_args = tool_call['arguments']
                         tool_id = tool_call['id']
+                        tool_start_time = time.time()
 
-                        self._logger.debug("Executing tool '%s'", tool_name)
+                        # Create tool trace context
+                        tool_ctx = None
+                        tool_trace_extra: Dict[str, Any] = {}
+                        if parent_ctx:
+                            tool_ctx = parent_ctx.create_child(
+                                run_type=RunType.TOOL,
+                                operation=f'tool_{tool_name}',
+                                metadata={
+                                    'tool_name': tool_name,
+                                    'tool_call_id': tool_id,
+                                },
+                            )
+                            tool_trace_extra = tool_ctx.to_log_extra()
+
+                        # Log tool call start via TraceLogger (persists to TraceStore)
+                        if self._trace_logger and tool_ctx:
+                            self._trace_logger.log_tool_call(
+                                tool_ctx, tool_name, tool_id, tool_args
+                            )
+
+                        self._logger.info(
+                            "🔧 Executing tool '%s'",
+                            tool_name,
+                            extra={
+                                **tool_trace_extra,
+                                'event': 'tool.call.start',
+                                'tool_name': tool_name,
+                                'tool_call_id': tool_id,
+                                'tool_args': self._sanitize_for_logging(
+                                    tool_args
+                                ),
+                            },
+                        )
 
                         execution_result = await tool_executor.execute_tool(
                             tool_name, **tool_args
@@ -228,19 +305,41 @@ class OpenAIStreamHandler(BaseHandler):
                             else str(execution_result.error)
                         )
 
-                        self._logger.info(
-                            "Tool '%s' response [%s]: %s",
-                            tool_name,
-                            'success' if execution_result.success else 'error',
-                            result_text[:200] + '...'
-                            if len(result_text) > 200
-                            else result_text,
+                        status = (
+                            'success' if execution_result.success else 'error'
                         )
-                        self._logger.debug(
-                            "Tool '%s' full response (ID: %s): %s",
+                        tool_duration_ms = (
+                            time.time() - tool_start_time
+                        ) * 1000
+
+                        # Log tool result via TraceLogger (persists to TraceStore)
+                        if self._trace_logger and tool_ctx:
+                            self._trace_logger.log_tool_result(
+                                tool_ctx,
+                                tool_name,
+                                tool_id,
+                                result_text,
+                                tool_duration_ms,
+                                success=execution_result.success,
+                            )
+
+                        self._logger.info(
+                            "🔧 Tool '%s' completed [%s]",
                             tool_name,
-                            tool_id,
-                            result_text,
+                            status,
+                            extra={
+                                **tool_trace_extra,
+                                'event': 'tool.call.end',
+                                'tool_name': tool_name,
+                                'tool_call_id': tool_id,
+                                'status': status,
+                                'result_preview': (
+                                    result_text[:500] + '...'
+                                    if len(result_text) > 500
+                                    else result_text
+                                ),
+                                'result_length': len(result_text),
+                            },
                         )
 
                         return (
@@ -253,7 +352,10 @@ class OpenAIStreamHandler(BaseHandler):
 
                     # Execute all tools in parallel
                     tool_results = await asyncio.gather(
-                        *[execute_single_tool(tc) for tc in tool_calls],
+                        *[
+                            execute_single_tool(tc, iteration_ctx)
+                            for tc in tool_calls
+                        ],
                         return_exceptions=True,
                     )
 
@@ -264,6 +366,13 @@ class OpenAIStreamHandler(BaseHandler):
                                 "Tool '%s' failed with exception: %s",
                                 tool_calls[i]['name'],
                                 result,
+                                extra={
+                                    **trace_extra,
+                                    'event': 'tool.call.error',
+                                    'tool_name': tool_calls[i]['name'],
+                                    'tool_call_id': tool_calls[i]['id'],
+                                    'error': str(result),
+                                },
                             )
                             error_msg = OpenAIToolCallParser.format_tool_results_for_llm(
                                 tool_call_id=tool_calls[i]['id'],
@@ -305,11 +414,17 @@ class OpenAIStreamHandler(BaseHandler):
                 else None,
             )
             self._logger.info(
-                'Streaming chat completed: latency=%.2fms, tokens=%s '
-                '(accumulated over %s iteration(s))',
-                latency,
-                total_tokens,
-                iteration,
+                '🤖 Streaming chat completed',
+                extra={
+                    **trace_extra,
+                    'event': 'llm.stream.complete',
+                    'model': model,
+                    'latency_ms': latency,
+                    'total_tokens': total_tokens,
+                    'prompt_tokens': total_prompt_tokens,
+                    'completion_tokens': total_completion_tokens,
+                    'iterations': iteration,
+                },
             )
 
         except Exception as e:
@@ -319,7 +434,16 @@ class OpenAIStreamHandler(BaseHandler):
                 latency_ms=latency,
                 error_message=str(e),
             )
-            self._logger.error('Error during streaming: %s', e)
+            self._logger.error(
+                'Error during streaming: %s',
+                e,
+                extra={
+                    **trace_extra,
+                    'event': 'llm.stream.error',
+                    'error': str(e),
+                    'error_type': type(e).__name__,
+                },
+            )
             raise ChatException(
                 f'Error during OpenAI streaming: {str(e)}',
                 original_error=e,

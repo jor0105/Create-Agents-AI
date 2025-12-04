@@ -40,4 +40,3 @@ response = await agent.chat("Hello!")
 # {"event": "agent.created", "agent_name": "...", ...}
 # {"event": "chat.completed", "streaming": false, ...}
 ```
-

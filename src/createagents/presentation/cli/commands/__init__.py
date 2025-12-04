@@ -5,6 +5,7 @@ from .configs_command import ConfigsCommandHandler
 from .help_command import HelpCommandHandler
 from .metrics_command import MetricsCommandHandler
 from .tools_command import ToolsCommandHandler
+from .trace_command import TraceCommandHandler
 
 __all__ = [
     'CommandHandler',
@@ -14,4 +15,5 @@ __all__ = [
     'HelpCommandHandler',
     'MetricsCommandHandler',
     'ToolsCommandHandler',
+    'TraceCommandHandler',
 ]

@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Any, Dict, AsyncGenerator, List, Optional, Union
 
-from ...domain import BaseTool
+from ...domain import BaseTool, TraceContext
 
 
 class ChatRepository(ABC):
@@ -16,6 +16,7 @@ class ChatRepository(ABC):
         tools: Optional[List[BaseTool]],
         history: List[Dict[str, str]],
         tool_choice: Optional[Union[str, Dict[str, Any]]] = None,
+        trace_context: Optional[TraceContext] = None,
     ) -> Union[str, AsyncGenerator[str, None]]:
         """Send a message to the chat model and get a response.
 
@@ -30,6 +31,7 @@ class ChatRepository(ABC):
                 - "none": Don't call any tool
                 - "required": Force at least one tool call
                 - {"type": "function", "function": {"name": "tool_name"}}
+            trace_context: Optional trace context for distributed tracing.
 
         Returns:
             Union[str, AsyncGenerator[str, None]]: The model's response.
