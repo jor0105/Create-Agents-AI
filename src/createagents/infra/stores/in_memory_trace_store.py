@@ -1,4 +1,5 @@
 """In-memory implementation of ITraceStore."""
+
 import json
 from collections import defaultdict
 from datetime import datetime

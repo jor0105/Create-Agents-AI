@@ -102,7 +102,7 @@ class ChatWithAgentUseCase:
             response = await self.__chat_repository.chat(
                 model=agent.model,
                 instructions=agent.instructions,
-                config=agent.config,
+                config=agent.config or {},
                 tools=agent.tools,
                 history=history,
                 tool_choice=input_dto.tool_choice,

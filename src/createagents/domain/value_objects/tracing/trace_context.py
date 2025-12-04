@@ -50,7 +50,9 @@ class TraceContext:
     agent_name: Optional[str] = None
     model: Optional[str] = None
     metadata: Dict[str, Any] = field(default_factory=dict)
-    start_time: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    start_time: datetime = field(
+        default_factory=lambda: datetime.now(timezone.utc)
+    )
 
     @classmethod
     def create_root(
@@ -198,5 +200,7 @@ class TraceContext:
 
     def __str__(self) -> str:
         """Human-readable string representation."""
-        parent_info = f' (parent: {self.parent_run_id})' if self.parent_run_id else ''
+        parent_info = (
+            f' (parent: {self.parent_run_id})' if self.parent_run_id else ''
+        )
         return f'[{self.run_type.value}:{self.run_id}] {self.operation}{parent_info}'

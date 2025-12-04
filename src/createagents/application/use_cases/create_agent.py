@@ -1,4 +1,6 @@
-from ...domain import Agent, History, InvalidAgentConfigException
+from typing import List, cast
+
+from ...domain import Agent, BaseTool, History, InvalidAgentConfigException
 from ...domain.interfaces import LoggerInterface
 from ..dtos import CreateAgentInputDTO
 
@@ -51,13 +53,18 @@ class CreateAgentUseCase:
             )
             raise InvalidAgentConfigException('input_dto', str(e)) from e
 
+        # After validation, tools are guaranteed to be List[BaseTool] if present
+        validated_tools = (
+            cast(List[BaseTool], input_dto.tools) if input_dto.tools else None
+        )
+
         agent = Agent(
             provider=input_dto.provider,
             model=input_dto.model,
             name=input_dto.name,
             instructions=input_dto.instructions,
             config=input_dto.config,
-            tools=input_dto.tools,
+            tools=validated_tools,
             history=History(max_size=input_dto.history_max_size),
         )
 

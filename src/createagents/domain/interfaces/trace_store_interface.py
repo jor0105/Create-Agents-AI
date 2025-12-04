@@ -7,6 +7,7 @@ databases, or external services.
 The data classes TraceEntry and TraceSummary are imported from
 domain/value_objects/tracing for proper Clean Architecture layering.
 """
+
 from abc import ABC, abstractmethod
 from datetime import datetime
 from typing import List, Optional

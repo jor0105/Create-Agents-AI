@@ -98,7 +98,8 @@ class BaseTool(ABC):
             return kwargs
 
         validated = self.args_schema(**kwargs)
-        return validated.model_dump()
+        # Pydantic's model_dump returns Dict[str, Any] but is typed as Any
+        return validated.model_dump()  # type: ignore[no-any-return]
 
     def run(self, **kwargs: Any) -> Any:
         """Execute the tool with validation - CALLED BY AI/SYSTEM.

@@ -1,4 +1,5 @@
 """File-based implementation of ITraceStore using JSON Lines format."""
+
 import json
 import os
 from collections import defaultdict
@@ -107,9 +108,7 @@ class FileTraceStore(ITraceStore):
                 new_name = f'traces_{timestamp}.jsonl'
                 file_path = self._trace_dir / new_name
 
-            line = json.dumps(
-                entry.to_dict(), default=str, ensure_ascii=False
-            )
+            line = json.dumps(entry.to_dict(), default=str, ensure_ascii=False)
 
             with open(file_path, 'a', encoding='utf-8') as f:
                 f.write(line + '\n')

@@ -1,7 +1,5 @@
 """Tests for TraceContext session_id support."""
 
-import pytest
-
 from createagents.domain.value_objects.tracing import RunType, TraceContext
 
 

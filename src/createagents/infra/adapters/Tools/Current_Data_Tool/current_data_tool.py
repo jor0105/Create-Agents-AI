@@ -121,7 +121,7 @@ class CurrentDateTool(BaseTool):
         except ZoneInfoNotFoundError as e:
             raise ValueError(f'Invalid timezone: {tz}') from e
 
-    def execute(
+    def execute(  # type: ignore[override]
         self,
         action: ActionType,
         tz: str,

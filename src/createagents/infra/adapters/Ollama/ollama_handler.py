@@ -1,8 +1,14 @@
 import asyncio
 import time
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional
 
-from ....domain import BaseTool, ChatException, RunType, TraceContext
+from ....domain import (
+    BaseTool,
+    ChatException,
+    RunType,
+    TraceContext,
+    ToolChoiceType,
+)
 from ....domain.interfaces import (
     IMetricsRecorder,
     IToolSchemaBuilder,
@@ -59,7 +65,7 @@ class OllamaHandler(BaseHandler):
         history: List[Dict[str, str]],
         config: Dict[str, Any],
         tools: Optional[List[BaseTool]],
-        tool_choice: Optional[Union[str, Dict[str, Any]]] = None,
+        tool_choice: Optional[ToolChoiceType] = None,
         trace_context: Optional[TraceContext] = None,
     ) -> str:
         """
@@ -108,6 +114,8 @@ class OllamaHandler(BaseHandler):
         max_empty_responses = 2
         response_api = None
         iteration_ctx = None
+        # Track whether we should apply tool_choice (only on first iteration)
+        current_tool_choice = formatted_tool_choice
 
         try:
             while iteration < self.__max_tool_iterations:
@@ -149,7 +157,7 @@ class OllamaHandler(BaseHandler):
                     history,
                     config,
                     tool_schemas,
-                    formatted_tool_choice,
+                    current_tool_choice,
                 )
                 llm_duration_ms = (time.time() - llm_start_time) * 1000
 
@@ -184,6 +192,8 @@ class OllamaHandler(BaseHandler):
                         iteration_ctx,
                         trace_extra,
                     )
+                    # Reset tool_choice after first tool execution
+                    current_tool_choice = None
                     continue
 
                 content = response_api.message.content

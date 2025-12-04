@@ -1,13 +1,3 @@
-"""Logger interface for dependency inversion.
-
-This module defines the contract for logging functionality,
-allowing the domain layer to use logging without depending
-on specific infrastructure implementations.
-
-Following the Interface Segregation Principle (ISP), logging
-and configuration concerns are separated into distinct interfaces.
-"""
-
 from abc import ABC, abstractmethod
 from typing import Any
 

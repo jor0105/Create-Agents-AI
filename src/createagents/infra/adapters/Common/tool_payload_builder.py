@@ -40,9 +40,11 @@ class ToolPayloadBuilder(IToolSchemaBuilder):
                 - 'ollama': Ollama native format (nested with 'function' key)
             strict: If True, enables OpenAI's 'Structured Outputs' mode.
                    - GUARANTEES that the model's output exactly matches the schema.
-                   - REQUIRES all fields in schema to be 'required' (no optional fields without explicit null).
+                   - REQUIRES all fields in schema to be 'required'
+                   (no optional fields without explicit null).
                    - Adds 'strict: true' and 'additionalProperties: false' to the payload.
-                   - Use with caution: requires strict adherence to schema rules in tool definitions.
+                   - Use with caution: requires strict adherence to schema rules
+                   in tool definitions.
         """
         self._logger = logger
         self._format_style = format_style
@@ -158,6 +160,9 @@ class ToolPayloadBuilder(IToolSchemaBuilder):
         """Format tool_choice parameter for provider API.
 
         Uses the domain ToolChoice value object for validation and formatting.
+        The format differs between APIs:
+        - OpenAI Responses API: {'type': 'function', 'name': 'func_name'}
+        - Chat Completions API: {'type': 'function', 'function': {'name': 'func_name'}}
 
         Args:
             tool_choice: The tool_choice configuration from the user.
@@ -181,8 +186,13 @@ class ToolPayloadBuilder(IToolSchemaBuilder):
             if choice is None:
                 return None
 
-            # All providers currently use OpenAI format for tool_choice
-            return choice.to_openai_format()
+            # Use correct format based on API style
+            # OpenAI Responses API uses different format than Chat Completions API
+            if self._format_style == 'openai':
+                return choice.to_responses_api_format()
+            else:
+                # Ollama and other providers use Chat Completions format
+                return choice.to_openai_format()
 
         except ValueError as e:
             self._logger.warning(

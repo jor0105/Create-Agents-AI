@@ -74,8 +74,8 @@ def _parse_google_docstring(func: Callable) -> Dict[str, str]:
             if param.arg_name and param.description:
                 descriptions[param.arg_name] = param.description
     except Exception:
-        # If parsing fails, return empty dict
-        pass
+        # If parsing fails, return empty dict (expected for malformed docstrings)
+        return descriptions
 
     return descriptions
 
@@ -288,7 +288,7 @@ def create_schema_from_function(
             )
 
     # Create the model dynamically
-    return create_model(model_name, **field_definitions)
+    return create_model(model_name, **field_definitions)  # type: ignore[no-any-return]
 
 
 def get_json_schema_from_function(
@@ -315,7 +315,7 @@ def get_json_schema_from_function(
         parse_docstring=parse_docstring,
         filter_injected=filter_injected,
     )
-    return model.model_json_schema()
+    return model.model_json_schema()  # type: ignore[no-any-return]
 
 
 __all__ = [

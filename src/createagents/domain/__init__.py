@@ -2,6 +2,7 @@ from .entities import Agent
 from .exceptions import (
     AdapterNotFoundException,
     AgentException,
+    APITimeoutError,
     ChatException,
     FileReadException,
     InvalidAgentConfigException,
@@ -9,6 +10,7 @@ from .exceptions import (
     InvalidConfigTypeException,
     InvalidModelException,
     InvalidProviderException,
+    RateLimitError,
     UnsupportedConfigException,
 )
 from .interfaces import LoggerInterface
@@ -42,6 +44,7 @@ __all__ = [
     'Agent',
     # exceptions
     'AgentException',
+    'APITimeoutError',
     'InvalidAgentConfigException',
     'InvalidModelException',
     'InvalidBaseToolException',
@@ -49,6 +52,7 @@ __all__ = [
     'AdapterNotFoundException',
     'FileReadException',
     'InvalidProviderException',
+    'RateLimitError',
     'UnsupportedConfigException',
     'InvalidConfigTypeException',
     # interfaces

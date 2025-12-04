@@ -36,6 +36,49 @@ class ChatException(Exception):
         super().__init__(self.message)
 
 
+class RateLimitError(ChatException):
+    """Exception raised when API rate limit is exceeded (HTTP 429).
+
+    This exception captures the retry_after value from the API response,
+    allowing intelligent retry strategies.
+
+    Attributes:
+        retry_after: Seconds to wait before retrying (from Retry-After header).
+        provider: The API provider that returned the rate limit error.
+    """
+
+    def __init__(
+        self,
+        message: str,
+        retry_after: Optional[float] = None,
+        provider: Optional[str] = None,
+        original_error: Optional[Exception] = None,
+    ):
+        super().__init__(message, original_error)
+        self.retry_after = retry_after
+        self.provider = provider
+
+
+class APITimeoutError(ChatException):
+    """Exception raised when API request times out.
+
+    Attributes:
+        timeout_seconds: The timeout value that was exceeded.
+        provider: The API provider that timed out.
+    """
+
+    def __init__(
+        self,
+        message: str,
+        timeout_seconds: Optional[float] = None,
+        provider: Optional[str] = None,
+        original_error: Optional[Exception] = None,
+    ):
+        super().__init__(message, original_error)
+        self.timeout_seconds = timeout_seconds
+        self.provider = provider
+
+
 class AdapterNotFoundException(ChatException):
     """Exception raised when the chat adapter is not found."""
 

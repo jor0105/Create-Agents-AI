@@ -608,9 +608,10 @@ class TestGetJsonSchemaFromFunction:
 @pytest.mark.unit
 class TestSchemaUtilsIntegration:
     def test_lambda_function(self):
-        func = lambda x: x * 2
+        def double(x: int) -> int:
+            return x * 2
 
-        Model = create_schema_from_function(func)
+        Model = create_schema_from_function(double)
         assert issubclass(Model, BaseModel)
 
     def test_empty_function(self):

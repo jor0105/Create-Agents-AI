@@ -213,18 +213,43 @@ class ToolChoice:
             )
 
     def to_openai_format(self) -> Union[str, Dict[str, Any]]:
-        """Convert to OpenAI API format.
+        """Convert to OpenAI Chat Completions API format.
+
+        This is the format used by the Chat Completions API and compatible APIs
+        (e.g., Ollama with OpenAI compatibility mode).
 
         Returns:
-            String for simple modes, or dict for specific function.
+            String for simple modes ('auto', 'none', 'required'),
+            or dict for specific function:
+            `{'type': 'function', 'function': {'name': 'func_name'}}`
         """
         if isinstance(self.mode, ToolChoiceMode):
             return self.mode.value
 
-        # Specific function mode
+        # Specific function mode (Chat Completions format)
         return {
             'type': 'function',
             'function': {'name': self.function_name},
+        }
+
+    def to_responses_api_format(self) -> Union[str, Dict[str, Any]]:
+        """Convert to OpenAI Responses API format.
+
+        The Responses API uses a different format for specific function calls
+        compared to the Chat Completions API.
+
+        Returns:
+            String for simple modes ('auto', 'none', 'required'),
+            or dict for specific function:
+            `{'type': 'function', 'name': 'func_name'}`
+        """
+        if isinstance(self.mode, ToolChoiceMode):
+            return self.mode.value
+
+        # Specific function mode (Responses API format)
+        return {
+            'type': 'function',
+            'name': self.function_name,
         }
 
     def to_dict(self) -> Dict[str, Any]:

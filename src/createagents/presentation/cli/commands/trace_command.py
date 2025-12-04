@@ -1,4 +1,5 @@
 """CLI command handler for /trace command."""
+
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional, TYPE_CHECKING
 
@@ -89,9 +90,7 @@ class TraceCommandHandler(CommandHandler):
             pass
         return None
 
-    def _handle_list(
-        self, agent: 'CreateAgent', args: List[str]
-    ) -> None:
+    def _handle_list(self, agent: 'CreateAgent', args: List[str]) -> None:
         """Handle /trace list command."""
         store = self._get_trace_store(agent)
         if not store:
@@ -149,9 +148,7 @@ class TraceCommandHandler(CommandHandler):
         formatted = TextSanitizer.format_markdown_for_terminal(output)
         self._renderer.render_system_message(formatted)
 
-    def _handle_show(
-        self, agent: 'CreateAgent', args: List[str]
-    ) -> None:
+    def _handle_show(self, agent: 'CreateAgent', args: List[str]) -> None:
         """Handle /trace show <trace_id> command."""
         store = self._get_trace_store(agent)
         if not store:
@@ -182,6 +179,7 @@ class TraceCommandHandler(CommandHandler):
 
         if output_format == 'json':
             import json
+
             output = json.dumps(
                 [e.to_dict() for e in trace.entries],
                 indent=2,
@@ -233,7 +231,9 @@ class TraceCommandHandler(CommandHandler):
                     preview = str(entry.outputs)[:60]
                     output += f'{indent}│  OUTPUT: {preview}\n'
                 if entry.duration_ms:
-                    output += f'{indent}│  Duration: {entry.duration_ms:.0f}ms\n'
+                    output += (
+                        f'{indent}│  Duration: {entry.duration_ms:.0f}ms\n'
+                    )
 
         output += f"""│                                                                 │
 │  {status_icon} {trace.status.capitalize():<10} | Duration: {duration:<10} | Runs: {trace.run_count:<5}│
@@ -241,9 +241,7 @@ class TraceCommandHandler(CommandHandler):
 """
         self._renderer.render_system_message(output)
 
-    def _build_run_tree(
-        self, entries: List[Any]
-    ) -> List[tuple]:
+    def _build_run_tree(self, entries: List[Any]) -> List[tuple]:
         """Build hierarchical tree of runs."""
         runs: Dict[str, Dict] = {}
 
@@ -269,9 +267,7 @@ class TraceCommandHandler(CommandHandler):
         result.sort(key=lambda x: x[2])
         return [(r[0], r[1]) for r in result]
 
-    def _handle_export(
-        self, agent: 'CreateAgent', args: List[str]
-    ) -> None:
+    def _handle_export(self, agent: 'CreateAgent', args: List[str]) -> None:
         """Handle /trace export command."""
         store = self._get_trace_store(agent)
         if not store:
@@ -315,9 +311,7 @@ class TraceCommandHandler(CommandHandler):
                 f'```\n{preview}\n```\n\nUse --output <file> to save.'
             )
 
-    def _handle_clear(
-        self, agent: 'CreateAgent', args: List[str]
-    ) -> None:
+    def _handle_clear(self, agent: 'CreateAgent', args: List[str]) -> None:
         """Handle /trace clear command."""
         store = self._get_trace_store(agent)
         if not store:

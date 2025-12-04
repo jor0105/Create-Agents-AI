@@ -1,10 +1,13 @@
 """Service for building trace summaries from trace entries."""
+
 from typing import List
 
 from ..value_objects.tracing import TraceEntry, TraceSummary
 
 
-def build_trace_summary(trace_id: str, entries: List[TraceEntry]) -> TraceSummary:
+def build_trace_summary(
+    trace_id: str, entries: List[TraceEntry]
+) -> TraceSummary:
     """Build a TraceSummary from a list of trace entries.
 
     This is a shared helper function used by trace store implementations

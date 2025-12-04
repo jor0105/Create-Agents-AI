@@ -76,7 +76,7 @@ def create_logger(name: str) -> LoggingConfig:
         A LoggingConfig instance implementing LoggerInterface.
 
     Example:
-        >>> from createagents.infra.config import create_logger
+        >>> from createagents import create_logger
         >>> logger = create_logger(__name__)
         >>> logger.info('Service initialized')
     """
@@ -105,7 +105,7 @@ def configure_logging(
         A configured LoggingConfig instance.
 
     Example:
-        >>> from createagents.infra.config import configure_logging
+        >>> from createagents import configure_logging
         >>> logger = configure_logging(level=logging.DEBUG)
         >>> logger.info('Logging configured')
     """

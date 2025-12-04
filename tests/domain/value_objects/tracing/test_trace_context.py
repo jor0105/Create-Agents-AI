@@ -9,8 +9,6 @@ Tests cover:
 """
 
 import time
-from datetime import datetime, timezone
-from unittest.mock import patch
 
 import pytest
 
@@ -137,7 +135,10 @@ class TestTraceContextChild:
             metadata={'tool_name': 'web_search', 'call_id': 'call_123'},
         )
 
-        assert child.metadata == {'tool_name': 'web_search', 'call_id': 'call_123'}
+        assert child.metadata == {
+            'tool_name': 'web_search',
+            'call_id': 'call_123',
+        }
 
     def test_create_nested_children(self):
         """Test creating nested child traces."""

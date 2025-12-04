@@ -13,9 +13,13 @@ from .config import (
     LoggingConfig,
     LoggingConfigurator,
     MetricsCollector,
+    ResilienceConfig,
     SensitiveDataFilter,
     SensitiveDataFormatter,
     TraceLogger,
+    configure_logging,
+    configure_resilience,
+    create_logger,
     create_trace_logger,
     retry_with_backoff,
 )
@@ -27,6 +31,8 @@ __all__ = [
     'EnvironmentConfig',
     'LoggingConfig',
     'LoggingConfigurator',
+    'create_logger',
+    'configure_logging',
     'JSONFormatter',
     'SensitiveDataFormatter',
     'ChatMetrics',
@@ -34,6 +40,9 @@ __all__ = [
     'retry_with_backoff',
     'SensitiveDataFilter',
     'AvailableTools',
+    # Resilience
+    'ResilienceConfig',
+    'configure_resilience',
     # Trace Logging
     'TraceLogger',
     'create_trace_logger',

@@ -174,7 +174,7 @@ class ReadLocalFileTool(BaseTool):
 
         return None  # Path is safe
 
-    async def execute_async(
+    async def execute_async(  # type: ignore[override]
         self,
         path: str,
         max_tokens: int = 30000,
@@ -207,7 +207,7 @@ class ReadLocalFileTool(BaseTool):
             None, lambda: self.execute(path=path, max_tokens=max_tokens)
         )
 
-    def execute(
+    def execute(  # type: ignore[override]
         self,
         path: str,
         max_tokens: int = 30000,

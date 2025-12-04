@@ -1,5 +1,4 @@
 import json
-import logging
 from datetime import datetime, timezone
 from typing import Any, Dict, Optional, TYPE_CHECKING
 
@@ -114,7 +113,9 @@ class TraceLogger(ITraceLogger):
             duration_ms=duration_ms,
         )
 
-        log_method = self._logger.info if status == 'success' else self._logger.error
+        log_method = (
+            self._logger.info if status == 'success' else self._logger.error
+        )
         status_emoji = '✅' if status == 'success' else '❌'
         log_message = message or f'Completed {trace_context.operation}'
 
@@ -326,9 +327,7 @@ class TraceLogger(ITraceLogger):
         tools_info = f' tools={tools_available}' if tools_available else ''
 
         if self._json_output:
-            self._logger.info(
-                self._to_json(f'LLM request to {model}', extra)
-            )
+            self._logger.info(self._to_json(f'LLM request to {model}', extra))
         else:
             self._logger.info(
                 '[%s] 🤖 LLM request | model=%s messages=%d%s',
@@ -534,6 +533,7 @@ def create_trace_logger(
     store = trace_store
     if enable_persistence and store is None:
         from ..stores import FileTraceStore
+
         store = FileTraceStore()
 
     return TraceLogger(

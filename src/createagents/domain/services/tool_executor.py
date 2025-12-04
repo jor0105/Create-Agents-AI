@@ -145,16 +145,11 @@ class ToolExecutor:
                 len(injected_kwargs),
             )
 
-            import asyncio  # pylint: disable=import-outside-toplevel
-
-            # Use run() method which handles validation
-            if asyncio.iscoroutinefunction(tool.run):
-                result = await tool.run(**injected_kwargs)
-            else:
-                loop = asyncio.get_running_loop()
-                result = await loop.run_in_executor(
-                    None, lambda: tool.run(**injected_kwargs)
-                )
+            # Always use arun() which handles both sync and async tools
+            # arun() is the async entry point that:
+            # - For StructuredTool: calls _arun() which handles coroutine or func
+            # - For BaseTool: calls execute_async() which wraps execute() if sync
+            result = await tool.arun(**injected_kwargs)
 
             execution_time = (time.time() - start_time) * 1000
 

@@ -1,6 +1,8 @@
 from .available_tools import AvailableTools
 from .environment import EnvironmentConfig
 from .metrics import ChatMetrics, MetricsCollector
+from .rate_limiter import RateLimiter, RateLimiterFactory
+from .resilience_config import ResilienceConfig, configure_resilience
 from .retry import retry_with_backoff
 from .sensitive_data_filter import SensitiveDataFilter
 from .logging_configurator import (
@@ -32,6 +34,12 @@ __all__ = [
     # Metrics
     'ChatMetrics',
     'MetricsCollector',
+    # Rate Limiting
+    'RateLimiter',
+    'RateLimiterFactory',
+    # Resilience
+    'ResilienceConfig',
+    'configure_resilience',
     # Utilities
     'retry_with_backoff',
     'AvailableTools',

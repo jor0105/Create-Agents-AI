@@ -1,11 +1,3 @@
-"""Global logging configuration management.
-
-This module provides the LoggingConfigurator class responsible for
-managing global logging state and configuration. It separates the
-concern of "configuring the logging system" from "performing logging",
-following the Single Responsibility Principle (SRP).
-"""
-
 import logging
 import os
 import sys

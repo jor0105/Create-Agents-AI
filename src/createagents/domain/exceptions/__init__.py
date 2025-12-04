@@ -1,6 +1,7 @@
 from .domain_exceptions import (
     AdapterNotFoundException,
     AgentException,
+    APITimeoutError,
     ChatException,
     FileReadException,
     InvalidAgentConfigException,
@@ -8,16 +9,19 @@ from .domain_exceptions import (
     InvalidConfigTypeException,
     InvalidModelException,
     InvalidProviderException,
+    RateLimitError,
     UnsupportedConfigException,
 )
 
 __all__ = [
     'AgentException',
+    'APITimeoutError',
     'InvalidAgentConfigException',
     'InvalidModelException',
     'ChatException',
     'AdapterNotFoundException',
     'InvalidProviderException',
+    'RateLimitError',
     'UnsupportedConfigException',
     'InvalidConfigTypeException',
     'InvalidBaseToolException',

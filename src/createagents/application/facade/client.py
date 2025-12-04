@@ -1,6 +1,6 @@
 from typing import Any, Dict, List, Optional, Sequence, Union
 
-from ...domain import Agent, BaseTool
+from ...domain import Agent, BaseTool, ToolChoiceType
 from ...domain.interfaces import LoggerInterface
 from ...infra import ChatMetrics
 from ...main import AgentComposer
@@ -89,7 +89,7 @@ class CreateAgent:
     async def chat(
         self,
         message: str,
-        tool_choice: Optional[Union[str, Dict[str, Any]]] = None,
+        tool_choice: Optional[ToolChoiceType] = None,
     ) -> Union[str, StreamingResponseDTO]:
         """
         Sends a message to the agent and returns the response.
@@ -122,7 +122,8 @@ class CreateAgent:
 
         input_dto = ChatInputDTO(
             message=message,
-            tool_choice=tool_choice,
+            # ToolChoiceType validation happens in DTO.validate()
+            tool_choice=tool_choice,  # type: ignore[arg-type]
         )
         result = await self.__chat_use_case.execute(self.__agent, input_dto)
 

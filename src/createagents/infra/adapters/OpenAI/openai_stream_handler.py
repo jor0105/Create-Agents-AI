@@ -1,8 +1,14 @@
 import asyncio
 import time
-from typing import Any, Dict, AsyncGenerator, List, Optional, Union
+from typing import Any, Dict, AsyncGenerator, List, Optional
 
-from ....domain import BaseTool, ChatException, RunType, TraceContext
+from ....domain import (
+    BaseTool,
+    ChatException,
+    RunType,
+    TraceContext,
+    ToolChoiceType,
+)
 from ....domain.interfaces import (
     IMetricsRecorder,
     IToolSchemaBuilder,
@@ -61,7 +67,7 @@ class OpenAIStreamHandler(BaseHandler):
         history: List[Dict[str, str]],
         config: Dict[str, Any],
         tools: Optional[List[BaseTool]],
-        tool_choice: Optional[Union[str, Dict[str, Any]]] = None,
+        tool_choice: Optional[ToolChoiceType] = None,
         trace_context: Optional[TraceContext] = None,
     ) -> AsyncGenerator[str, None]:
         """Yields tokens from the OpenAI API as they arrive.
@@ -112,6 +118,9 @@ class OpenAIStreamHandler(BaseHandler):
         total_completion_tokens = 0
 
         iteration = 0
+        # Track whether we should apply tool_choice (only on first iteration)
+        # After a tool is executed, we reset to None to allow the model to respond
+        current_tool_choice = formatted_tool_choice
         try:
             while iteration < self.__max_tool_iterations:
                 iteration += 1
@@ -144,7 +153,7 @@ class OpenAIStreamHandler(BaseHandler):
                     history,
                     config,
                     tool_schemas,
-                    formatted_tool_choice,
+                    current_tool_choice,
                 )
 
                 self._logger.debug(
@@ -361,7 +370,7 @@ class OpenAIStreamHandler(BaseHandler):
 
                     # Process results and add to history
                     for i, result in enumerate(tool_results):
-                        if isinstance(result, Exception):
+                        if isinstance(result, BaseException):
                             self._logger.error(
                                 "Tool '%s' failed with exception: %s",
                                 tool_calls[i]['name'],
@@ -379,9 +388,15 @@ class OpenAIStreamHandler(BaseHandler):
                                 tool_name=tool_calls[i]['name'],
                                 result=f'Error: {str(result)}',
                             )
-                            history.append(error_msg)
+                            # Type is Dict[str, Any] from format_tool_results_for_llm
+                            history.append(error_msg)  # type: ignore[arg-type]
                         else:
-                            history.append(result)
+                            # After isinstance check, result is Dict[str, Any]
+                            history.append(result)  # type: ignore[arg-type]
+
+                    # Reset tool_choice after first tool execution
+                    # This prevents infinite loops when a specific tool is forced
+                    current_tool_choice = None
 
                     # Continue to next iteration for final response
                     continue

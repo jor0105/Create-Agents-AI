@@ -1,8 +1,14 @@
 import asyncio
 import time
-from typing import Any, Dict, AsyncGenerator, List, Optional, Union
+from typing import Any, Dict, AsyncGenerator, List, Optional
 
-from ....domain import ChatException, BaseTool, RunType, TraceContext
+from ....domain import (
+    ChatException,
+    BaseTool,
+    RunType,
+    TraceContext,
+    ToolChoiceType,
+)
 from ....domain.interfaces import (
     IMetricsRecorder,
     IToolSchemaBuilder,
@@ -59,7 +65,7 @@ class OllamaStreamHandler(BaseHandler):
         history: List[Dict[str, str]],
         config: Dict[str, Any],
         tools: Optional[List[BaseTool]],
-        tool_choice: Optional[Union[str, Dict[str, Any]]] = None,
+        tool_choice: Optional[ToolChoiceType] = None,
         trace_context: Optional[TraceContext] = None,
     ) -> AsyncGenerator[str, None]:
         """Yields tokens from the Ollama API as they arrive.
@@ -107,6 +113,8 @@ class OllamaStreamHandler(BaseHandler):
         total_completion_tokens = 0
 
         iteration = 0
+        # Track whether we should apply tool_choice (only on first iteration)
+        current_tool_choice = formatted_tool_choice
         try:
             while iteration < self.__max_tool_iterations:
                 iteration += 1
@@ -138,7 +146,7 @@ class OllamaStreamHandler(BaseHandler):
                     history,
                     config,
                     tool_schemas,
-                    formatted_tool_choice,
+                    current_tool_choice,
                 )
 
                 has_yielded_content = False
@@ -317,7 +325,7 @@ class OllamaStreamHandler(BaseHandler):
 
                     # Process results and add to history
                     for i, result in enumerate(tool_results):
-                        if isinstance(result, Exception):
+                        if isinstance(result, BaseException):
                             tool_name = tool_calls[i].function.name
                             self._logger.error(
                                 "Tool '%s' failed with exception: %s",
@@ -330,7 +338,8 @@ class OllamaStreamHandler(BaseHandler):
                                     'error': str(result),
                                 },
                             )
-                            history.append(
+                            # Error message dict for Ollama tool response format
+                            history.append(  # type: ignore[arg-type]
                                 {
                                     'role': 'tool',
                                     'tool_name': tool_name,
@@ -338,7 +347,11 @@ class OllamaStreamHandler(BaseHandler):
                                 }
                             )
                         else:
-                            history.append(result)
+                            # After isinstance check, result is Dict[str, Any]
+                            history.append(result)  # type: ignore[arg-type]
+
+                    # Reset tool_choice after first tool execution
+                    current_tool_choice = None
 
                     # Continue to next iteration to get final response
                     # Reset for next iteration

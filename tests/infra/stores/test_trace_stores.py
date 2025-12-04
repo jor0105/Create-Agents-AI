@@ -1,12 +1,10 @@
 import json
 import tempfile
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 from pathlib import Path
 
-import pytest
 
 from createagents.domain.interfaces.trace_store_interface import (
-    ITraceStore,
     TraceEntry,
     TraceSummary,
 )
@@ -22,14 +20,14 @@ def create_sample_entry(
     event: str = 'trace.start',
     run_type: str = 'chat',
     operation: str = 'test_op',
-    status: str = None,
-    parent_run_id: str = None,
-    session_id: str = None,
+    status: Optional[str] = None,
+    parent_run_id: Optional[str] = None,
+    session_id: Optional[str] = None,
     agent_name: str = 'TestAgent',
     model: str = 'gpt-4',
-    inputs: dict = None,
-    outputs: dict = None,
-    duration_ms: float = None,
+    inputs: Optional[dict] = None,
+    outputs: Optional[dict] = None,
+    duration_ms: Optional[float] = None,
 ) -> TraceEntry:
     """Create a sample trace entry for testing."""
     return TraceEntry(

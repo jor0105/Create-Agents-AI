@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import asyncio
-from typing import Any, Awaitable, Callable, Dict, Type
+from typing import Any, Awaitable, Callable, Dict, Type, cast
 
 from pydantic import BaseModel, ValidationError
 
@@ -118,8 +118,8 @@ class StructuredTool:
                 'StructuredTool.from_function'
             )
 
-        # Use the available function for inference
-        source_func = func or coroutine
+        # Use the available function for inference (guaranteed to exist by check above)
+        source_func = cast(Callable[..., Any], func or coroutine)
 
         # Infer name from function
         if name is None:
@@ -165,7 +165,8 @@ class StructuredTool:
 
         try:
             validated = self.args_schema(**kwargs)
-            return validated.model_dump()
+            # Pydantic's model_dump returns Dict[str, Any] but is typed as Any
+            return validated.model_dump()  # type: ignore[no-any-return]
         except ValidationError:
             raise
 
@@ -188,9 +189,8 @@ class StructuredTool:
         if self.func is not None:
             # Run sync function in executor
             loop = asyncio.get_running_loop()
-            return await loop.run_in_executor(
-                None, lambda: self.func(**kwargs)
-            )
+            func = self.func  # Capture for lambda to satisfy mypy
+            return await loop.run_in_executor(None, lambda: func(**kwargs))
 
         raise RuntimeError(
             f'Tool "{self.name}" does not have any callable function.'

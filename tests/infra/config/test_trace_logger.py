@@ -1,16 +1,10 @@
 """Tests for TraceLogger with TraceStore integration."""
 
-from datetime import datetime, timezone
-from unittest.mock import MagicMock
-
-import pytest
-
-from createagents.domain.interfaces.trace_store_interface import (
-    ITraceStore,
-    TraceEntry,
-)
 from createagents.domain.value_objects.tracing import RunType, TraceContext
-from createagents.infra.config.trace_logger import TraceLogger, create_trace_logger
+from createagents.infra.config.trace_logger import (
+    TraceLogger,
+    create_trace_logger,
+)
 from createagents.infra.stores import InMemoryTraceStore
 
 
@@ -228,7 +222,6 @@ class TestCreateTraceLoggerFactory:
         """Test creating trace logger with file persistence enabled."""
         import tempfile
         import os
-        from pathlib import Path
 
         with tempfile.TemporaryDirectory() as tmpdir:
             os.environ['TRACE_STORE_PATH'] = tmpdir

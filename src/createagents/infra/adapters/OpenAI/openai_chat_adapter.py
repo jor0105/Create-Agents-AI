@@ -1,7 +1,7 @@
 from typing import Any, Dict, AsyncGenerator, List, Optional, Union
 
 from ....application.interfaces import ChatRepository
-from ....domain import BaseTool, ChatException, TraceContext
+from ....domain import BaseTool, ChatException, TraceContext, ToolChoiceType
 from ....domain.interfaces import ITraceLogger, LoggerInterface
 from ...config import ChatMetrics, create_logger
 from ..Common import MetricsRecorder, ToolPayloadBuilder
@@ -53,7 +53,7 @@ class OpenAIChatAdapter(ChatRepository):
         config: Dict[str, Any],
         tools: Optional[List[BaseTool]],
         history: List[Dict[str, str]],
-        tool_choice: Optional[Union[str, Dict[str, Any]]] = None,
+        tool_choice: Optional[ToolChoiceType] = None,
         trace_context: Optional[TraceContext] = None,
     ) -> Union[str, AsyncGenerator[str, None]]:
         """
