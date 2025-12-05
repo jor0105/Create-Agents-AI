@@ -6,7 +6,7 @@ from collections import defaultdict
 from datetime import datetime
 from pathlib import Path
 from threading import Lock
-from typing import Dict, Iterator, List, Optional
+from typing import Any, Dict, Iterator, List, Optional
 
 from ...domain.interfaces.tracing import (
     ITraceStore,
@@ -98,7 +98,7 @@ class FileTraceStore(ITraceStore):
                     except (json.JSONDecodeError, KeyError):
                         continue
 
-    def save_entry(self, entry: TraceEntry) -> None:
+    def save(self, data: Dict[str, Any]) -> None:
         """Save a trace entry to file."""
         with self._lock:
             file_path = self._get_current_file()
@@ -108,12 +108,12 @@ class FileTraceStore(ITraceStore):
                 new_name = f'traces_{timestamp}.jsonl'
                 file_path = self._trace_dir / new_name
 
-            line = json.dumps(entry.to_dict(), default=str, ensure_ascii=False)
+            line = json.dumps(data, default=str, ensure_ascii=False)
 
             with open(file_path, 'a', encoding='utf-8') as f:
                 f.write(line + '\n')
 
-    def get_trace(self, trace_id: str) -> Optional[TraceSummary]:
+    def get_trace(self, trace_id: str) -> Optional[Dict[str, Any]]:
         """Get a trace summary by ID."""
         entries: List[TraceEntry] = []
 
@@ -124,7 +124,8 @@ class FileTraceStore(ITraceStore):
         if not entries:
             return None
 
-        return build_trace_summary(trace_id, entries)
+        summary = build_trace_summary(trace_id, entries)
+        return self._summary_to_dict(summary)
 
     def list_traces(
         self,
@@ -132,7 +133,7 @@ class FileTraceStore(ITraceStore):
         session_id: Optional[str] = None,
         since: Optional[datetime] = None,
         agent_name: Optional[str] = None,
-    ) -> List[TraceSummary]:
+    ) -> List[Dict[str, Any]]:
         """List traces with optional filters."""
         traces_by_id: Dict[str, List[TraceEntry]] = defaultdict(list)
 
@@ -146,18 +147,18 @@ class FileTraceStore(ITraceStore):
 
             traces_by_id[entry.trace_id].append(entry)
 
-        summaries: List[TraceSummary] = []
-        for trace_id, entries in traces_by_id.items():
-            summary = build_trace_summary(trace_id, entries)
-            summaries.append(summary)
+        summaries: List[Dict[str, Any]] = []
+        for tid, entries in traces_by_id.items():
+            summary = build_trace_summary(tid, entries)
+            summaries.append(self._summary_to_dict(summary))
 
-        summaries.sort(key=lambda s: s.start_time, reverse=True)
+        summaries.sort(key=lambda s: s.get('start_time', ''), reverse=True)
         return summaries[:limit]
 
     def export_traces(
         self,
         trace_ids: Optional[List[str]] = None,
-        format: str = 'jsonl',
+        export_format: str = 'jsonl',
     ) -> str:
         """Export traces to string format."""
         entries_to_export: List[TraceEntry] = []
@@ -168,7 +169,7 @@ class FileTraceStore(ITraceStore):
 
         entries_to_export.sort(key=lambda e: e.timestamp)
 
-        if format == 'json':
+        if export_format == 'json':
             return json.dumps(
                 [e.to_dict() for e in entries_to_export],
                 indent=2,
@@ -216,7 +217,7 @@ class FileTraceStore(ITraceStore):
 
             if entries_to_keep:
                 for entry in entries_to_keep:
-                    self.save_entry(entry)
+                    self.save(entry.to_dict())
 
             return len(deleted_trace_ids)
 
@@ -226,3 +227,24 @@ class FileTraceStore(ITraceStore):
         for entry in self._iter_entries():
             trace_ids.add(entry.trace_id)
         return len(trace_ids)
+
+    def _summary_to_dict(self, summary: TraceSummary) -> Dict[str, Any]:
+        """Convert TraceSummary to dict for public API."""
+        return {
+            'trace_id': summary.trace_id,
+            'session_id': summary.session_id,
+            'agent_name': summary.agent_name,
+            'model': summary.model,
+            'start_time': summary.start_time.isoformat(),
+            'end_time': summary.end_time.isoformat()
+            if summary.end_time
+            else None,
+            'duration_ms': summary.duration_ms,
+            'status': summary.status,
+            'run_count': summary.run_count,
+            'tool_calls_count': summary.tool_calls_count,
+            'total_tokens': summary.total_tokens,
+            'total_cost_usd': summary.total_cost_usd,
+            'error_count': summary.error_count,
+            'entries': [e.to_dict() for e in summary.entries],
+        }

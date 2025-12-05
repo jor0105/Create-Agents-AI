@@ -8,6 +8,8 @@ from ....domain import (
     RunType,
     TraceContext,
     ToolChoiceType,
+    ToolChoice,
+    ToolChoiceMode,
 )
 from ....domain.interfaces import (
     IMetricsRecorder,
@@ -93,7 +95,23 @@ class OllamaStreamHandler(BaseHandler):
         tool_schemas = None
         tool_executor = None
         formatted_tool_choice = None
-        if tools:
+
+        # Check if tool_choice='none' - if so, don't send tools to model
+        # This simulates the tool_choice='none' behavior since Ollama doesn't
+        # support the tool_choice parameter natively
+        is_tool_choice_none = (
+            tool_choice == 'none'
+            or (
+                isinstance(tool_choice, dict)
+                and tool_choice.get('type') == 'none'
+            )
+            or (
+                isinstance(tool_choice, ToolChoice)
+                and tool_choice.mode == ToolChoiceMode.NONE
+            )
+        )
+
+        if tools and not is_tool_choice_none:
             tool_schemas = self._schema_builder.multiple_format(tools)
             tool_executor = self._create_tool_executor(tools)
             formatted_tool_choice = self._schema_builder.format_tool_choice(
@@ -107,6 +125,10 @@ class OllamaStreamHandler(BaseHandler):
                 self._logger.debug(
                     'Tool choice configured: %s', formatted_tool_choice
                 )
+        elif is_tool_choice_none:
+            self._logger.debug(
+                "tool_choice='none' - tools disabled for this request"
+            )
 
         # Accumulate metrics across all iterations (for tool calls)
         total_prompt_tokens = 0
@@ -438,4 +460,4 @@ class OllamaStreamHandler(BaseHandler):
                 f'Error during Ollama streaming: {str(e)}', original_error=e
             ) from e
         finally:
-            self.__client.stop_model(model)
+            await self.__client.stop_model(model)

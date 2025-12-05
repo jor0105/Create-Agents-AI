@@ -36,7 +36,7 @@ class ChatAdapterFactory:
         Creates the appropriate adapter with caching.
 
         Args:
-            model: The name of the model (e.g., "gpt-4", "llama2").
+            model: The name of the model (e.g., "gpt-5-nano", "llama2").
             provider: The specific provider ("openai", "ollama").
             trace_logger: Optional trace logger for persistent tracing.
 
@@ -51,7 +51,8 @@ class ChatAdapterFactory:
             the cached adapter is returned WITHOUT updating the trace_logger.
             To use a different trace_logger, call clear_cache() first.
         """
-        cache_key = (model.lower(), provider.lower())
+        provider_lower = provider.lower()
+        cache_key = (model.lower(), provider_lower)
 
         if cache_key in cls.__cache:
             cls.__logger.debug(
@@ -66,8 +67,6 @@ class ChatAdapterFactory:
             provider,
             model,
         )
-
-        provider_lower = provider.lower()
 
         # O(1) lookup instead of O(n) conditional chain
         adapter_class = cls.__ADAPTER_REGISTRY.get(provider_lower)

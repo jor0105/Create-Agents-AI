@@ -41,6 +41,9 @@ class ITraceLogger(ABC):
         data: Optional[Dict[str, Any]] = None,
         outputs: Optional[Dict[str, Any]] = None,
         status: str = 'success',
+        error_message: Optional[str] = None,
+        error_type: Optional[str] = None,
+        error_stack: Optional[str] = None,
     ) -> None:
         """Log the end of a trace/operation.
 
@@ -50,6 +53,9 @@ class ITraceLogger(ABC):
             data: Optional additional data to log.
             outputs: Optional output data to log (alias for data).
             status: Status of the operation ('success' or 'error').
+            error_message: Error description (OpenTelemetry compatible).
+            error_type: Exception class name (OpenTelemetry compatible).
+            error_stack: Stack trace (OpenTelemetry compatible).
         """
 
     @abstractmethod
@@ -134,7 +140,9 @@ class ITraceLogger(ABC):
         response_preview: str,
         has_tool_calls: bool,
         tool_calls_count: int = 0,
-        tokens_used: Optional[int] = None,
+        input_tokens: Optional[int] = None,
+        output_tokens: Optional[int] = None,
+        total_tokens: Optional[int] = None,
         duration_ms: Optional[float] = None,
     ) -> None:
         """Log an LLM API response.
@@ -145,6 +153,8 @@ class ITraceLogger(ABC):
             response_preview: Preview of the response (first N chars).
             has_tool_calls: Whether the response contains tool calls.
             tool_calls_count: Number of tool calls in response.
-            tokens_used: Total tokens used (if available).
+            input_tokens: Input/prompt tokens used (if available).
+            output_tokens: Output/completion tokens used (if available).
+            total_tokens: Total tokens used (if available).
             duration_ms: Response time in milliseconds.
         """

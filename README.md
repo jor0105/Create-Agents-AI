@@ -136,7 +136,7 @@ async def main():
     # Criar agente
     agent = CreateAgent(
         provider="openai",
-        model="gpt-4",
+        model="gpt-5-nano",
         instructions="Você é um assistente técnico especializado em Python"
     )
 
@@ -157,7 +157,7 @@ async def main():
     # Agente com ferramentas
     agent = CreateAgent(
         provider="openai",
-        model="gpt-4",
+        model="gpt-5-nano",
         tools=["currentdate"]
     )
 
@@ -211,7 +211,7 @@ from createagents import CreateAgent
 async def main():
     assistant = CreateAgent(
         provider="openai",
-        model="gpt-4",
+        model="gpt-5-nano",
         name="Code Assistant",
         instructions="Você é um especialista em programação Python. Sempre forneça exemplos de código.",
         config={"temperature": 0.3}  # Menos criatividade para código
@@ -241,7 +241,7 @@ async def main():
     # Um para análise
     analyzer = CreateAgent(
         provider="openai",
-        model="gpt-4",
+        model="gpt-5-nano",
         instructions="Você analisa código e fornece feedback crítico",
         config={"temperature": 0.5}
     )
@@ -249,7 +249,7 @@ async def main():
     # Outro para documentação
     documentor = CreateAgent(
         provider="openai",
-        model="gpt-4",
+        model="gpt-5-nano",
         instructions="Você escreve documentação clara e profissional",
         config={"temperature": 0.3}
     )
@@ -288,7 +288,7 @@ class CalculatorTool(BaseTool):
 # Criar agente com ferramenta customizada
 agent = CreateAgent(
     provider="openai",
-    model="gpt-4",
+    model="gpt-5-nano",
     tools=["currentdate", CalculatorTool()]
 )
 
@@ -415,7 +415,7 @@ config = {
 
 agent = CreateAgent(
     provider="openai",
-    model="gpt-4",
+    model="gpt-5-nano",
     name="Assistente",
     instructions="Seja conciso",
     config=config,

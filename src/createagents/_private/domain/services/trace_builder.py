@@ -18,7 +18,7 @@ def build_trace_summary(
         entries: List of trace entries belonging to this trace.
 
     Returns:
-        A fully populated TraceSummary object.
+        A fully populated TraceSummary object with aggregated metrics.
 
     Raises:
         ValueError: If entries list is empty.
@@ -42,6 +42,17 @@ def build_trace_summary(
     # Count tool calls
     tool_calls = sum(1 for e in entries if e.event == 'tool.call')
 
+    # Aggregate tokens
+    total_tokens = sum(
+        e.total_tokens for e in entries if e.total_tokens is not None
+    )
+
+    # Aggregate costs
+    total_cost = sum(e.cost_usd for e in entries if e.cost_usd is not None)
+
+    # Count errors
+    error_count = sum(1 for e in entries if e.error_message is not None)
+
     return TraceSummary(
         trace_id=trace_id,
         session_id=first_entry.session_id,
@@ -53,6 +64,9 @@ def build_trace_summary(
         status=status,
         run_count=len({e.run_id for e in entries}),
         tool_calls_count=tool_calls,
+        total_tokens=total_tokens if total_tokens > 0 else None,
+        total_cost_usd=total_cost if total_cost > 0 else None,
+        error_count=error_count,
         entries=sorted_entries,
     )
 

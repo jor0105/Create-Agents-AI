@@ -1,3 +1,4 @@
+import traceback
 from typing import AsyncGenerator, List, Optional, Union
 
 from ...domain import Agent, ChatException, RunType, TraceContext
@@ -159,15 +160,17 @@ class ChatWithAgentUseCase:
 
             return output_dto
 
-        except ChatException:
+        except ChatException as e:
             self.__logger.error(
                 'ChatException during chat execution', exc_info=True
             )
             if self.__trace_logger:
                 self.__trace_logger.end_trace(
                     trace_ctx,
-                    outputs={'error': 'ChatException'},
                     status='error',
+                    error_message=str(e),
+                    error_type='ChatException',
+                    error_stack=traceback.format_exc(),
                 )
             raise
         except (ValueError, TypeError, KeyError, AttributeError) as e:
@@ -189,8 +192,10 @@ class ChatWithAgentUseCase:
             if self.__trace_logger:
                 self.__trace_logger.end_trace(
                     trace_ctx,
-                    outputs={'error': str(e), 'error_type': type(e).__name__},
                     status='error',
+                    error_message=str(e),
+                    error_type=type(e).__name__,
+                    error_stack=traceback.format_exc(),
                 )
             raise ChatException(user_msg.format(str(e))) from e
         except Exception as e:
@@ -198,8 +203,10 @@ class ChatWithAgentUseCase:
             if self.__trace_logger:
                 self.__trace_logger.end_trace(
                     trace_ctx,
-                    outputs={'error': str(e), 'error_type': type(e).__name__},
                     status='error',
+                    error_message=str(e),
+                    error_type=type(e).__name__,
+                    error_stack=traceback.format_exc(),
                 )
             raise ChatException(
                 f'Unexpected error during communication with AI: {str(e)}',
@@ -284,15 +291,17 @@ class ChatWithAgentUseCase:
                 },
             )
 
-        except ChatException:
+        except ChatException as e:
             self.__logger.error(
                 'ChatException during streaming', exc_info=True
             )
             if self.__trace_logger:
                 self.__trace_logger.end_trace(
                     trace_ctx,
-                    outputs={'error': 'ChatException'},
                     status='error',
+                    error_message=str(e),
+                    error_type='ChatException',
+                    error_stack=traceback.format_exc(),
                 )
             raise
         except Exception as e:
@@ -302,8 +311,10 @@ class ChatWithAgentUseCase:
             if self.__trace_logger:
                 self.__trace_logger.end_trace(
                     trace_ctx,
-                    outputs={'error': str(e), 'error_type': type(e).__name__},
                     status='error',
+                    error_message=str(e),
+                    error_type=type(e).__name__,
+                    error_stack=traceback.format_exc(),
                 )
             raise ChatException(
                 f'Error during streaming: {str(e)}',

@@ -80,47 +80,6 @@ poetry run streamlit run src/createagents/dashboard/app.py
 
 **Passos:**
 
-1. Criar método `list_traces()`:
-
-```python
-def list_traces(
-    self,
-    limit: int = 20,
-    since: Optional[datetime] = None,
-    agent_name: Optional[str] = None,
-    status: Optional[str] = None
-) -> List[TraceSummary]:
-    """Lista traces com filtros opcionais."""
-    # Reutilizar lógica do FileTraceStore
-    # Retornar TraceSummary objects
-```
-
-2. Criar método `get_trace()`:
-
-```python
-def get_trace(self, trace_id: str) -> List[TraceEntry]:
-    """Retorna todos os TraceEntry de um trace específico."""
-    # Ler JSONL
-    # Filtrar por trace_id
-    # Ordenar por timestamp
-```
-
-3. Criar modelo `TraceSummary` (se não existir):
-
-```python
-@dataclass
-class TraceSummary:
-    trace_id: str
-    agent_name: str
-    start_time: datetime
-    end_time: datetime
-    total_duration_ms: float
-    status: str  # "success" | "error"
-    total_llm_calls: int
-    total_tool_calls: int
-    total_tokens: int
-    error_message: Optional[str]
-```
 
 **Verificação:**
 

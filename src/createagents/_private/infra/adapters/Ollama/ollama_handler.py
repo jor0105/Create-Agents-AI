@@ -8,6 +8,8 @@ from ....domain import (
     RunType,
     TraceContext,
     ToolChoiceType,
+    ToolChoice,
+    ToolChoiceMode,
 )
 from ....domain.interfaces import (
     IMetricsRecorder,
@@ -97,7 +99,23 @@ class OllamaHandler(BaseHandler):
         tool_executor = None
         tool_schemas = None
         formatted_tool_choice = None
-        if tools:
+
+        # Check if tool_choice='none' - if so, don't send tools to model
+        # This simulates the tool_choice='none' behavior since Ollama doesn't
+        # support the tool_choice parameter natively
+        is_tool_choice_none = (
+            tool_choice == 'none'
+            or (
+                isinstance(tool_choice, dict)
+                and tool_choice.get('type') == 'none'
+            )
+            or (
+                isinstance(tool_choice, ToolChoice)
+                and tool_choice.mode == ToolChoiceMode.NONE
+            )
+        )
+
+        if tools and not is_tool_choice_none:
             tool_executor = self._create_tool_executor(tools)
             tool_schemas = self._schema_builder.multiple_format(tools)
             formatted_tool_choice = self._schema_builder.format_tool_choice(
@@ -107,6 +125,10 @@ class OllamaHandler(BaseHandler):
                 self._logger.debug(
                     'Tool choice configured: %s', formatted_tool_choice
                 )
+        elif is_tool_choice_none:
+            self._logger.debug(
+                "tool_choice='none' - tools disabled for this request"
+            )
 
         iteration = 0
         final_response = None
@@ -169,12 +191,26 @@ class OllamaHandler(BaseHandler):
 
                     # Log LLM response with tool calls via TraceLogger
                     if self._trace_logger and iteration_ctx:
+                        # Extract token usage from Ollama response
+                        input_tokens = getattr(
+                            response_api, 'prompt_eval_count', None
+                        )
+                        output_tokens = getattr(
+                            response_api, 'eval_count', None
+                        )
+                        total_tokens = None
+                        if input_tokens and output_tokens:
+                            total_tokens = input_tokens + output_tokens
+
                         self._trace_logger.log_llm_response(
                             iteration_ctx,
                             model=model,
                             response_preview=f'Tool calls: {[tc.function.name for tc in tool_calls]}',
                             has_tool_calls=True,
                             tool_calls_count=len(tool_calls),
+                            input_tokens=input_tokens,
+                            output_tokens=output_tokens,
+                            total_tokens=total_tokens,
                             duration_ms=llm_duration_ms,
                         )
 
@@ -234,12 +270,24 @@ class OllamaHandler(BaseHandler):
 
                 # Log LLM text response via TraceLogger (persists to TraceStore)
                 if self._trace_logger and iteration_ctx:
+                    # Extract token usage from Ollama response
+                    input_tokens = getattr(
+                        response_api, 'prompt_eval_count', None
+                    )
+                    output_tokens = getattr(response_api, 'eval_count', None)
+                    total_tokens = None
+                    if input_tokens and output_tokens:
+                        total_tokens = input_tokens + output_tokens
+
                     self._trace_logger.log_llm_response(
                         iteration_ctx,
                         model=model,
                         response_preview=final_response,
                         has_tool_calls=False,
                         tool_calls_count=0,
+                        input_tokens=input_tokens,
+                        output_tokens=output_tokens,
+                        total_tokens=total_tokens,
                         duration_ms=llm_duration_ms,
                     )
 
@@ -303,7 +351,7 @@ class OllamaHandler(BaseHandler):
             )
             raise
         finally:
-            self.__client.stop_model(model)
+            await self.__client.stop_model(model)
 
     async def __handle_tool_calls(
         self,

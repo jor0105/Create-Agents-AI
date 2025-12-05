@@ -100,15 +100,9 @@ class StructuredTool:
         Example:
             ```python
             def search(query: str, limit: int = 10) -> str:
-                Search for information.
-
-                Args:
-                    query: The search query.
-                    limit: Maximum results.
-
-                Returns:
-                    Search results.
+                '''Search for information.'''
                 return f"Results for: {query}"
+
             tool = StructuredTool.from_function(search)
             ```
         """

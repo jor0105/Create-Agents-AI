@@ -1,5 +1,5 @@
 import asyncio
-import subprocess  # nosec B404
+import asyncio.subprocess as async_subprocess
 import threading
 from typing import Any, AsyncIterator, Dict, List, Optional, Union
 
@@ -53,6 +53,13 @@ class OllamaClient:
         self.__max_retries = int(
             EnvironmentConfig.get_env('OLLAMA_MAX_RETRIES', '3') or '3'
         )
+        # Control whether to stop model after each request
+        # Enable to free VRAM after each request (recommended for local models)
+        # Disable for remote/cloud models or when you want to keep model loaded
+        self.__auto_stop_model = (
+            EnvironmentConfig.get_env('OLLAMA_AUTO_STOP_MODEL', 'true')
+            or 'true'
+        ).lower() == 'true'
 
         self.__rate_limiter = (
             rate_limiter
@@ -60,9 +67,10 @@ class OllamaClient:
         )
 
         self.__logger.info(
-            'Ollama client initialized (host: %s, timeout: %ss)',
+            'Ollama client initialized (host: %s, timeout: %ss, auto_stop: %s)',
             self.__host,
             self.__timeout,
+            self.__auto_stop_model,
         )
 
     def _get_client(self) -> AsyncClient:
@@ -137,13 +145,16 @@ class OllamaClient:
 
                 if config:
                     config_copy = config.copy()
+                    if 'stream' in config_copy:
+                        config_copy.pop('stream')
                     if 'think' in config_copy:
                         chat_kwargs['think'] = config_copy.pop('think')
                     if 'max_tokens' in config_copy:
                         config_copy['num_predict'] = config_copy.pop(
                             'max_tokens'
                         )
-                    chat_kwargs['options'] = config_copy
+                    if config_copy:
+                        chat_kwargs['options'] = config_copy
 
                 client = self._get_client()
                 result: Union[
@@ -193,17 +204,44 @@ class OllamaClient:
                 )
                 raise
 
-    def stop_model(self, model: str) -> None:
-        """Stops the Ollama model after use to free up memory."""
-        try:
-            subprocess.run(  # nosec B603 B607
-                ['ollama', 'stop', model],
-                capture_output=True,
-                timeout=10,
-                check=False,
+    async def stop_model(self, model: str) -> None:
+        """Stops the Ollama model after use to free up VRAM.
+
+        This method is controlled by the OLLAMA_AUTO_STOP_MODEL environment
+        variable (default: false). It should be enabled for local models
+        to free up GPU memory, but disabled for remote/cloud models.
+
+        Args:
+            model: The model name to stop.
+        """
+        if not self.__auto_stop_model:
+            self.__logger.debug(
+                'Auto-stop disabled, skipping stop for model %s', model
             )
+            return
+
+        try:
+            process = await asyncio.wait_for(
+                asyncio.create_subprocess_exec(
+                    'ollama',
+                    'stop',
+                    model,
+                    stdout=async_subprocess.PIPE,
+                    stderr=async_subprocess.PIPE,
+                ),
+                timeout=10.0,
+            )
+            await process.wait()
             self.__logger.debug('Model %s stopped successfully.', model)
-        except (FileNotFoundError, subprocess.TimeoutExpired, OSError) as e:
+        except FileNotFoundError:
+            self.__logger.debug(
+                'Ollama CLI not found, cannot stop model %s', model
+            )
+        except asyncio.TimeoutError:
+            self.__logger.warning(
+                'Timeout stopping model %s (10s exceeded)', model
+            )
+        except OSError as e:
             self.__logger.warning('Could not stop model %s: %s', model, e)
         except Exception as e:
             self.__logger.warning(

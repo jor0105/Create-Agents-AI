@@ -4,7 +4,7 @@ import json
 from collections import defaultdict
 from datetime import datetime
 from threading import Lock
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 from ...domain.interfaces.tracing import (
     ITraceStore,
@@ -32,29 +32,31 @@ class InMemoryTraceStore(ITraceStore):
                         Oldest traces are evicted when limit is reached.
         """
         self._max_traces = max_traces
-        self._entries: Dict[str, List[TraceEntry]] = defaultdict(list)
+        self._entries: Dict[str, List[Dict[str, Any]]] = defaultdict(list)
         self._trace_order: List[str] = []
         self._lock = Lock()
 
-    def save_entry(self, entry: TraceEntry) -> None:
+    def save(self, data: Dict[str, Any]) -> None:
         """Save a trace entry to memory."""
         with self._lock:
-            trace_id = entry.trace_id
+            trace_id = data.get('trace_id', '')
 
             if trace_id not in self._entries:
                 self._trace_order.append(trace_id)
                 self._evict_if_needed()
 
-            self._entries[trace_id].append(entry)
+            self._entries[trace_id].append(data)
 
-    def get_trace(self, trace_id: str) -> Optional[TraceSummary]:
+    def get_trace(self, trace_id: str) -> Optional[Dict[str, Any]]:
         """Get a trace summary by ID."""
         with self._lock:
             entries = self._entries.get(trace_id)
             if not entries:
                 return None
 
-            return build_trace_summary(trace_id, entries)
+            trace_entries = [TraceEntry.from_dict(e) for e in entries]
+            summary = build_trace_summary(trace_id, trace_entries)
+            return self._summary_to_dict(summary)
 
     def list_traces(
         self,
@@ -62,17 +64,18 @@ class InMemoryTraceStore(ITraceStore):
         session_id: Optional[str] = None,
         since: Optional[datetime] = None,
         agent_name: Optional[str] = None,
-    ) -> List[TraceSummary]:
+    ) -> List[Dict[str, Any]]:
         """List traces with optional filters."""
         with self._lock:
-            summaries: List[TraceSummary] = []
+            summaries: List[Dict[str, Any]] = []
 
             for trace_id in reversed(self._trace_order):
                 entries = self._entries.get(trace_id, [])
                 if not entries:
                     continue
 
-                summary = build_trace_summary(trace_id, entries)
+                trace_entries = [TraceEntry.from_dict(e) for e in entries]
+                summary = build_trace_summary(trace_id, trace_entries)
 
                 if session_id and summary.session_id != session_id:
                     continue
@@ -81,7 +84,7 @@ class InMemoryTraceStore(ITraceStore):
                 if agent_name and summary.agent_name != agent_name:
                     continue
 
-                summaries.append(summary)
+                summaries.append(self._summary_to_dict(summary))
 
                 if len(summaries) >= limit:
                     break
@@ -91,29 +94,29 @@ class InMemoryTraceStore(ITraceStore):
     def export_traces(
         self,
         trace_ids: Optional[List[str]] = None,
-        format: str = 'jsonl',
+        export_format: str = 'jsonl',
     ) -> str:
         """Export traces to string format."""
         with self._lock:
             ids_to_export = trace_ids or list(self._entries.keys())
-            all_entries: List[TraceEntry] = []
+            all_entries: List[Dict[str, Any]] = []
 
             for trace_id in ids_to_export:
                 entries = self._entries.get(trace_id, [])
                 all_entries.extend(entries)
 
-            all_entries.sort(key=lambda e: e.timestamp)
+            all_entries.sort(key=lambda e: e.get('timestamp', ''))
 
-            if format == 'json':
+            if export_format == 'json':
                 return json.dumps(
-                    [e.to_dict() for e in all_entries],
+                    all_entries,
                     indent=2,
                     default=str,
                     ensure_ascii=False,
                 )
             else:
                 lines = [
-                    json.dumps(e.to_dict(), default=str, ensure_ascii=False)
+                    json.dumps(e, default=str, ensure_ascii=False)
                     for e in all_entries
                 ]
                 return '\n'.join(lines)
@@ -136,8 +139,12 @@ class InMemoryTraceStore(ITraceStore):
             elif older_than:
                 to_delete: List[str] = []
                 for trace_id, entries in self._entries.items():
-                    if entries and entries[0].timestamp < older_than:
-                        to_delete.append(trace_id)
+                    if entries:
+                        timestamp_str = entries[0].get('timestamp', '')
+                        if timestamp_str:
+                            entry_time = datetime.fromisoformat(timestamp_str)
+                            if entry_time < older_than:
+                                to_delete.append(trace_id)
 
                 for trace_id in to_delete:
                     del self._entries[trace_id]
@@ -161,3 +168,24 @@ class InMemoryTraceStore(ITraceStore):
             oldest_id = self._trace_order.pop(0)
             if oldest_id in self._entries:
                 del self._entries[oldest_id]
+
+    def _summary_to_dict(self, summary: TraceSummary) -> Dict[str, Any]:
+        """Convert TraceSummary to dict for public API."""
+        return {
+            'trace_id': summary.trace_id,
+            'session_id': summary.session_id,
+            'agent_name': summary.agent_name,
+            'model': summary.model,
+            'start_time': summary.start_time.isoformat(),
+            'end_time': summary.end_time.isoformat()
+            if summary.end_time
+            else None,
+            'duration_ms': summary.duration_ms,
+            'status': summary.status,
+            'run_count': summary.run_count,
+            'tool_calls_count': summary.tool_calls_count,
+            'total_tokens': summary.total_tokens,
+            'total_cost_usd': summary.total_cost_usd,
+            'error_count': summary.error_count,
+            'entries': [e.to_dict() for e in summary.entries],
+        }

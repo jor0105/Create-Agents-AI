@@ -98,6 +98,9 @@ class TraceLogger(ITraceLogger):
         data: Optional[Dict[str, Any]] = None,
         outputs: Optional[Dict[str, Any]] = None,
         status: str = 'success',
+        error_message: Optional[str] = None,
+        error_type: Optional[str] = None,
+        error_stack: Optional[str] = None,
     ) -> None:
         """Log the end of a trace/operation."""
         # Merge data and outputs (outputs takes precedence)
@@ -112,6 +115,12 @@ class TraceLogger(ITraceLogger):
             data=merged_data if merged_data else None,
             duration_ms=duration_ms,
         )
+
+        # Add error info to extra for logging
+        if error_message:
+            extra['error_message'] = error_message
+        if error_type:
+            extra['error_type'] = error_type
 
         log_method = (
             self._logger.info if status == 'success' else self._logger.error
@@ -149,6 +158,9 @@ class TraceLogger(ITraceLogger):
             status=status,
             outputs=merged_data if merged_data else None,
             duration_ms=duration_ms,
+            error_message=error_message,
+            error_type=error_type,
+            error_stack=error_stack,
         )
 
     def log_event(
@@ -355,7 +367,9 @@ class TraceLogger(ITraceLogger):
         response_preview: str,
         has_tool_calls: bool,
         tool_calls_count: int = 0,
-        tokens_used: Optional[int] = None,
+        input_tokens: Optional[int] = None,
+        output_tokens: Optional[int] = None,
+        total_tokens: Optional[int] = None,
         duration_ms: Optional[float] = None,
     ) -> None:
         """Log an LLM API response."""
@@ -367,7 +381,9 @@ class TraceLogger(ITraceLogger):
                 'response_preview': self._truncate(response_preview, 200),
                 'has_tool_calls': has_tool_calls,
                 'tool_calls_count': tool_calls_count,
-                'tokens_used': tokens_used,
+                'input_tokens': input_tokens,
+                'output_tokens': output_tokens,
+                'total_tokens': total_tokens,
             },
             duration_ms=duration_ms,
         )
@@ -377,7 +393,7 @@ class TraceLogger(ITraceLogger):
             if has_tool_calls
             else ' (text response)'
         )
-        tokens_info = f' tokens={tokens_used}' if tokens_used else ''
+        tokens_info = f' tokens={total_tokens}' if total_tokens else ''
         duration_info = f' duration={duration_ms:.2f}ms' if duration_ms else ''
 
         if self._json_output:
@@ -412,10 +428,10 @@ class TraceLogger(ITraceLogger):
                 'tool_calls_count': tool_calls_count,
             },
             duration_ms=duration_ms,
-            data={
-                'model': model,
-                'tokens_used': tokens_used,
-            },
+            data={'model': model},
+            input_tokens=input_tokens,
+            output_tokens=output_tokens,
+            total_tokens=total_tokens,
         )
 
     def _build_extra(
@@ -466,6 +482,13 @@ class TraceLogger(ITraceLogger):
         outputs: Optional[Dict[str, Any]] = None,
         data: Optional[Dict[str, Any]] = None,
         duration_ms: Optional[float] = None,
+        input_tokens: Optional[int] = None,
+        output_tokens: Optional[int] = None,
+        total_tokens: Optional[int] = None,
+        error_message: Optional[str] = None,
+        error_type: Optional[str] = None,
+        error_stack: Optional[str] = None,
+        cost_usd: Optional[float] = None,
     ) -> None:
         """Persist a trace entry to the store if configured."""
         if not self._trace_store:
@@ -489,6 +512,13 @@ class TraceLogger(ITraceLogger):
             outputs=outputs,
             data=data,
             duration_ms=duration_ms,
+            error_message=error_message,
+            error_type=error_type,
+            error_stack=error_stack,
+            input_tokens=input_tokens,
+            output_tokens=output_tokens,
+            total_tokens=total_tokens,
+            cost_usd=cost_usd,
             metadata=trace_context.metadata,
         )
         self._trace_store.save_entry(entry)
@@ -527,7 +557,7 @@ def create_trace_logger(
         >>> ctx = TraceContext.create_root(RunType.CHAT, "chat")
         >>> trace_logger.start_trace(ctx, "Starting chat")
     """
-    from ..logging.logging_config import create_logger
+    from ..logging.logging_config import create_logger  # pylint: disable=import-outside-toplevel
 
     base_logger = create_logger(name)
 

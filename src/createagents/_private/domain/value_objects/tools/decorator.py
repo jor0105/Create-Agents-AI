@@ -102,15 +102,7 @@ def tool(
         ```python
         @tool
         def get_weather(city: str, units: str = "celsius") -> str:
-            '''Get the current weather for a city.
-
-            Args:
-                city: The city name to get weather for.
-                units: Temperature units (celsius or fahrenheit).
-
-            Returns:
-                Weather information as a string.
-            '''
+            '''Get the current weather for a city.'''
             return f"Weather in {city}: 22°{units[0].upper()}"
         ```
 
@@ -143,14 +135,7 @@ def tool(
         ```python
         @tool
         async def fetch_data(url: str) -> str:
-            '''Fetch data from a URL.
-
-            Args:
-                url: The URL to fetch.
-
-            Returns:
-                The fetched content.
-            '''
+            '''Fetch data from a URL.'''
             async with httpx.AsyncClient() as client:
                 response = await client.get(url)
                 return response.text

@@ -45,7 +45,7 @@ def _is_rate_limit_error(exception: Exception) -> Tuple[bool, Optional[float]]:
     Returns:
         Tuple of (is_rate_limit, retry_after_seconds).
     """
-    from ...domain.exceptions import RateLimitError  # pylint: disable=import-outside-toplevel
+    from ....domain.exceptions import RateLimitError  # pylint: disable=import-outside-toplevel
 
     if isinstance(exception, RateLimitError):
         return True, exception.retry_after

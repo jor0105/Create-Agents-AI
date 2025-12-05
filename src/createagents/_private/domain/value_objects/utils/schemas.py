@@ -48,19 +48,11 @@ def _parse_google_docstring(func: Callable) -> Dict[str, str]:
     Example:
         ```python
         def example(name: str, age: int) -> str:
-            '''Do something.
-
-            Args:
-                name: The person's name.
-                age: The person's age in years.
-
-            Returns:
-                A greeting string.
-            '''
+            '''Do something with name and age.'''
             pass
 
         descriptions = _parse_google_docstring(example)
-        # {'name': "The person's name.", 'age': "The person's age in years."}
+        # Returns: {'name': ..., 'age': ...}
         ```
     """
     descriptions: Dict[str, str] = {}
@@ -205,20 +197,12 @@ def create_schema_from_function(
     Example:
         ```python
         def search(query: str, max_results: int = 10) -> str:
-            '''Search for information.
-
-            Args:
-                query: The search query string.
-                max_results: Maximum results to return.
-
-            Returns:
-                Search results.
-            '''
+            '''Search for information.'''
             pass
 
         SearchInput = create_schema_from_function(search)
         # SearchInput is now a Pydantic model with:
-        # - query: str (required, description from docstring)
+        # - query: str (required)
         # - max_results: int = 10 (optional with default)
         ```
     """

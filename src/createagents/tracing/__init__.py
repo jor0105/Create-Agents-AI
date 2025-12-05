@@ -1,8 +1,8 @@
 """
 Tracing API for CreateAgentsAI.
 
-Exposes types for implementing custom trace stores and integrating with
-observability platforms (OpenTelemetry, Jaeger, Zipkin, Datadog, etc.).
+This module exposes a minimal, decoupled interface for trace storage.
+Users can integrate any observability platform by implementing `ITraceStore`.
 
 Quick Start
 -----------
@@ -17,88 +17,83 @@ Using built-in trace stores::
         trace_store=FileTraceStore()
     )
 
-Creating a custom trace store::
+Creating a custom trace store (minimal)::
 
-    from createagents.tracing import ITraceStore, TraceEntry
+    from createagents.tracing import ITraceStore
 
-    class MyCustomTraceStore(ITraceStore):
-        def save_entry(self, entry: TraceEntry) -> None:
-            # Send to your backend
-            ...
-
-        def list_traces(self, limit=20, **filters):
-            ...
-
-        def get_trace(self, trace_id: str):
-            ...
-
-        def export_traces(self, trace_ids=None, format="json"):
-            ...
-
-        def clear_traces(self, older_than=None, trace_ids=None):
-            ...
-
-        def get_trace_count(self):
-            ...
+    class MyStore(ITraceStore):
+        def save(self, data: dict) -> None:
+            # data is a plain dict - send to your backend
+            requests.post("https://my-backend/traces", json=data)
 
 OpenTelemetry Integration::
 
-    from createagents.tracing import ITraceStore, TraceEntry
+    from createagents.tracing import ITraceStore
     from opentelemetry import trace
 
-    class OTelTraceStore(ITraceStore):
+    class OTelStore(ITraceStore):
         def __init__(self):
             self.tracer = trace.get_tracer(__name__)
 
-        def save_entry(self, entry: TraceEntry) -> None:
-            with self.tracer.start_span(entry.operation) as span:
-                span.set_attribute("trace_id", entry.trace_id)
-                span.set_attribute("run_type", entry.run_type)
-                span.set_attribute("run_id", entry.run_id)
-        # ... implement other abstract methods
+        def save(self, data: dict) -> None:
+            with self.tracer.start_span(data["operation"]) as span:
+                span.set_attribute("trace_id", data["trace_id"])
+                span.set_attribute("run_type", data["run_type"])
+                if data.get("error_message"):
+                    span.set_status(StatusCode.ERROR, data["error_message"])
 
-See ``examples/opentelemetry_tracing.py`` for a complete example.
+Data Format
+-----------
+The `save(data)` method receives a dict with these keys:
+
+Core (always present):
+    - trace_id: str - Unique identifier for the trace
+    - run_id: str - Unique identifier for this span/run
+    - run_type: str - 'chat', 'llm', 'tool', 'chain', 'agent'
+    - operation: str - Human-readable operation name
+    - event: str - 'trace.start', 'trace.end', 'tool.call', etc.
+    - timestamp: str - ISO format timestamp
+
+Context:
+    - parent_run_id: str | None - Parent span ID
+    - session_id: str | None - Session grouping ID
+    - agent_name: str | None - Name of the agent
+    - model: str | None - Model being used
+    - status: str | None - 'success' or 'error'
+
+Payloads:
+    - inputs: dict | None - Input data
+    - outputs: dict | None - Output data
+    - duration_ms: float | None - Duration in milliseconds
+
+Error Tracking (OpenTelemetry/Datadog):
+    - error_message: str | None - Error description
+    - error_type: str | None - Exception class name
+    - error_stack: str | None - Stack trace
+
+Token/Cost Tracking (LangSmith):
+    - input_tokens: int | None - Input token count
+    - output_tokens: int | None - Output token count
+    - total_tokens: int | None - Total tokens used
+    - cost_usd: float | None - Estimated cost in USD
 
 Exports
 -------
-Interfaces:
-    ITraceStore: Abstract interface for trace persistence.
-
-Value Objects:
-    TraceEntry: Single trace event (unit of persistence).
-    TraceSummary: Aggregated summary of a complete trace.
-    TraceContext: Immutable context for a trace/span.
-    RunType: Enum of operation types (CHAT, TOOL, LLM, etc.).
+Interface:
+    ITraceStore: Abstract interface - implement `save(data: dict)` method.
 
 Built-in Stores:
     FileTraceStore: Persists traces to JSONL files.
     InMemoryTraceStore: Keeps traces in memory (dev/testing).
-
-Helpers:
-    build_trace_summary: Builds TraceSummary from TraceEntry list.
 """
 
-from .._private.domain import (
-    TraceContext,
-    TraceEntry,
-    TraceSummary,
-    ITraceStore,
-    build_trace_summary,
-    RunType,
-)
+from .._private.domain.interfaces.tracing import ITraceStore
 from .._private.infra import FileTraceStore, InMemoryTraceStore
 
 __all__ = [
-    # Interfaces (contracts for custom implementations)
+    # Interface (contract for custom implementations)
     'ITraceStore',
-    # Value Objects (data structures)
-    'TraceContext',
-    'TraceEntry',
-    'TraceSummary',
-    'RunType',
     # Built-in Stores
     'FileTraceStore',
     'InMemoryTraceStore',
-    # Helpers
-    'build_trace_summary',
 ]

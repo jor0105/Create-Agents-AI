@@ -174,12 +174,33 @@ class OpenAIHandler(BaseHandler):
 
                     # Log LLM response with tool calls via TraceLogger
                     if self._trace_logger and iteration_ctx:
+                        # Extract token usage if available
+                        usage = getattr(response_api, 'usage', None)
+                        input_tokens = (
+                            getattr(usage, 'input_tokens', None)
+                            if usage
+                            else None
+                        )
+                        output_tokens = (
+                            getattr(usage, 'output_tokens', None)
+                            if usage
+                            else None
+                        )
+                        total_tokens = (
+                            getattr(usage, 'total_tokens', None)
+                            if usage
+                            else None
+                        )
+
                         self._trace_logger.log_llm_response(
                             iteration_ctx,
                             model=model,
                             response_preview=f'Tool calls: {[tc["name"] for tc in tool_calls]}',
                             has_tool_calls=True,
                             tool_calls_count=len(tool_calls),
+                            input_tokens=input_tokens,
+                            output_tokens=output_tokens,
+                            total_tokens=total_tokens,
                             duration_ms=llm_duration_ms,
                         )
 
@@ -381,10 +402,18 @@ class OpenAIHandler(BaseHandler):
                 # Log LLM text response via TraceLogger (persists to TraceStore)
                 if self._trace_logger and iteration_ctx:
                     # Extract token usage if available
-                    tokens_used = None
                     usage = getattr(response_api, 'usage', None)
-                    if usage:
-                        tokens_used = getattr(usage, 'total_tokens', None)
+                    input_tokens = (
+                        getattr(usage, 'input_tokens', None) if usage else None
+                    )
+                    output_tokens = (
+                        getattr(usage, 'output_tokens', None)
+                        if usage
+                        else None
+                    )
+                    total_tokens = (
+                        getattr(usage, 'total_tokens', None) if usage else None
+                    )
 
                     self._trace_logger.log_llm_response(
                         iteration_ctx,
@@ -392,7 +421,9 @@ class OpenAIHandler(BaseHandler):
                         response_preview=content,
                         has_tool_calls=False,
                         tool_calls_count=0,
-                        tokens_used=tokens_used,
+                        input_tokens=input_tokens,
+                        output_tokens=output_tokens,
+                        total_tokens=total_tokens,
                         duration_ms=llm_duration_ms,
                     )
 

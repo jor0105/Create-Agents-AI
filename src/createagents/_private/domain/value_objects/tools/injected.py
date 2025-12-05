@@ -1,4 +1,4 @@
-"""Markers for tool arguments injected by runtime.
+r"""Markers for tool arguments injected by runtime.
 
 These markers are used to annotate tool parameters that should be
 injected by the runtime system rather than provided by the LLM.
@@ -16,15 +16,7 @@ Example:
         query: str,
         tool_call_id: Annotated[str, InjectedToolCallId]
     ) -> str:
-        \"\"\"A tool that receives the tool call ID from runtime.
-
-        Args:
-            query: The user query.
-            tool_call_id: Injected by runtime, not visible to LLM.
-
-        Returns:
-            The result string.
-        \"\"\"
+        '''A tool that receives the tool call ID from runtime.'''
         return f"Executed with call_id: {tool_call_id}"
     ```
 """
@@ -84,7 +76,7 @@ class InjectedState(InjectedToolArg):
 
 
 class InjectedLogger(InjectedToolArg):
-    """Marker for injecting a logger into a tool.
+    r"""Marker for injecting a logger into a tool.
 
     When a parameter is annotated with this marker, the runtime
     will inject a configured logger instance, allowing tools to
@@ -105,15 +97,7 @@ class InjectedLogger(InjectedToolArg):
             query: str,
             logger: Annotated[Logger, InjectedLogger]
         ) -> str:
-            \"\"\"Search the web for information.
-
-            Args:
-                query: The search query.
-                logger: Injected logger for this tool.
-
-            Returns:
-                Search results.
-            \"\"\"
+            '''Search the web for information.'''
             logger.info(f"Searching for: {query}")
             results = perform_search(query)
             logger.debug(f"Found {len(results)} results")

@@ -1,115 +1,101 @@
 """Interface for trace persistence.
 
-This module defines the contract for storing and retrieving
-trace data. Implementations can store traces in memory, files,
-databases, or external services.
+This module defines the minimal contract for trace storage.
 
-The data classes TraceEntry and TraceSummary are imported from
-domain/value_objects/tracing for proper Clean Architecture layering.
+Users implementing custom trace stores only need to implement
+the `save` method.
+
+Design Philosophy:
+    - Minimal interface (only `save` is required)
+    - Data passed as Dict, not internal classes (decoupling)
+    - Compatible with any backend (OpenTelemetry, Datadog, etc.)
+    - Read/query methods are in concrete implementations, not the interface
 """
 
 from abc import ABC, abstractmethod
-from datetime import datetime
-from typing import List, Optional
+from typing import Any, Dict
 
-# Import value objects from proper domain location
-from ...value_objects.tracing import TraceEntry, TraceSummary
-
-# Re-export for backward compatibility
-__all__ = [
-    'ITraceStore',
-    'TraceEntry',
-    'TraceSummary',
-]
+from ...value_objects.tracing import TraceEntry
 
 
 class ITraceStore(ABC):
-    """Interface for trace persistence.
+    """Minimal interface for trace persistence.
 
-    This abstract class defines the contract for storing and retrieving
-    trace data. Implementations can store traces in memory, files,
-    databases, or external services.
+    To create a custom trace store, you only need to implement
+    the `save` method.
 
-    Follows Clean Architecture principles:
-    - Defined in domain layer as an interface
-    - Concrete implementations in infra layer
+    Example - Minimal Implementation::
+
+        class MyStore(ITraceStore):
+            def save(self, data: Dict[str, Any]) -> None:
+                requests.post("https://my-backend/traces", json=data)
+
+    Example - OpenTelemetry::
+
+        class OTelStore(ITraceStore):
+            def __init__(self):
+                self.tracer = trace.get_tracer(__name__)
+
+            def save(self, data: Dict[str, Any]) -> None:
+                with self.tracer.start_span(data["operation"]) as span:
+                    span.set_attribute("trace_id", data["trace_id"])
+                    span.set_attribute("run_type", data["run_type"])
+
+    Data Format:
+        The `data` dict contains these keys:
+
+        Required:
+        - trace_id: str - Unique identifier for the trace
+        - run_id: str - Unique identifier for this span/run
+        - run_type: str - One of: 'chat', 'llm', 'tool', 'chain', 'agent'
+        - operation: str - Human-readable operation name
+        - event: str - 'trace.start', 'trace.end', 'tool.call', etc.
+        - timestamp: str - ISO format timestamp
+
+        Context:
+        - parent_run_id: str | None - Parent span ID (None for root)
+        - session_id: str | None - Session grouping ID
+        - agent_name: str | None - Name of the agent
+        - model: str | None - Model being used
+        - status: str | None - 'success', 'error', or None
+
+        Payloads:
+        - inputs: dict | None - Input data
+        - outputs: dict | None - Output data
+        - data: dict | None - Additional event data
+        - metadata: dict - Extensible metadata
+
+        Timing:
+        - duration_ms: float | None - Duration in milliseconds
+
+        Token Tracking (LangSmith compatible):
+        - input_tokens: int | None - Input/prompt token count
+        - output_tokens: int | None - Output/completion token count
+        - total_tokens: int | None - Total tokens used
+
+        Error Tracking (OpenTelemetry/Datadog compatible):
+        - error_message: str | None - Error description
+        - error_type: str | None - Exception class name
+        - error_stack: str | None - Stack trace
+
+        Cost Tracking:
+        - cost_usd: float | None - Estimated cost in USD (user-provided)
     """
 
     @abstractmethod
+    def save(self, data: Dict[str, Any]) -> None:
+        """Save a trace entry.
+
+        This is the ONLY required method to implement.
+
+        Args:
+            data: Trace data as a dictionary. See class docstring for format.
+        """
+
     def save_entry(self, entry: TraceEntry) -> None:
-        """Save a single trace entry.
+        """Internal method for backward compatibility.
 
-        Args:
-            entry: The trace entry to persist.
+        This wraps `save()` for internal use. Users should
+        implement `save()` instead.
         """
-
-    @abstractmethod
-    def get_trace(self, trace_id: str) -> Optional[TraceSummary]:
-        """Get all entries for a trace.
-
-        Args:
-            trace_id: The trace identifier.
-
-        Returns:
-            TraceSummary with all entries, or None if not found.
-        """
-
-    @abstractmethod
-    def list_traces(
-        self,
-        limit: int = 20,
-        session_id: Optional[str] = None,
-        since: Optional[datetime] = None,
-        agent_name: Optional[str] = None,
-    ) -> List[TraceSummary]:
-        """List traces with optional filters.
-
-        Args:
-            limit: Maximum number of traces to return.
-            session_id: Filter by session ID.
-            since: Only include traces after this time.
-            agent_name: Filter by agent name.
-
-        Returns:
-            List of trace summaries.
-        """
-
-    @abstractmethod
-    def export_traces(
-        self,
-        trace_ids: Optional[List[str]] = None,
-        format: str = 'jsonl',
-    ) -> str:
-        """Export traces to string format.
-
-        Args:
-            trace_ids: Specific trace IDs to export (None = all).
-            format: Export format ('json' or 'jsonl').
-
-        Returns:
-            Exported trace data as string.
-        """
-
-    @abstractmethod
-    def clear_traces(
-        self,
-        older_than: Optional[datetime] = None,
-        trace_ids: Optional[List[str]] = None,
-    ) -> int:
-        """Clear/delete traces.
-
-        Args:
-            older_than: Delete traces older than this time.
-            trace_ids: Specific trace IDs to delete.
-
-        Returns:
-            Number of traces deleted.
-        """
-
-    @abstractmethod
-    def get_trace_count(self) -> int:
-        """Get total number of stored traces.
-
-        Returns:
-            Count of unique trace IDs.
-        """
+        self.save(entry.to_dict())

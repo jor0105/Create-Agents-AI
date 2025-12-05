@@ -313,7 +313,7 @@ class CreateAgent:
         using the presentation layer's CLI application.
 
         Example:
-            >>> agent = CreateAgent(provider="openai", model="gpt-4")
+            >>> agent = CreateAgent(provider="openai", model="gpt-5-nano")
             >>> agent.start_cli()  # Starts interactive chat
         """
         from ...presentation.cli import ChatCLIApplication  # pylint: disable=import-outside-toplevel

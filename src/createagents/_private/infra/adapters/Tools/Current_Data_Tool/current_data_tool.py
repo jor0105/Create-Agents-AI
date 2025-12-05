@@ -4,7 +4,7 @@ from functools import lru_cache
 from time import perf_counter
 from typing import Final, Literal, Optional
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 from .....domain import BaseTool
 from .....domain.interfaces import LoggerInterface
@@ -60,12 +60,12 @@ class CurrentDateInput(BaseModel):
         'date_with_weekday',
         'iso_week',
     ] = Field(
-        ...,
+        default='datetime',
         description=(
             'Information to return:\n'
             "- 'date': ISO date (YYYY-MM-DD)\n"
             "- 'time': Time (HH:MM:SS)\n"
-            "- 'datetime': Full ISO datetime with timezone\n"
+            "- 'datetime': Full ISO datetime with timezone (default)\n"
             "- 'timestamp': Unix timestamp (seconds)\n"
             "- 'date_with_weekday': Full date with weekday name\n"
             "- 'iso_week': ISO week number and year (YYYY-Www)"
@@ -83,6 +83,22 @@ class CurrentDateInput(BaseModel):
             "- 'Asia/Tokyo', 'Asia/Shanghai'"
         ),
     )
+
+    @field_validator('action', mode='before')
+    @classmethod
+    def normalize_action(cls, v):
+        """Convert common aliases to valid action values."""
+        if isinstance(v, str):
+            v_lower = v.lower().strip()
+            aliases = {
+                'now': 'datetime',
+                'current': 'datetime',
+                'get': 'datetime',
+                'get_time': 'time',
+                'get_date': 'date',
+            }
+            return aliases.get(v_lower, v_lower)
+        return v
 
 
 class CurrentDateTool(BaseTool):
