@@ -97,17 +97,20 @@ class OpenAIHandler(BaseHandler):
         tool_schemas = None
         tool_executor = None
         formatted_tool_choice = None
-        if tools:
-            # Use injected schema builder
-            tool_schemas = self._schema_builder.multiple_format(tools)
-            # Create tool executor using inherited factory from BaseHandler
+
+        # Apply intelligent tool filtering based on tool_choice
+        filtered_tools, is_tool_choice_none = self._filter_tools_by_choice(
+            tools, tool_choice
+        )
+
+        if filtered_tools and not is_tool_choice_none:
+            tool_schemas = self._schema_builder.multiple_format(filtered_tools)
             tool_executor = self._create_tool_executor(tools)
-            # Format tool_choice only if tools are provided
             formatted_tool_choice = self._schema_builder.format_tool_choice(
-                tool_choice, tools
+                tool_choice, filtered_tools
             )
             self._logger.debug(
-                'Tools enabled: %s', [tool.name for tool in tools]
+                'Tools enabled: %s', [tool.name for tool in filtered_tools]
             )
             if formatted_tool_choice:
                 self._logger.debug(

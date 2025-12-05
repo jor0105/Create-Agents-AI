@@ -8,8 +8,6 @@ from ....domain import (
     RunType,
     TraceContext,
     ToolChoiceType,
-    ToolChoice,
-    ToolChoiceMode,
 )
 from ....domain.interfaces import (
     IMetricsRecorder,
@@ -100,26 +98,16 @@ class OllamaHandler(BaseHandler):
         tool_schemas = None
         formatted_tool_choice = None
 
-        # Check if tool_choice='none' - if so, don't send tools to model
-        # This simulates the tool_choice='none' behavior since Ollama doesn't
-        # support the tool_choice parameter natively
-        is_tool_choice_none = (
-            tool_choice == 'none'
-            or (
-                isinstance(tool_choice, dict)
-                and tool_choice.get('type') == 'none'
-            )
-            or (
-                isinstance(tool_choice, ToolChoice)
-                and tool_choice.mode == ToolChoiceMode.NONE
-            )
+        # Apply intelligent tool filtering based on tool_choice
+        filtered_tools, is_tool_choice_none = self._filter_tools_by_choice(
+            tools, tool_choice
         )
 
-        if tools and not is_tool_choice_none:
+        if filtered_tools and not is_tool_choice_none:
             tool_executor = self._create_tool_executor(tools)
-            tool_schemas = self._schema_builder.multiple_format(tools)
+            tool_schemas = self._schema_builder.multiple_format(filtered_tools)
             formatted_tool_choice = self._schema_builder.format_tool_choice(
-                tool_choice, tools
+                tool_choice, filtered_tools
             )
             if formatted_tool_choice:
                 self._logger.debug(

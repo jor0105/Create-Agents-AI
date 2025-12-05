@@ -96,15 +96,21 @@ class OpenAIStreamHandler(BaseHandler):
         tool_schemas = None
         tool_executor = None
         formatted_tool_choice = None
-        if tools:
-            tool_schemas = self._schema_builder.multiple_format(tools)
+
+        # Apply intelligent tool filtering based on tool_choice
+        filtered_tools, is_tool_choice_none = self._filter_tools_by_choice(
+            tools, tool_choice
+        )
+
+        if filtered_tools and not is_tool_choice_none:
+            tool_schemas = self._schema_builder.multiple_format(filtered_tools)
             tool_executor = self._create_tool_executor(tools)
             formatted_tool_choice = self._schema_builder.format_tool_choice(
-                tool_choice, tools
+                tool_choice, filtered_tools
             )
             self._logger.debug(
                 'Streaming with tools enabled: %s',
-                [tool.name for tool in tools],
+                [tool.name for tool in filtered_tools],
             )
             if formatted_tool_choice:
                 self._logger.debug(

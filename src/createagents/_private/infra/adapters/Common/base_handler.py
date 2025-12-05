@@ -1,5 +1,5 @@
 from abc import ABC
-from typing import Any, List, Optional
+from typing import Any, List, Optional, Tuple
 
 from ....domain import BaseTool, ToolExecutor
 from ....domain.interfaces import (
@@ -9,6 +9,7 @@ from ....domain.interfaces import (
     LoggerInterface,
 )
 from ....domain.services import LoggerFactory
+from ....domain.value_objects import ToolChoice, ToolChoiceMode, ToolChoiceType
 from ...config import SensitiveDataFilter
 
 
@@ -20,6 +21,7 @@ class BaseHandler(ABC):
     - Common dependencies injection
     - Shared initialization logic
     - Sensitive data sanitization for logging
+    - Intelligent tool filtering based on tool_choice
 
     Subclasses should implement specific API call logic while inheriting
     the common tool execution infrastructure.
@@ -111,6 +113,73 @@ class BaseHandler(ABC):
             return SensitiveDataFilter.filter(data_str)
         except (TypeError, ValueError):
             return '[SERIALIZATION_ERROR]'
+
+    def _filter_tools_by_choice(
+        self,
+        tools: Optional[List[BaseTool]],
+        tool_choice: Optional[ToolChoiceType],
+    ) -> Tuple[Optional[List[BaseTool]], bool]:
+        """Filter tools based on tool_choice for optimized API calls.
+
+        This method implements intelligent tool filtering:
+        - tool_choice='none': Returns empty list (no tools sent to LLM)
+        - tool_choice='auto'/'required': Returns all tools
+        - tool_choice=specific("X"): Returns only tool X (token optimization)
+
+        This optimization:
+        1. Reduces token usage (fewer tool descriptions in context)
+        2. Simulates tool_choice behavior for providers that don't support it (e.g., Ollama)
+        3. Improves accuracy by limiting model choices
+
+        Args:
+            tools: Original list of tools available.
+            tool_choice: The tool_choice configuration.
+
+        Returns:
+            Tuple of (filtered_tools, is_tool_choice_none):
+            - filtered_tools: The filtered list of tools to send to API
+            - is_tool_choice_none: True if tool_choice is 'none'
+        """
+        if not tools:
+            return tools, False
+
+        # Extract tool names for validation in from_value
+        available_tool_names = [t.name for t in tools]
+
+        # Parse tool_choice to ToolChoice value object
+        parsed_choice = ToolChoice.from_value(
+            tool_choice, available_tool_names
+        )
+        if parsed_choice is None:
+            return tools, False
+
+        # Check for 'none' mode - disable all tools
+        if parsed_choice.mode == ToolChoiceMode.NONE:
+            self._logger.debug(
+                "tool_choice='none' - tools will be disabled for this request"
+            )
+            return [], True
+
+        # Check for specific function mode - filter to only that tool
+        if parsed_choice.is_specific_function and parsed_choice.function_name:
+            target_name = parsed_choice.function_name
+            filtered = [t for t in tools if t.name == target_name]
+
+            if not filtered:
+                self._logger.warning(
+                    "tool_choice specifies '%s' but tool not found in list",
+                    target_name,
+                )
+                return tools, False
+
+            self._logger.debug(
+                "tool_choice=specific('%s') - filtering to single tool",
+                target_name,
+            )
+            return filtered, False
+
+        # For 'auto' or 'required', return all tools
+        return tools, False
 
 
 __all__ = ['BaseHandler']
