@@ -96,7 +96,7 @@ class AgentComposer:
     def create_chat_use_case(
         provider: str,
         model: str,
-        enable_tracing: bool = True,
+        enable_tracing: bool = False,
     ) -> ChatWithAgentUseCase:
         """
         Creates the ChatWithAgentUseCase with its dependencies injected.
@@ -123,7 +123,7 @@ class AgentComposer:
             trace_logger = create_trace_logger(
                 'createagents.tracing.chat',
                 json_output=False,
-                enable_persistence=True,  # Enable persistence by default
+                enable_persistence=True,
             )
 
         # Pass trace_logger to the factory so handlers can use it

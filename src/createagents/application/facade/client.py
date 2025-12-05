@@ -28,6 +28,7 @@ class CreateAgent:
         tools: Optional[Sequence[Union[str, BaseTool]]] = None,
         history_max_size: int = 10,
         logger: Optional[LoggerInterface] = None,
+        enable_tracing: bool = False,
     ) -> None:
         """
         Initializes the controller by creating an agent and its dependencies.
@@ -41,6 +42,9 @@ class CreateAgent:
             tools: A list of tool names or BaseTool instances to be used by the agent (optional).
             history_max_size: The maximum history size (default: 10).
             logger: Optional logger interface. If not provided, a default logger will be created.
+            enable_tracing: Enable detailed tracing with persistence to ~/.createagents/traces/.
+                           Disabled by default to avoid filling disk space. When enabled, use
+                           /trace commands in CLI or inspect files directly.
         """
         # If no logger provided, create one from infrastructure
         if logger is None:
@@ -68,7 +72,11 @@ class CreateAgent:
         )
 
         self.__chat_use_case: ChatWithAgentUseCase = (
-            AgentComposer.create_chat_use_case(provider=provider, model=model)
+            AgentComposer.create_chat_use_case(
+                provider=provider,
+                model=model,
+                enable_tracing=enable_tracing,
+            )
         )
         self.__get_config_use_case: GetAgentConfigUseCase = (
             AgentComposer.create_get_config_use_case()
