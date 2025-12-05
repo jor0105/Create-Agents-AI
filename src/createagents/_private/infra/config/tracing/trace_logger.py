@@ -508,7 +508,6 @@ def create_trace_logger(
     name: str,
     json_output: bool = False,
     trace_store: Optional['ITraceStore'] = None,
-    enable_persistence: bool = False,
 ) -> TraceLogger:
     """Factory function to create a TraceLogger.
 
@@ -516,13 +515,15 @@ def create_trace_logger(
         name: Logger name (usually __name__).
         json_output: If True, output structured JSON logs.
         trace_store: Optional trace store for persistence.
-        enable_persistence: If True and no store provided, creates FileTraceStore.
+                    Pass any ITraceStore implementation (FileTraceStore,
+                    InMemoryTraceStore, or custom).
 
     Returns:
         A configured TraceLogger instance.
 
     Example:
-        >>> trace_logger = create_trace_logger(__name__)
+        >>> from createagents import FileTraceStore
+        >>> trace_logger = create_trace_logger(__name__, trace_store=FileTraceStore())
         >>> ctx = TraceContext.create_root(RunType.CHAT, "chat")
         >>> trace_logger.start_trace(ctx, "Starting chat")
     """
@@ -530,12 +531,6 @@ def create_trace_logger(
 
     base_logger = create_logger(name)
 
-    store = trace_store
-    if enable_persistence and store is None:
-        from ....infra.stores import FileTraceStore
-
-        store = FileTraceStore()
-
     return TraceLogger(
-        logger=base_logger, json_output=json_output, trace_store=store
+        logger=base_logger, json_output=json_output, trace_store=trace_store
     )

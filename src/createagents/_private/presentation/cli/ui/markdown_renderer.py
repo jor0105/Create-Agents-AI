@@ -46,11 +46,26 @@ class MarkdownRenderer:
     def _render_headers(self, text: str) -> str:
         """Convert Markdown headers to styled terminal text."""
         patterns = [
-            (r'^######\s+(.+)$', rf'{ColorScheme.CYAN}{ColorScheme.BOLD}\1{ColorScheme.RESET}'),
-            (r'^#####\s+(.+)$', rf'{ColorScheme.CYAN}{ColorScheme.BOLD}\1{ColorScheme.RESET}'),
-            (r'^####\s+(.+)$', rf'{ColorScheme.PURPLE}{ColorScheme.BOLD}▌\1{ColorScheme.RESET}'),
-            (r'^###\s+(.+)$', rf'{ColorScheme.PURPLE}{ColorScheme.BOLD}▌\1{ColorScheme.RESET}'),
-            (r'^##\s+(.+)$', rf'\n{ColorScheme.BLUE}{ColorScheme.BOLD}▐ \1{ColorScheme.RESET}'),
+            (
+                r'^######\s+(.+)$',
+                rf'{ColorScheme.CYAN}{ColorScheme.BOLD}\1{ColorScheme.RESET}',
+            ),
+            (
+                r'^#####\s+(.+)$',
+                rf'{ColorScheme.CYAN}{ColorScheme.BOLD}\1{ColorScheme.RESET}',
+            ),
+            (
+                r'^####\s+(.+)$',
+                rf'{ColorScheme.PURPLE}{ColorScheme.BOLD}▌\1{ColorScheme.RESET}',
+            ),
+            (
+                r'^###\s+(.+)$',
+                rf'{ColorScheme.PURPLE}{ColorScheme.BOLD}▌\1{ColorScheme.RESET}',
+            ),
+            (
+                r'^##\s+(.+)$',
+                rf'\n{ColorScheme.BLUE}{ColorScheme.BOLD}▐ \1{ColorScheme.RESET}',
+            ),
             (
                 r'^#\s+(.+)$',
                 rf'\n{ColorScheme.BLUE}{ColorScheme.BOLD}▐ \1{ColorScheme.RESET}\n'
@@ -134,7 +149,9 @@ class MarkdownRenderer:
                         f'\n{ColorScheme.DARK_GRAY}{"─" * self._max_line_width}{ColorScheme.RESET}'
                     )
 
-                cells = [cell.strip() for cell in line.split('|') if cell.strip()]
+                cells = [
+                    cell.strip() for cell in line.split('|') if cell.strip()
+                ]
 
                 # Skip separator lines (|---|---|)
                 if all(re.match(r'^[\-:]+$', cell) for cell in cells):
@@ -169,15 +186,19 @@ class MarkdownRenderer:
             )
 
             if len(value) > self._max_line_width - 6:
-                for wrapped_line in self._wrap_text(value, self._max_line_width - 6):
+                for wrapped_line in self._wrap_text(
+                    value, self._max_line_width - 6
+                ):
                     result.append(f'    {wrapped_line}')
             else:
                 result.append(f'    {value}')
             result.append('')
         else:
             # Multi-column: join with separators
-            formatted_line = f' {ColorScheme.DARK_GRAY}│{ColorScheme.RESET} '.join(
-                str(cell) for cell in cells
+            formatted_line = (
+                f' {ColorScheme.DARK_GRAY}│{ColorScheme.RESET} '.join(
+                    str(cell) for cell in cells
+                )
             )
             result.append(f'  {formatted_line}')
 

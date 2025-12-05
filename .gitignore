@@ -183,5 +183,5 @@ metrics.prom
 *.backup
 
 # User requested ignores
-# examples/
+examples/
 CHECKLIST.md

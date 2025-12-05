@@ -11,10 +11,11 @@ Este arquivo demonstra:
 import asyncio
 import logging
 
-from createagents import CreateAgent, tool, LoggingConfigurator
+from createagents import CreateAgent, tool
+from createagents.logging import configure_logging
 
 # Habilitar logging para ver os passos da IA
-LoggingConfigurator.configure(level=logging.INFO)
+configure_logging(level=logging.INFO)
 
 
 # =============================================================================
@@ -264,7 +265,7 @@ async def demo_with_value_object():
     print('   Usando o value object para type-safety')
     print('=' * 70)
 
-    from createagents.domain.value_objects import ToolChoice
+    from createagents._private.domain.value_objects import ToolChoice
 
     # OpenAI + Stream: False
     agent_openai = CreateAgent(

@@ -1,7 +1,7 @@
 from typing import Any, Dict, List, Optional, Sequence, Union
 
 from ...domain import Agent, BaseTool, ToolChoiceType
-from ...domain.interfaces import LoggerInterface
+from ...domain.interfaces import LoggerInterface, ITraceStore
 from ...infra import ChatMetrics
 from ...main import AgentComposer
 from ..dtos import ChatInputDTO, StreamingResponseDTO
@@ -28,7 +28,7 @@ class CreateAgent:
         tools: Optional[Sequence[Union[str, BaseTool]]] = None,
         history_max_size: int = 10,
         logger: Optional[LoggerInterface] = None,
-        enable_tracing: bool = False,
+        trace_store: Optional['ITraceStore'] = None,
     ) -> None:
         """
         Initializes the controller by creating an agent and its dependencies.
@@ -42,9 +42,11 @@ class CreateAgent:
             tools: A list of tool names or BaseTool instances to be used by the agent (optional).
             history_max_size: The maximum history size (default: 10).
             logger: Optional logger interface. If not provided, a default logger will be created.
-            enable_tracing: Enable detailed tracing with persistence to ~/.createagents/traces/.
-                           Disabled by default to avoid filling disk space. When enabled, use
-                           /trace commands in CLI or inspect files directly.
+            trace_store: Optional trace store for persisting trace data. If provided, tracing
+                        is automatically enabled. Pass any ITraceStore implementation:
+                        - FileTraceStore() for disk persistence (~/.createagents/traces/)
+                        - InMemoryTraceStore() for in-memory storage (dev/testing)
+                        - Custom ITraceStore implementation for OpenTelemetry, databases, etc.
         """
         # If no logger provided, create one from infrastructure
         if logger is None:
@@ -75,7 +77,7 @@ class CreateAgent:
             AgentComposer.create_chat_use_case(
                 provider=provider,
                 model=model,
-                enable_tracing=enable_tracing,
+                trace_store=trace_store,
             )
         )
         self.__get_config_use_case: GetAgentConfigUseCase = (

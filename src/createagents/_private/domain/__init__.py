@@ -14,7 +14,8 @@ from .exceptions import (
     UnsupportedConfigException,
 )
 from .interfaces import LoggerInterface
-from .services import ToolExecutionResult, ToolExecutor
+from .interfaces.tracing import ITraceStore, TraceEntry, TraceSummary
+from .services import ToolExecutionResult, ToolExecutor, build_trace_summary
 from .value_objects import (
     BaseTool,
     ChatResponse,
@@ -80,7 +81,12 @@ __all__ = [
     # tracing value objects
     'TraceContext',
     'RunType',
+    # tracing interface and data
+    'ITraceStore',
+    'TraceEntry',
+    'TraceSummary',
     # services
     'ToolExecutor',
     'ToolExecutionResult',
+    'build_trace_summary',
 ]

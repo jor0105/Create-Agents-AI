@@ -1,6 +1,4 @@
-import logging
-
-from createagents import CreateAgent, configure_logging
+from createagents import CreateAgent
 
 
 # configure_logging(level=logging.DEBUG)
@@ -8,8 +6,8 @@ from createagents import CreateAgent, configure_logging
 
 # Create the agent
 agent = CreateAgent(
-    provider="openai",
-    model="gpt-5-nano",
+    provider='openai',
+    model='gpt-5-nano',
     instructions="""
     Você é um assistente que sempre responde
     de forma técnica.

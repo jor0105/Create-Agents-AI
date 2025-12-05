@@ -15,10 +15,11 @@ from typing import List, Literal, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
-from createagents import CreateAgent, tool, LoggingConfigurator
+from createagents import CreateAgent, tool
+from createagents.logging import configure_logging
 
 # Habilitar logging para ver os passos da IA
-LoggingConfigurator.configure(level=logging.INFO)
+configure_logging(level=logging.INFO)
 
 
 # =============================================================================

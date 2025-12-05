@@ -3,10 +3,11 @@ import sys
 import asyncio
 import os
 from typing import Any, List, Optional
-from createagents import (
+from createagents import CreateAgent
+from createagents._private.application import StreamingResponseDTO
+from createagents.logging import (
     configure_logging,
     create_logger,
-    CreateAgent,
     LoggerInterface,
 )
 
@@ -145,7 +146,7 @@ async def run_agent_test(
         response = await agent.chat(message)
 
         # 3. Handle Response (Stream vs Non-Stream)
-        if stream:
+        if stream and isinstance(response, StreamingResponseDTO):
             test_logger.info('Stream mode detected. Consuming stream...')
             full_response = ''
             # In a real scenario, response is a StreamingResponseDTO which is iterable

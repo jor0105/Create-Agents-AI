@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Any, Dict, Optional, Sequence, Union
 # Importar apenas DTOs no topo - eles não causam circular import
 from ...application import CreateAgentInputDTO
 from ...domain import Agent, BaseTool
-from ...domain.interfaces import LoggerInterface
+from ...domain.interfaces import LoggerInterface, ITraceStore
 from ...infra import ChatAdapterFactory
 from ...infra.config import create_logger, create_trace_logger
 
@@ -96,7 +96,7 @@ class AgentComposer:
     def create_chat_use_case(
         provider: str,
         model: str,
-        enable_tracing: bool = False,
+        trace_store: Optional['ITraceStore'] = None,
     ) -> ChatWithAgentUseCase:
         """
         Creates the ChatWithAgentUseCase with its dependencies injected.
@@ -104,7 +104,8 @@ class AgentComposer:
         Args:
             provider: The specific provider.
             model: The name of the AI model.
-            enable_tracing: Whether to enable detailed trace logging (default: True).
+            trace_store: Optional trace store for persisting traces.
+                        If provided, trace logging is enabled.
 
         Returns:
             A configured ChatWithAgentUseCase.
@@ -112,18 +113,19 @@ class AgentComposer:
         from ...application import ChatWithAgentUseCase  # pylint: disable=import-outside-toplevel
 
         AgentComposer.__logger.debug(
-            'Composing chat use case - Provider: %s, Model: %s',
+            'Composing chat use case - Provider: %s, Model: %s, Tracing: %s',
             provider,
             model,
+            trace_store,
         )
 
-        # Create trace logger if tracing is enabled
+        # Create trace logger only if trace_store is provided
         trace_logger = None
-        if enable_tracing:
+        if trace_store is not None:
             trace_logger = create_trace_logger(
                 'createagents.tracing.chat',
                 json_output=False,
-                enable_persistence=True,
+                trace_store=trace_store,
             )
 
         # Pass trace_logger to the factory so handlers can use it
