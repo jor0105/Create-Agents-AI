@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Dict, List, Literal, Optional, Set, Union
+from typing import Any, Dict, List, Literal, Optional, Union
 
 
 # Type alias for tool_choice parameter (for external API compatibility)
@@ -200,21 +200,6 @@ class ToolChoice:
             f'Invalid tool_choice type: {type(value).__name__}. '
             'Must be a string, dict, or ToolChoice instance.'
         )
-
-    def validate_against_tools(self, tool_names: Set[str]) -> None:
-        """Validate that the specified function exists in available tools.
-
-        Args:
-            tool_names: Set of available tool names.
-
-        Raises:
-            ValueError: If function_name is set but not in tool_names.
-        """
-        if self.is_specific_function and self.function_name not in tool_names:
-            raise ValueError(
-                f"tool_choice specifies unknown tool '{self.function_name}'. "
-                f'Available tools: {sorted(tool_names)}'
-            )
 
     def to_openai_format(self) -> Union[str, Dict[str, Any]]:
         """Convert to OpenAI Chat Completions API format.

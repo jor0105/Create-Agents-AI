@@ -6,7 +6,7 @@ from typing import Any, Awaitable, Callable, Dict, Type, cast
 from pydantic import BaseModel, ValidationError
 
 from ..utils import (
-    _get_short_description,
+    get_short_description,
     create_schema_from_function,
 )
 
@@ -121,7 +121,7 @@ class StructuredTool:
 
         # Infer description from docstring
         if description is None:
-            description = _get_short_description(source_func)
+            description = get_short_description(source_func)
             if not description:
                 description = f'Tool: {name}'
 

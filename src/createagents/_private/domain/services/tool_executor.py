@@ -347,6 +347,17 @@ class ToolExecutor:
 
         return results
 
+    @staticmethod
+    async def _create_error_result(
+        tool_name: str, error_msg: str
+    ) -> ToolExecutionResult:
+        """Helper to create an error result coroutine."""
+        return ToolExecutionResult(
+            tool_name=tool_name,
+            success=False,
+            error=error_msg,
+        )
+
     async def _execute_parallel(
         self, tool_calls: List[Dict[str, Any]]
     ) -> List[ToolExecutionResult]:
@@ -389,15 +400,9 @@ class ToolExecutor:
                         "Failed to parse arguments for '%s': %s", tool_name, e
                     )
 
-                    # Create a coroutine that returns the error result
-                    async def error_result():
-                        return ToolExecutionResult(
-                            tool_name=tool_name,
-                            success=False,
-                            error=error_msg,
-                        )
-
-                    tasks.append(error_result())
+                    tasks.append(
+                        self._create_error_result(tool_name, error_msg)
+                    )
                     continue
 
             # Create task for this tool execution

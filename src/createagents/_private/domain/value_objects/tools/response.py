@@ -11,7 +11,6 @@ class ResponseStatus(str, Enum):
 
     SUCCESS = 'success'
     ERROR = 'error'
-    PARTIAL = 'partial'
 
 
 @dataclass(frozen=True, slots=True)
@@ -47,7 +46,7 @@ class ToolResponse(Generic[T]):
     making it easier for AI agents to parse and process results.
 
     Attributes:
-        status: The execution status (success, error, partial).
+        status: The execution status (success, error).
         data: The actual response data (type varies by tool).
         message: Human-readable message describing the result.
         metadata: Execution metadata (timing, tool info, etc.).
@@ -127,38 +126,6 @@ class ToolResponse(Generic[T]):
             error_code=error_code,
         )
 
-    @classmethod
-    def partial(
-        cls,
-        data: T,
-        message: str,
-        tool_name: str,
-        execution_time_ms: Optional[float] = None,
-    ) -> 'ToolResponse[T]':
-        """Create a partial success response.
-
-        Used when the tool partially completed its task
-        (e.g., truncated content due to size limits).
-
-        Args:
-            data: The partial response data.
-            message: Message explaining the partial result.
-            tool_name: Name of the tool.
-            execution_time_ms: Optional execution time in milliseconds.
-
-        Returns:
-            A ToolResponse with partial status.
-        """
-        return cls(
-            status=ResponseStatus.PARTIAL,
-            data=data,
-            message=message,
-            metadata=ToolResponseMetadata(
-                tool_name=tool_name,
-                execution_time_ms=execution_time_ms,
-            ),
-        )
-
     def format(self) -> str:
         """Format the response as a clean string for AI consumption.
 
@@ -167,9 +134,6 @@ class ToolResponse(Generic[T]):
         """
         if self.status == ResponseStatus.ERROR:
             return f'[{self.metadata.tool_name.upper()} ERROR] {self.message}'
-
-        if self.status == ResponseStatus.PARTIAL:
-            return f'{self.data}\n\n[Note: {self.message}]'
 
         return str(self.data) if self.data is not None else self.message
 

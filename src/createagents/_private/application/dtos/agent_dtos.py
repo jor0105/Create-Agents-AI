@@ -34,7 +34,7 @@ class CreateAgentInputDTO:
         """
         if not isinstance(self.provider, str) or not self.provider.strip():
             raise ValueError(
-                "The 'provider' field is requirinput_dtoed, must be a string, and cannot be empty."
+                "The 'provider' field is required, must be a string, and cannot be empty."
             )
 
         if not isinstance(self.model, str) or not self.model.strip():

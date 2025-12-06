@@ -8,6 +8,7 @@ from typing import (
     get_origin,
     get_type_hints,
 )
+
 from ..interfaces import LoggerInterface
 from ..value_objects import (
     BaseTool,
@@ -17,7 +18,6 @@ from ..value_objects import (
     InjectedLogger,
 )
 
-# Type alias for logger factory function
 LoggerFactory = Callable[[str], LoggerInterface]
 
 
@@ -68,14 +68,13 @@ class ToolArgumentInjector:
         """
         result = kwargs.copy()
 
-        # Get the function to inspect (for StructuredTool or class-based)
         func = None
         if hasattr(tool, 'func') and tool.func is not None:
             func = tool.func
         elif hasattr(tool, 'coroutine') and tool.coroutine is not None:
             func = tool.coroutine
         elif hasattr(tool, 'execute'):
-            func = tool.execute  # BaseTool.execute()
+            func = tool.execute
 
         if func is None:
             return result

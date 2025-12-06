@@ -8,7 +8,6 @@ from typing import (
     Dict,
     Tuple,
     Type,
-    Union,
     get_args,
     get_origin,
     get_type_hints,
@@ -72,7 +71,7 @@ def _parse_google_docstring(func: Callable) -> Dict[str, str]:
     return descriptions
 
 
-def _get_short_description(func: Callable) -> str:
+def get_short_description(func: Callable) -> str:
     """Extract the short description from a function's docstring.
 
     Args:
@@ -118,55 +117,6 @@ def _filter_injected_args(
             regular_args[name] = hint
 
     return regular_args, injected_args
-
-
-def _python_type_to_json_type(python_type: Any) -> str:
-    """Convert a Python type to a JSON Schema type string.
-
-    Args:
-        python_type: A Python type annotation.
-
-    Returns:
-        The corresponding JSON Schema type string.
-    """
-    origin = get_origin(python_type)
-
-    # Handle Union types (including Optional)
-    if origin is Union:
-        args = get_args(python_type)
-        # Filter out NoneType for Optional
-        non_none_args = [a for a in args if a is not type(None)]
-        if non_none_args:
-            return _python_type_to_json_type(non_none_args[0])
-        return 'string'
-
-    # Handle Literal types
-    if origin is not None and str(origin).startswith('typing.Literal'):
-        return 'string'
-
-    # Handle list/array types
-    if origin in (list, tuple, set, frozenset):
-        return 'array'
-
-    # Handle dict types
-    if origin is dict:
-        return 'object'
-
-    # Direct type mappings
-    type_mapping = {
-        str: 'string',
-        int: 'integer',
-        float: 'number',
-        bool: 'boolean',
-        list: 'array',
-        tuple: 'array',
-        set: 'array',
-        frozenset: 'array',
-        dict: 'object',
-        type(None): 'null',
-    }
-
-    return type_mapping.get(python_type, 'string')
 
 
 def create_schema_from_function(
@@ -275,34 +225,6 @@ def create_schema_from_function(
     return create_model(model_name, **field_definitions)  # type: ignore[no-any-return]
 
 
-def get_json_schema_from_function(
-    func: Callable,
-    *,
-    parse_docstring: bool = True,
-    filter_injected: bool = True,
-) -> Dict[str, Any]:
-    """Generate a JSON Schema from a function's signature.
-
-    This is a convenience function that creates a Pydantic model and
-    immediately converts it to a JSON Schema dictionary.
-
-    Args:
-        func: The function to analyze.
-        parse_docstring: Whether to parse docstring for descriptions.
-        filter_injected: Whether to filter InjectedToolArg parameters.
-
-    Returns:
-        A JSON Schema dictionary describing the function's parameters.
-    """
-    model = create_schema_from_function(
-        func,
-        parse_docstring=parse_docstring,
-        filter_injected=filter_injected,
-    )
-    return model.model_json_schema()  # type: ignore[no-any-return]
-
-
 __all__ = [
     'create_schema_from_function',
-    'get_json_schema_from_function',
 ]

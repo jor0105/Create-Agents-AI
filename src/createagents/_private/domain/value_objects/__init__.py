@@ -1,9 +1,7 @@
 from .chat import (
-    ChatResponse,
     History,
     Message,
     MessageRole,
-    ToolCallInfo,
 )
 
 from .config import (
@@ -37,7 +35,6 @@ from .tools import (
 # Schema utilities
 from .utils import (
     create_schema_from_function,
-    get_json_schema_from_function,
 )
 
 __all__ = [
@@ -45,8 +42,6 @@ __all__ = [
     'Message',
     'MessageRole',
     'History',
-    'ChatResponse',
-    'ToolCallInfo',
     # Configuration value objects
     'SupportedProviders',
     'SupportedConfigs',
@@ -72,5 +67,4 @@ __all__ = [
     'is_injected_arg',
     # Schema utilities
     'create_schema_from_function',
-    'get_json_schema_from_function',
 ]

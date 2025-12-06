@@ -73,16 +73,6 @@ class History:
         message = Message(role=MessageRole.ASSISTANT, content=content)
         self.add(message)
 
-    def add_system_message(self, content: str) -> None:
-        """
-        A shortcut to add a system message.
-
-        Args:
-            content: The content of the message.
-        """
-        message = Message(role=MessageRole.SYSTEM, content=content)
-        self.add(message)
-
     def clear(self) -> None:
         """Clears all messages from the history."""
         with self._lock:
@@ -107,26 +97,6 @@ class History:
         """
         with self._lock:
             return [message.to_dict() for message in self._messages]
-
-    @classmethod
-    def from_dict_list(
-        cls, data: List[Dict[str, str]], max_size: int
-    ) -> 'History':
-        """
-        Creates a History instance from a list of dictionaries.
-
-        Args:
-            data: A list of dictionaries, each with 'role' and 'content'.
-            max_size: The maximum size of the history.
-
-        Returns:
-            A new History instance.
-        """
-        history = cls(max_size=max_size)
-        for item in data:
-            message = Message.from_dict(item)
-            history.add(message)
-        return history
 
     def __len__(self) -> int:
         """Return the number of messages in the history."""

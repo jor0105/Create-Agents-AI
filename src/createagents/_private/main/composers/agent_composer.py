@@ -2,14 +2,12 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Dict, Optional, Sequence, Union
 
-# Importar apenas DTOs no topo - eles não causam circular import
 from ...application import CreateAgentInputDTO
 from ...domain import Agent, BaseTool
 from ...domain.interfaces import LoggerInterface, ITraceStore
 from ...infra import ChatAdapterFactory
 from ...infra.config import create_logger, create_trace_logger
 
-# Type hints para IDEs (não executado em runtime)
 if TYPE_CHECKING:
     from ...application import (
         ChatWithAgentUseCase,

@@ -18,7 +18,6 @@ from .interfaces.tracing import ITraceStore, TraceEntry, TraceSummary
 from .services import ToolExecutionResult, ToolExecutor, build_trace_summary
 from .value_objects import (
     BaseTool,
-    ChatResponse,
     History,
     InjectedState,
     InjectedToolArg,
@@ -29,7 +28,6 @@ from .value_objects import (
     StructuredTool,
     SupportedConfigs,
     SupportedProviders,
-    ToolCallInfo,
     ToolChoice,
     ToolChoiceMode,
     ToolChoiceType,
@@ -74,8 +72,6 @@ __all__ = [
     'InjectedState',
     'is_injected_arg',
     'create_schema_from_function',
-    'ChatResponse',
-    'ToolCallInfo',
     'SupportedConfigs',
     'SupportedProviders',
     # tracing value objects
