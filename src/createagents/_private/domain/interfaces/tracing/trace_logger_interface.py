@@ -1,7 +1,10 @@
 from abc import ABC, abstractmethod
-from typing import Any, Dict, Optional
+from typing import TYPE_CHECKING, Any, Dict, Optional
 
 from ...value_objects import TraceContext
+
+if TYPE_CHECKING:
+    from .trace_store_interface import ITraceStore
 
 
 class ITraceLogger(ABC):
@@ -15,6 +18,15 @@ class ITraceLogger(ABC):
     - Support starting/ending traces
     - Provide methods for logging operations with inputs/outputs
     """
+
+    @property
+    @abstractmethod
+    def trace_store(self) -> Optional['ITraceStore']:
+        """Get the trace store instance used for persistence.
+
+        Returns:
+            The ITraceStore instance or None if not configured.
+        """
 
     @abstractmethod
     def start_trace(

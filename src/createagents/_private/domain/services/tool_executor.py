@@ -1,9 +1,17 @@
 import json
-from typing import Any, Dict, List, Optional
+from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
 from ..interfaces import LoggerInterface
 from ..value_objects import BaseTool, ToolExecutionResult
-from .tool_argument_injector import ToolArgumentInjector, LoggerFactory
+from ..value_objects.tracing import RunType, TraceContext
+from ..value_objects.tracing.context_var import (
+    reset_trace_context,
+    set_trace_context,
+)
+from .tool_argument_injector import LoggerFactory, ToolArgumentInjector
+
+if TYPE_CHECKING:
+    from ..interfaces.tracing import ITraceStore
 
 
 class ToolExecutor:
@@ -31,6 +39,8 @@ class ToolExecutor:
         tools: List[BaseTool],
         logger: LoggerInterface,
         logger_factory: Optional[LoggerFactory] = None,
+        trace_context: Optional[TraceContext] = None,
+        trace_store: Optional['ITraceStore'] = None,
     ):
         """Initialize the executor with available tools and logger.
 
@@ -39,10 +49,14 @@ class ToolExecutor:
                    If None, no tools will be available.
             logger: Logger instance for logging tool execution events.
             logger_factory: Optional factory function to create loggers for tools.
+            trace_context: Optional trace context for distributed tracing.
+            trace_store: Optional trace store for persisting trace events.
         """
         self._tools_map: Dict[str, BaseTool] = {}
         self.__logger = logger
         self._argument_injector = ToolArgumentInjector(logger, logger_factory)
+        self._trace_context = trace_context
+        self._trace_store = trace_store
 
         for tool in tools:
             self._tools_map[tool.name] = tool
@@ -130,6 +144,15 @@ class ToolExecutor:
                 error=error_msg,
                 execution_time_ms=(time.time() - start_time) * 1000,
             )
+
+        # Set up trace context for this tool execution
+        tokens = None
+        if self._trace_context:
+            tool_ctx = self._trace_context.create_child(
+                run_type=RunType.TOOL,
+                operation=f'tool.{tool_name}',
+            )
+            tokens = set_trace_context(tool_ctx, self._trace_store)
 
         try:
             tool = self._tools_map[tool_name]
@@ -219,6 +242,11 @@ class ToolExecutor:
                 error=error_msg,
                 execution_time_ms=execution_time,
             )
+
+        finally:
+            # Always reset trace context to prevent leaks
+            if tokens:
+                reset_trace_context(tokens)
 
     async def execute_multiple_tools(
         self, tool_calls: List[Dict[str, Any]], parallel: bool = False

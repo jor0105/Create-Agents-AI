@@ -11,14 +11,14 @@ from createagents.logging import (
     LoggerInterface,
 )
 
-# --- Configuration ---
-# Test new configure_logging parameters
-print('=' * 60)
-print('🧪 Testing configure_logging with all new parameters')
-print('=' * 60)
+# # --- Configuration ---
+# # Test new configure_logging parameters
+# print('=' * 60)
+# print('🧪 Testing configure_logging with all new parameters')
+# print('=' * 60)
 
-# Test 1: Custom format string without timestamp
-print('\n[Test 1] Custom format_string + include_timestamp=False')
+# # Test 1: Custom format string without timestamp
+# print('\n[Test 1] Custom format_string + include_timestamp=False')
 configure_logging(
     level=logging.DEBUG,
     format_string='%(levelname)s [%(name)s] %(message)s',

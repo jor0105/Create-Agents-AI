@@ -1,3 +1,4 @@
+from .context_aware_logger import ContextAwareLogger
 from .logging_config import (
     LoggingConfig,
     configure_logging,
@@ -11,6 +12,7 @@ from .logging_configurator import (
 from .sensitive_data_filter import SensitiveDataFilter
 
 __all__ = [
+    'ContextAwareLogger',
     'LoggingConfig',
     'configure_logging',
     'create_logger',

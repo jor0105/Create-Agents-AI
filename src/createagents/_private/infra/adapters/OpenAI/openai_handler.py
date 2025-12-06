@@ -105,7 +105,13 @@ class OpenAIHandler(BaseHandler):
 
         if filtered_tools and not is_tool_choice_none:
             tool_schemas = self._schema_builder.multiple_format(filtered_tools)
-            tool_executor = self._create_tool_executor(tools)
+            # Get trace_store from trace_logger if available
+            trace_store = (
+                self._trace_logger.trace_store if self._trace_logger else None
+            )
+            tool_executor = self._create_tool_executor(
+                tools, trace_context, trace_store
+            )
             formatted_tool_choice = self._schema_builder.format_tool_choice(
                 tool_choice, filtered_tools
             )

@@ -1,0 +1,72 @@
+# 🗺️ Feature Roadmap - CreateAgentsAI
+
+## Features para Implementar
+
+| # | Feature | Complexidade |
+|---|---------|--------------|
+| 1 | Tool Groups com Registry | Média |
+| 2 | Melhor Documentação de Erros | Baixa |
+
+---
+
+## 1. 🔧 Tool Groups com Registry Centralizado
+
+### Objetivo
+Organizar tools em grupos/categorias para carregar múltiplas tools de uma vez.
+
+### API Proposta
+
+```python
+# Definir tools com grupos
+@tool(group="math")
+def calculate(expression: str) -> str:
+    ...
+
+@tool(group="math")
+def convert_units(value: float, from_unit: str, to_unit: str) -> str:
+    ...
+
+@tool(group="web")
+def search(query: str) -> str:
+    ...
+
+# Usar grupos no agent
+agent = CreateAgent(
+    provider="openai",
+    model="gpt-4o",
+    tool_groups=["math", "web"],  # Carrega todas do grupo
+    tools=[outra_tool]            # Ainda permite tools individuais
+)
+```
+
+### Implementação
+1. Criar `ToolRegistry` em [domain/services/](file:///home/jordan/Programa%C3%A7%C3%A3o/CreateAgentsAI/src/createagents/_private/domain/services)
+2. Adicionar parâmetro `group` no decorator `@tool`
+3. Adicionar parâmetro `tool_groups` no [CreateAgent](file:///home/jordan/Programa%C3%A7%C3%A3o/CreateAgentsAI/src/createagents/_private/application/facade/client.py#15-329)
+
+---
+
+## 2. ⚠️ Melhor Documentação de Erros
+
+### Problema
+Erros de schema/validação do Pydantic são confusos para o usuário.
+
+### Exemplo Atual (confuso)
+```
+pydantic_core._pydantic_core.ValidationError: 1 validation error for SearchInput
+query
+  Input should be a valid string [type=string_type, input_value=123, input_type=int]
+```
+
+### Proposta (claro)
+```
+ToolValidationError: Tool 'search' recebeu argumentos inválidos:
+  - 'query': esperado str, recebido int (valor: 123)
+
+Dica: Verifique a definição da tool em sua função decorada com @tool
+```
+
+### Implementação
+1. Criar `ToolValidationError` exception customizada
+2. Capturar `ValidationError` do Pydantic no [ToolExecutor](file:///home/jordan/Programa%C3%A7%C3%A3o/CreateAgentsAI/src/createagents/_private/domain/services/tool_executor.py#9-391)
+3. Converter para mensagem amigável em português/inglês

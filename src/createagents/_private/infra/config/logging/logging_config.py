@@ -62,26 +62,32 @@ class LoggingConfig(LoggerInterface):
         self._logger.exception(message, *args, **kwargs)
 
 
-def create_logger(name: str) -> LoggingConfig:
+def create_logger(name: str) -> LoggerInterface:
     """Factory function to create a logger instance.
 
     This is the primary entry point for obtaining loggers throughout
     the application. Use this instead of logging.getLogger() directly
     to ensure consistent LoggerInterface implementation.
 
+    The returned logger automatically enriches logs with trace context
+    when called from within a tool execution that has an active trace.
+
     Args:
         name: The name for the logger (usually __name__).
 
     Returns:
-        A LoggingConfig instance implementing LoggerInterface.
+        A context-aware LoggerInterface implementation.
 
     Example:
         >>> from createagents import create_logger
         >>> logger = create_logger(__name__)
         >>> logger.info('Service initialized')
     """
+    from .context_aware_logger import ContextAwareLogger  # pylint: disable=import-outside-toplevel
+
     python_logger = logging.getLogger(name)
-    return LoggingConfig(python_logger)
+    base_logger = LoggingConfig(python_logger)
+    return ContextAwareLogger(name, base_logger)
 
 
 def configure_logging(
@@ -93,7 +99,7 @@ def configure_logging(
     log_file_path: Optional[str] = None,
     max_bytes: int = LoggingConfigurator.DEFAULT_MAX_BYTES,
     backup_count: int = LoggingConfigurator.DEFAULT_BACKUP_COUNT,
-) -> LoggingConfig:
+) -> LoggerInterface:
     """Configure global logging and return a root logger.
 
     Convenience function to configure logging in one call.

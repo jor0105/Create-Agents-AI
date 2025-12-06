@@ -6,10 +6,12 @@ from ....domain.interfaces import (
     IMetricsRecorder,
     IToolSchemaBuilder,
     ITraceLogger,
+    ITraceStore,
     LoggerInterface,
 )
 from ....domain.services import LoggerFactory
 from ....domain.value_objects import ToolChoice, ToolChoiceMode, ToolChoiceType
+from ....domain.value_objects.tracing import TraceContext
 from ...config import SensitiveDataFilter
 
 
@@ -52,7 +54,10 @@ class BaseHandler(ABC):
         self._tool_executor_factory = self._default_tool_executor_factory
 
     def _default_tool_executor_factory(
-        self, tools: Optional[List[BaseTool]]
+        self,
+        tools: Optional[List[BaseTool]],
+        trace_context: Optional[TraceContext] = None,
+        trace_store: Optional[ITraceStore] = None,
     ) -> ToolExecutor:
         """Default factory for creating ToolExecutor instances.
 
@@ -62,16 +67,27 @@ class BaseHandler(ABC):
 
         Args:
             tools: Optional list of tools to provide to the executor.
+            trace_context: Optional trace context for distributed tracing.
+            trace_store: Optional trace store for persisting trace events.
 
         Returns:
             Configured ToolExecutor instance.
         """
         if tools is None:
             tools = []
-        return ToolExecutor(tools, self._logger, self._logger_factory)
+        return ToolExecutor(
+            tools,
+            self._logger,
+            self._logger_factory,
+            trace_context,
+            trace_store,
+        )
 
     def _create_tool_executor(
-        self, tools: Optional[List[BaseTool]]
+        self,
+        tools: Optional[List[BaseTool]],
+        trace_context: Optional[TraceContext] = None,
+        trace_store: Optional[ITraceStore] = None,
     ) -> Optional[ToolExecutor]:
         """Create a tool executor if tools are provided.
 
@@ -80,13 +96,15 @@ class BaseHandler(ABC):
 
         Args:
             tools: Optional list of tools. If None or empty, returns None.
+            trace_context: Optional trace context for distributed tracing.
+            trace_store: Optional trace store for persisting trace events.
 
         Returns:
             ToolExecutor instance if tools provided, None otherwise.
         """
         if not tools:
             return None
-        return self._tool_executor_factory(tools)
+        return self._tool_executor_factory(tools, trace_context, trace_store)
 
     def _sanitize_for_logging(self, data: Any) -> str:
         """Sanitize sensitive data before logging.
